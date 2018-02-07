@@ -1,3 +1,5 @@
+image:https://circleci.com/gh/spring-cloud/spring-cloud-openfeign.svg?style=svg["CircleCI", link="https://circleci.com/gh/spring-cloud/spring-cloud-openfeign"]
+
 include::intro.adoc[]
 
 == Features
