@@ -28,6 +28,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer.RibbonRequest;
+import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer.RibbonResponse;
 import org.springframework.cloud.netflix.ribbon.DefaultServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 
@@ -93,7 +95,7 @@ public class FeignLoadBalancerTests {
 				this.inspector);
 		Request request = new RequestTemplate().method("GET").append("http://foo/")
 				.request();
-		FeignLoadBalancer.RibbonRequest ribbonRequest = new FeignLoadBalancer.RibbonRequest(this.delegate, request,
+		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate, request,
 				new URI(request.url()));
 
 		Response response = Response.create(200, "Test",
@@ -101,7 +103,7 @@ public class FeignLoadBalancerTests {
 		when(this.delegate.execute(any(Request.class), any(Options.class)))
 				.thenReturn(response);
 
-		FeignLoadBalancer.RibbonResponse resp = this.feignLoadBalancer.execute(ribbonRequest, null);
+		RibbonResponse resp = this.feignLoadBalancer.execute(ribbonRequest, null);
 
 		assertThat(resp.getRequestedURI(), is(new URI("http://foo/")));
 	}
@@ -158,7 +160,7 @@ public class FeignLoadBalancerTests {
 
 		assertThat(request.url(),is(url));
 
-		FeignLoadBalancer.RibbonRequest ribbonRequest = new FeignLoadBalancer.RibbonRequest(this.delegate,request,new URI(request.url()));
+		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate,request,new URI(request.url()));
 
 		Request cloneRequest = ribbonRequest.toRequest();
 

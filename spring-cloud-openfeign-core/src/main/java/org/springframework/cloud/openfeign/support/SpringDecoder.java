@@ -17,6 +17,8 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
@@ -101,7 +103,7 @@ public class SpringDecoder implements Decoder {
 
 		@Override
 		public HttpHeaders getHeaders() {
-			return FeignUtils.getHttpHeaders(this.response.headers());
+			return getHttpHeaders(this.response.headers());
 		}
 
 	}

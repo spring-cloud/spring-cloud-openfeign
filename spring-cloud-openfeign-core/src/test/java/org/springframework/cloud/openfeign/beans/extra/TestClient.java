@@ -17,12 +17,12 @@
 package org.springframework.cloud.openfeign.beans.extra;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.beans.FeignClientTests;
+import org.springframework.cloud.openfeign.beans.FeignClientTests.Hello;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @FeignClient(value = "otherapp", qualifier = "uniquequalifier")
 public interface TestClient {
 	@RequestMapping(method = RequestMethod.GET, value = "/hello")
-	FeignClientTests.Hello getHello();
+	Hello getHello();
 }

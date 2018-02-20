@@ -38,6 +38,9 @@ import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 
+import static org.springframework.cloud.openfeign.support.FeignUtils.getHeaders;
+import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
+
 /**
  * @author Spencer Gibb
  */
@@ -94,7 +97,7 @@ public class SpringEncoder implements Encoder {
 					request.headers(null);
 					// converters can modify headers, so update the request
 					// with the modified headers
-					request.headers(FeignUtils.getHeaders(outputMessage.getHeaders()));
+					request.headers(getHeaders(outputMessage.getHeaders()));
 
 					// do not use charset for binary data
 					if (messageConverter instanceof ByteArrayHttpMessageConverter) {
@@ -121,7 +124,7 @@ public class SpringEncoder implements Encoder {
 		private final HttpHeaders httpHeaders;
 
 		private FeignOutputMessage(RequestTemplate request) {
-			httpHeaders = FeignUtils.getHttpHeaders(request.headers());
+			httpHeaders = getHttpHeaders(request.headers());
 		}
 
 		@Override
