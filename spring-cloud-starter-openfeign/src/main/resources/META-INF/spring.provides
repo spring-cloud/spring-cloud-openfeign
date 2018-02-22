@@ -1,1 +1,1 @@
-provides: spring-platform-netflix-core, eureka-client
+provides: spring-cloud-openfeign-core

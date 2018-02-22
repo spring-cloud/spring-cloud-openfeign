@@ -24,6 +24,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-starter-openfeign</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>io.github.openfeign</groupId>
 				<artifactId>feign-core</artifactId>
 				<version>${feign.version}</version>
