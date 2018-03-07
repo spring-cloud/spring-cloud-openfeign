@@ -75,18 +75,33 @@ public class SpringMvcContract extends Contract.BaseContract
 	private final Param.Expander expander;
 	private ResourceLoader resourceLoader = new DefaultResourceLoader();
 
+    /**
+	 * whether decode slash in generated url paths (Default: true).
+     * Set to false to deal with path variables containing /.
+	 * However make sure that server is configured to accept such requests.
+	 */
+	private final boolean decodeSlash;
+
 	public SpringMvcContract() {
 		this(Collections.emptyList());
 	}
 
+	/**
+	 * ctor mainly for test purpose
+	 * @param decodeSlash whether decode slash in generated url paths.
+	 */
+	public SpringMvcContract(boolean decodeSlash) {
+		this(Collections.emptyList(), new DefaultConversionService(), decodeSlash);
+	}
+
 	public SpringMvcContract(
 			List<AnnotatedParameterProcessor> annotatedParameterProcessors) {
-		this(annotatedParameterProcessors, new DefaultConversionService());
+		this(annotatedParameterProcessors, new DefaultConversionService(), true);
 	}
 
 	public SpringMvcContract(
 			List<AnnotatedParameterProcessor> annotatedParameterProcessors,
-			ConversionService conversionService) {
+			ConversionService conversionService, boolean decodeSlash) {
 		Assert.notNull(annotatedParameterProcessors,
 				"Parameter processors can not be null.");
 		Assert.notNull(conversionService, "ConversionService can not be null.");
@@ -101,12 +116,17 @@ public class SpringMvcContract extends Contract.BaseContract
 		this.annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
 		this.conversionService = conversionService;
 		this.expander = new ConvertingExpander(conversionService);
+		this.decodeSlash = decodeSlash;
 	}
 
 	@Override
 	public void setResourceLoader(ResourceLoader resourceLoader) {
 		this.resourceLoader = resourceLoader;
 	}
+
+    public boolean isDecodeSlash() {
+        return decodeSlash;
+    }
 
 	@Override
 	protected void processAnnotationOnClass(MethodMetadata data, Class<?> clz) {
@@ -148,6 +168,8 @@ public class SpringMvcContract extends Contract.BaseContract
 			// headers -- class annotation is inherited to methods, always write these if
 			// present
 			parseHeaders(md, method, classAnnotation);
+
+			md.template().decodeSlash(decodeSlash);
 		}
 		return md;
 	}
@@ -194,6 +216,7 @@ public class SpringMvcContract extends Contract.BaseContract
 		parseHeaders(data, method, methodMapping);
 
 		data.indexToExpander(new LinkedHashMap<Integer, Param.Expander>());
+		data.template().decodeSlash(decodeSlash);
 	}
 
 	private String resolve(String value) {
