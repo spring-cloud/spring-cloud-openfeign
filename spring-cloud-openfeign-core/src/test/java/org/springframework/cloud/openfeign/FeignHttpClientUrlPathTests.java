@@ -12,17 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import feign.Feign;
-import feign.Target;
 import feign.slf4j.Slf4jLogger;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,11 +55,13 @@ import static org.junit.Assert.assertNotNull;
  * @author Dominique Villard
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignHttpClientUrlPathTests.TestConfig.class, webEnvironment = WebEnvironment.DEFINED_PORT, value = {
+@SpringBootTest(classes = FeignHttpClientUrlPathTests.TestAppControllerAndConfig.class, webEnvironment = WebEnvironment.DEFINED_PORT, value = {
 		"spring.application.name=feignclienturltest",
 		"feign.hystrix.enabled=false",
 		"feign.okhttp.enabled=false",
-		"feign.client.decodeslash=false"})
+		"feign.client.decodeslash=false",
+		// spring must be tweaked to accept encoded / (%2F), withdraw security for test
+		"spring.security.filter.dispatcher-types=async,error"})
 @DirtiesContext
 public class FeignHttpClientUrlPathTests {
 
@@ -73,19 +73,23 @@ public class FeignHttpClientUrlPathTests {
 		System.setProperty("server.port", String.valueOf(port));
 		// tweak servlet container to support
 		System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
-		// spring must be tweaked to accept encoded / (%2F), withdraw security to en
-		System.setProperty("spring.security.filter.dispatcher-types", "async,error");
 	}
 
 	@AfterClass
 	public static void afterClass() {
 		System.clearProperty("server.port");
+		System.clearProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH");
 	}
 
 	@Autowired
 	private UrlClient urlClient;
 
-	@FeignClient(name = "localappurl", url = "http://localhost:${server.port}/", configuration = LoggingConfiguration.class)
+	@Before
+	public void setUp() throws Exception {
+		Logger.class.cast(LoggerFactory.getLogger(UrlClient.class)).setLevel(Level.DEBUG);
+	}
+
+	@FeignClient(name = "localappurl", url = "http://localhost:${server.port}/", configuration = ClientTestConfiguration.class)
 	protected interface UrlClient {
 
 		@GetMapping(value = "/hello/{user}")
@@ -97,7 +101,7 @@ public class FeignHttpClientUrlPathTests {
 	@RestController
 	//@EnableWebSecurity(debug=true)
 	@EnableFeignClients(clients = {UrlClient.class})
-	protected static class TestConfig {
+	protected static class TestAppControllerAndConfig {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/hello/{user}")
 		public Hello getHelloUser(@PathVariable("user") String user) {
@@ -105,14 +109,20 @@ public class FeignHttpClientUrlPathTests {
 		}
 
 		@Bean
-		public Targeter feignTargeter() {
-			return new Targeter() {
-				@Override
-				public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign,
-						FeignContext context, Target.HardCodedTarget<T> target) {
-					return feign.target(target);
-				}
-			};
+		public UrlPathHelper mvcUrlPathHelper() {
+			UrlPathHelper pathHelper = new UrlPathHelper();
+			pathHelper.setUrlDecode(false);
+			pathHelper.setDefaultEncoding("UTF-8");
+			return pathHelper;
+		}
+
+		// didn't find a better way to configure it
+		@Bean
+		public Optional<HandlerMapping> configureHandlerMapping(HandlerMapping handlerMapping) {
+			if (handlerMapping instanceof AbstractHandlerMapping) {
+				AbstractHandlerMapping.class.cast(handlerMapping).setUrlDecode(false);
+			}
+			return Optional.ofNullable(handlerMapping);
 		}
 	}
 
@@ -126,8 +136,6 @@ public class FeignHttpClientUrlPathTests {
 
 	@Test
 	public void testEscapedPathVariable() {
-		Logger.class.cast(LoggerFactory.getLogger(UrlClient.class)).setLevel(Level.DEBUG);
-
 		assertNotNull("UrlClient was null", this.urlClient);
 		Hello hello = this.urlClient.getHelloUser("toto/titi");
 		assertNotNull("hello was null", hello);
@@ -135,14 +143,11 @@ public class FeignHttpClientUrlPathTests {
 	}
 
 	@Configuration
-	public static class LoggingConfiguration {
+	public static class ClientTestConfiguration {
 
 		@Bean
-		public UrlPathHelper mvcUrlPathHelper() {
-			UrlPathHelper pathHelper = new UrlPathHelper();
-			pathHelper.setUrlDecode(false);
-			pathHelper.setDefaultEncoding("UTF-8");
-			return pathHelper;
+		public Targeter feignTargeter() {
+			return new DefaultTargeter();
 		}
 
 		@Bean
@@ -153,15 +158,6 @@ public class FeignHttpClientUrlPathTests {
 		@Bean
 		public feign.Logger logger() {
 			return new Slf4jLogger(UrlClient.class);
-		}
-
-		// didn't find a better way to configure it
-		@Bean
-		public Optional<HandlerMapping> configureHandlerMapping(HandlerMapping handlerMapping) {
-			if (handlerMapping instanceof AbstractHandlerMapping) {
-				AbstractHandlerMapping.class.cast(handlerMapping).setUrlDecode(false);
-			}
-			return Optional.ofNullable(handlerMapping);
 		}
 	}
 
