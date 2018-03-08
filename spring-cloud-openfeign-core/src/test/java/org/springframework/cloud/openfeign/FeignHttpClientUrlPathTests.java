@@ -86,6 +86,7 @@ public class FeignHttpClientUrlPathTests {
 
 	@Before
 	public void setUp() throws Exception {
+		assertNotNull("UrlClient was null", this.urlClient);
 		Logger.class.cast(LoggerFactory.getLogger(UrlClient.class)).setLevel(Level.DEBUG);
 	}
 
@@ -128,17 +129,13 @@ public class FeignHttpClientUrlPathTests {
 
 	@Test
 	public void testPathVariable() {
-		assertNotNull("UrlClient was null", this.urlClient);
 		Hello hello = this.urlClient.getHelloUser("toto");
-		assertNotNull("hello was null", hello);
 		assertEquals("first hello didn't match", new Hello("hello toto"), hello);
 	}
 
 	@Test
 	public void testEscapedPathVariable() {
-		assertNotNull("UrlClient was null", this.urlClient);
 		Hello hello = this.urlClient.getHelloUser("toto/titi");
-		assertNotNull("hello was null", hello);
 		assertEquals("first hello didn't match", new Hello("hello toto/titi"), hello);
 	}
 
