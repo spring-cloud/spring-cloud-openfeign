@@ -18,144 +18,132 @@ package org.springframework.cloud.openfeign;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import feign.Feign;
+import feign.codec.Decoder;
+import feign.codec.Encoder;
+import feign.httpclient.ApacheHttpClient;
 import feign.slf4j.Slf4jLogger;
-import org.junit.AfterClass;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicStatusLine;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
+import org.springframework.cloud.openfeign.support.SpringMvcContract;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.SocketUtils;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.handler.AbstractHandlerMapping;
-import org.springframework.web.util.UrlPathHelper;
 
+import java.io.ByteArrayInputStream;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 /**
  * Test path variables
+ *
  * @author Dominique Villard
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignHttpClientUrlPathTests.TestAppControllerAndConfig.class, webEnvironment = WebEnvironment.DEFINED_PORT, value = {
-		"spring.application.name=feignclienturltest",
-		"feign.hystrix.enabled=false",
-		"feign.okhttp.enabled=false",
-		"feign.client.decodeslash=false",
-		// spring must be tweaked to accept encoded / (%2F), withdraw security for test
-		"spring.security.filter.dispatcher-types=async,error"})
+@RunWith(SpringJUnit4ClassRunner.class)
+@Import({FeignAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class, FeignClientsConfiguration.class})
+@EnableFeignClients(clients = {FeignHttpClientUrlPath2Tests.UrlClient.class})
 @DirtiesContext
 public class FeignHttpClientUrlPathTests {
 
-	static int port;
+	private UrlClient urlClient;
 
-	@BeforeClass
-	public static void beforeClass() {
-		port = SocketUtils.findAvailableTcpPort();
-		System.setProperty("server.port", String.valueOf(port));
-		// tweak servlet container to support
-		System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
-	}
-
-	@AfterClass
-	public static void afterClass() {
-		System.clearProperty("server.port");
-		System.clearProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH");
-	}
+	@Mock
+	private HttpClient clientMock;
 
 	@Autowired
-	private UrlClient urlClient;
+	private Feign.Builder builder;
+
+	@Autowired
+	private Encoder encoder;
+
+	@Autowired
+	private Decoder decoder;
+
+	@Captor
+	private ArgumentCaptor<HttpUriRequest> argCaptor;
 
 	@Before
 	public void setUp() throws Exception {
-		assertNotNull("UrlClient was null", this.urlClient);
-		Logger.class.cast(LoggerFactory.getLogger(UrlClient.class)).setLevel(Level.DEBUG);
+
+		urlClient = builder
+				.encoder(encoder)
+				.decoder(decoder)
+				.client(new ApacheHttpClient(clientMock))
+				.logger(new Slf4jLogger(UrlClient.class))
+				.logLevel(feign.Logger.Level.FULL)
+				.contract(new SpringMvcContract(false))
+				.target(UrlClient.class, "http://localhost:9876");
+
+		StatusLine stline = new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, "OK");
+
+		BasicHttpEntity entity = new BasicHttpEntity();
+		entity.setContentType("Content-Type: application/json");
+		entity.setContent(new ByteArrayInputStream("{}".getBytes()));
+
+		Header[] headers = {
+				new BasicHeader("Content-Type", "application/json;charset=UTF-8")
+		};
+
+		HttpResponse response = Mockito.mock(HttpResponse.class);
+		when(response.getStatusLine()).thenReturn(stline);
+		when(response.getAllHeaders()).thenReturn(headers);
+		when(response.getEntity()).thenReturn(entity);
+
+		when(clientMock.execute(any(HttpUriRequest.class))).thenReturn(response);
 	}
 
-	@FeignClient(name = "localappurl", url = "http://localhost:${server.port}/", configuration = ClientTestConfiguration.class)
-	protected interface UrlClient {
+	@Test
+	public void testPathVariable() throws Exception {
+
+		Hello hello = this.urlClient.getHelloUser("toto");
+		assertNotNull("hello was null", hello);
+
+		verify(clientMock).execute(argCaptor.capture());
+
+		assertEquals("/hello/toto", argCaptor.getValue().getURI().getRawPath());
+	}
+
+	@Test
+	public void testEscapedPathVariable() throws Exception {
+		Logger.class.cast(LoggerFactory.getLogger(UrlClient.class)).setLevel(Level.DEBUG);
+
+		Hello hello = this.urlClient.getHelloUser("toto/titi");
+		assertNotNull("hello was null", hello);
+
+		verify(clientMock).execute(argCaptor.capture());
+
+		assertEquals("/hello/toto%2Ftiti", argCaptor.getValue().getURI().getRawPath());
+	}
+
+	public interface UrlClient {
 
 		@GetMapping(value = "/hello/{user}")
 		Hello getHelloUser(@PathVariable("user") String user);
-	}
-
-	@Configuration
-	@EnableAutoConfiguration
-	@RestController
-	//@EnableWebSecurity(debug=true)
-	@EnableFeignClients(clients = {UrlClient.class})
-	protected static class TestAppControllerAndConfig {
-
-		@RequestMapping(method = RequestMethod.GET, value = "/hello/{user}")
-		public Hello getHelloUser(@PathVariable("user") String user) {
-			return new Hello("hello "+user);
-		}
-
-		@Bean
-		public UrlPathHelper mvcUrlPathHelper() {
-			UrlPathHelper pathHelper = new UrlPathHelper();
-			pathHelper.setUrlDecode(false);
-			pathHelper.setDefaultEncoding("UTF-8");
-			return pathHelper;
-		}
-
-		// didn't find a better way to configure it
-		@Bean
-		public Optional<HandlerMapping> configureHandlerMapping(HandlerMapping handlerMapping) {
-			if (handlerMapping instanceof AbstractHandlerMapping) {
-				AbstractHandlerMapping.class.cast(handlerMapping).setUrlDecode(false);
-			}
-			return Optional.ofNullable(handlerMapping);
-		}
-	}
-
-	@Test
-	public void testPathVariable() {
-		Hello hello = this.urlClient.getHelloUser("toto");
-		assertEquals("first hello didn't match", new Hello("hello toto"), hello);
-	}
-
-	@Test
-	public void testEscapedPathVariable() {
-		Hello hello = this.urlClient.getHelloUser("toto/titi");
-		assertEquals("first hello didn't match", new Hello("hello toto/titi"), hello);
-	}
-
-	@Configuration
-	public static class ClientTestConfiguration {
-
-		@Bean
-		public Targeter feignTargeter() {
-			return new DefaultTargeter();
-		}
-
-		@Bean
-		feign.Logger.Level feignLoggerLevel() {
-			return feign.Logger.Level.FULL;
-		}
-
-		@Bean
-		public feign.Logger logger() {
-			return new Slf4jLogger(UrlClient.class);
-		}
 	}
 
 	public static class Hello {
@@ -187,6 +175,11 @@ public class FeignHttpClientUrlPathTests {
 		@Override
 		public int hashCode() {
 			return Objects.hash(message);
+		}
+
+		@Override
+		public String toString() {
+			return message;
 		}
 	}
 }
