@@ -66,7 +66,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @Import({FeignAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class, FeignClientsConfiguration.class})
-@EnableFeignClients(clients = {FeignHttpClientUrlPath2Tests.UrlClient.class})
+@EnableFeignClients(clients = {FeignHttpClientUrlPathTests.UrlClient.class})
 @DirtiesContext
 public class FeignHttpClientUrlPathTests {
 
