@@ -1,0 +1,76 @@
+---
+# The name of your project
+title: Spring Cloud OpenFeign
+
+badges:
+
+  # Customize your project's badges. Delete any entries that do not apply.
+  custom:
+    - name: Source (GitHub)
+      url:  https://github.com/spring-cloud/spring-cloud-openfeign
+      icon: github
+
+    - name: StackOverflow
+      url:  http://stackoverflow.com/questions/tagged/spring-cloud
+      icon: stackoverflow
+
+---
+<!DOCTYPE HTML>
+<html lang="en-US">
+
+<!-- Specify the parent of this project (or delete if none) to influence the rendering of the breadcrumb -->
+{% capture parent_link %}
+[Spring Cloud]({{ site.projects_site_url }}/spring-cloud)
+{% endcapture %}
+
+
+{% capture billboard_description %}
+
+**PROJECT DESCRIPTION** Corpus callosum,
+This project provides [OpenFeign](https://github.com/OpenFeign/feign) integrations for Spring Boot apps through autoconfiguration and binding to the Spring Environment and other Spring programming model idioms.
+
+{% endcapture %}
+
+{% capture main_content %}
+
+## Features
+
+* Declarative REST Client: Feign creates a dynamic implementation of an interface decorated with JAX-RS or Spring MVC annotations
+
+<span id="quick-start"></span>
+
+## Quick Start
+
+{% include download_widget.md %}
+
+
+```java
+@SpringBootApplication
+@EnableFeignClients
+public class WebApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(WebApplication.class, args);
+	}
+
+	@FeignClient("name")
+	static interface NameService {
+		@RequestMapping("/")
+		public String getName();
+	}
+
+```
+
+{% endcapture %}
+
+{% capture related_resources %}
+
+### Sample Projects
+
+* [Feign Using Eureka](https://github.com/spring-cloud-samples/feign-eureka)
+
+{% endcapture %}
+
+
+{% include project_page.html %}
+</html>
