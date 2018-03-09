@@ -124,9 +124,9 @@ public class SpringMvcContract extends Contract.BaseContract
 		this.resourceLoader = resourceLoader;
 	}
 
-    public boolean isDecodeSlash() {
-        return decodeSlash;
-    }
+	public boolean isDecodeSlash() {
+		return decodeSlash;
+	}
 
 	@Override
 	protected void processAnnotationOnClass(MethodMetadata data, Class<?> clz) {

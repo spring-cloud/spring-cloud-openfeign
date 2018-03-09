@@ -102,8 +102,6 @@ public class FeignClientProperties {
 
 		private Class<Contract> contract;
 
-		private Boolean decodeslash;
-
 		public Logger.Level getLoggerLevel() {
 			return loggerLevel;
 		}
@@ -184,14 +182,6 @@ public class FeignClientProperties {
 			this.contract = contract;
 		}
 
-		public Boolean getDecodeslash() {
-			return decodeslash;
-		}
-
-		public void setDecodeslash(Boolean decodeslash) {
-			this.decodeslash = decodeslash;
-		}
-
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
@@ -206,14 +196,13 @@ public class FeignClientProperties {
 					Objects.equals(decode404, that.decode404) &&
 					Objects.equals(encoder, that.encoder) &&
 					Objects.equals(decoder, that.decoder) &&
-					Objects.equals(contract, that.contract) &&
-					Objects.equals(decodeslash, that.decodeslash);
+					Objects.equals(contract, that.contract);
 		}
 
 		@Override
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer,
-					errorDecoder, requestInterceptors, decode404, encoder, decoder, contract, decodeslash);
+					errorDecoder, requestInterceptors, decode404, encoder, decoder, contract);
 		}
 	}
 
