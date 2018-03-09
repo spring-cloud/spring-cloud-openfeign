@@ -1,0 +1,1 @@
+NOTE: Spring Cloud is released under the non-restrictive Apache 2.0 license. If you would like to contribute to this section of the documentation or if you find an error, please find the source code and issue trackers in the project at {docslink}[github].

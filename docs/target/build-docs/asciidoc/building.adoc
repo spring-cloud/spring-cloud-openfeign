@@ -1,0 +1,3 @@
+:jdkversion: 1.7
+
+include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/docs/src/main/asciidoc/building-base.adoc[]

@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration,\
+org.springframework.cloud.openfeign.FeignAutoConfiguration,\
+org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingAutoConfiguration,\
+org.springframework.cloud.openfeign.encoding.FeignContentGzipEncodingAutoConfiguration

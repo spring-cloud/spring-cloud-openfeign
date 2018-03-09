@@ -1,0 +1,86 @@
+image:https://circleci.com/gh/spring-cloud/spring-cloud-build.svg?style=svg[link="https://travis-ci.org/spring-cloud/spring-cloud-build"]
+
+Spring Cloud Build is a common utility project for Spring Cloud
+to use for plugin and dependency management.
+
+== Building and Deploying
+
+To install locally:
+
+----
+
+$ mvn install -s .settings.xml
+----
+
+and to deploy snapshots to repo.spring.io:
+
+----
+$ mvn deploy -DaltSnapshotDeploymentRepository=repo.spring.io::default::https://repo.spring.io/libs-snapshot-local
+----
+
+for a RELEASE build use
+
+----
+$ mvn deploy -DaltReleaseDeploymentRepository=repo.spring.io::default::https://repo.spring.io/libs-release-local
+----
+
+and for jcenter use
+
+----
+$ mvn deploy -DaltReleaseDeploymentRepository=bintray::default::https://api.bintray.com/maven/spring/jars/org.springframework.cloud:build
+----
+
+and for Maven Central use
+
+----
+$ mvn deploy -P central -DaltReleaseDeploymentRepository=sonatype-nexus-staging::default::https://oss.sonatype.org/service/local/staging/deploy/maven2
+----
+
+(the "central" profile is available for all projects in Spring Cloud and it sets up the gpg jar signing, and the repository has to be specified separately for this project because it is a parent of the starter parent which users in turn have as their own parent).
+
+== Contributing
+
+include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/docs/src/main/asciidoc/contributing.adoc[]
+
+== Reusing the documentation
+
+Spring Cloud Build publishes its `spring-cloud-build-docs` module that contains
+helpful scripts (e.g. README generation ruby script) and css, xslt and images
+for the Spring Cloud documentation. If you want to follow the same convention
+approach of generating documentation just add these plugins to your `docs` module
+
+[source,xml]
+----
+<profiles>
+		<profile>
+			<id>docs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId> <1>
+					</plugin>
+					<plugin>
+						<groupId>org.asciidoctor</groupId>
+						<artifactId>asciidoctor-maven-plugin</artifactId> <2>
+					</plugin>
+					<plugin>
+						<groupId>com.agilejava.docbkx</groupId>
+						<artifactId>docbkx-maven-plugin</artifactId> <3>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId> <4>
+						<inherited>false</inherited>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+----
+<1> This plugin downloads and unpacks the resources of the `spring-cloud-build-docs` module
+<2> This plugin is required to parse the Asciidoctor documentation
+<3> This plugin converts the Asciidoctor documentation into single and multi page docs
+<4> This plugin is required to copy resources into proper final destinations and to generate main README.adoc
+
+IMPORTANT: The order of plugin declaration is important!
