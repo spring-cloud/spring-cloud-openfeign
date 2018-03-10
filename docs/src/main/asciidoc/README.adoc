@@ -1,5 +1,9 @@
 image:https://circleci.com/gh/spring-cloud/spring-cloud-openfeign.svg?style=svg["CircleCI", link="https://circleci.com/gh/spring-cloud/spring-cloud-openfeign"]
 
+image:https://codecov.io/gh/spring-cloud/spring-cloud-openfeign/branch/master/graph/badge.svg["Codecov", link="https://codecov.io/gh/spring-cloud/spring-cloud-openfeign"]
+
+image:https://api.codacy.com/project/badge/Grade/97b04c4e609c4b4f86b415e4437a6484["Codacy code quality", link="https://www.codacy.com/app/Spring-Cloud/spring-cloud-openfeign?utm_source=github.com&utm_medium=referral&utm_content=spring-cloud/spring-cloud-openfeign&utm_campaign=Badge_Grade"]
+
 include::intro.adoc[]
 
 == Features
