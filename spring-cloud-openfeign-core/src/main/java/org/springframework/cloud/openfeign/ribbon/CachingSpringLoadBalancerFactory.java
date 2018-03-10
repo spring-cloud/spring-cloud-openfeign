@@ -18,10 +18,8 @@ package org.springframework.cloud.openfeign.ribbon;
 
 import java.util.Map;
 
-import org.springframework.cloud.client.loadbalancer.LoadBalancedBackOffPolicyFactory;
-import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryListenerFactory;
-import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryPolicyFactory;
-import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryPolicyFactory;
+import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
+import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.util.ConcurrentReferenceHashMap;
@@ -40,61 +38,17 @@ import com.netflix.loadbalancer.ILoadBalancer;
 public class CachingSpringLoadBalancerFactory {
 
 	private final SpringClientFactory factory;
-	private final LoadBalancedRetryPolicyFactory loadBalancedRetryPolicyFactory;
-	private final LoadBalancedBackOffPolicyFactory loadBalancedBackOffPolicyFactory;
-	private final LoadBalancedRetryListenerFactory loadBalancedRetryListenerFactory;
-	private boolean enableRetry = false;
+	private LoadBalancedRetryFactory loadBalancedRetryFactory = null;
 
 	private volatile Map<String, FeignLoadBalancer> cache = new ConcurrentReferenceHashMap<>();
 
 	public CachingSpringLoadBalancerFactory(SpringClientFactory factory) {
 		this.factory = factory;
-		this.loadBalancedRetryPolicyFactory = new RibbonLoadBalancedRetryPolicyFactory(factory);
-		this.loadBalancedBackOffPolicyFactory = null;
-		this.loadBalancedRetryListenerFactory = null;
 	}
 
-	@Deprecated
-	//TODO remove in 2.0.x
-	public CachingSpringLoadBalancerFactory(SpringClientFactory factory,
-											LoadBalancedRetryPolicyFactory loadBalancedRetryPolicyFactory) {
+	public CachingSpringLoadBalancerFactory(SpringClientFactory factory, LoadBalancedRetryFactory loadBalancedRetryPolicyFactory) {
 		this.factory = factory;
-		this.loadBalancedRetryPolicyFactory = loadBalancedRetryPolicyFactory;
-		this.loadBalancedBackOffPolicyFactory = null;
-		this.loadBalancedRetryListenerFactory = null;
-	}
-
-	@Deprecated
-	//TODO remove in 2.0.0x
-	public CachingSpringLoadBalancerFactory(SpringClientFactory factory,
-											LoadBalancedRetryPolicyFactory loadBalancedRetryPolicyFactory, boolean enableRetry) {
-		this.factory = factory;
-		this.loadBalancedRetryPolicyFactory = loadBalancedRetryPolicyFactory;
-		this.enableRetry = enableRetry;
-		this.loadBalancedBackOffPolicyFactory = null;
-		this.loadBalancedRetryListenerFactory = null;
-	}
-
-	@Deprecated
-	//TODO remove in 2.0.0x
-	public CachingSpringLoadBalancerFactory(SpringClientFactory factory,
-											LoadBalancedRetryPolicyFactory loadBalancedRetryPolicyFactory,
-											LoadBalancedBackOffPolicyFactory loadBalancedBackOffPolicyFactory) {
-		this.factory = factory;
-		this.loadBalancedRetryPolicyFactory = loadBalancedRetryPolicyFactory;
-		this.loadBalancedBackOffPolicyFactory = loadBalancedBackOffPolicyFactory;
-		this.loadBalancedRetryListenerFactory = null;
-		this.enableRetry = true;
-	}
-
-	public CachingSpringLoadBalancerFactory(SpringClientFactory factory, LoadBalancedRetryPolicyFactory loadBalancedRetryPolicyFactory,
-											LoadBalancedBackOffPolicyFactory loadBalancedBackOffPolicyFactory,
-											LoadBalancedRetryListenerFactory loadBalancedRetryListenerFactory) {
-		this.factory = factory;
-		this.loadBalancedRetryPolicyFactory = loadBalancedRetryPolicyFactory;
-		this.loadBalancedBackOffPolicyFactory = loadBalancedBackOffPolicyFactory;
-		this.loadBalancedRetryListenerFactory = loadBalancedRetryListenerFactory;
-		this.enableRetry = true;
+		this.loadBalancedRetryFactory = loadBalancedRetryPolicyFactory;
 	}
 
 	public FeignLoadBalancer create(String clientName) {
@@ -104,8 +58,8 @@ public class CachingSpringLoadBalancerFactory {
 		IClientConfig config = this.factory.getClientConfig(clientName);
 		ILoadBalancer lb = this.factory.getLoadBalancer(clientName);
 		ServerIntrospector serverIntrospector = this.factory.getInstance(clientName, ServerIntrospector.class);
-		FeignLoadBalancer client = enableRetry ? new RetryableFeignLoadBalancer(lb, config, serverIntrospector,
-			loadBalancedRetryPolicyFactory, loadBalancedBackOffPolicyFactory, loadBalancedRetryListenerFactory) : new FeignLoadBalancer(lb, config, serverIntrospector);
+		FeignLoadBalancer client = loadBalancedRetryFactory != null ? new RetryableFeignLoadBalancer(lb, config, serverIntrospector,
+			loadBalancedRetryFactory) : new FeignLoadBalancer(lb, config, serverIntrospector);
 		this.cache.put(clientName, client);
 		return client;
 	}

@@ -32,7 +32,6 @@ import org.hamcrest.CustomMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.cloud.netflix.ribbon.DefaultServerIntrospector;
-import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryPolicyFactory;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 
@@ -48,7 +47,6 @@ public class FeignRibbonClientTests {
 
 	private AbstractLoadBalancer loadBalancer = mock(AbstractLoadBalancer.class);
 	private Client delegate = mock(Client.class);
-	private RibbonLoadBalancedRetryPolicyFactory retryPolicyFactory = mock(RibbonLoadBalancedRetryPolicyFactory.class);
 
 	private SpringClientFactory factory = new SpringClientFactory() {
 		@Override
@@ -77,8 +75,7 @@ public class FeignRibbonClientTests {
 
 	// Even though we don't maintain FeignRibbonClient, keep these tests
 	// around to make sure the expected behaviour doesn't break
-	private Client client = new LoadBalancerFeignClient(this.delegate, new CachingSpringLoadBalancerFactory(this.factory,
-			retryPolicyFactory), this.factory);
+	private Client client = new LoadBalancerFeignClient(this.delegate, new CachingSpringLoadBalancerFactory(this.factory), this.factory);
 
 	@Before
 	public void init() {
