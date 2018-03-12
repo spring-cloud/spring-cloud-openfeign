@@ -1,5 +1,0 @@
-org.springframework.cloud.openfeign
-org.springframework.cloud.openfeign.annotation
-org.springframework.cloud.openfeign.encoding
-org.springframework.cloud.openfeign.ribbon
-org.springframework.cloud.openfeign.support
