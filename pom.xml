@@ -22,6 +22,7 @@
 	<properties>
 		<main.basedir>${basedir}</main.basedir>
 		<jackson.version>2.7.3</jackson.version>
+		<wiremock.version>2.15.0</wiremock.version>
 		<spring-cloud-commons.version>2.0.0.BUILD-SNAPSHOT</spring-cloud-commons.version>
 		<spring-cloud-netflix.version>2.0.0.BUILD-SNAPSHOT</spring-cloud-netflix.version>
 
@@ -99,12 +100,19 @@
 				<artifactId>jackson-dataformat-smile</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.github.tomakehurst</groupId>
+				<artifactId>wiremock</artifactId>
+				<version>${wiremock.version}</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<modules>
 		<module>spring-cloud-openfeign-dependencies</module>
 		<module>spring-cloud-openfeign-core</module>
 		<module>spring-cloud-starter-openfeign</module>
+		<module>spring-cloud-reactivefeign-core</module>
 		<module>docs</module>
     </modules>
 	<profiles>
