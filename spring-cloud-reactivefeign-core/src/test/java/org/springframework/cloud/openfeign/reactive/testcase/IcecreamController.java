@@ -16,17 +16,25 @@
 
 package org.springframework.cloud.openfeign.reactive.testcase;
 
+import static reactor.core.publisher.Mono.empty;
+import static reactor.core.publisher.Mono.just;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.cloud.openfeign.reactive.testcase.domain.Bill;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.Flavor;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import org.springframework.cloud.openfeign.reactive.testcase.domain.*;
-import org.springframework.web.bind.annotation.*;
-
-import static reactor.core.publisher.Mono.empty;
-import static reactor.core.publisher.Mono.just;
 
 /**
  * Controller of an iceream web service.

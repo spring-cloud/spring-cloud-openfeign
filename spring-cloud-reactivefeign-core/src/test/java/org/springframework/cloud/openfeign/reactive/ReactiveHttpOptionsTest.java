@@ -21,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -64,7 +63,9 @@ public class ReactiveHttpOptionsTest {
 	@Test
 	public void testCompression() {
 
-		ReactiveOptions options = new ReactiveOptions(5000, 5000, true);
+		ReactiveOptions options = new ReactiveOptions.Builder()
+				.setConnectTimeoutMillis(5000).setReadTimeoutMillis(5000)
+				.setTryUseCompression(true).build();
 
 		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
 				.webClient(webClient).options(options)

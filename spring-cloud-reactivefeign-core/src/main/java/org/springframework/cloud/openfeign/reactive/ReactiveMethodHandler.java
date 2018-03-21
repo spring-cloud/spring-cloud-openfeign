@@ -16,8 +16,9 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import feign.InvocationHandlerFactory;
 import org.reactivestreams.Publisher;
+
+import feign.InvocationHandlerFactory;
 
 /**
  * @author Sergii Karpenko

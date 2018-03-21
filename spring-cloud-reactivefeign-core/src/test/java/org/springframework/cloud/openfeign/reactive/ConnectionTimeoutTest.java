@@ -20,12 +20,13 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import feign.Request;
 import org.hamcrest.Matchers;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -34,46 +35,48 @@ import org.springframework.web.reactive.function.client.WebClient;
  */
 public class ConnectionTimeoutTest {
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
-    private ServerSocket serverSocket;
-    private Socket socket;
-    private int port;
+	private ServerSocket serverSocket;
+	private Socket socket;
+	private int port;
 
-    @Before
-    public void before() throws IOException {
-        //server socket with single element backlog queue (1) and dynamicaly allocated port (0)
-        serverSocket = new ServerSocket(0, 1);
-        //just get the allocated port
-        port = serverSocket.getLocalPort();
-        //fill backlog queue by this request so consequent requests will be blocked
-        socket = new Socket();
-        socket.connect(serverSocket.getLocalSocketAddress());
-    }
+	@Before
+	public void before() throws IOException {
+		// server socket with single element backlog queue (1) and dynamicaly allocated
+		// port (0)
+		serverSocket = new ServerSocket(0, 1);
+		// just get the allocated port
+		port = serverSocket.getLocalPort();
+		// fill backlog queue by this request so consequent requests will be blocked
+		socket = new Socket();
+		socket.connect(serverSocket.getLocalSocketAddress());
+	}
 
-    @After
-    public void after() throws IOException {
-        //some cleanup
-        if (serverSocket != null && !serverSocket.isClosed()) {
-            serverSocket.close();
-        }
-    }
+	@After
+	public void after() throws IOException {
+		// some cleanup
+		if (serverSocket != null && !serverSocket.isClosed()) {
+			serverSocket.close();
+		}
+	}
 
-    //TODO investigate why doesn't work on codecov.io but works locally
-    @Ignore
-    @Test
-    public void shouldFailOnConnectionTimeout() {
+	// TODO investigate why doesn't work on codecov.io but works locally
+	@Ignore
+	@Test
+	public void shouldFailOnConnectionTimeout() {
 
-        expectedException.expectCause(
-                Matchers.any(io.netty.channel.ConnectTimeoutException.class));
+		expectedException.expectCause(
+				Matchers.any(io.netty.channel.ConnectTimeoutException.class));
 
-        IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-                .webClient(WebClient.create()).options(new Request.Options(300, 100))
-                .target(IcecreamServiceApi.class,
-                        "http://localhost:" + port);
+		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
+				.webClient(WebClient.create())
+				.options(new ReactiveOptions.Builder().setConnectTimeoutMillis(300)
+						.setReadTimeoutMillis(100).build())
+				.target(IcecreamServiceApi.class, "http://localhost:" + port);
 
-        client.findOrder(1).block();
-    }
+		client.findOrder(1).block();
+	}
 
 }

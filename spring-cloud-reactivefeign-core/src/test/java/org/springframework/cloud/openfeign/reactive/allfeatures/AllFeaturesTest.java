@@ -16,6 +16,11 @@
 
 package org.springframework.cloud.openfeign.reactive.allfeatures;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static reactor.core.publisher.Flux.empty;
+import static reactor.core.publisher.Mono.fromFuture;
+import static reactor.core.publisher.Mono.just;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -28,8 +33,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import reactor.core.publisher.Flux;
-
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -38,10 +41,7 @@ import org.springframework.cloud.openfeign.reactive.allfeatures.AllFeaturesApi.T
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static reactor.core.publisher.Flux.empty;
-import static reactor.core.publisher.Mono.fromFuture;
-import static reactor.core.publisher.Mono.just;
+import reactor.core.publisher.Flux;
 
 /**
  * @author Sergii Karpenko

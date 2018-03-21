@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
+import static feign.Util.checkNotNull;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -24,8 +26,6 @@ import feign.Contract;
 import feign.MethodMetadata;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import static feign.Util.checkNotNull;
 
 /**
  * Contract allowing only {@link Mono} and {@link Flux} return type.

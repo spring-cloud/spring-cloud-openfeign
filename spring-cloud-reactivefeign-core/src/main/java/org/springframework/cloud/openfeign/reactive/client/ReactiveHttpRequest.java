@@ -16,17 +16,16 @@
 
 package org.springframework.cloud.openfeign.reactive.client;
 
+import static feign.Util.checkNotNull;
+
 import java.net.URI;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.http.HttpMethod;
 import org.springframework.util.MultiValueMap;
 
-import static feign.Util.checkNotNull;
-
 /**
- * An immutable request to an http server.
+ * An immutable reactive request to an http server.
  * @author Sergii Karpenko
  */
 public final class ReactiveHttpRequest {

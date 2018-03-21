@@ -20,8 +20,9 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.function.Function;
 
-import feign.RetryableException;
 import org.reactivestreams.Publisher;
+
+import feign.RetryableException;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -39,7 +40,7 @@ public class ReactiveRetryers {
 					if (index < maxAttempts) {
 						long delay;
 						Date retryAfter;
-						//"Retry-After" header set
+						// "Retry-After" header set
 						if (error instanceof RetryableException
 								&& (retryAfter = ((RetryableException) error)
 										.retryAfter()) != null) {

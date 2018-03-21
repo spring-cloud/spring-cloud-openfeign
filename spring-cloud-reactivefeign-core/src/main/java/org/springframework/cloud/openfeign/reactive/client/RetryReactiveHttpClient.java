@@ -16,17 +16,18 @@
 
 package org.springframework.cloud.openfeign.reactive.client;
 
+import static org.springframework.cloud.openfeign.reactive.ReactiveUtils.onNext;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.function.Function;
 
-import feign.MethodMetadata;
 import org.reactivestreams.Publisher;
 import org.slf4j.LoggerFactory;
+
+import feign.MethodMetadata;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import static org.springframework.cloud.openfeign.reactive.ReactiveUtils.onNext;
 
 /**
  * Wraps {@link ReactiveHttpClient} with retry logic provided by retryFunction

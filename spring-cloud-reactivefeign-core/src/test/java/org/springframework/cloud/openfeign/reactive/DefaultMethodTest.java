@@ -16,26 +16,27 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
-import feign.Request;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi.RUNTIME_EXCEPTION;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 import org.springframework.cloud.openfeign.reactive.allfeatures.AllFeaturesApi;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi.RUNTIME_EXCEPTION;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 
 /**
  * @author Sergii Karpenko
@@ -86,8 +87,7 @@ public class DefaultMethodTest {
 						"http://localhost:" + wireMockRule.port());
 
 		IceCreamOrder errorOrder = client.throwExceptionMono().onErrorReturn(
-				throwable -> throwable.equals(RUNTIME_EXCEPTION),
-				orderGenerated).block();
+				throwable -> throwable.equals(RUNTIME_EXCEPTION), orderGenerated).block();
 
 		assertThat(errorOrder).isEqualToComparingFieldByField(orderGenerated);
 	}
@@ -100,9 +100,10 @@ public class DefaultMethodTest {
 				.webClient(WebClient.create()).target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
-		IceCreamOrder errorOrder = client.throwExceptionFlux().onErrorReturn(
-				throwable -> throwable.equals(RUNTIME_EXCEPTION),
-				orderGenerated).blockFirst();
+		IceCreamOrder errorOrder = client.throwExceptionFlux()
+				.onErrorReturn(throwable -> throwable.equals(RUNTIME_EXCEPTION),
+						orderGenerated)
+				.blockFirst();
 
 		assertThat(errorOrder).isEqualToComparingFieldByField(orderGenerated);
 	}
@@ -111,7 +112,9 @@ public class DefaultMethodTest {
 	public void shouldOverrideEquals() {
 
 		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create()).options(new Request.Options(300, 100))
+				.webClient(WebClient.create())
+				.options(new ReactiveOptions.Builder().setConnectTimeoutMillis(300)
+						.setReadTimeoutMillis(100).build())
 				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
@@ -137,8 +140,7 @@ public class DefaultMethodTest {
 	public void shouldOverrideHashcode() {
 
 		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create()).options(new Request.Options(300, 100))
-				.target(IcecreamServiceApi.class,
+				.webClient(WebClient.create()).target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
 		IcecreamServiceApi otherClientWithSameTarget = ReactiveFeign
@@ -153,8 +155,7 @@ public class DefaultMethodTest {
 	public void shouldOverrideToString() {
 
 		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create()).options(new Request.Options(300, 100))
-				.target(IcecreamServiceApi.class,
+				.webClient(WebClient.create()).target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
 		assertThat(client.toString())

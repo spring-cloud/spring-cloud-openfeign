@@ -16,36 +16,38 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
-import feign.FeignException;
-import org.apache.http.HttpStatus;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+import static org.apache.http.HttpHeaders.RETRY_AFTER;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Arrays;
-import java.util.List;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
-import static org.apache.http.HttpHeaders.RETRY_AFTER;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
+import feign.FeignException;
 
 /**
  * @author Sergii Karpenko
@@ -94,7 +96,8 @@ public class RetryingTest {
 
 		mockResponseAfterSeveralAttempts(wireMockRule, 2, "testRetrying_success",
 				"/icecream/mixins",
-				aResponse().withStatus(SC_SERVICE_UNAVAILABLE).withHeader(RETRY_AFTER, "1"),
+				aResponse().withStatus(SC_SERVICE_UNAVAILABLE).withHeader(RETRY_AFTER,
+						"1"),
 				aResponse().withStatus(SC_OK)
 						.withHeader("Content-Type", "application/json")
 						.withBody(mixinsStr));
@@ -118,9 +121,9 @@ public class RetryingTest {
 		String orderStr = TestUtils.MAPPER.writeValueAsString(orderGenerated);
 
 		mockResponseAfterSeveralAttempts(wireMockRule, 2, "testRetrying_success",
-				"/icecream/orders/1",
-				aResponse().withStatus(SC_SERVICE_UNAVAILABLE),
-				aResponse().withStatus(SC_OK).withHeader("Content-Type", "application/json")
+				"/icecream/orders/1", aResponse().withStatus(SC_SERVICE_UNAVAILABLE),
+				aResponse().withStatus(SC_OK)
+						.withHeader("Content-Type", "application/json")
 						.withBody(orderStr));
 
 		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
@@ -136,15 +139,14 @@ public class RetryingTest {
 
 	private static void mockResponseAfterSeveralAttempts(WireMockClassRule rule,
 			int failedAttemptsNo, String scenario, String url,
-     		 ResponseDefinitionBuilder failResponse, ResponseDefinitionBuilder response) {
+			ResponseDefinitionBuilder failResponse, ResponseDefinitionBuilder response) {
 		String state = STARTED;
 		for (int attempt = 0; attempt < failedAttemptsNo; attempt++) {
 			String nextState = "attempt" + attempt;
-			rule.stubFor(get(urlEqualTo(url))
-					.withHeader("Accept", equalTo("application/json"))
-					.inScenario(scenario).whenScenarioStateIs(state)
-					.willReturn(failResponse)
-					.willSetStateTo(nextState));
+			rule.stubFor(
+					get(urlEqualTo(url)).withHeader("Accept", equalTo("application/json"))
+							.inScenario(scenario).whenScenarioStateIs(state)
+							.willReturn(failResponse).willSetStateTo(nextState));
 
 			state = nextState;
 		}

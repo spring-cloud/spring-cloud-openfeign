@@ -16,6 +16,11 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
+import static feign.Util.checkNotNull;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
+
 import java.net.URI;
 import java.util.AbstractMap;
 import java.util.List;
@@ -25,11 +30,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import feign.MethodMetadata;
-import feign.Target;
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Mono;
-
 import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
 import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
 import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequest;
@@ -39,8 +40,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import static feign.Util.checkNotNull;
-import static java.util.stream.Collectors.*;
+import feign.MethodMetadata;
+import feign.Target;
+import reactor.core.publisher.Mono;
 
 /**
  * Method handler for asynchronous HTTP requests via {@link WebClient}.

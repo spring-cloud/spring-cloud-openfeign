@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,12 +36,13 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamController;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApiBroken;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.*;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.Bill;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.Flavor;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
 
 /**
  * @author Sergii Karpenko

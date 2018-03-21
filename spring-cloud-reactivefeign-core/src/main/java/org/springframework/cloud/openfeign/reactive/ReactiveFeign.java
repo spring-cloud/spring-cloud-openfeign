@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
+import static feign.Util.checkNotNull;
+import static feign.Util.isDefault;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -26,15 +29,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import feign.*;
-import feign.InvocationHandlerFactory.MethodHandler;
-import feign.codec.ErrorDecoder;
-import io.netty.channel.ChannelOption;
-import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
 import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
 import org.springframework.cloud.openfeign.reactive.client.RetryReactiveHttpClient;
@@ -42,8 +37,19 @@ import org.springframework.cloud.openfeign.reactive.client.WebReactiveHttpClient
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import static feign.Util.checkNotNull;
-import static feign.Util.isDefault;
+import feign.Contract;
+import feign.Feign;
+import feign.FeignException;
+import feign.InvocationHandlerFactory;
+import feign.InvocationHandlerFactory.MethodHandler;
+import feign.MethodMetadata;
+import feign.Request;
+import feign.Target;
+import feign.codec.ErrorDecoder;
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Allows Feign interfaces to accept {@link Publisher} as body and return reactive
@@ -160,21 +166,30 @@ public class ReactiveFeign {
 		 * @param options Feign {@code Request.Options} object
 		 * @return this builder
 		 */
-		public Builder<T> options(final Request.Options options) {
-			boolean tryUseCompression = options instanceof ReactiveOptions
-					&& ((ReactiveOptions) options).isTryUseCompression();
+		public Builder<T> options(final ReactiveOptions options) {
 
-			ReactorClientHttpConnector connector = new ReactorClientHttpConnector(
-					opts -> opts
-							.option(ChannelOption.CONNECT_TIMEOUT_MILLIS,
-									options.connectTimeoutMillis())
-							.compression(tryUseCompression).afterNettyContextInit(ctx -> {
-								ctx.addHandlerLast(new ReadTimeoutHandler(
-										options.readTimeoutMillis(),
-										TimeUnit.MILLISECONDS));
-							}));
+			if (!options.isEmpty()) {
+				ReactorClientHttpConnector connector = new ReactorClientHttpConnector(
+						opts -> {
+							if (options.getConnectTimeoutMillis() != null) {
+								opts.option(ChannelOption.CONNECT_TIMEOUT_MILLIS,
+										options.getConnectTimeoutMillis());
+							}
+							if (options.getReadTimeoutMillis() != null) {
+								opts.afterNettyContextInit(ctx -> {
+									ctx.addHandlerLast(new ReadTimeoutHandler(
+											options.getReadTimeoutMillis(),
+											TimeUnit.MILLISECONDS));
 
-			this.webClient = webClient.mutate().clientConnector(connector).build();
+								});
+							}
+							if (options.isTryUseCompression() != null) {
+								opts.compression(options.isTryUseCompression());
+							}
+						});
+
+				this.webClient = webClient.mutate().clientConnector(connector).build();
+			}
 			return this;
 		}
 
@@ -223,8 +238,8 @@ public class ReactiveFeign {
 				ReactiveHttpClient reactiveClient = new WebReactiveHttpClient(
 						methodMetadata, webClient, errorDecoder, decode404);
 				if (retryFunction != null) {
-					reactiveClient = new RetryReactiveHttpClient(reactiveClient,
-							methodMetadata, retryFunction);
+					reactiveClient = new RetryReactiveHttpClient(
+							reactiveClient,	methodMetadata, retryFunction);
 				}
 				return reactiveClient;
 			};

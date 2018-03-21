@@ -16,16 +16,16 @@
 
 package org.springframework.cloud.openfeign.reactive.testcase;
 
+import org.springframework.cloud.openfeign.reactive.testcase.domain.Bill;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.Flavor;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
+
 import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import org.springframework.cloud.openfeign.reactive.testcase.domain.Bill;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.Flavor;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
 
 /**
  * API of an iceream web service.
@@ -61,6 +61,7 @@ public interface IcecreamServiceApi {
 	default Mono<IceCreamOrder> throwExceptionMono() {
 		throw RUNTIME_EXCEPTION;
 	}
+
 	default Flux<IceCreamOrder> throwExceptionFlux() {
 		throw RUNTIME_EXCEPTION;
 	}

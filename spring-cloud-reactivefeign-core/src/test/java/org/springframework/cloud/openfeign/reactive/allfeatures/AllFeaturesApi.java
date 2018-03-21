@@ -18,8 +18,13 @@ package org.springframework.cloud.openfeign.reactive.allfeatures;
 
 import java.util.Map;
 
-import feign.*;
 import org.reactivestreams.Publisher;
+
+import feign.HeaderMap;
+import feign.Headers;
+import feign.Param;
+import feign.QueryMap;
+import feign.RequestLine;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

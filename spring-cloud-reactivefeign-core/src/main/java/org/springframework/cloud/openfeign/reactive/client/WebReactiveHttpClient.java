@@ -16,28 +16,32 @@
 
 package org.springframework.cloud.openfeign.reactive.client;
 
+import static feign.Util.resolveLastTypeParameter;
+import static java.util.Optional.ofNullable;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.reactivestreams.Publisher;
+import org.springframework.cloud.openfeign.reactive.Logger;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.reactive.ClientHttpRequest;
+import org.springframework.web.reactive.function.BodyInserter;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import feign.MethodMetadata;
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
-
-import org.springframework.cloud.openfeign.reactive.Logger;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import static feign.Util.resolveLastTypeParameter;
-import static java.util.Optional.ofNullable;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 /**
  * Uses {@link WebClient} to execute http requests
@@ -67,7 +71,82 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 				methodMetadata.configKey().indexOf('('));
 
 		Type bodyType = methodMetadata.bodyType();
-		bodyActualType = ofNullable(bodyType).map(type -> {
+		bodyActualType = getBodyActualType(bodyType);
+
+		final Type returnType = methodMetadata.returnType();
+		returnPublisherType = ((ParameterizedType) returnType).getRawType();
+		returnActualType = ParameterizedTypeReference.forType(
+				resolveLastTypeParameter(returnType, (Class<?>) returnPublisherType));
+	}
+
+	@Override
+	public Publisher<Object> executeRequest(ReactiveHttpRequest request) {
+		logger.logRequest(methodTag, request);
+
+		long start = System.currentTimeMillis();
+		WebClient.ResponseSpec response = webClient.method(request.method())
+				.uri(request.uri())
+				.headers(httpHeaders -> setUpHeaders(request, httpHeaders))
+				.body(provideBody(request))
+				.retrieve()
+				.onStatus(httpStatus -> decode404 && httpStatus == NOT_FOUND,
+						  clientResponse -> null)
+				.onStatus(HttpStatus::isError, this::decodeError)
+				.onStatus(httpStatus -> true, logResponseHeaders(start));
+
+		if (returnPublisherType == Mono.class) {
+			return response.bodyToMono(returnActualType).map(responseLogger(start));
+		}
+		else {
+			return response.bodyToFlux(returnActualType).map(responseLogger(start));
+		}
+	}
+
+	protected Function<ClientResponse, Mono<? extends Throwable>> logResponseHeaders(long start) {
+		return clientResponse -> {
+			logger.logResponseHeaders(methodTag,
+					clientResponse.headers().asHttpHeaders(),
+					System.currentTimeMillis() - start);
+			return null;
+		};
+	}
+
+	private <V> Function<V, V> responseLogger(long start) {
+		return result -> {
+            logger.logResponseBodyAndTime(methodTag, result, System.currentTimeMillis() - start);
+            return result;
+        };
+	}
+
+	protected BodyInserter<?, ? super ClientHttpRequest> provideBody(ReactiveHttpRequest request) {
+		return bodyActualType != null
+                ? BodyInserters.fromPublisher(request.body(), bodyActualType)
+                : BodyInserters.empty();
+	}
+
+	protected Mono<Exception> decodeError(ClientResponse clientResponse) {
+		return clientResponse
+        .bodyToMono(ByteArrayResource.class)
+        .map(ByteArrayResource::getByteArray).defaultIfEmpty(new byte[0])
+        .map(bodyData -> errorDecoder.decode(metadata.configKey(),
+				Response.builder()
+						.status(clientResponse.statusCode().value())
+						.reason(clientResponse.statusCode()
+								.getReasonPhrase())
+						.headers(clientResponse.headers().asHttpHeaders()
+								.entrySet().stream()
+								.collect(Collectors.toMap(
+										Map.Entry::getKey,
+										Map.Entry::getValue)))
+						.body(bodyData).build()));
+	}
+
+	protected void setUpHeaders(ReactiveHttpRequest request, HttpHeaders httpHeaders) {
+		request.headers().forEach(httpHeaders::put);
+	}
+
+	private ParameterizedTypeReference<Object> getBodyActualType(Type bodyType) {
+		return ofNullable(bodyType).map(type -> {
 			if (type instanceof ParameterizedType) {
 				Class<?> returnBodyType = (Class<?>) ((ParameterizedType) type)
 						.getRawType();
@@ -83,59 +162,5 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 				return ParameterizedTypeReference.forType(type);
 			}
 		}).orElse(null);
-
-		final Type returnType = methodMetadata.returnType();
-		returnPublisherType = ((ParameterizedType) returnType).getRawType();
-		returnActualType = ParameterizedTypeReference.forType(
-				resolveLastTypeParameter(returnType, (Class<?>) returnPublisherType));
-	}
-
-	@Override
-	public Publisher<Object> executeRequest(ReactiveHttpRequest request) {
-		logger.logRequest(methodTag, request);
-
-		long start = System.currentTimeMillis();
-		WebClient.ResponseSpec response = webClient.method(request.method())
-				.uri(request.uri())
-				.headers(httpHeaders -> request.headers().forEach(
-						(key, value) -> httpHeaders.put(key, (List<String>) value)))
-				.body(bodyActualType != null
-						? BodyInserters.fromPublisher(request.body(), bodyActualType)
-						: BodyInserters.empty())
-				.retrieve()
-				.onStatus(httpStatus -> decode404 && httpStatus == NOT_FOUND,
-						clientResponse -> null)
-				.onStatus(HttpStatus::isError, clientResponse -> clientResponse
-						.bodyToMono(ByteArrayResource.class)
-						.map(ByteArrayResource::getByteArray).defaultIfEmpty(new byte[0])
-						.map(bodyData -> errorDecoder.decode(metadata.configKey(),
-								Response.builder()
-										.status(clientResponse.statusCode().value())
-										.reason(clientResponse.statusCode()
-												.getReasonPhrase())
-										.headers(clientResponse.headers().asHttpHeaders()
-												.entrySet().stream()
-												.collect(Collectors.toMap(
-														Map.Entry::getKey,
-														Map.Entry::getValue)))
-										.body(bodyData).build())))
-				.onStatus(httpStatus -> true, clientResponse -> {
-					logger.logResponseHeaders(methodTag,
-							clientResponse.headers().asHttpHeaders());
-					return null;
-				});
-
-		if (returnPublisherType == Mono.class) {
-			return response.bodyToMono(returnActualType).map(result -> {
-				logger.logResponse(methodTag, result, System.currentTimeMillis() - start);
-				return result;
-			});
-		}
-		else {
-			return response.bodyToFlux(returnActualType).map(result -> {
-				logger.logResponse(methodTag, result, System.currentTimeMillis() - start);
-				return result;
-			});
-		}
 	}
 }

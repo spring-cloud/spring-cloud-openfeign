@@ -16,19 +16,20 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
+import static feign.Util.checkNotNull;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
+import org.reactivestreams.Publisher;
+
 import feign.InvocationHandlerFactory;
 import feign.InvocationHandlerFactory.MethodHandler;
 import feign.Target;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import static feign.Util.checkNotNull;
 
 /**
  * {@link InvocationHandler} implementation that transforms calls to methods of feign
@@ -76,8 +77,7 @@ public final class ReactiveInvocationHandler implements InvocationHandler {
 			return (Publisher) dispatch.get(method).invoke(args);
 		}
 		catch (Throwable throwable) {
-			return method.getReturnType() == Mono.class
-					? Mono.error(throwable)
+			return method.getReturnType() == Mono.class ? Mono.error(throwable)
 					: Flux.error(throwable);
 		}
 	}

@@ -18,17 +18,17 @@ package org.springframework.cloud.openfeign.reactive.testcase;
 
 import java.util.Collection;
 
-import feign.Headers;
-import feign.Param;
-import feign.RequestLine;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import org.springframework.cloud.openfeign.reactive.ReactiveDelegatingContract;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.Bill;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.Flavor;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
+
+import feign.Headers;
+import feign.Param;
+import feign.RequestLine;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * API of an iceream web service with one method that doesn't returns {@link Mono} or
