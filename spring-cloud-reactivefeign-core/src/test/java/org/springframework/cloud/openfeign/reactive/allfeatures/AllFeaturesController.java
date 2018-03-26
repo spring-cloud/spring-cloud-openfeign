@@ -21,12 +21,7 @@ import static reactor.core.publisher.Mono.just;
 import java.util.Map;
 
 import org.reactivestreams.Publisher;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -34,11 +29,13 @@ import reactor.core.publisher.Mono;
 @RestController
 public class AllFeaturesController implements AllFeaturesApi {
 
-	@GetMapping(path = "/mirrorParameters")
+	@GetMapping(path = "/mirrorParameters/{paramInPath}")
 	@Override
 	public Mono<Map<String, String>> mirrorParameters(
+			@PathVariable("paramInPath") long paramInPath,
 			@RequestParam("paramInUrl") long paramInUrl,
 			@RequestParam Map<String, String> paramMap) {
+		paramMap.put("paramInPath", Long.toString(paramInPath));
 		paramMap.put("paramInUrl", Long.toString(paramInUrl));
 		return just(paramMap);
 	}
@@ -47,10 +44,10 @@ public class AllFeaturesController implements AllFeaturesApi {
 	@Override
 	public Mono<Map<String, String>> mirrorParametersNew(
 			@RequestParam("paramInUrl") long paramInUrl,
-			@RequestParam("param") long param,
+			@RequestParam("dynamicParam") long dynamicParam,
 			@RequestParam Map<String, String> paramMap) {
 		paramMap.put("paramInUrl", Long.toString(paramInUrl));
-		paramMap.put("param", Long.toString(param));
+		paramMap.put("dynamicParam", Long.toString(dynamicParam));
 		return just(paramMap);
 	}
 

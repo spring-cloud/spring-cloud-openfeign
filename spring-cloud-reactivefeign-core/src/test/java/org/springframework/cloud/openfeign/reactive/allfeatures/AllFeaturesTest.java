@@ -76,8 +76,9 @@ public class AllFeaturesTest {
 				put("paramKey", "paramValue");
 			}
 		};
-		Map<String, String> returned = client.mirrorParameters(777, paramMap).block();
+		Map<String, String> returned = client.mirrorParameters(555,777, paramMap).block();
 
+		assertThat(returned).containsEntry("paramInPath", "555");
 		assertThat(returned).containsEntry("paramInUrl", "777");
 		assertThat(returned).containsAllEntriesOf(paramMap);
 	}
@@ -93,7 +94,7 @@ public class AllFeaturesTest {
 				.block();
 
 		assertThat(returned).containsEntry("paramInUrl", "777");
-		assertThat(returned).containsEntry("param", "888");
+		assertThat(returned).containsEntry("dynamicParam", "888");
 		assertThat(returned).containsAllEntriesOf(paramMap);
 	}
 

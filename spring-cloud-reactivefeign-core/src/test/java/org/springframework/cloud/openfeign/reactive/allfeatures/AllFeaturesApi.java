@@ -31,14 +31,15 @@ import reactor.core.publisher.Mono;
 @Headers({ "Accept: application/json" })
 public interface AllFeaturesApi {
 
-	@RequestLine("GET /mirrorParameters?paramInUrl={paramInUrlPlaceholder}")
+	@RequestLine("GET /mirrorParameters/{parameterInPathPlaceholder}?paramInUrl={paramInQueryPlaceholder}")
 	Mono<Map<String, String>> mirrorParameters(
-			@Param("paramInUrlPlaceholder") long paramInUrl,
+			@Param("parameterInPathPlaceholder") long paramInPath,
+			@Param("paramInQueryPlaceholder") long paramInQuery,
 			@QueryMap Map<String, String> paramMap);
 
 	@RequestLine("GET /mirrorParametersNew?paramInUrl={paramInUrlPlaceholder}")
 	Mono<Map<String, String>> mirrorParametersNew(
-			@Param("paramInUrlPlaceholder") long paramInUrl, @Param("param") long param,
+			@Param("paramInUrlPlaceholder") long paramInUrl, @Param("dynamicParam") long dynamicParam,
 			@QueryMap Map<String, String> paramMap);
 
 	@RequestLine("GET /mirrorHeaders")
