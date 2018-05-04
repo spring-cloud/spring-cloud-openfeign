@@ -41,7 +41,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import feign.MethodMetadata;
@@ -64,10 +66,12 @@ public class SpringMvcContractTests {
 	}
 
 	private SpringMvcContract contract;
+	private SpringMvcContract contractPV;
 
 	@Before
 	public void setup() {
 		this.contract = new SpringMvcContract();
+		this.contractPV = new SpringMvcContract(false);
 	}
 
 	@Test
@@ -81,6 +85,18 @@ public class SpringMvcContractTests {
 		assertEquals("GET", data.template().method());
 		assertEquals(MediaType.APPLICATION_JSON_VALUE,
 				data.template().headers().get("Accept").iterator().next());
+		assertTrue(data.template().decodeSlash());
+	}
+
+	@Test
+	public void testProcessAnnotationOnMethod_SimplePathVariable() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest",
+				String.class);
+		MethodMetadata data = this.contractPV
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertEquals("/test/{id}", data.template().url());
+		assertFalse(data.template().decodeSlash());
 	}
 
 	@Test
@@ -96,6 +112,7 @@ public class SpringMvcContractTests {
 				data.template().headers().get("Accept").iterator().next());
 
 		assertEquals("id", data.indexToName().get(0).iterator().next());
+		assertEquals(contract.isDecodeSlash(), data.template().decodeSlash());
 	}
 
 	@Test
@@ -111,6 +128,17 @@ public class SpringMvcContractTests {
 				data.template().headers().get("Accept").iterator().next());
 
 		assertEquals("id", data.indexToName().get(0).iterator().next());
+	}
+
+	@Test
+	public void testProcessAnnotations_SimpleGetMappingPathVariable() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getMappingTest",
+				String.class);
+		MethodMetadata data = this.contractPV
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertEquals("/test/{id}", data.template().url());
+		assertFalse(data.template().decodeSlash());
 	}
 
 	@Test
@@ -139,6 +167,18 @@ public class SpringMvcContractTests {
 		assertEquals("GET", data.template().method());
 
 		assertEquals("classId", data.indexToName().get(0).iterator().next());
+		assertTrue(data.template().decodeSlash());
+	}
+
+	@Test
+	public void testProcessAnnotations_Class_AnnotationsGetAllTestsPathVariable() throws Exception {
+		Method method = TestTemplate_Class_Annotations.class
+				.getDeclaredMethod("getAllTests", String.class);
+		MethodMetadata data = this.contractPV
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertEquals("/prepend/{classId}", data.template().url());
+		assertFalse(data.template().decodeSlash());
 	}
 
 	@Test
