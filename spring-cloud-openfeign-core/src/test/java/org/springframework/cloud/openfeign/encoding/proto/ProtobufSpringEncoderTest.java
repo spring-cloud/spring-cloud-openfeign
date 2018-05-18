@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.netflix.feign.encoding.proto;
+package org.springframework.cloud.openfeign.encoding.proto;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import feign.RequestTemplate;
@@ -38,8 +38,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
-import org.springframework.cloud.netflix.feign.support.SpringEncoder;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class ProtobufSpringEncoderTest {
     private HttpClient httpClient;
 
     // a protobuf object with some content
-    private Request request = Request.newBuilder()
+    private org.springframework.cloud.openfeign.encoding.proto.Request request = org.springframework.cloud.openfeign.encoding.proto.Request.newBuilder()
             .setId(1000000)
             .setMsg("Erlang/OTP 最初是爱立信为开发电信设备系统设计的编程语言平台，" +
                     "电信设备(路由器、接入网关、…)典型设计是通过背板连接主控板卡与多块业务板卡的分布式系统。")
@@ -76,7 +76,7 @@ public class ProtobufSpringEncoderTest {
         byte[] bytes = read(entity.getContent(), (int) entity.getContentLength());
 
         Assert.assertArrayEquals(bytes, request.toByteArray());
-        Request copy = Request.parseFrom(bytes);
+        org.springframework.cloud.openfeign.encoding.proto.Request copy = org.springframework.cloud.openfeign.encoding.proto.Request.parseFrom(bytes);
         Assert.assertEquals(request, copy);
     }
 
@@ -93,7 +93,7 @@ public class ProtobufSpringEncoderTest {
         // http request-body is different with original protobuf body
         Assert.assertNotEquals(bytes.length, request.toByteArray().length);
         try {
-            Request copy = Request.parseFrom(bytes);
+            org.springframework.cloud.openfeign.encoding.proto.Request copy = org.springframework.cloud.openfeign.encoding.proto.Request.parseFrom(bytes);
             Assert.fail("Expected an InvalidProtocolBufferException to be thrown");
         } catch (InvalidProtocolBufferException e) {
             // success

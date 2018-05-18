@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.netflix.feign.encoding.proto;
+package org.springframework.cloud.openfeign.encoding.proto;
 
 import feign.RequestTemplate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
-import org.springframework.cloud.ClassPathExclusions;
-import org.springframework.cloud.FilteredClassPathRunner;
-import org.springframework.cloud.netflix.feign.support.SpringEncoder;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.support.SpringEncoder;
+import org.springframework.cloud.test.ClassPathExclusions;
+import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.http.converter.StringHttpMessageConverter;
 
 /**
@@ -32,7 +32,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
  *
  * @author ScienJus
  */
-@RunWith(FilteredClassPathRunner.class)
+@RunWith(ModifiedClassPathRunner.class)
 @ClassPathExclusions("protobuf-*.jar")
 public class ProtobufNotInClasspathTest {
 
