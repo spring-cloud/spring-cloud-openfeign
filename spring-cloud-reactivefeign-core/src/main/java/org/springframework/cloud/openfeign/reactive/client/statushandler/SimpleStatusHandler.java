@@ -8,6 +8,9 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 
 import reactor.core.publisher.Mono;
 
+/**
+ * @author Sergii Karpenko
+ */
 public class SimpleStatusHandler implements ReactiveStatusHandler {
 
 	private final Predicate<HttpStatus> statusPredicate;

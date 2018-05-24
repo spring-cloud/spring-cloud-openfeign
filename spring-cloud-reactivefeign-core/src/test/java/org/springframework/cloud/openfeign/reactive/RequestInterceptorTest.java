@@ -71,7 +71,8 @@ public class RequestInterceptorTest {
 				.isInstanceOf(FeignException.class);
 
 		IcecreamServiceApi clientWithAuth = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create()).requestInterceptor(request -> {
+				.webClient(WebClient.create())
+				.requestInterceptor(request -> {
 					request.headers().add("Authorization", "Bearer mytoken123");
 					return request;
 				}).target(IcecreamServiceApi.class,

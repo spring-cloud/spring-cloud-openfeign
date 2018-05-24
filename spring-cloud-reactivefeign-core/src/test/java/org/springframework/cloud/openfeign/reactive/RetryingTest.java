@@ -82,7 +82,7 @@ public class RetryingTest {
 
 		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
 				.webClient(WebClient.create())
-				.retryWhen(ReactiveRetryers.retryWithDelay(3, 0))
+				.retryWhen(ReactiveRetryers.retryWithBackoff(3, 0))
 				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
@@ -106,7 +106,7 @@ public class RetryingTest {
 
 		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
 				.webClient(WebClient.create())
-				.retryWhen(ReactiveRetryers.retryWithDelay(3, 0))
+				.retryWhen(ReactiveRetryers.retryWithBackoff(3, 0))
 				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
@@ -130,7 +130,7 @@ public class RetryingTest {
 
 		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
 				.webClient(WebClient.create())
-				.retryWhen(ReactiveRetryers.retryWithDelay(3, 0))
+				.retryWhen(ReactiveRetryers.retryWithBackoff(3, 0))
 				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
