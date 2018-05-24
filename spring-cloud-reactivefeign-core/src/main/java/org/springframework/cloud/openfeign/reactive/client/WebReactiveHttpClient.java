@@ -22,16 +22,13 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.openfeign.reactive.Logger;
+import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandler;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ClientHttpRequest;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -39,8 +36,6 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import feign.MethodMetadata;
-import feign.Response;
-import feign.codec.ErrorDecoder;
 import reactor.core.publisher.Mono;
 
 /**
@@ -52,7 +47,8 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 	private final WebClient webClient;
 	private final String methodTag;
 	private final MethodMetadata metadata;
-	private final ErrorDecoder errorDecoder;
+	private final ReactiveHttpRequestInterceptor requestInterceptor;
+	private final ReactiveStatusHandler statusHandler;
 	private final boolean decode404;
 	private final Logger logger;
 	private final ParameterizedTypeReference<Object> bodyActualType;
@@ -60,12 +56,14 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 	private final ParameterizedTypeReference<?> returnActualType;
 
 	public WebReactiveHttpClient(MethodMetadata methodMetadata, WebClient webClient,
-			ErrorDecoder errorDecoder, boolean decode404) {
+			ReactiveHttpRequestInterceptor requestInterceptor,
+			ReactiveStatusHandler statusHandler, boolean decode404) {
 		this.webClient = webClient;
 		this.metadata = methodMetadata;
-		this.errorDecoder = errorDecoder;
+		this.requestInterceptor = requestInterceptor;
+		this.statusHandler = statusHandler;
 		this.decode404 = decode404;
-		this.logger = new org.springframework.cloud.openfeign.reactive.Logger();
+		this.logger = new Logger();
 
 		this.methodTag = methodMetadata.configKey().substring(0,
 				methodMetadata.configKey().indexOf('('));
@@ -81,18 +79,17 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 
 	@Override
 	public Publisher<Object> executeRequest(ReactiveHttpRequest request) {
-		logger.logRequest(methodTag, request);
+		ReactiveHttpRequest requestPreprocessed = requestInterceptor.apply(request);
+
+		logger.logRequest(methodTag, requestPreprocessed);
 
 		long start = System.currentTimeMillis();
-		WebClient.ResponseSpec response = webClient.method(request.method())
-				.uri(request.uri())
-				.headers(httpHeaders -> setUpHeaders(request, httpHeaders))
-				.body(provideBody(request))
-				.retrieve()
-				.onStatus(httpStatus -> decode404 && httpStatus == NOT_FOUND,
-						  clientResponse -> null)
-				.onStatus(HttpStatus::isError, this::decodeError)
-				.onStatus(httpStatus -> true, logResponseHeaders(start));
+		WebClient.ResponseSpec response = webClient.method(requestPreprocessed.method())
+				.uri(requestPreprocessed.uri())
+				.headers(httpHeaders -> setUpHeaders(requestPreprocessed, httpHeaders))
+				.body(provideBody(requestPreprocessed)).retrieve()
+				.onStatus(httpStatus -> true,
+						resp -> handleResponseStatus(metadata.configKey(), resp, start));
 
 		if (returnPublisherType == Mono.class) {
 			return response.bodyToMono(returnActualType).map(responseLogger(start));
@@ -102,10 +99,27 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 		}
 	}
 
-	protected Function<ClientResponse, Mono<? extends Throwable>> logResponseHeaders(long start) {
+	private Mono<? extends Throwable> handleResponseStatus(String methodKey,
+			ClientResponse response, long start) {
+		logResponseHeaders(start);
+
+		if (decode404 && response.statusCode() == NOT_FOUND) {
+			// ignore error
+			return null;
+		}
+
+		if (statusHandler.shouldHandle(response.statusCode())) {
+			return statusHandler.decode(methodKey, response);
+		}
+		else {
+			return null;
+		}
+	}
+
+	protected Function<ClientResponse, Mono<? extends Throwable>> logResponseHeaders(
+			long start) {
 		return clientResponse -> {
-			logger.logResponseHeaders(methodTag,
-					clientResponse.headers().asHttpHeaders(),
+			logger.logResponseHeaders(methodTag, clientResponse.headers().asHttpHeaders(),
 					System.currentTimeMillis() - start);
 			return null;
 		};
@@ -113,32 +127,17 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 
 	private <V> Function<V, V> responseLogger(long start) {
 		return result -> {
-            logger.logResponseBodyAndTime(methodTag, result, System.currentTimeMillis() - start);
-            return result;
-        };
+			logger.logResponseBodyAndTime(methodTag, result,
+					System.currentTimeMillis() - start);
+			return result;
+		};
 	}
 
-	protected BodyInserter<?, ? super ClientHttpRequest> provideBody(ReactiveHttpRequest request) {
+	protected BodyInserter<?, ? super ClientHttpRequest> provideBody(
+			ReactiveHttpRequest request) {
 		return bodyActualType != null
-                ? BodyInserters.fromPublisher(request.body(), bodyActualType)
-                : BodyInserters.empty();
-	}
-
-	protected Mono<Exception> decodeError(ClientResponse clientResponse) {
-		return clientResponse
-        .bodyToMono(ByteArrayResource.class)
-        .map(ByteArrayResource::getByteArray).defaultIfEmpty(new byte[0])
-        .map(bodyData -> errorDecoder.decode(metadata.configKey(),
-				Response.builder()
-						.status(clientResponse.statusCode().value())
-						.reason(clientResponse.statusCode()
-								.getReasonPhrase())
-						.headers(clientResponse.headers().asHttpHeaders()
-								.entrySet().stream()
-								.collect(Collectors.toMap(
-										Map.Entry::getKey,
-										Map.Entry::getValue)))
-						.body(bodyData).build()));
+				? BodyInserters.fromPublisher(request.body(), bodyActualType)
+				: BodyInserters.empty();
 	}
 
 	protected void setUpHeaders(ReactiveHttpRequest request, HttpHeaders httpHeaders) {
@@ -163,4 +162,5 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 			}
 		}).orElse(null);
 	}
+
 }

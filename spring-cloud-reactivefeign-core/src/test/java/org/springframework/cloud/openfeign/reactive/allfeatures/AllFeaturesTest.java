@@ -37,7 +37,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.openfeign.reactive.ReactiveFeign;
-import org.springframework.cloud.openfeign.reactive.allfeatures.AllFeaturesApi.TestObject;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -76,7 +75,8 @@ public class AllFeaturesTest {
 				put("paramKey", "paramValue");
 			}
 		};
-		Map<String, String> returned = client.mirrorParameters(555,777, paramMap).block();
+		Map<String, String> returned = client.mirrorParameters(555, 777, paramMap)
+				.block();
 
 		assertThat(returned).containsEntry("paramInPath", "555");
 		assertThat(returned).containsEntry("paramInUrl", "777");
@@ -161,11 +161,11 @@ public class AllFeaturesTest {
 		AtomicInteger sentCount = new AtomicInteger();
 		AtomicInteger receivedCount = new AtomicInteger();
 
-		CompletableFuture<TestObject> firstReceived = new CompletableFuture<>();
+		CompletableFuture<AllFeaturesApi.TestObject> firstReceived = new CompletableFuture<>();
 
-		Flux<TestObject> returned = client
-				.mirrorBodyStream(Flux.just(new TestObject("testMessage1"),
-						new TestObject("testMessage2")))
+		Flux<AllFeaturesApi.TestObject> returned = client
+				.mirrorBodyStream(Flux.just(new AllFeaturesApi.TestObject("testMessage1"),
+						new AllFeaturesApi.TestObject("testMessage2")))
 				.delayUntil(testObject -> sentCount.get() == 1 ? fromFuture(firstReceived)
 						: empty())
 				.doOnNext(sent -> sentCount.incrementAndGet());
@@ -182,7 +182,7 @@ public class AllFeaturesTest {
 
 	@Test
 	public void shouldReturnEmpty() {
-		Optional<TestObject> returned = client.empty().blockOptional();
+		Optional<AllFeaturesApi.TestObject> returned = client.empty().blockOptional();
 		assertThat(!returned.isPresent());
 	}
 

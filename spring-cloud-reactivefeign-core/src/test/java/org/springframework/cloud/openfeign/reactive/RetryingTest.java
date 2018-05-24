@@ -25,18 +25,20 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.apache.http.HttpHeaders.RETRY_AFTER;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.isA;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.cloud.openfeign.reactive.client.RetryReactiveHttpClient;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
@@ -47,7 +49,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 
-import feign.FeignException;
+import feign.RetryableException;
 
 /**
  * @author Sergii Karpenko
@@ -110,7 +112,7 @@ public class RetryingTest {
 
 		List<Mixin> mixins = client.getAvailableMixins().collectList().block();
 
-		Assertions.assertThat(mixins).hasSize(Mixin.values().length)
+		assertThat(mixins).hasSize(Mixin.values().length)
 				.containsAll(Arrays.asList(Mixin.values()));
 	}
 
@@ -159,8 +161,10 @@ public class RetryingTest {
 	@Test
 	public void shouldFailAsNoMoreRetries() {
 
-		expectedException.expect(FeignException.class);
-		expectedException.expectMessage(containsString("status 503"));
+		expectedException.expect(RuntimeException.class);
+		expectedException.expectCause(
+				allOf(isA(RetryReactiveHttpClient.OutOfRetriesException.class),
+						hasProperty("cause", isA(RetryableException.class))));
 
 		String orderUrl = "/icecream/orders/1";
 
@@ -169,8 +173,7 @@ public class RetryingTest {
 				.willReturn(aResponse().withStatus(503).withHeader(RETRY_AFTER, "1")));
 
 		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create())
-				.retryWhen(ReactiveRetryers.retryWithDelay(3, 0))
+				.webClient(WebClient.create()).retryWhen(ReactiveRetryers.retry(3))
 				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 

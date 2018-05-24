@@ -42,7 +42,6 @@ import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrde
 import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * @author Sergii Karpenko
@@ -54,7 +53,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 @EnableAutoConfiguration
 public class ReactiveHttpClientTest {
 
-	private WebClient webClient = WebClient.create();
 	private IcecreamServiceApi client;
 
 	@Autowired
@@ -71,7 +69,7 @@ public class ReactiveHttpClientTest {
 	@Before
 	public void setUp() {
 		targetUrl = "http://localhost:" + port;
-		client = ReactiveFeign.<IcecreamServiceApi>builder().webClient(webClient)
+		client = ReactiveFeign.<IcecreamServiceApi>builder()
 				.target(IcecreamServiceApi.class, targetUrl);
 	}
 
@@ -117,24 +115,13 @@ public class ReactiveHttpClientTest {
 	}
 
 	@Test
-	public void testInstantiationContract_forgotProvideWebClient() {
-
-		expectedException.expect(NullPointerException.class);
-		expectedException.expectMessage(
-				"WebClient instance wasn't provided in ReactiveFeign builder");
-
-		ReactiveFeign.<IcecreamServiceApi>builder().target(IcecreamServiceApi.class,
-				targetUrl);
-	}
-
-	@Test
 	public void testInstantiationBrokenContract_throwsException() {
 
 		expectedException.expect(IllegalArgumentException.class);
 		expectedException
 				.expectMessage(containsString("IcecreamServiceApiBroken#findOrder(int)"));
 
-		ReactiveFeign.<IcecreamServiceApiBroken>builder().webClient(webClient)
+		ReactiveFeign.<IcecreamServiceApiBroken>builder()
 				.target(IcecreamServiceApiBroken.class, targetUrl);
 	}
 }

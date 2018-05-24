@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign.reactive;
 
 import static feign.Util.checkNotNull;
 import static feign.Util.isDefault;
+import static java.util.Arrays.asList;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -27,14 +28,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
 import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequestInterceptor;
 import org.springframework.cloud.openfeign.reactive.client.RetryReactiveHttpClient;
 import org.springframework.cloud.openfeign.reactive.client.WebReactiveHttpClient;
+import org.springframework.cloud.openfeign.reactive.client.statushandler.CompositeStatusHandler;
+import org.springframework.cloud.openfeign.reactive.client.statushandler.DefaultFeignErrorDecoder;
+import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandler;
+import org.springframework.cloud.openfeign.reactive.client.statushandler.SimpleStatusHandler;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import feign.Contract;
@@ -106,12 +116,15 @@ public class ReactiveFeign {
 	 * ReactiveFeign builder.
 	 */
 	public static class Builder<T> {
-		private Contract contract = new ReactiveDelegatingContract(
+		protected Contract contract = new ReactiveDelegatingContract(
 				new Contract.Default());
-		private WebClient webClient;
-		private ErrorDecoder errorDecoder = new ErrorDecoder.Default();
-		private InvocationHandlerFactory invocationHandlerFactory = new ReactiveInvocationHandler.Factory();
-		private boolean decode404 = false;
+		protected WebClient webClient = WebClient.create();
+		protected ReactiveHttpRequestInterceptor requestInterceptor = request -> request;
+		protected ReactiveStatusHandler statusHandler = new DefaultFeignErrorDecoder(
+				new ErrorDecoder.Default());
+		protected InvocationHandlerFactory invocationHandlerFactory = new ReactiveInvocationHandler.Factory();
+		protected boolean decode404 = false;
+		protected Target<T> target;
 
 		private Function<Flux<Throwable>, Publisher<Throwable>> retryFunction;
 
@@ -132,6 +145,12 @@ public class ReactiveFeign {
 			return this;
 		}
 
+		public Builder<T> requestInterceptor(
+				ReactiveHttpRequestInterceptor requestInterceptor) {
+			this.requestInterceptor = requestInterceptor;
+			return this;
+		}
+
 		/**
 		 * This flag indicates that the reactive feign client should process responses
 		 * with 404 status, specifically returning empty {@link Mono} or {@link Flux}
@@ -149,14 +168,16 @@ public class ReactiveFeign {
 			return this;
 		}
 
-		/**
-		 * Sets error decoder.
-		 *
-		 * @param errorDecoder error deoceder
-		 * @return this builder
-		 */
-		public Builder<T> errorDecoder(final ErrorDecoder errorDecoder) {
-			this.errorDecoder = errorDecoder;
+		public Builder<T> statusHandler(ReactiveStatusHandler statusHandler) {
+			this.statusHandler = statusHandler;
+			return this;
+		}
+
+		public Builder<T> throwOnStatusCode(Predicate<HttpStatus> statusPredicate,
+				BiFunction<String, ClientResponse, Throwable> errorFunction) {
+			this.statusHandler = new CompositeStatusHandler(
+					asList(new SimpleStatusHandler(statusPredicate, errorFunction),
+							statusHandler));
 			return this;
 		}
 
@@ -199,6 +220,10 @@ public class ReactiveFeign {
 			return this;
 		}
 
+		public Builder<T> retryWhen(ReactiveRetryPolicy retryPolicy) {
+			return retryWhen(retryPolicy.toRetryFunction());
+		}
+
 		/**
 		 * Defines target and builds client.
 		 *
@@ -217,10 +242,11 @@ public class ReactiveFeign {
 		 * @return built client
 		 */
 		public T target(final Target<T> target) {
+			this.target = target;
 			return build().newInstance(target);
 		}
 
-		public ReactiveFeign build() {
+		protected ReactiveFeign build() {
 			checkNotNull(this.webClient,
 					"WebClient instance wasn't provided in ReactiveFeign builder");
 
@@ -236,15 +262,15 @@ public class ReactiveFeign {
 		protected ReactiveClientFactory buildReactiveClientFactory() {
 			return methodMetadata -> {
 				ReactiveHttpClient reactiveClient = new WebReactiveHttpClient(
-						methodMetadata, webClient, errorDecoder, decode404);
+						methodMetadata, webClient, requestInterceptor, statusHandler,
+						decode404);
 				if (retryFunction != null) {
-					reactiveClient = new RetryReactiveHttpClient(
-							reactiveClient,	methodMetadata, retryFunction);
+					reactiveClient = new RetryReactiveHttpClient(reactiveClient,
+							methodMetadata, retryFunction);
 				}
 				return reactiveClient;
 			};
 		}
-
 	}
 
 	static final class ParseHandlersByName {

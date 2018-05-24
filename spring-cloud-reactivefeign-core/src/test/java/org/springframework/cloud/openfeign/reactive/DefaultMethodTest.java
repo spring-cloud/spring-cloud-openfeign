@@ -21,8 +21,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi.RUNTIME_EXCEPTION;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -87,7 +86,8 @@ public class DefaultMethodTest {
 						"http://localhost:" + wireMockRule.port());
 
 		IceCreamOrder errorOrder = client.throwExceptionMono().onErrorReturn(
-				throwable -> throwable.equals(RUNTIME_EXCEPTION), orderGenerated).block();
+				throwable -> throwable.equals(IcecreamServiceApi.RUNTIME_EXCEPTION),
+				orderGenerated).block();
 
 		assertThat(errorOrder).isEqualToComparingFieldByField(orderGenerated);
 	}
@@ -100,10 +100,9 @@ public class DefaultMethodTest {
 				.webClient(WebClient.create()).target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
-		IceCreamOrder errorOrder = client.throwExceptionFlux()
-				.onErrorReturn(throwable -> throwable.equals(RUNTIME_EXCEPTION),
-						orderGenerated)
-				.blockFirst();
+		IceCreamOrder errorOrder = client.throwExceptionFlux().onErrorReturn(
+				throwable -> throwable.equals(IcecreamServiceApi.RUNTIME_EXCEPTION),
+				orderGenerated).blockFirst();
 
 		assertThat(errorOrder).isEqualToComparingFieldByField(orderGenerated);
 	}

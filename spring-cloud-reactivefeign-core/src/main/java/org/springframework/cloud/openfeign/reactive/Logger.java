@@ -17,7 +17,6 @@
 package org.springframework.cloud.openfeign.reactive;
 
 import static org.springframework.cloud.openfeign.reactive.Logger.MessageSupplier.msg;
-import static org.springframework.cloud.openfeign.reactive.ReactiveUtils.onNext;
 
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -49,12 +48,13 @@ public class Logger {
 									entry.getValue()))
 							.collect(Collectors.joining("\n"))));
 
-			request.body().subscribe(onNext(
+			request.body().subscribe(ReactiveUtils.onNext(
 					body -> logger.trace("[{}] REQUEST BODY\n{}", feignMethodTag, body)));
 		}
 	}
 
-	public void logResponseHeaders(String feignMethodTag, HttpHeaders httpHeaders, long elapsedTime) {
+	public void logResponseHeaders(String feignMethodTag, HttpHeaders httpHeaders,
+			long elapsedTime) {
 		if (logger.isTraceEnabled()) {
 			logger.trace("[{}] RESPONSE HEADERS\n{}", feignMethodTag,
 					msg(() -> httpHeaders.entrySet().stream()
@@ -63,11 +63,13 @@ public class Logger {
 							.collect(Collectors.joining("\n"))));
 		}
 		if (logger.isDebugEnabled()) {
-			logger.debug("[{}]<--- headers takes {} milliseconds", feignMethodTag, elapsedTime);
+			logger.debug("[{}]<--- headers takes {} milliseconds", feignMethodTag,
+					elapsedTime);
 		}
 	}
 
-	public void logResponseBodyAndTime(String feignMethodTag, Object response, long elapsedTime) {
+	public void logResponseBodyAndTime(String feignMethodTag, Object response,
+			long elapsedTime) {
 		if (logger.isTraceEnabled()) {
 			logger.debug("[{}]<---{}", feignMethodTag, response);
 		}

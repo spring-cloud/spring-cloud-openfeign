@@ -16,48 +16,41 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import java.time.Duration;
 import java.util.Date;
-import java.util.function.Function;
-
-import org.reactivestreams.Publisher;
 
 import feign.RetryableException;
-import reactor.core.Exceptions;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
 
 /**
  * @author Sergii Karpenko
  */
 public class ReactiveRetryers {
 
-	public static Function<Flux<Throwable>, Publisher<Throwable>> retryWithDelay(
-			int maxAttempts, long period) {
-		return companion -> companion
-				.zipWith(Flux.range(1, maxAttempts), (error, index) -> {
-					if (index < maxAttempts) {
-						long delay;
-						Date retryAfter;
-						// "Retry-After" header set
-						if (error instanceof RetryableException
-								&& (retryAfter = ((RetryableException) error)
-										.retryAfter()) != null) {
-							delay = retryAfter.getTime() - System.currentTimeMillis();
-							delay = Math.min(delay, period);
-							delay = Math.max(delay, 0);
-						}
-						else {
-							delay = period;
-						}
+	public static ReactiveRetryPolicy retry(int maxRetries) {
+		return (error, attemptNo) -> attemptNo <= maxRetries ? 0 : -1;
+	}
 
-						return Tuples.of(delay, error);
-					}
-					else
-						throw Exceptions.propagate(error);
-				}).flatMap(tuple2 -> Mono.delay(Duration.ofMillis(tuple2.getT1()))
-						.map(time -> tuple2.getT2()));
+	public static ReactiveRetryPolicy retryWithDelay(int maxRetries, long period) {
+		return (error, attemptNo) -> {
+			if (attemptNo <= maxRetries) {
+				long delay;
+				Date retryAfter;
+				// "Retry-After" header set
+				if (error instanceof RetryableException
+						&& (retryAfter = ((RetryableException) error)
+								.retryAfter()) != null) {
+					delay = retryAfter.getTime() - System.currentTimeMillis();
+					delay = Math.min(delay, period);
+					delay = Math.max(delay, 0);
+				}
+				else {
+					delay = period;
+				}
+				return delay;
+			}
+			else {
+				return -1;
+			}
+		};
 	}
 
 }

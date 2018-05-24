@@ -39,7 +39,8 @@ public interface AllFeaturesApi {
 
 	@RequestLine("GET /mirrorParametersNew?paramInUrl={paramInUrlPlaceholder}")
 	Mono<Map<String, String>> mirrorParametersNew(
-			@Param("paramInUrlPlaceholder") long paramInUrl, @Param("dynamicParam") long dynamicParam,
+			@Param("paramInUrlPlaceholder") long paramInUrl,
+			@Param("dynamicParam") long dynamicParam,
 			@QueryMap Map<String, String> paramMap);
 
 	@RequestLine("GET /mirrorHeaders")
