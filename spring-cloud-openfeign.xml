@@ -104,7 +104,7 @@ public interface StoreClient {
 </listitem>
 </itemizedlist>
 <simpara>The OkHttpClient and ApacheHttpClient feign clients can be used by setting <literal>feign.okhttp.enabled</literal> or <literal>feign.httpclient.enabled</literal> to <literal>true</literal>, respectively, and having them on the classpath.
-You can customize the HTTP client used by providing a bean of either <literal>ClosableHttpClient</literal> when using Apache or <literal>OkHttpClient</literal> whe using OK HTTP.</simpara>
+You can customize the HTTP client used by providing a bean of either <literal>ClosableHttpClient</literal> when using Apache or <literal>OkHttpClient</literal> when using OK HTTP.</simpara>
 <simpara>Spring Cloud Netflix <emphasis>does not</emphasis> provide the following beans by default for feign, but still looks up beans of these types from the application context to create the feign client:</simpara>
 <itemizedlist>
 <listitem>
