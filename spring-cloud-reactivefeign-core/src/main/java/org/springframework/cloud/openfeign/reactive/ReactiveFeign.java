@@ -175,10 +175,9 @@ public class ReactiveFeign {
 
 		public Builder<T> throwOnStatusCode(Predicate<HttpStatus> statusPredicate,
 				BiFunction<String, ClientResponse, Throwable> errorFunction) {
-			this.statusHandler = new CompositeStatusHandler(
+			return statusHandler(new CompositeStatusHandler(
 					asList(new SimpleStatusHandler(statusPredicate, errorFunction),
-							statusHandler));
-			return this;
+							statusHandler)));
 		}
 
 		/**

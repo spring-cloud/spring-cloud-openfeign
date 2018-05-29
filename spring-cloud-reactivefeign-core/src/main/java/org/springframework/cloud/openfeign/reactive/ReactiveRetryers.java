@@ -29,7 +29,7 @@ public class ReactiveRetryers {
 		return (error, attemptNo) -> attemptNo <= maxRetries ? 0 : -1;
 	}
 
-	public static ReactiveRetryPolicy retryWithDelay(int maxRetries, long period) {
+	public static ReactiveRetryPolicy retryWithBackoff(int maxRetries, long periodInMs) {
 		return (error, attemptNo) -> {
 			if (attemptNo <= maxRetries) {
 				long delay;
@@ -39,11 +39,11 @@ public class ReactiveRetryers {
 						&& (retryAfter = ((RetryableException) error)
 								.retryAfter()) != null) {
 					delay = retryAfter.getTime() - System.currentTimeMillis();
-					delay = Math.min(delay, period);
+					delay = Math.min(delay, periodInMs);
 					delay = Math.max(delay, 0);
 				}
 				else {
-					delay = period;
+					delay = periodInMs;
 				}
 				return delay;
 			}

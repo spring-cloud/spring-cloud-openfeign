@@ -30,6 +30,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * Wraps {@link ReactiveHttpClient} with retry logic provided by retryFunction
+ *
  * @author Sergii Karpenko
  */
 public class RetryReactiveHttpClient implements ReactiveHttpClient {
