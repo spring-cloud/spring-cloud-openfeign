@@ -97,14 +97,14 @@ a separate request interceptor.</p><pre class="programlisting"><em><span class="
 	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">private</span> FooClient adminClient;
 
     	<em><span class="hl-annotation" style="color: gray">@Autowired</span></em>
-	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">public</span> FooController(
-			Decoder decoder, Encoder encoder, Client client, Contract contract) {
+	<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">public</span> FooController(Decoder decoder, Encoder encoder, Client client, Contract contract) {
 		<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">this</span>.fooClient = Feign.builder().client(client)
 				.encoder(encoder)
 				.decoder(decoder)
-                .contract(contract)
+				.contract(contract)
 				.requestInterceptor(<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">new</span> BasicAuthRequestInterceptor(<span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"user"</span>, <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"user"</span>))
 				.target(FooClient.<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">class</span>, <span xmlns:d="http://docbook.org/ns/docbook" class="hl-string">"http://PROD-SVC"</span>);
+
 		<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">this</span>.adminClient = Feign.builder().client(client)
 				.encoder(encoder)
 				.decoder(decoder)
