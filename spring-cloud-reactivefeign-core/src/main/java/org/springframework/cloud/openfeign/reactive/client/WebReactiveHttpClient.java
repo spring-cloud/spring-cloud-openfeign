@@ -101,7 +101,7 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 
 	private Mono<? extends Throwable> handleResponseStatus(String methodKey,
 			ClientResponse response, long start) {
-		logResponseHeaders(start);
+		logResponseHeaders(response, start);
 
 		if (decode404 && response.statusCode() == NOT_FOUND) {
 			// ignore error
@@ -116,13 +116,9 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 		}
 	}
 
-	protected Function<ClientResponse, Mono<? extends Throwable>> logResponseHeaders(
-			long start) {
-		return clientResponse -> {
-			logger.logResponseHeaders(methodTag, clientResponse.headers().asHttpHeaders(),
-					System.currentTimeMillis() - start);
-			return null;
-		};
+	protected void logResponseHeaders(ClientResponse clientResponse, long start) {
+		logger.logResponseHeaders(methodTag, clientResponse.headers().asHttpHeaders(),
+				System.currentTimeMillis() - start);
 	}
 
 	private <V> Function<V, V> responseLogger(long start) {

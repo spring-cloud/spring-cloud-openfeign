@@ -113,15 +113,4 @@ public class ReactiveHttpClientTest {
 
 		client.payBill(bill).block();
 	}
-
-	@Test
-	public void testInstantiationBrokenContract_throwsException() {
-
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException
-				.expectMessage(containsString("IcecreamServiceApiBroken#findOrder(int)"));
-
-		ReactiveFeign.<IcecreamServiceApiBroken>builder()
-				.target(IcecreamServiceApiBroken.class, targetUrl);
-	}
 }

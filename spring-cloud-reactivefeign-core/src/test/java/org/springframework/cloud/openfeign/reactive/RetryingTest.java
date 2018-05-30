@@ -180,4 +180,26 @@ public class RetryingTest {
 		client.findOrder(1).block();
 	}
 
+	@Test
+	public void shouldFailAsNoMoreRetriesWithBackoff() {
+
+		expectedException.expect(RuntimeException.class);
+		expectedException.expectCause(
+				allOf(isA(RetryReactiveHttpClient.OutOfRetriesException.class),
+						hasProperty("cause", isA(RetryableException.class))));
+
+		String orderUrl = "/icecream/orders/1";
+
+		wireMockRule.stubFor(get(urlEqualTo(orderUrl))
+				.withHeader("Accept", equalTo("application/json"))
+				.willReturn(aResponse().withStatus(503).withHeader(RETRY_AFTER, "1")));
+
+		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
+				.webClient(WebClient.create()).retryWhen(ReactiveRetryers.retryWithBackoff(3, 5))
+				.target(IcecreamServiceApi.class,
+						"http://localhost:" + wireMockRule.port());
+
+		client.findOrder(1).block();
+	}
+
 }

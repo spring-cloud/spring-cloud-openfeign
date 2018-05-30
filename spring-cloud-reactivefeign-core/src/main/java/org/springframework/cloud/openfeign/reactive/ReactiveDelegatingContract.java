@@ -42,10 +42,9 @@ public class ReactiveDelegatingContract implements Contract {
 
 	@Override
 	public List<MethodMetadata> parseAndValidatateMetadata(final Class<?> targetType) {
-		final List<MethodMetadata> metadatas = this.delegate
-				.parseAndValidatateMetadata(targetType);
+		final List<MethodMetadata> methodsMetadata = this.delegate.parseAndValidatateMetadata(targetType);
 
-		for (final MethodMetadata metadata : metadatas) {
+		for (final MethodMetadata metadata : methodsMetadata) {
 			final Type type = metadata.returnType();
 			if (!isMonoOrFlux(type)) {
 				throw new IllegalArgumentException(String.format(
@@ -54,7 +53,7 @@ public class ReactiveDelegatingContract implements Contract {
 			}
 		}
 
-		return metadatas;
+		return methodsMetadata;
 	}
 
 	private boolean isMonoOrFlux(final Type type) {

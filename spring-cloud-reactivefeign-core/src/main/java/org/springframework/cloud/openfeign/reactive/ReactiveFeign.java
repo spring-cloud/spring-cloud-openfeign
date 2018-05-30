@@ -116,8 +116,7 @@ public class ReactiveFeign {
 	 * ReactiveFeign builder.
 	 */
 	public static class Builder<T> {
-		protected Contract contract = new ReactiveDelegatingContract(
-				new Contract.Default());
+		protected Contract contract = new ReactiveDelegatingContract(new Contract.Default());
 		protected WebClient webClient = WebClient.create();
 		protected ReactiveHttpRequestInterceptor requestInterceptor = request -> request;
 		protected ReactiveStatusHandler statusHandler = new DefaultFeignErrorDecoder(
