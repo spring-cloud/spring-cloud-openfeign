@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.springframework.cloud.netflix.feign.ribbon;
+package org.springframework.cloud.openfeign.ribbon;
 
 import okhttp3.OkHttpClient;
 
