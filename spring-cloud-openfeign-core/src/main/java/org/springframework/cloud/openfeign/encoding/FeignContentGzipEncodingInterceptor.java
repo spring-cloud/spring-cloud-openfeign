@@ -79,9 +79,8 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 			final long length = Long.parseLong(strLen);
 			return length > getProperties().getMinRequestSize();
 		} catch (NumberFormatException ex) {
-			// ignores the exception
+			return false;
 		}
-		return false;
 	}
 
 	/**
