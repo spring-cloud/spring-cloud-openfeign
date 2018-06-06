@@ -22,7 +22,8 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.openfeign.reactive.Logger;
@@ -36,6 +37,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import feign.MethodMetadata;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -55,7 +57,7 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 	private final Type returnPublisherType;
 	private final ParameterizedTypeReference<?> returnActualType;
 
-	public WebReactiveHttpClient(MethodMetadata methodMetadata, WebClient webClient,
+    public WebReactiveHttpClient(MethodMetadata methodMetadata, WebClient webClient,
 			ReactiveHttpRequestInterceptor requestInterceptor,
 			ReactiveStatusHandler statusHandler, boolean decode404) {
 		this.webClient = webClient;
@@ -83,7 +85,7 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 
 		logger.logRequest(methodTag, requestPreprocessed);
 
-		long start = System.currentTimeMillis();
+		AtomicLong start = new AtomicLong(-1);
 		WebClient.ResponseSpec response = webClient.method(requestPreprocessed.method())
 				.uri(requestPreprocessed.uri())
 				.headers(httpHeaders -> setUpHeaders(requestPreprocessed, httpHeaders))
@@ -92,15 +94,33 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 						resp -> handleResponseStatus(metadata.configKey(), resp, start));
 
 		if (returnPublisherType == Mono.class) {
-			return response.bodyToMono(returnActualType).map(responseLogger(start));
-		}
-		else {
-			return response.bodyToFlux(returnActualType).map(responseLogger(start));
+			return logResponse(response.bodyToMono(returnActualType), start);
+		} else {
+			return logResponse(response.bodyToFlux(returnActualType), start);
 		}
 	}
 
-	private Mono<? extends Throwable> handleResponseStatus(String methodKey,
-			ClientResponse response, long start) {
+	private Publisher<Object> logResponse(Flux<?> flux, AtomicLong start){
+		return recordStartTime(flux.doOnNext(responseLogger(start)), start);
+	}
+
+	private Publisher<Object> logResponse(Mono<?> mono, AtomicLong start){
+		return recordStartTime(mono.doOnNext(responseLogger(start)), start);
+	}
+
+	private Publisher<Object> recordStartTime(Flux<?> flux, AtomicLong start){
+		return Flux.defer(() -> Flux.just(System.currentTimeMillis()))
+				.doOnNext(start::set)
+				.flatMap(time -> flux);
+	}
+
+	private Publisher<Object> recordStartTime(Mono<?> flux, AtomicLong start){
+		return Mono.defer(() -> Mono.just(System.currentTimeMillis()))
+				.doOnNext(start::set)
+				.flatMap(time -> flux);
+	}
+
+	private Mono<? extends Throwable> handleResponseStatus(String methodKey, ClientResponse response, AtomicLong start) {
 		logResponseHeaders(response, start);
 
 		if (decode404 && response.statusCode() == NOT_FOUND) {
@@ -116,16 +136,15 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 		}
 	}
 
-	protected void logResponseHeaders(ClientResponse clientResponse, long start) {
+	protected void logResponseHeaders(ClientResponse clientResponse, AtomicLong start) {
 		logger.logResponseHeaders(methodTag, clientResponse.headers().asHttpHeaders(),
-				System.currentTimeMillis() - start);
+				System.currentTimeMillis() - start.get());
 	}
 
-	private <V> Function<V, V> responseLogger(long start) {
+	private <V> Consumer<V> responseLogger(AtomicLong start) {
 		return result -> {
 			logger.logResponseBodyAndTime(methodTag, result,
-					System.currentTimeMillis() - start);
-			return result;
+					System.currentTimeMillis() - start.get());
 		};
 	}
 
