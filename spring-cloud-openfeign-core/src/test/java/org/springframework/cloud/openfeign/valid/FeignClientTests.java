@@ -16,20 +16,14 @@
 
 package org.springframework.cloud.openfeign.valid;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
+import com.netflix.hystrix.HystrixCommand;
+import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixCommandKey;
+import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.ServerList;
+import feign.*;
+import feign.hystrix.FallbackFactory;
+import feign.hystrix.SetterFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,14 +33,14 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.cloud.netflix.ribbon.RibbonClients;
+import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignFormatterRegistrar;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.cloud.openfeign.support.FallbackCommand;
-import org.springframework.cloud.netflix.ribbon.RibbonClient;
-import org.springframework.cloud.netflix.ribbon.RibbonClients;
-import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.Formatter;
@@ -56,18 +50,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import rx.Observable;
+import rx.Single;
 
-import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixCommandGroupKey;
-import com.netflix.hystrix.HystrixCommandKey;
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerList;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.text.ParseException;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -77,17 +70,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
-import feign.Client;
-import feign.Feign;
-import feign.Logger;
-import feign.RequestInterceptor;
-import feign.RequestTemplate;
-import feign.Target;
-import feign.hystrix.FallbackFactory;
-import feign.hystrix.SetterFactory;
-import rx.Observable;
-import rx.Single;
 
 /**
  * @author Spencer Gibb
@@ -146,15 +128,15 @@ public class FeignClientTests {
 	}
 
 	protected static class OtherArg {
-		public final String value;
+		public final String arg;
 
 		public OtherArg(String value) {
-			this.value = value;
+			this.arg = value;
 		}
 
 		@Override
 		public String toString() {
-			return value;
+			return arg;
 		}
 	}
 
@@ -381,10 +363,10 @@ public class FeignClientTests {
 
 						@Override
 						public String print(OtherArg object, Locale locale) {
-							if("foo".equals(object.value)) {
+							if("foo".equals(object.arg)) {
 								return "bar";
 							}
-							return object.value;
+							return object.arg;
 						}
 
 						@Override
@@ -476,14 +458,14 @@ public class FeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostring2")
 		String getToString(@RequestParam("arg") OtherArg arg) {
-			return arg.value;
+			return arg.arg;
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostringcollection")
 		Collection<String> getToString(@RequestParam("arg") Collection<OtherArg> args) {
 			List<String> result = new ArrayList<>();
 			for(OtherArg arg : args) {
-				result.add(arg.value);
+				result.add(arg.arg);
 			}
 			return result;
 		}
@@ -634,9 +616,9 @@ public class FeignClientTests {
 
 	@Test
 	public void testMoreComplexHeader() {
-		String response = testClient.moreComplexContentType("{\"value\":\"OK\"}");
+		String response = testClient.moreComplexContentType("{\"arg\":\"OK\"}");
 		assertNotNull("response was null", response);
-		assertEquals("didn't respond with {\"value\":\"OK\"}", "{\"value\":\"OK\"}",
+		assertEquals("didn't respond with {\"arg\":\"OK\"}", "{\"arg\":\"OK\"}",
 				response);
 	}
 
