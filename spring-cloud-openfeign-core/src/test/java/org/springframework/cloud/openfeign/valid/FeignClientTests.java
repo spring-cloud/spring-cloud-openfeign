@@ -16,14 +16,23 @@
 
 package org.springframework.cloud.openfeign.valid;
 
-import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixCommandGroupKey;
-import com.netflix.hystrix.HystrixCommandKey;
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerList;
-import feign.*;
-import feign.hystrix.FallbackFactory;
-import feign.hystrix.SetterFactory;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.text.ParseException;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,37 +60,31 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.*;
+
+import com.netflix.hystrix.HystrixCommand;
+import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixCommandKey;
+import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.ServerList;
+
+import feign.*;
+import feign.hystrix.FallbackFactory;
+import feign.hystrix.SetterFactory;
 import rx.Observable;
 import rx.Single;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.text.ParseException;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Spencer Gibb
  * @author Jakub Narloch
  * @author Erik Kringen
+ * @author Mike Safonov
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
 		"spring.application.name=feignclienttest",
 		"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
 		"feign.httpclient.enabled=false", "feign.okhttp.enabled=false",
-		"feign.hystrix.enabled=true"})
+		"feign.hystrix.enabled=true" })
 @DirtiesContext
 public class FeignClientTests {
 
@@ -257,7 +260,8 @@ public class FeignClientTests {
 		Hello fail();
 	}
 
-	static class HystrixClientFallbackFactory implements FallbackFactory<HystrixClientWithFallBackFactory> {
+	static class HystrixClientFallbackFactory
+			implements FallbackFactory<HystrixClientWithFallBackFactory> {
 
 		@Override
 		public HystrixClientWithFallBackFactory create(final Throwable cause) {
@@ -265,7 +269,8 @@ public class FeignClientTests {
 				@Override
 				public Hello fail() {
 					assertNotNull("Cause was null", cause);
-					return new Hello("Hello from the fallback side: " + cause.getMessage());
+					return new Hello(
+							"Hello from the fallback side: " + cause.getMessage());
 				}
 			};
 		}
@@ -306,20 +311,20 @@ public class FeignClientTests {
 
 	public static class TestHystrixSetterFactoryClientConfig {
 		public static final String SETTER_PREFIX = "SETTER-";
+
 		@Bean
 		public SetterFactory commandKeyIsRequestLineSetterFactory() {
 			return new SetterFactory() {
-				@Override public HystrixCommand.Setter create(Target<?> target,
-					Method method) {
+				@Override
+				public HystrixCommand.Setter create(Target<?> target, Method method) {
 					String groupKey = SETTER_PREFIX + target.name();
 					RequestMapping requestMapping = method
-						.getAnnotation(RequestMapping.class);
-					String commandKey =
-						SETTER_PREFIX + requestMapping.method()[0] + " " + requestMapping
-							.path()[0];
+							.getAnnotation(RequestMapping.class);
+					String commandKey = SETTER_PREFIX + requestMapping.method()[0] + " "
+							+ requestMapping.path()[0];
 					return HystrixCommand.Setter
-						.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
-						.andCommandKey(HystrixCommandKey.Factory.asKey(commandKey));
+							.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
+							.andCommandKey(HystrixCommandKey.Factory.asKey(commandKey));
 				}
 			};
 		}
@@ -329,17 +334,16 @@ public class FeignClientTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = { TestClientServiceId.class, TestClient.class,
-		DecodingTestClient.class, HystrixClient.class, HystrixClientWithFallBackFactory.class,
-		HystrixSetterFactoryClient.class},
-		defaultConfiguration = TestDefaultFeignConfig.class)
+			DecodingTestClient.class, HystrixClient.class,
+			HystrixClientWithFallBackFactory.class,
+			HystrixSetterFactoryClient.class }, defaultConfiguration = TestDefaultFeignConfig.class)
 	@RibbonClients({
-		@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp1", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp2", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp3", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp4", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp5", configuration = LocalRibbonClientConfiguration.class)
-	})
+			@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp1", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp2", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp3", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp4", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp5", configuration = LocalRibbonClientConfiguration.class) })
 	protected static class Application {
 
 		// needs to be in parent context to test multiple HystrixClient beans
@@ -363,7 +367,7 @@ public class FeignClientTests {
 
 						@Override
 						public String print(OtherArg object, Locale locale) {
-							if("foo".equals(object.arg)) {
+							if ("foo".equals(object.arg)) {
 								return "bar";
 							}
 							return object.arg;
@@ -444,9 +448,11 @@ public class FeignClientTests {
 		}
 
 		@RequestMapping(method = RequestMethod.POST, consumes = "application/vnd.io.spring.cloud.test.v1+json", produces = "application/vnd.io.spring.cloud.test.v1+json", path = "/complex")
-		String complex(@RequestBody String body, @RequestHeader("Content-Length") int contentLength) {
+		String complex(@RequestBody String body,
+				@RequestHeader("Content-Length") int contentLength) {
 			if (contentLength <= 0) {
-				throw new IllegalArgumentException("Invalid Content-Length "+ contentLength);
+				throw new IllegalArgumentException(
+						"Invalid Content-Length " + contentLength);
 			}
 			return body;
 		}
@@ -464,7 +470,7 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.GET, path = "/tostringcollection")
 		Collection<String> getToString(@RequestParam("arg") Collection<OtherArg> args) {
 			List<String> result = new ArrayList<>();
-			for(OtherArg arg : args) {
+			for (OtherArg arg : args) {
 				result.add(arg.arg);
 			}
 			return result;
@@ -511,10 +517,7 @@ public class FeignClientTests {
 	@Test
 	public void testOptional() {
 		Optional<Hello> hello = this.testClient.getOptionalHello();
-		assertThat(hello)
-				.isNotNull()
-				.isPresent()
-				.contains(new Hello(HELLO_WORLD_1));
+		assertThat(hello).isNotNull().isPresent().contains(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
@@ -570,12 +573,12 @@ public class FeignClientTests {
 		HystrixCommand<List<Hello>> command = this.testClient.getHellosHystrix();
 		assertNotNull("command was null", command);
 		assertEquals(
-			"Hystrix command group name should match the name of the feign client",
-			"localapp", command.getCommandGroup().name());
+				"Hystrix command group name should match the name of the feign client",
+				"localapp", command.getCommandGroup().name());
 		String configKey = Feign.configKey(TestClient.class,
-			TestClient.class.getMethod("getHellosHystrix", (Class<?>[]) null));
+				TestClient.class.getMethod("getHellosHystrix", (Class<?>[]) null));
 		assertEquals("Hystrix command key name should match the feign config key",
-			configKey, command.getCommandKey().name());
+				configKey, command.getCommandKey().name());
 		List<Hello> hellos = command.execute();
 		assertNotNull("hellos was null", hellos);
 		assertEquals("hellos didn't match", hellos, getHelloList());
@@ -642,7 +645,6 @@ public class FeignClientTests {
 		assertEquals(Arg.A.toString(), testClient.getToString(Arg.A));
 		assertEquals(Arg.B.toString(), testClient.getToString(Arg.B));
 
-		assertEquals("bar", testClient.getToString(new OtherArg("foo")));
 		List<OtherArg> args = new ArrayList<>();
 		args.add(new OtherArg("foo"));
 		args.add(new OtherArg("goo"));
@@ -700,8 +702,9 @@ public class FeignClientTests {
 		Hello hello = hystrixClientWithFallBackFactory.fail();
 		assertNotNull("hello was null", hello);
 		assertNotNull("hello#message was null", hello.getMessage());
-		assertTrue("hello#message did not contain the cause (status code) of the fallback invocation",
-			hello.getMessage().contains("500"));
+		assertTrue(
+				"hello#message did not contain the cause (status code) of the fallback invocation",
+				hello.getMessage().contains("500"));
 	}
 
 	@Test
@@ -712,17 +715,17 @@ public class FeignClientTests {
 	@Test
 	public void testHystrixSetterFactory() {
 		HystrixCommand<List<Hello>> command = this.hystrixSetterFactoryClient
-			.getHellosHystrix();
+				.getHellosHystrix();
 		assertNotNull("command was null", command);
 		String setterPrefix = TestHystrixSetterFactoryClientConfig.SETTER_PREFIX;
 		assertEquals(
-			"Hystrix command group name should match the name of the feign client with a prefix of "
-				+ setterPrefix, setterPrefix + "localapp5",
-			command.getCommandGroup().name());
+				"Hystrix command group name should match the name of the feign client with a prefix of "
+						+ setterPrefix,
+				setterPrefix + "localapp5", command.getCommandGroup().name());
 		assertEquals(
-			"Hystrix command key name should match the request method (space) request path with a prefix of "
-				+ setterPrefix, setterPrefix + "GET /hellos",
-			command.getCommandKey().name());
+				"Hystrix command key name should match the request method (space) request path with a prefix of "
+						+ setterPrefix,
+				setterPrefix + "GET /hellos", command.getCommandKey().name());
 		List<Hello> hellos = command.execute();
 		assertNotNull("hellos was null", hellos);
 		assertEquals("hellos didn't match", hellos, getHelloList());
@@ -748,8 +751,10 @@ public class FeignClientTests {
 
 		@Override
 		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
 			Hello that = (Hello) o;
 			return Objects.equals(message, that.message);
 		}

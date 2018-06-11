@@ -16,8 +16,16 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import feign.MethodMetadata;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.MediaType;
@@ -26,18 +34,13 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
+import feign.MethodMetadata;
 
 /**
  * @author chadjaros
+ * @author Mike Safonov
  */
 public class SpringMvcContractTests {
 	private static final Class<?> EXECUTABLE_TYPE;
@@ -290,13 +293,8 @@ public class SpringMvcContractTests {
 			MethodMetadata data = this.contract
 					.parseAndValidateMetadata(method.getDeclaringClass(), method);
 		} catch (IllegalStateException e) {
-			assertEquals("RequestParam.arg() was empty on parameter 0", e.getMessage());
+			assertEquals("RequestParam.value() was empty on parameter 0", e.getMessage());
 		}
-
-//		assertEquals("/test", data.template().url());
-//		assertEquals("GET", data.template().method());
-//		assertEquals("[{id}]", data.template().queries().get("id").toString());
-//		assertNotNull(data.indexToExpander().get(0));
 	}
 
 	@Test
@@ -601,4 +599,10 @@ public class SpringMvcContractTests {
 					.append("}").toString();
 		}
 	}
+
+	public class TestDto {
+		private String message;
+		private int number;
+	}
+
 }
