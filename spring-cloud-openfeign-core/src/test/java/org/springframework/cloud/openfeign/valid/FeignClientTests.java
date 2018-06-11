@@ -131,15 +131,15 @@ public class FeignClientTests {
 	}
 
 	protected static class OtherArg {
-		public final String arg;
+		public final String value;
 
 		public OtherArg(String value) {
-			this.arg = value;
+			this.value = value;
 		}
 
 		@Override
 		public String toString() {
-			return arg;
+			return value;
 		}
 	}
 
@@ -367,10 +367,10 @@ public class FeignClientTests {
 
 						@Override
 						public String print(OtherArg object, Locale locale) {
-							if ("foo".equals(object.arg)) {
+							if ("foo".equals(object.value)) {
 								return "bar";
 							}
-							return object.arg;
+							return object.value;
 						}
 
 						@Override
@@ -464,14 +464,14 @@ public class FeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostring2")
 		String getToString(@RequestParam("arg") OtherArg arg) {
-			return arg.arg;
+			return arg.value;
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostringcollection")
 		Collection<String> getToString(@RequestParam("arg") Collection<OtherArg> args) {
 			List<String> result = new ArrayList<>();
 			for (OtherArg arg : args) {
-				result.add(arg.arg);
+				result.add(arg.value);
 			}
 			return result;
 		}
@@ -619,9 +619,9 @@ public class FeignClientTests {
 
 	@Test
 	public void testMoreComplexHeader() {
-		String response = testClient.moreComplexContentType("{\"arg\":\"OK\"}");
+		String response = testClient.moreComplexContentType("{\"value\":\"OK\"}");
 		assertNotNull("response was null", response);
-		assertEquals("didn't respond with {\"arg\":\"OK\"}", "{\"arg\":\"OK\"}",
+		assertEquals("didn't respond with {\"value\":\"OK\"}", "{\"value\":\"OK\"}",
 				response);
 	}
 
@@ -702,8 +702,7 @@ public class FeignClientTests {
 		Hello hello = hystrixClientWithFallBackFactory.fail();
 		assertNotNull("hello was null", hello);
 		assertNotNull("hello#message was null", hello.getMessage());
-		assertTrue(
-				"hello#message did not contain the cause (status code) of the fallback invocation",
+		assertTrue("hello#message did not contain the cause (status code) of the fallback invocation",
 				hello.getMessage().contains("500"));
 	}
 
