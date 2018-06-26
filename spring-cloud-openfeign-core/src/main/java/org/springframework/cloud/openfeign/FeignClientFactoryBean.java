@@ -251,7 +251,7 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
 			if (client instanceof LoadBalancerFeignClient) {
-				// not lod balancing because we have a url,
+				// not load balancing because we have a url,
 				// but ribbon is on the classpath, so unwrap
 				client = ((LoadBalancerFeignClient)client).getDelegate();
 			}
