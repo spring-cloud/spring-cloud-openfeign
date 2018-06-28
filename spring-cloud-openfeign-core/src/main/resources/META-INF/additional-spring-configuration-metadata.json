@@ -1,0 +1,11 @@
+{"groups": [
+], "properties": [
+	{
+	    "name": "feign.hystrix.enabled",
+	    "type": "java.lang.Boolean",
+	    "description": "If true, an OpenFeign client will be wrapped with a Hystrix circuit breaker.",
+	    "sourceType": "org.springframework.cloud.openfeign.FeignClientsConfiguration",
+	    "defaultValue": "false"
+	}
+], "hints": [
+]}
