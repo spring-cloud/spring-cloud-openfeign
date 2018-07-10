@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
+import com.netflix.loadbalancer.reactive.LoadBalancerCommand;
 import feign.Client;
 import feign.Request;
 import feign.Response;
@@ -111,6 +112,14 @@ public class FeignLoadBalancer extends
 	public URI reconstructURIWithServer(Server server, URI original) {
 		URI uri = updateToSecureConnectionIfNeeded(original, this.clientConfig, this.serverIntrospector, server);
 		return super.reconstructURIWithServer(server, uri);
+	}
+
+	@Override
+	protected void customizeLoadBalancerCommandBuilder(
+			RibbonRequest request, IClientConfig config, LoadBalancerCommand.Builder<RibbonResponse> builder) {
+		if (request.getLoadBalancerKey() != null) {
+			builder.withServerLocator(request.getLoadBalancerKey());
+		}
 	}
 
 	protected static class RibbonRequest extends ClientRequest implements Cloneable {
