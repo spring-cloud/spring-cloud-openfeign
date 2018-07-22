@@ -18,12 +18,24 @@ package org.springframework.cloud.openfeign.support;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import feign.Param;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.springframework.core.convert.ConversionService;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.NumberFormat;
+import org.springframework.format.number.NumberStyleFormatter;
+import org.springframework.format.support.FormattingConversionServiceFactoryBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -63,11 +75,20 @@ public class SpringMvcContractTests {
 		EXECUTABLE_TYPE = executableType;
 	}
 
+	private static final FormattingConversionServiceFactoryBean CONVERSION_SERVICE_FACTORY
+			= new FormattingConversionServiceFactoryBean();
+
+	static {
+		CONVERSION_SERVICE_FACTORY.afterPropertiesSet();
+	}
+
 	private SpringMvcContract contract;
 
 	@Before
 	public void setup() {
-		this.contract = new SpringMvcContract();
+		ConversionService conversionService = CONVERSION_SERVICE_FACTORY.getObject();
+
+		this.contract = new SpringMvcContract(Collections.emptyList(), conversionService);
 	}
 
 	@Test
@@ -253,6 +274,47 @@ public class SpringMvcContractTests {
 				data.template().headers().get("Authorization").iterator().next());
 		assertEquals("{amount}",
 				data.template().queries().get("amount").iterator().next());
+	}
+
+	@Test
+	public void testProcessAnnotations_DateTimeFormatParam() throws Exception {
+		Method method = TestTemplate_DateTimeFormatParameter.class.getDeclaredMethod(
+				"getTest", LocalDateTime.class);
+		MethodMetadata data = this.contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		Param.Expander expander = data.indexToExpander().get(0);
+		assertNotNull(expander);
+
+		LocalDateTime input = LocalDateTime.of(2001, 10, 12, 23, 56, 3);
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+				TestTemplate_DateTimeFormatParameter.CUSTOM_PATTERN);
+
+		String expected = formatter.format(input);
+
+		assertEquals(expected, expander.expand(input));
+	}
+
+	@Test
+	public void testProcessAnnotations_NumberFormatParam() throws Exception {
+		Method method = TestTemplate_NumberFormatParameter.class.getDeclaredMethod(
+				"getTest", BigDecimal.class);
+		MethodMetadata data = this.contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		Param.Expander expander = data.indexToExpander().get(0);
+		assertNotNull(expander);
+
+		NumberStyleFormatter formatter = new NumberStyleFormatter(
+				TestTemplate_NumberFormatParameter.CUSTOM_PATTERN);
+
+		BigDecimal input = BigDecimal.valueOf(1220.345);
+
+		String expected = formatter.print(input, Locale.getDefault());
+		String actual = expander.expand(input);
+
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -537,6 +599,24 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();
+	}
+
+	public interface TestTemplate_DateTimeFormatParameter {
+
+		String CUSTOM_PATTERN = "dd-MM-yyyy HH:mm";
+
+		@RequestMapping(method = RequestMethod.GET)
+		String getTest(@RequestParam(name = "localDateTime")
+				@DateTimeFormat(pattern = CUSTOM_PATTERN) LocalDateTime localDateTime);
+	}
+
+	public interface TestTemplate_NumberFormatParameter {
+
+		String CUSTOM_PATTERN = "$###,###.###";
+
+		@RequestMapping(method = RequestMethod.GET)
+		String getTest(@RequestParam("amount")
+				@NumberFormat(pattern = CUSTOM_PATTERN) BigDecimal amount);
 	}
 
 	@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
