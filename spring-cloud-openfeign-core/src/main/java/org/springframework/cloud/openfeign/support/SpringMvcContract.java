@@ -380,7 +380,7 @@ public class SpringMvcContract extends Contract.BaseContract
 		}
 	}
 
-//	// TODO Can this go?
+	// TODO Can this go? Doesn't seem to be referenced anymore (but is public).
 	public static class ConvertingExpander implements Param.Expander {
 
 		private final ConversionService conversionService;
