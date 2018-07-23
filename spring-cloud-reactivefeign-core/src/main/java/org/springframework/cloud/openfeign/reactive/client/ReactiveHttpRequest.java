@@ -17,9 +17,10 @@
 package org.springframework.cloud.openfeign.reactive.client;
 
 import org.reactivestreams.Publisher;
-import org.springframework.util.MultiValueMap;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 import static feign.Util.checkNotNull;
 
@@ -31,7 +32,7 @@ public final class ReactiveHttpRequest {
 
 	private final String method;
 	private final URI uri;
-	private final MultiValueMap<String, String> headers;
+	private final Map<String, List<String>> headers;
 	private final Publisher<Object> body;
 
 	/**
@@ -39,7 +40,7 @@ public final class ReactiveHttpRequest {
 	 * immutable, via safe copies, not mutating or otherwise.
 	 */
 	public ReactiveHttpRequest(String method, URI uri,
-			MultiValueMap<String, String> headers, Publisher<Object> body) {
+							   Map<String, List<String>> headers, Publisher<Object> body) {
 		this.method = checkNotNull(method, "method of %s", uri);
 		this.uri = checkNotNull(uri, "url");
 		this.headers = checkNotNull(headers, "headers of %s %s", method, uri);
@@ -57,7 +58,7 @@ public final class ReactiveHttpRequest {
 	}
 
 	/* Ordered list of headers that will be sent to the server. */
-	public MultiValueMap<String, String> headers() {
+	public Map<String, List<String>> headers() {
 		return headers;
 	}
 

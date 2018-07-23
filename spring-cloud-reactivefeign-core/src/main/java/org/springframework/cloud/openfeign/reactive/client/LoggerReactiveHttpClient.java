@@ -22,14 +22,12 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.openfeign.reactive.utils.FeignUtils.methodTag;
-import static org.springframework.cloud.openfeign.reactive.utils.FeignUtils.returnPublisherType;
 import static org.springframework.cloud.openfeign.reactive.utils.ReactiveUtils.onNext;
 import static reactor.core.publisher.Mono.just;
 
@@ -44,7 +42,6 @@ public class LoggerReactiveHttpClient<T> implements ReactiveHttpClient<T> {
 
 	private final ReactiveHttpClient<T> reactiveClient;
 	private final String methodTag;
-	private final Type returnPublisherType;
 
 	public static <T> ReactiveHttpClient<T> log(ReactiveHttpClient<T> reactiveClient, MethodMetadata methodMetadata) {
 		return new LoggerReactiveHttpClient<>(reactiveClient, methodMetadata);
@@ -53,7 +50,6 @@ public class LoggerReactiveHttpClient<T> implements ReactiveHttpClient<T> {
 	private LoggerReactiveHttpClient(ReactiveHttpClient<T> reactiveClient, MethodMetadata methodMetadata) {
 		this.reactiveClient = reactiveClient;
 		this.methodTag = methodTag(methodMetadata);
-		this.returnPublisherType = returnPublisherType(methodMetadata);
 	}
 
 	@Override
@@ -97,7 +93,7 @@ public class LoggerReactiveHttpClient<T> implements ReactiveHttpClient<T> {
 								   long elapsedTime) {
 		if (logger.isTraceEnabled()) {
 			logger.trace("[{}] RESPONSE HEADERS\n{}", feignMethodTag,
-					msg(() -> httpResponse.headers().entries().stream()
+					msg(() -> httpResponse.headers().entrySet().stream()
 							.flatMap(entry -> entry.getValue().stream()
 									.map(value -> new Pair<>(entry.getKey(), value)))
 							.map(pair -> String.format("%s:%s", pair.left, pair.right))
@@ -133,7 +129,7 @@ public class LoggerReactiveHttpClient<T> implements ReactiveHttpClient<T> {
 
 			Publisher<T> publisher = getResponse().body();
 
-			if (returnPublisherType == Mono.class) {
+			if (publisher instanceof Mono) {
 				return ((Mono<T>)publisher).doOnNext(responseBodyLogger(start));
 			} else {
 				return ((Flux<T>)publisher).doOnNext(responseBodyLogger(start));

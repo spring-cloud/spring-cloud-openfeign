@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
+import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
@@ -60,10 +61,12 @@ public class ReadTimeoutTest {
 				.withHeader("Accept", equalTo("application/json"))
 				.willReturn(aResponse().withFixedDelay(200)));
 
-		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create())
-				.options(new ReactiveOptions.Builder().setConnectTimeoutMillis(300)
-						.setReadTimeoutMillis(100).build())
+		IcecreamServiceApi client = WebClientReactiveFeign.<IcecreamServiceApi>builder(
+				new ReactiveOptions.Builder()
+						.setConnectTimeoutMillis(300)
+						.setReadTimeoutMillis(100)
+						.build()
+		)
 				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 

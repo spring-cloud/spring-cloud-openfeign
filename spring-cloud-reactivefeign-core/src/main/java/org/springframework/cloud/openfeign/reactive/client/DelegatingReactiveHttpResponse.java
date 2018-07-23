@@ -2,6 +2,9 @@ package org.springframework.cloud.openfeign.reactive.client;
 
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author Sergii Karpenko
  */
@@ -18,17 +21,12 @@ abstract public class DelegatingReactiveHttpResponse<T> implements ReactiveHttpR
 	}
 
 	@Override
-	public String methodTag(){
-		return response.methodTag();
-	}
-
-	@Override
 	public int status() {
 		return response.status();
 	}
 
 	@Override
-	public Headers headers() {
+	public Map<String, List<String>> headers() {
 		return response.headers();
 	}
 

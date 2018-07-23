@@ -27,8 +27,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamController;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
+import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * Test the new capability of Reactive Feign client to support both Feign Request.Options
@@ -41,8 +41,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 		IcecreamController.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
 public class ReactiveHttpOptionsTest {
-
-	private WebClient webClient = WebClient.create();
 
 	@Autowired
 	private IcecreamController icecreamController;
@@ -63,9 +61,11 @@ public class ReactiveHttpOptionsTest {
 	@Test
 	public void testCompression() {
 
-		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(webClient)
-				.options(new ReactiveOptions.Builder().setTryUseCompression(true).build())
+		IcecreamServiceApi client = WebClientReactiveFeign.<IcecreamServiceApi>builder(
+				new ReactiveOptions.Builder()
+						.setTryUseCompression(true)
+						.build()
+		)
 				.target(IcecreamServiceApi.class, targetUrl);
 
 		testClient(client);

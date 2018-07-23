@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
+import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,7 +42,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 /**
  * @author Sergii Karpenko
  */
-public class NotFoundTest {
+public abstract class NotFoundTest {
 
 	@ClassRule
 	public static WireMockClassRule wireMockRule = new WireMockClassRule(
@@ -49,6 +50,8 @@ public class NotFoundTest {
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
+
+	abstract protected ReactiveFeign.Builder<IcecreamServiceApi> builder();
 
 	@Before
 	public void resetServers() {
@@ -63,10 +66,9 @@ public class NotFoundTest {
 				.withHeader("Accept", equalTo("application/json"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 
-		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create()).decode404()
-				.target(IcecreamServiceApi.class,
-						"http://localhost:" + wireMockRule.port());
+		IcecreamServiceApi client = builder()
+				.decode404()
+				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
 
 		Optional<IceCreamOrder> result = client.findOrder(2).blockOptional();
 		assertThat(!result.isPresent());

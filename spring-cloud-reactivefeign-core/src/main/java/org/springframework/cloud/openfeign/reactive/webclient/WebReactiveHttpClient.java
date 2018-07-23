@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.reactive.client;
+package org.springframework.cloud.openfeign.reactive.webclient;
 
 import feign.MethodMetadata;
 import org.reactivestreams.Publisher;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequest;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpResponse;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
@@ -34,7 +37,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static feign.Util.resolveLastTypeParameter;
 import static java.util.Optional.ofNullable;
@@ -74,22 +76,15 @@ public class WebReactiveHttpClient<T> implements ReactiveHttpClient<T> {
 				.headers(httpHeaders -> setUpHeaders(request, httpHeaders))
 				.body(provideRequestBody(request))
 				.exchange()
-				.map((ClientResponse response) -> new WebReactiveHttpResponse(methodTag, response));
+				.map(WebReactiveHttpResponse::new);
 	}
 
 	private class WebReactiveHttpResponse implements ReactiveHttpResponse<T>{
 
-		private final String methodTag;
 		private final ClientResponse response;
 
-		private WebReactiveHttpResponse(String methodTag, ClientResponse response) {
-			this.methodTag = methodTag;
+		private WebReactiveHttpResponse(ClientResponse response) {
 			this.response = response;
-		}
-
-		@Override
-		public String methodTag() {
-			return methodTag;
 		}
 
 		@Override
@@ -98,18 +93,8 @@ public class WebReactiveHttpClient<T> implements ReactiveHttpClient<T> {
 		}
 
 		@Override
-		public Headers headers() {
-			return new Headers() {
-				@Override
-				public Set<Map.Entry<String, List<String>>> entries() {
-					return response.headers().asHttpHeaders().entrySet();
-				}
-
-				@Override
-				public List<String> get(String headerName) {
-					return response.headers().asHttpHeaders().get(headerName);
-				}
-			};
+		public Map<String, List<String>> headers() {
+			return response.headers().asHttpHeaders();
 		}
 
 		@Override

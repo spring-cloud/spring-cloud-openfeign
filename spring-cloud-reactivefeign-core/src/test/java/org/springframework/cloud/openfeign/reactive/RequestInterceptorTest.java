@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.springframework.cloud.openfeign.reactive.utils.MultiValueMapUtils.add;
 
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -17,6 +18,7 @@ import org.junit.rules.ExpectedException;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
+import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -63,19 +65,18 @@ public class RequestInterceptorTest {
 						.withBody(orderStr)))
 				.setPriority(1);
 
-		IcecreamServiceApi clientWithoutAuth = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create()).target(IcecreamServiceApi.class,
-						"http://localhost:" + wireMockRule.port());
+		IcecreamServiceApi clientWithoutAuth = WebClientReactiveFeign.<IcecreamServiceApi>builder()
+				.target(IcecreamServiceApi.class,"http://localhost:" + wireMockRule.port());
 
 		assertThatThrownBy(() -> clientWithoutAuth.findFirstOrder().block())
 				.isInstanceOf(FeignException.class);
 
-		IcecreamServiceApi clientWithAuth = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create())
+		IcecreamServiceApi clientWithAuth = WebClientReactiveFeign.<IcecreamServiceApi>builder()
 				.requestInterceptor(request -> {
-					request.headers().add("Authorization", "Bearer mytoken123");
+					add(request.headers(), "Authorization", "Bearer mytoken123");
 					return request;
-				}).target(IcecreamServiceApi.class,
+				})
+				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
 		IceCreamOrder firstOrder = clientWithAuth.findFirstOrder().block();

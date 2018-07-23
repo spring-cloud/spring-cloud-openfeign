@@ -6,10 +6,7 @@ import org.springframework.cloud.openfeign.reactive.client.statushandler.Reactiv
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.Type;
-
 import static org.springframework.cloud.openfeign.reactive.utils.FeignUtils.methodTag;
-import static org.springframework.cloud.openfeign.reactive.utils.FeignUtils.returnPublisherType;
 
 /**
  * Uses statusHandlers to process status of http response
@@ -20,7 +17,6 @@ public class StatusHandlerReactiveHttpClient<T> implements ReactiveHttpClient<T>
 
 	private final ReactiveHttpClient<T> reactiveClient;
 	private final String methodTag;
-	private final Type returnPublisherType;
 
 	private final ReactiveStatusHandler statusHandler;
 
@@ -35,7 +31,6 @@ public class StatusHandlerReactiveHttpClient<T> implements ReactiveHttpClient<T>
 											MethodMetadata methodMetadata,
 											ReactiveStatusHandler statusHandler) {
 		this.reactiveClient = reactiveClient;
-		this.returnPublisherType = returnPublisherType(methodMetadata);
 		this.methodTag = methodTag(methodMetadata);
 		this.statusHandler = statusHandler;
 	}
@@ -62,7 +57,7 @@ public class StatusHandlerReactiveHttpClient<T> implements ReactiveHttpClient<T>
 
 		@Override
 		public Publisher<T> body() {
-			if(returnPublisherType == Mono.class){
+			if(getResponse().body() instanceof Mono){
 				return error.flatMap(Mono::error);
 			} else {
 				return error.flatMapMany(Flux::error);

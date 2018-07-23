@@ -13,11 +13,9 @@ import java.util.Set;
  */
 public interface ReactiveHttpResponse<T> {
 
-	String methodTag();
-
 	int status();
 
-	Headers headers();
+	Map<String, List<String>> headers();
 
 	Publisher<T> body();
 
@@ -26,10 +24,4 @@ public interface ReactiveHttpResponse<T> {
 	 * @return error message data
 	 */
 	Mono<byte[]> bodyData();
-
-	interface Headers {
-		Set<Map.Entry<String, List<String>>> entries();
-
-		List<String> get(String headerName);
-	}
 }

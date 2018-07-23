@@ -10,6 +10,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
+import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
@@ -43,13 +44,12 @@ public class StatusHandlerTest {
 				.willReturn(aResponse().withStatus(HttpStatus.SC_SERVICE_UNAVAILABLE)))
 				.setPriority(100);
 
-		IcecreamServiceApi clientWithoutAuth = ReactiveFeign.<IcecreamServiceApi>builder()
+		IcecreamServiceApi clientWithoutAuth = WebClientReactiveFeign.<IcecreamServiceApi>builder()
 				.statusHandler(throwOnStatus(
 						status -> status == HttpStatus.SC_SERVICE_UNAVAILABLE,
 						(methodTag, response) -> new RetryableException("Should retry on next node", null)
 				))
-				.target(IcecreamServiceApi.class,
-						"http://localhost:" + wireMockRule.port());
+				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
 
 		assertThatThrownBy(() -> clientWithoutAuth.findFirstOrder().block())
 				.isInstanceOf(RetryableException.class);
@@ -65,12 +65,11 @@ public class StatusHandlerTest {
 				.willReturn(aResponse().withStatus(HttpStatus.SC_SERVICE_UNAVAILABLE)))
 				.setPriority(100);
 
-		IcecreamServiceApi clientWithoutAuth = ReactiveFeign.<IcecreamServiceApi>builder()
+		IcecreamServiceApi clientWithoutAuth = WebClientReactiveFeign.<IcecreamServiceApi>builder()
 				.statusHandler(throwOnStatus(
 						httpStatus -> httpStatus == HttpStatus.SC_SERVICE_UNAVAILABLE,
 						(s, clientResponse) -> new RetryableException("Should retry on next node", null)))
-				.target(IcecreamServiceApi.class,
-						"http://localhost:" + wireMockRule.port());
+				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
 
 		assertThatThrownBy(() -> clientWithoutAuth.findFirstOrder().block())
 				.isInstanceOf(RetryableException.class);

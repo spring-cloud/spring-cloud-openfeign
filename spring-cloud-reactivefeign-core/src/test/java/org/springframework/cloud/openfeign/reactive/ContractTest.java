@@ -12,10 +12,12 @@ import static org.hamcrest.Matchers.containsString;
  * @author Sergii Karpenko
  */
 
-public class ContractTest {
+abstract public class ContractTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
+
+    abstract protected <T> ReactiveFeign.Builder<T> builder();
 
     @Test
     public void shouldFailOnBrokenContract() {
@@ -23,7 +25,7 @@ public class ContractTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(containsString("Broken Contract"));
 
-        ReactiveFeign.<IcecreamServiceApi>builder()
+        this.<IcecreamServiceApi>builder()
                 .contract(targetType -> {throw new IllegalArgumentException("Broken Contract");})
                 .target(IcecreamServiceApi.class, "http://localhost:8888");
     }
@@ -34,7 +36,7 @@ public class ContractTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(containsString("IcecreamServiceApiBroken#findOrder(int)"));
 
-        ReactiveFeign.<IcecreamServiceApiBroken>builder()
+        this.<IcecreamServiceApiBroken>builder()
                 .target(IcecreamServiceApiBroken.class, "http://localhost:8888");
     }
 

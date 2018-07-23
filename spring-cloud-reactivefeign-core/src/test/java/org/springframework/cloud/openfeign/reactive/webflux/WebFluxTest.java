@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.reactive.allfeatures;
+package org.springframework.cloud.openfeign.reactive.webflux;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.openfeign.reactive.ReactiveFeign;
@@ -30,7 +29,6 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
@@ -51,14 +49,13 @@ import static reactor.core.publisher.Mono.just;
 /**
  * @author Sergii Karpenko
  * 
- * Tests ReactiveFeign in conjunction with WebFlux rest controller.
+ * Tests ReactiveFeign seamless integration with WebFlux rest controller.
  */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
 		AllFeaturesController.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@EnableAutoConfiguration
-public class AllFeaturesTest {
+abstract public class WebFluxTest {
 
 	private AllFeaturesApi client;
 
@@ -68,10 +65,13 @@ public class AllFeaturesTest {
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
+	abstract protected ReactiveFeign.Builder<AllFeaturesApi> builder();
+
 	@Before
 	public void setUp() {
-		client = ReactiveFeign.<AllFeaturesApi>builder().webClient(WebClient.create())
-				.decode404().target(AllFeaturesApi.class, "http://localhost:" + port);
+		client = builder()
+				.decode404()
+				.target(AllFeaturesApi.class, "http://localhost:" + port);
 	}
 
 	@Test

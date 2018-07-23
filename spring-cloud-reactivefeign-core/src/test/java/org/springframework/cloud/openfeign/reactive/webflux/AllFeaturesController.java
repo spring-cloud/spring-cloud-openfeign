@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.reactive.allfeatures;
+package org.springframework.cloud.openfeign.reactive.webflux;
 
 import org.reactivestreams.Publisher;
 import org.springframework.core.io.Resource;

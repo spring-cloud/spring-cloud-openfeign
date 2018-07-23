@@ -29,7 +29,7 @@ public class ReactiveStatusHandlers {
 						errorDecoder.decode(methodTag,
 								Response.builder().status(response.status())
 										.reason(HttpStatus.getStatusText(response.status()))
-										.headers(response.headers().entries()
+										.headers(response.headers().entrySet()
 												.stream()
 												.collect(Collectors.toMap(Map.Entry::getKey,
 														Map.Entry::getValue)))

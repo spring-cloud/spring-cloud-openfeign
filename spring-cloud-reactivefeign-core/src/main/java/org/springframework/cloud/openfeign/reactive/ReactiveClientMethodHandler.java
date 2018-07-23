@@ -22,15 +22,12 @@ import org.reactivestreams.Publisher;
 import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
 import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
 import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequest;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.AbstractMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -41,9 +38,11 @@ import java.util.stream.Stream;
 import static feign.Util.checkNotNull;
 import static java.util.stream.Collectors.*;
 import static org.springframework.cloud.openfeign.reactive.utils.FeignUtils.returnPublisherType;
+import static org.springframework.cloud.openfeign.reactive.utils.MultiValueMapUtils.add;
+import static org.springframework.cloud.openfeign.reactive.utils.MultiValueMapUtils.addAll;
 
 /**
- * Method handler for asynchronous HTTP requests via {@link WebClient}.
+ * Method handler for asynchronous HTTP requests via {@link ReactiveHttpClient}.
  *
  * @author Sergii Karpenko
  */
@@ -52,17 +51,18 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 	private final Target target;
 	private final MethodMetadata methodMetadata;
 	private final ReactiveHttpClient<Object> reactiveClient;
-	private final DefaultUriBuilderFactory defaultUriBuilderFactory;
+	private final UriBuilder uriBuilder;
 	private final Map<String, List<Function<Map<String, ?>, String>>> headerExpanders;
 	private final Type returnPublisherType;
 
 	private ReactiveClientMethodHandler(Target target, MethodMetadata methodMetadata,
+			Function<String, UriBuilder> uriBuilderFactory,
 			ReactiveHttpClient reactiveClient) {
 		this.target = checkNotNull(target, "target must be not null");
 		this.methodMetadata = checkNotNull(methodMetadata,
 				"methodMetadata must be not null");
 		this.reactiveClient = checkNotNull(reactiveClient, "client must be not null");
-		this.defaultUriBuilderFactory = new DefaultUriBuilderFactory(target.url());
+		this.uriBuilder = uriBuilderFactory.apply(target.url());
 		Stream<AbstractMap.SimpleImmutableEntry<String, String>> simpleImmutableEntryStream = methodMetadata
 				.template().headers().entrySet().stream()
 				.flatMap(e -> e.getValue().stream()
@@ -91,44 +91,44 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 				.collect(Collectors.toMap(Map.Entry::getValue,
 						entry -> argv[entry.getKey()]));
 
-		URI uri = defaultUriBuilderFactory.uriString(methodMetadata.template().url())
-				.queryParams(parameters(argv)).build(substitutionsMap);
+		URI uri = uriBuilder.fragment(methodMetadata.template().url())
+				.queryParameters(parameters(argv)).build(substitutionsMap);
 
 		return new ReactiveHttpRequest(methodMetadata.template().method(), uri,
 				headers(argv, substitutionsMap), body(argv));
 	}
 
-	protected MultiValueMap<String, String> parameters(Object[] argv) {
-		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+	protected Map<String, List<String>> parameters(Object[] argv) {
+		Map<String, List<String>> parameters = new LinkedHashMap<>();
 		methodMetadata.template().queries()
-				.forEach((key, value) -> parameters.addAll(key, (List) value));
+				.forEach((key, value) -> addAll(parameters, key, (List<String>) value));
 
 		if (methodMetadata.formParams() != null) {
 			methodMetadata.formParams()
-					.forEach(param -> parameters.add(param, "{" + param + "}"));
+					.forEach(param -> add(parameters, param, "{" + param + "}"));
 		}
 
 		if (methodMetadata.queryMapIndex() != null) {
 			((Map<String, String>) argv[methodMetadata.queryMapIndex()])
-					.forEach((key, value) -> parameters.add(key, value));
+					.forEach((key, value) -> add(parameters, key, value));
 		}
 		return parameters;
 	}
 
-	protected MultiValueMap<String, String> headers(Object[] argv,
+	protected Map<String, List<String>> headers(Object[] argv,
 			Map<String, ?> substitutionsMap) {
 
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+		Map<String, List<String>> headers = new LinkedHashMap<>();
 
 		methodMetadata.template().headers().keySet()
-				.forEach(headerName -> headers.addAll(headerName,
+				.forEach(headerName -> addAll(headers, headerName,
 						headerExpanders.get(headerName).stream()
 								.map(expander -> expander.apply(substitutionsMap))
 								.collect(toList())));
 
 		if (methodMetadata.headerMapIndex() != null) {
 			((Map<String, String>) argv[methodMetadata.headerMapIndex()])
-					.forEach(headers::add);
+					.forEach((key, value) -> add(headers, key, value));
 		}
 
 		return headers;
@@ -165,9 +165,12 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 	}
 
 	public static class Factory implements ReactiveMethodHandlerFactory {
+		private final Function<String, UriBuilder> uriBuilderFactory;
 		private final ReactiveClientFactory reactiveClientFactory;
 
-		public Factory(final ReactiveClientFactory reactiveClientFactory) {
+		public Factory(final Function<String, UriBuilder> uriBuilderFactory,
+					   final ReactiveClientFactory reactiveClientFactory) {
+			this.uriBuilderFactory = uriBuilderFactory;
 			this.reactiveClientFactory = checkNotNull(reactiveClientFactory,
 					"client must not be null");
 		}
@@ -177,7 +180,7 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 				final MethodMetadata metadata) {
 
 			return new ReactiveClientMethodHandler(target, metadata,
-					reactiveClientFactory.apply(metadata));
+					uriBuilderFactory, reactiveClientFactory.apply(metadata));
 		}
 	}
 }

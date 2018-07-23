@@ -1,10 +1,11 @@
 package org.springframework.cloud.openfeign.reactive.client;
 
+import feign.MethodMetadata;
 import org.apache.commons.httpclient.HttpStatus;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * Maps 404 error response to successful empty response
@@ -13,8 +14,8 @@ import java.util.function.Function;
  */
 public class ResponseMappers {
 
-	public static <T> Function<ReactiveHttpResponse<T>, ReactiveHttpResponse<T>> ignore404() {
-		return (ReactiveHttpResponse<T> response) -> {
+	public static <T> BiFunction<MethodMetadata, ReactiveHttpResponse<T>, ReactiveHttpResponse<T>> ignore404() {
+		return (MethodMetadata methodMetadata, ReactiveHttpResponse<T> response) -> {
 			if (response.status() == HttpStatus.SC_NOT_FOUND) {
 				return new DelegatingReactiveHttpResponse<T>(response) {
 					@Override
@@ -34,8 +35,10 @@ public class ResponseMappers {
 
 	public static <T> ReactiveHttpClient<T> mapResponse(
 			ReactiveHttpClient<T> reactiveHttpClient,
-			Function<ReactiveHttpResponse<T>, ReactiveHttpResponse<T>> responseMapper){
-		return request -> reactiveHttpClient.executeRequest(request).map(responseMapper);
+			MethodMetadata methodMetadata,
+			BiFunction<MethodMetadata, ReactiveHttpResponse<T>, ReactiveHttpResponse<T>> responseMapper){
+		return request -> reactiveHttpClient.executeRequest(request)
+				.map(response -> responseMapper.apply(methodMetadata, response));
 	}
 
 }

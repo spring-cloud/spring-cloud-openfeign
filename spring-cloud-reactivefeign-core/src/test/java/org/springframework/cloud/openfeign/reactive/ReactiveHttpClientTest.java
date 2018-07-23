@@ -16,13 +16,6 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,13 +28,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamController;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
-import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApiBroken;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.Bill;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.Flavor;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
+import org.springframework.cloud.openfeign.reactive.testcase.domain.*;
+import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Sergii Karpenko
@@ -69,7 +64,7 @@ public class ReactiveHttpClientTest {
 	@Before
 	public void setUp() {
 		targetUrl = "http://localhost:" + port;
-		client = ReactiveFeign.<IcecreamServiceApi>builder()
+		client = WebClientReactiveFeign.<IcecreamServiceApi>builder()
 				.target(IcecreamServiceApi.class, targetUrl);
 	}
 
