@@ -16,60 +16,44 @@
 
 package org.springframework.cloud.openfeign.reactive.client;
 
-import static feign.Util.resolveLastTypeParameter;
-import static java.util.Optional.ofNullable;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static reactor.core.publisher.Mono.just;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-
+import feign.MethodMetadata;
 import org.reactivestreams.Publisher;
-import org.springframework.cloud.openfeign.reactive.Logger;
-import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandler;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.client.reactive.ClientHttpRequest;
+import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import feign.MethodMetadata;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static feign.Util.resolveLastTypeParameter;
+import static java.util.Optional.ofNullable;
+import static org.springframework.cloud.openfeign.reactive.utils.FeignUtils.methodTag;
 
 /**
  * Uses {@link WebClient} to execute http requests
  * @author Sergii Karpenko
  */
-public class WebReactiveHttpClient implements ReactiveHttpClient {
+public class WebReactiveHttpClient<T> implements ReactiveHttpClient<T> {
 
 	private final WebClient webClient;
-	private final String methodTag;
-	private final MethodMetadata metadata;
-	private final ReactiveHttpRequestInterceptor requestInterceptor;
-	private final ReactiveStatusHandler statusHandler;
-	private final boolean decode404;
-	private final Logger logger;
 	private final ParameterizedTypeReference<Object> bodyActualType;
 	private final Type returnPublisherType;
-	private final ParameterizedTypeReference<?> returnActualType;
+	private final ParameterizedTypeReference<T> returnActualType;
+	private final String methodTag;
 
-    public WebReactiveHttpClient(MethodMetadata methodMetadata, WebClient webClient,
-			ReactiveHttpRequestInterceptor requestInterceptor,
-			ReactiveStatusHandler statusHandler, boolean decode404) {
+    public WebReactiveHttpClient(MethodMetadata methodMetadata, WebClient webClient) {
 		this.webClient = webClient;
-		this.metadata = methodMetadata;
-		this.requestInterceptor = requestInterceptor;
-		this.statusHandler = statusHandler;
-		this.decode404 = decode404;
-		this.logger = new Logger();
-
-		this.methodTag = methodMetadata.configKey().substring(0,
-				methodMetadata.configKey().indexOf('('));
 
 		Type bodyType = methodMetadata.bodyType();
 		bodyActualType = getBodyActualType(bodyType);
@@ -78,70 +62,75 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 		returnPublisherType = ((ParameterizedType) returnType).getRawType();
 		returnActualType = ParameterizedTypeReference.forType(
 				resolveLastTypeParameter(returnType, (Class<?>) returnPublisherType));
+		methodTag = methodTag(methodMetadata);
 	}
 
 	@Override
-	public Publisher<Object> executeRequest(ReactiveHttpRequest request) {
-        AtomicLong start = new AtomicLong(-1);
-        Mono<WebClient.ResponseSpec> response = Mono
-                .defer(() -> {
-                    start.set(System.currentTimeMillis());
-                    return just(request);}
-                )
-                .map(requestInterceptor)
-                .map(req -> {
-                    logger.logRequest(methodTag, req);
+	public Mono<ReactiveHttpResponse<T>> executeRequest(ReactiveHttpRequest request) {
+		HttpMethod method = ofNullable(HttpMethod.resolve(request.method()))
+				.orElseThrow(() -> new IllegalArgumentException("Unknown http method:"+request.method()));
+		return webClient.method(method)
+				.uri(request.uri())
+				.headers(httpHeaders -> setUpHeaders(request, httpHeaders))
+				.body(provideRequestBody(request))
+				.exchange()
+				.map((ClientResponse response) -> new WebReactiveHttpResponse(methodTag, response));
+	}
 
-                    return webClient.method(req.method())
-                            .uri(req.uri())
-                            .headers(httpHeaders -> setUpHeaders(req, httpHeaders))
-                            .body(provideBody(req)).retrieve()
-                            .onStatus(httpStatus -> true,
-                                    resp -> handleResponseStatus(metadata.configKey(), resp, start));
-                });
+	private class WebReactiveHttpResponse implements ReactiveHttpResponse<T>{
 
-		if (returnPublisherType == Mono.class) {
-			return logResponseBody(response.flatMap(responseSpec -> responseSpec.bodyToMono(returnActualType)), start);
-		} else {
-			return logResponseBody(response.flatMapMany(responseSpec -> responseSpec.bodyToFlux(returnActualType)), start);
+		private final String methodTag;
+		private final ClientResponse response;
+
+		private WebReactiveHttpResponse(String methodTag, ClientResponse response) {
+			this.methodTag = methodTag;
+			this.response = response;
+		}
+
+		@Override
+		public String methodTag() {
+			return methodTag;
+		}
+
+		@Override
+		public int status() {
+			return response.statusCode().value();
+		}
+
+		@Override
+		public Headers headers() {
+			return new Headers() {
+				@Override
+				public Set<Map.Entry<String, List<String>>> entries() {
+					return response.headers().asHttpHeaders().entrySet();
+				}
+
+				@Override
+				public List<String> get(String headerName) {
+					return response.headers().asHttpHeaders().get(headerName);
+				}
+			};
+		}
+
+		@Override
+		public Publisher<T> body() {
+			return extractResponseBody(response);
+		}
+
+		@Override
+		public Mono<byte[]> bodyData() {
+			return DataBufferUtils.join(response.body(BodyExtractors.toDataBuffers()))
+					.map(dataBuffer -> {
+						byte[] bytes = new byte[dataBuffer.readableByteCount()];
+						dataBuffer.read(bytes);
+						DataBufferUtils.release(dataBuffer);
+						return bytes;
+					})
+					.defaultIfEmpty(new byte[0]);
 		}
 	}
 
-	private Publisher<Object> logResponseBody(Flux<Object> flux, AtomicLong start){
-		return flux.doOnNext(responseBodyLogger(start));
-	}
-
-	private Publisher<Object> logResponseBody(Mono<Object> mono, AtomicLong start){
-		return mono.doOnNext(responseBodyLogger(start));
-	}
-
-	private Mono<? extends Throwable> handleResponseStatus(String methodKey, ClientResponse response, AtomicLong start) {
-		logResponseHeaders(response, start);
-
-		if (decode404 && response.statusCode() == NOT_FOUND) {
-			// ignore error
-			return null;
-		}
-
-		if (statusHandler.shouldHandle(response.statusCode())) {
-			return statusHandler.decode(methodKey, response);
-		}
-		else {
-			return null;
-		}
-	}
-
-	protected void logResponseHeaders(ClientResponse clientResponse, AtomicLong start) {
-		logger.logResponseHeaders(methodTag, clientResponse.headers().asHttpHeaders(),
-				System.currentTimeMillis() - start.get());
-	}
-
-	private <V> Consumer<V> responseBodyLogger(AtomicLong start) {
-		return result -> logger.logResponseBodyAndTime(methodTag, result,
-                System.currentTimeMillis() - start.get());
-	}
-
-	protected BodyInserter<?, ? super ClientHttpRequest> provideBody(
+	protected BodyInserter<?, ? super ClientHttpRequest> provideRequestBody(
 			ReactiveHttpRequest request) {
 		return bodyActualType != null
 				? BodyInserters.fromPublisher(request.body(), bodyActualType)
@@ -150,6 +139,14 @@ public class WebReactiveHttpClient implements ReactiveHttpClient {
 
 	protected void setUpHeaders(ReactiveHttpRequest request, HttpHeaders httpHeaders) {
 		request.headers().forEach(httpHeaders::put);
+	}
+
+	protected Publisher<T> extractResponseBody(ClientResponse response){
+		if (returnPublisherType == Mono.class) {
+			return response.bodyToMono(returnActualType);
+		} else {
+			return response.bodyToFlux(returnActualType);
+		}
 	}
 
 	private ParameterizedTypeReference<Object> getBodyActualType(Type bodyType) {

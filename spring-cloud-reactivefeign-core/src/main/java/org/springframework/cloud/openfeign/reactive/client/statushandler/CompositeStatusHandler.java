@@ -1,11 +1,9 @@
 package org.springframework.cloud.openfeign.reactive.client.statushandler;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.ClientResponse;
-
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpResponse;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 /**
  * @author Sergii Karpenko
@@ -19,15 +17,15 @@ public class CompositeStatusHandler implements ReactiveStatusHandler {
 	}
 
 	@Override
-	public boolean shouldHandle(HttpStatus status) {
+	public boolean shouldHandle(int status) {
 		return handlers.stream().anyMatch(handler -> handler.shouldHandle(status));
 	}
 
 	@Override
-	public Mono<? extends Throwable> decode(String methodKey, ClientResponse response) {
+	public Mono<? extends Throwable> decode(String methodKey, ReactiveHttpResponse response) {
 		return handlers.stream()
 				.filter(statusHandler -> statusHandler
-						.shouldHandle(response.statusCode()))
+						.shouldHandle(response.status()))
 				.findFirst()
 				.map(statusHandler -> statusHandler.decode(methodKey, response))
 				.orElse(null);

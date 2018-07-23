@@ -1,8 +1,6 @@
 package org.springframework.cloud.openfeign.reactive.client.statushandler;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.ClientResponse;
-
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpResponse;
 import reactor.core.publisher.Mono;
 
 /**
@@ -10,7 +8,7 @@ import reactor.core.publisher.Mono;
  */
 public interface ReactiveStatusHandler {
 
-	boolean shouldHandle(HttpStatus status);
+	boolean shouldHandle(int status);
 
-	Mono<? extends Throwable> decode(String methodKey, ClientResponse response);
+	Mono<? extends Throwable> decode(String methodKey, ReactiveHttpResponse<?> response);
 }

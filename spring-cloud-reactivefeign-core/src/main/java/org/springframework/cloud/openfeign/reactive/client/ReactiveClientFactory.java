@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.openfeign.reactive.client;
 
-import java.util.function.Function;
-
 import feign.MethodMetadata;
+
+import java.util.function.Function;
 
 /**
  * @author Sergii Karpenko

@@ -16,12 +16,12 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
+import feign.InvocationHandlerFactory.MethodHandler;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
-import feign.InvocationHandlerFactory.MethodHandler;
 
 /**
  * Handles default methods by directly invoking the default method code on the interface.

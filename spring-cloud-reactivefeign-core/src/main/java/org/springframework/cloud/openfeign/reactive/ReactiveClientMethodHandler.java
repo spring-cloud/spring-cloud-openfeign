@@ -16,11 +16,19 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import static feign.Util.checkNotNull;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
+import feign.MethodMetadata;
+import feign.Target;
+import org.reactivestreams.Publisher;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequest;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+import reactor.core.publisher.Mono;
 
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.AbstractMap;
 import java.util.List;
@@ -30,19 +38,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.reactivestreams.Publisher;
-import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
-import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
-import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequest;
-import org.springframework.http.HttpMethod;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.DefaultUriBuilderFactory;
-
-import feign.MethodMetadata;
-import feign.Target;
-import reactor.core.publisher.Mono;
+import static feign.Util.checkNotNull;
+import static java.util.stream.Collectors.*;
+import static org.springframework.cloud.openfeign.reactive.utils.FeignUtils.returnPublisherType;
 
 /**
  * Method handler for asynchronous HTTP requests via {@link WebClient}.
@@ -53,9 +51,10 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 
 	private final Target target;
 	private final MethodMetadata methodMetadata;
-	private final ReactiveHttpClient reactiveClient;
+	private final ReactiveHttpClient<Object> reactiveClient;
 	private final DefaultUriBuilderFactory defaultUriBuilderFactory;
 	private final Map<String, List<Function<Map<String, ?>, String>>> headerExpanders;
+	private final Type returnPublisherType;
 
 	private ReactiveClientMethodHandler(Target target, MethodMetadata methodMetadata,
 			ReactiveHttpClient reactiveClient) {
@@ -72,6 +71,7 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 				entry -> entry.getKey(),
 				mapping(entry -> buildExpandHeaderFunction(entry.getValue()), toList())));
 
+		this.returnPublisherType = returnPublisherType(methodMetadata);
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 
 		final ReactiveHttpRequest request = buildRequest(argv);
 
-		return reactiveClient.executeRequest(request);
+		return reactiveClient.executeRequest(request, returnPublisherType);
 	}
 
 	protected ReactiveHttpRequest buildRequest(Object[] argv) {
@@ -91,12 +91,11 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 				.collect(Collectors.toMap(Map.Entry::getValue,
 						entry -> argv[entry.getKey()]));
 
-		HttpMethod method = HttpMethod.resolve(methodMetadata.template().method());
 		URI uri = defaultUriBuilderFactory.uriString(methodMetadata.template().url())
 				.queryParams(parameters(argv)).build(substitutionsMap);
 
-		return new ReactiveHttpRequest(method, uri, headers(argv, substitutionsMap),
-				body(argv));
+		return new ReactiveHttpRequest(methodMetadata.template().method(), uri,
+				headers(argv, substitutionsMap), body(argv));
 	}
 
 	protected MultiValueMap<String, String> parameters(Object[] argv) {

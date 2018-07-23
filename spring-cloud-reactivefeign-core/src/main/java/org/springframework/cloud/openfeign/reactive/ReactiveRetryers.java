@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import java.util.Date;
-
 import feign.RetryableException;
+
+import java.util.Date;
 
 /**
  * @author Sergii Karpenko

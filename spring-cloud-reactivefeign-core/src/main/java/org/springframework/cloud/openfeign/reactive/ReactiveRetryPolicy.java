@@ -1,14 +1,13 @@
 package org.springframework.cloud.openfeign.reactive;
 
-import java.time.Duration;
-import java.util.function.Function;
-
 import org.reactivestreams.Publisher;
-
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
+
+import java.time.Duration;
+import java.util.function.Function;
 
 public interface ReactiveRetryPolicy {
 	/**

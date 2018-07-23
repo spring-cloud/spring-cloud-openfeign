@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.reactive;
-
-import java.util.function.Consumer;
+package org.springframework.cloud.openfeign.reactive.utils;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+
+import java.util.function.Consumer;
 
 public class ReactiveUtils {
 

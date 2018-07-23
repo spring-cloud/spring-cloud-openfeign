@@ -16,9 +16,22 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import static feign.Util.checkNotNull;
-import static feign.Util.isDefault;
-import static java.util.Arrays.asList;
+import feign.*;
+import feign.InvocationHandlerFactory.MethodHandler;
+import feign.codec.ErrorDecoder;
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import org.reactivestreams.Publisher;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequestInterceptor;
+import org.springframework.cloud.openfeign.reactive.client.WebReactiveHttpClient;
+import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandler;
+import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandlers;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -28,38 +41,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-import org.reactivestreams.Publisher;
-import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
-import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
-import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequestInterceptor;
-import org.springframework.cloud.openfeign.reactive.client.RetryReactiveHttpClient;
-import org.springframework.cloud.openfeign.reactive.client.WebReactiveHttpClient;
-import org.springframework.cloud.openfeign.reactive.client.statushandler.CompositeStatusHandler;
-import org.springframework.cloud.openfeign.reactive.client.statushandler.DefaultFeignErrorDecoder;
-import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandler;
-import org.springframework.cloud.openfeign.reactive.client.statushandler.SimpleStatusHandler;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import feign.Contract;
-import feign.Feign;
-import feign.FeignException;
-import feign.InvocationHandlerFactory;
-import feign.InvocationHandlerFactory.MethodHandler;
-import feign.MethodMetadata;
-import feign.Request;
-import feign.Target;
-import feign.codec.ErrorDecoder;
-import io.netty.channel.ChannelOption;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import static feign.Util.checkNotNull;
+import static feign.Util.isDefault;
+import static org.springframework.cloud.openfeign.reactive.client.InterceptorReactiveHttpClient.intercept;
+import static org.springframework.cloud.openfeign.reactive.client.LoggerReactiveHttpClient.log;
+import static org.springframework.cloud.openfeign.reactive.client.ResponseMappers.ignore404;
+import static org.springframework.cloud.openfeign.reactive.client.ResponseMappers.mapResponse;
+import static org.springframework.cloud.openfeign.reactive.client.RetryReactiveHttpClient.retry;
+import static org.springframework.cloud.openfeign.reactive.client.StatusHandlerReactiveHttpClient.handleStatus;
 
 /**
  * Allows Feign interfaces to accept {@link Publisher} as body and return reactive
@@ -119,8 +110,7 @@ public class ReactiveFeign {
 		protected Contract contract = new ReactiveDelegatingContract(new Contract.Default());
 		protected WebClient webClient = WebClient.create();
 		protected ReactiveHttpRequestInterceptor requestInterceptor = request -> request;
-		protected ReactiveStatusHandler statusHandler = new DefaultFeignErrorDecoder(
-				new ErrorDecoder.Default());
+		protected ReactiveStatusHandler statusHandler = ReactiveStatusHandlers.defaultFeign(new ErrorDecoder.Default());
 		protected InvocationHandlerFactory invocationHandlerFactory = new ReactiveInvocationHandler.Factory();
 		protected boolean decode404 = false;
 		protected Target<T> target;
@@ -170,13 +160,6 @@ public class ReactiveFeign {
 		public Builder<T> statusHandler(ReactiveStatusHandler statusHandler) {
 			this.statusHandler = statusHandler;
 			return this;
-		}
-
-		public Builder<T> throwOnStatusCode(Predicate<HttpStatus> statusPredicate,
-				BiFunction<String, ClientResponse, Throwable> errorFunction) {
-			return statusHandler(new CompositeStatusHandler(
-					asList(new SimpleStatusHandler(statusPredicate, errorFunction),
-							statusHandler)));
 		}
 
 		/**
@@ -259,13 +242,24 @@ public class ReactiveFeign {
 
 		protected ReactiveClientFactory buildReactiveClientFactory() {
 			return methodMetadata -> {
-				ReactiveHttpClient reactiveClient = new WebReactiveHttpClient(
-						methodMetadata, webClient, requestInterceptor, statusHandler,
-						decode404);
-				if (retryFunction != null) {
-					reactiveClient = new RetryReactiveHttpClient(reactiveClient,
-							methodMetadata, retryFunction);
+
+				ReactiveHttpClient<T> reactiveClient = new WebReactiveHttpClient<>(methodMetadata, webClient);
+
+				if(requestInterceptor != null) {
+					reactiveClient = intercept(reactiveClient, requestInterceptor);
 				}
+
+				reactiveClient = log(reactiveClient, methodMetadata);
+
+				if(decode404){
+					reactiveClient = mapResponse(reactiveClient, ignore404());
+				}
+				reactiveClient = handleStatus(reactiveClient, methodMetadata, statusHandler);
+
+				if (retryFunction != null) {
+					reactiveClient = retry(reactiveClient, methodMetadata, retryFunction);
+				}
+
 				return reactiveClient;
 			};
 		}

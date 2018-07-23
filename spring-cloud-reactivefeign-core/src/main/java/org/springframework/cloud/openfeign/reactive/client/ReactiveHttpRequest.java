@@ -16,13 +16,12 @@
 
 package org.springframework.cloud.openfeign.reactive.client;
 
-import static feign.Util.checkNotNull;
+import org.reactivestreams.Publisher;
+import org.springframework.util.MultiValueMap;
 
 import java.net.URI;
 
-import org.reactivestreams.Publisher;
-import org.springframework.http.HttpMethod;
-import org.springframework.util.MultiValueMap;
+import static feign.Util.checkNotNull;
 
 /**
  * An immutable reactive request to an http server.
@@ -30,7 +29,7 @@ import org.springframework.util.MultiValueMap;
  */
 public final class ReactiveHttpRequest {
 
-	private final HttpMethod method;
+	private final String method;
 	private final URI uri;
 	private final MultiValueMap<String, String> headers;
 	private final Publisher<Object> body;
@@ -39,7 +38,7 @@ public final class ReactiveHttpRequest {
 	 * No parameters can be null except {@code body}. All parameters must be effectively
 	 * immutable, via safe copies, not mutating or otherwise.
 	 */
-	public ReactiveHttpRequest(HttpMethod method, URI uri,
+	public ReactiveHttpRequest(String method, URI uri,
 			MultiValueMap<String, String> headers, Publisher<Object> body) {
 		this.method = checkNotNull(method, "method of %s", uri);
 		this.uri = checkNotNull(uri, "url");
@@ -48,7 +47,7 @@ public final class ReactiveHttpRequest {
 	}
 
 	/* Method to invoke on the server. */
-	public HttpMethod method() {
+	public String method() {
 		return method;
 	}
 
