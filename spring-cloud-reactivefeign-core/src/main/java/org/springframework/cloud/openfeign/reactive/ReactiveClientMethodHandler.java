@@ -91,7 +91,7 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 				.collect(Collectors.toMap(Map.Entry::getValue,
 						entry -> argv[entry.getKey()]));
 
-		URI uri = uriBuilder.fragment(methodMetadata.template().url())
+		URI uri = uriBuilder.uriString(methodMetadata.template().url())
 				.queryParameters(parameters(argv)).build(substitutionsMap);
 
 		return new ReactiveHttpRequest(methodMetadata.template().method(), uri,

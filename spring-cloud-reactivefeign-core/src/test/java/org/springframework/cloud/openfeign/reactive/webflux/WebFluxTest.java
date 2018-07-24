@@ -30,6 +30,8 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -195,9 +197,11 @@ abstract public class WebFluxTest {
 			}
 		};
 
-		Map<String, String> returned = client.mirrorBodyMapReactive(just(bodyMap))
-				.block();
-		assertThat(returned).containsAllEntriesOf(bodyMap);
+		Mono<Map<String, String>> publisher = client.mirrorBodyMapReactive(just(bodyMap));
+
+		StepVerifier.create(publisher)
+				.consumeNextWith(map -> assertThat(map).containsAllEntriesOf(bodyMap))
+				.verifyComplete();
 	}
 
 	@Test

@@ -3,6 +3,9 @@ package org.springframework.cloud.openfeign.reactive.web;
 import org.springframework.cloud.openfeign.reactive.ReactiveFeign;
 import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
 
+/**
+ * @author Sergii Karpenko
+ */
 public class ContractTest extends org.springframework.cloud.openfeign.reactive.ContractTest{
 
 	@Override

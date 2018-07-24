@@ -22,6 +22,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.springframework.cloud.openfeign.reactive.TestUtils.equalsComparingFieldByFieldRecursively;
 
 import java.util.Optional;
 
@@ -38,6 +39,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
+import reactor.test.StepVerifier;
 
 /**
  * @author Sergii Karpenko
@@ -48,18 +50,10 @@ public abstract class NotFoundTest {
 	public static WireMockClassRule wireMockRule = new WireMockClassRule(
 			wireMockConfig().dynamicPort());
 
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
-
 	abstract protected ReactiveFeign.Builder<IcecreamServiceApi> builder();
 
-	@Before
-	public void resetServers() {
-		wireMockRule.resetAll();
-	}
-
 	@Test
-	public void shouldReturnEmptyMono() throws JsonProcessingException {
+	public void shouldReturnEmptyMono() {
 
 		String orderUrl = "/icecream/orders/2";
 		wireMockRule.stubFor(get(urlEqualTo(orderUrl))
@@ -70,7 +64,8 @@ public abstract class NotFoundTest {
 				.decode404()
 				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
 
-		Optional<IceCreamOrder> result = client.findOrder(2).blockOptional();
-		assertThat(!result.isPresent());
+		StepVerifier.create(client.findOrder(2))
+				.expectNextCount(0)
+				.verifyComplete();
 	}
 }

@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.springframework.cloud.openfeign.reactive.TestUtils.equalsComparingFieldByFieldRecursively;
 import static org.springframework.cloud.openfeign.reactive.utils.MultiValueMapUtils.add;
 
 import org.apache.http.HttpStatus;
@@ -25,23 +26,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 
 import feign.FeignException;
+import reactor.test.StepVerifier;
 
 /**
  * @author Sergii Karpenko
  */
-public class RequestInterceptorTest {
+abstract public class RequestInterceptorTest {
 
 	@ClassRule
 	public static WireMockClassRule wireMockRule = new WireMockClassRule(
 			wireMockConfig().dynamicPort());
 
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
-
-	@Before
-	public void resetServers() {
-		wireMockRule.resetAll();
-	}
+	abstract protected ReactiveFeign.Builder<IcecreamServiceApi> builder();
 
 	@Test
 	public void shouldInterceptRequestAndSetAuthHeader() throws JsonProcessingException {
@@ -51,8 +47,7 @@ public class RequestInterceptorTest {
 		IceCreamOrder orderGenerated = new OrderGenerator().generate(1);
 		String orderStr = TestUtils.MAPPER.writeValueAsString(orderGenerated);
 
-		wireMockRule
-				.stubFor(get(urlEqualTo(orderUrl))
+		wireMockRule.stubFor(get(urlEqualTo(orderUrl))
 						.withHeader("Accept", equalTo("application/json"))
 						.willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)))
 				.setPriority(100);
@@ -65,13 +60,13 @@ public class RequestInterceptorTest {
 						.withBody(orderStr)))
 				.setPriority(1);
 
-		IcecreamServiceApi clientWithoutAuth = WebClientReactiveFeign.<IcecreamServiceApi>builder()
+		IcecreamServiceApi clientWithoutAuth = builder()
 				.target(IcecreamServiceApi.class,"http://localhost:" + wireMockRule.port());
 
-		assertThatThrownBy(() -> clientWithoutAuth.findFirstOrder().block())
-				.isInstanceOf(FeignException.class);
+		StepVerifier.create(clientWithoutAuth.findFirstOrder())
+				.expectError(FeignException.class);
 
-		IcecreamServiceApi clientWithAuth = WebClientReactiveFeign.<IcecreamServiceApi>builder()
+		IcecreamServiceApi clientWithAuth = builder()
 				.requestInterceptor(request -> {
 					add(request.headers(), "Authorization", "Bearer mytoken123");
 					return request;
@@ -79,7 +74,8 @@ public class RequestInterceptorTest {
 				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
-		IceCreamOrder firstOrder = clientWithAuth.findFirstOrder().block();
-		assertThat(firstOrder).isEqualToComparingFieldByField(orderGenerated);
+		StepVerifier.create(clientWithAuth.findFirstOrder())
+				.expectNextMatches(equalsComparingFieldByFieldRecursively(orderGenerated))
+				.expectComplete();
 	}
 }

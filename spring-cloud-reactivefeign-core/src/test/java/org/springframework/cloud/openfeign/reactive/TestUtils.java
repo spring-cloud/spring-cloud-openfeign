@@ -16,8 +16,13 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import java.util.function.Predicate;
+
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 
 /**
  * Helper methods for tests.
@@ -27,5 +32,15 @@ class TestUtils {
 
 	static {
 		MAPPER.registerModule(new JavaTimeModule());
+	}
+
+	public static <T> Predicate<T> equalsComparingFieldByFieldRecursively(T rhs){
+		return lhs -> {
+			try {
+				return MAPPER.writeValueAsString(lhs).equals(MAPPER.writeValueAsString(rhs));
+			} catch (JsonProcessingException e) {
+				throw new RuntimeException(e);
+			}
+		};
 	}
 }

@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveF
 /**
  * @author Sergii Karpenko
  */
-public class NotFoundTest extends org.springframework.cloud.openfeign.reactive.NotFoundTest{
+public class RetryingTest extends org.springframework.cloud.openfeign.reactive.RetryingTest{
 
 	@Override
 	protected ReactiveFeign.Builder<IcecreamServiceApi> builder() {

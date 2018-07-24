@@ -20,17 +20,10 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.springframework.cloud.openfeign.reactive.ReactiveFeign;
 import org.springframework.cloud.openfeign.reactive.ReactiveOptions;
-import org.springframework.cloud.openfeign.reactive.UriBuilder;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static org.springframework.util.CollectionUtils.toMultiValueMap;
 
 /**
  * WebClient based implementation
@@ -74,36 +67,9 @@ public class WebClientReactiveFeign {
 
 	public static <T> ReactiveFeign.Builder<T> builder(WebClient webClient) {
 		return new ReactiveFeign.Builder<>(
-				WebClientReactiveFeign::uriBuilder,
+				org.springframework.cloud.openfeign.reactive.webclient.UriBuilder::new,
 				methodMetadata -> new WebReactiveHttpClient<>(methodMetadata, webClient)
 		);
-	}
-
-	private static UriBuilder uriBuilder(String targetUrl){
-
-		DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory(targetUrl);
-
-		return new UriBuilder() {
-
-			private org.springframework.web.util.UriBuilder uriBuilder;
-
-			@Override
-			public UriBuilder fragment(String fragment) {
-				uriBuilder = uriBuilderFactory.uriString(fragment);
-				return this;
-			}
-
-			@Override
-			public UriBuilder queryParameters(Map<String, List<String>> parameters) {
-				uriBuilder = uriBuilder.queryParams(toMultiValueMap(parameters));
-				return this;
-			}
-
-			@Override
-			public URI build(Map<String, ?> uriVariables) {
-				return uriBuilder.build(uriVariables);
-			}
-		};
 	}
 }
 

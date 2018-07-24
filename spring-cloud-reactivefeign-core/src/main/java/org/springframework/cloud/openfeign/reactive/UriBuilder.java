@@ -7,11 +7,9 @@ import java.util.Map;
 public interface UriBuilder {
 
 	/**
-	 * Set the URI fragment. The given fragment may contain URI template variables,
-	 * and may also be {@code null} to clear the fragment of this builder.
-	 * @param fragment the URI fragment
+	 * @param uriTemplate the URI template to use
 	 */
-	UriBuilder fragment(String fragment);
+	UriBuilder uriString(String uriTemplate);
 
 	/**
 	 * Add the given query parameters.

@@ -28,10 +28,14 @@ import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
 import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.cloud.openfeign.reactive.TestUtils.equalsComparingFieldByFieldRecursively;
 
 /**
  * @author Sergii Karpenko
@@ -41,9 +45,6 @@ abstract public class DefaultMethodTest {
 	@ClassRule
 	public static WireMockClassRule wireMockRule = new WireMockClassRule(
 			wireMockConfig().dynamicPort());
-
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
 	public void resetServers() {
@@ -56,13 +57,10 @@ abstract public class DefaultMethodTest {
 
 	@Test
 	public void shouldProcessDefaultMethodOnProxy() throws JsonProcessingException {
-
-		String orderUrl = "/icecream/orders/1";
-
 		IceCreamOrder orderGenerated = new OrderGenerator().generate(1);
 		String orderStr = TestUtils.MAPPER.writeValueAsString(orderGenerated);
 
-		wireMockRule.stubFor(get(urlEqualTo(orderUrl))
+		wireMockRule.stubFor(get(urlEqualTo("/icecream/orders/1"))
 				.withHeader("Accept", equalTo("application/json"))
 				.willReturn(aResponse().withStatus(200)
 						.withHeader("Content-Type", "application/json")
@@ -71,9 +69,9 @@ abstract public class DefaultMethodTest {
 		IcecreamServiceApi client = builder()
 				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
 
-		IceCreamOrder firstOrder = client.findFirstOrder().block();
-
-		assertThat(firstOrder).isEqualToComparingFieldByField(orderGenerated);
+		StepVerifier.create(client.findFirstOrder())
+				.expectNextMatches(equalsComparingFieldByFieldRecursively(orderGenerated))
+				.verifyComplete();
 	}
 
 	@Test
@@ -83,11 +81,13 @@ abstract public class DefaultMethodTest {
 		IcecreamServiceApi client = builder()
 				.target(IcecreamServiceApi.class,"http://localhost:" + wireMockRule.port());
 
-		IceCreamOrder errorOrder = client.throwExceptionMono().onErrorReturn(
+		Mono<IceCreamOrder> errorOrder = client.throwExceptionMono().onErrorReturn(
 				throwable -> throwable.equals(IcecreamServiceApi.RUNTIME_EXCEPTION),
-				orderGenerated).block();
+				orderGenerated);
 
-		assertThat(errorOrder).isEqualToComparingFieldByField(orderGenerated);
+		StepVerifier.create(errorOrder)
+				.expectNextMatches(equalsComparingFieldByFieldRecursively(orderGenerated))
+				.verifyComplete();
 	}
 
 	@Test
@@ -97,11 +97,13 @@ abstract public class DefaultMethodTest {
 		IcecreamServiceApi client = builder()
 				.target(IcecreamServiceApi.class,"http://localhost:" + wireMockRule.port());
 
-		IceCreamOrder errorOrder = client.throwExceptionFlux().onErrorReturn(
+		Flux<IceCreamOrder> errorOrder = client.throwExceptionFlux().onErrorReturn(
 				throwable -> throwable.equals(IcecreamServiceApi.RUNTIME_EXCEPTION),
-				orderGenerated).blockFirst();
+				orderGenerated);
 
-		assertThat(errorOrder).isEqualToComparingFieldByField(orderGenerated);
+		StepVerifier.create(errorOrder)
+				.expectNextMatches(equalsComparingFieldByFieldRecursively(orderGenerated))
+				.verifyComplete();
 	}
 
 	@Test

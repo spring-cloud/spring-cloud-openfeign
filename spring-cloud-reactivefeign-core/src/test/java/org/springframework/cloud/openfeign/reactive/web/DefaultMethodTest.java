@@ -5,6 +5,9 @@ import org.springframework.cloud.openfeign.reactive.ReactiveOptions;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
 
+/**
+ * @author Sergii Karpenko
+ */
 public class DefaultMethodTest extends org.springframework.cloud.openfeign.reactive.DefaultMethodTest {
 
 	@Override

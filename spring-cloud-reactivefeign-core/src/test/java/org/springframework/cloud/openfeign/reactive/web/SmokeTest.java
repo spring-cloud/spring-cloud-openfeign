@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveF
 /**
  * @author Sergii Karpenko
  */
-public class NotFoundTest extends org.springframework.cloud.openfeign.reactive.NotFoundTest{
+public class SmokeTest extends org.springframework.cloud.openfeign.reactive.SmokeTest{
 
 	@Override
 	protected ReactiveFeign.Builder<IcecreamServiceApi> builder() {
