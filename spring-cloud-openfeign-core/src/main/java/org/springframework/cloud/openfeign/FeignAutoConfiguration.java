@@ -202,8 +202,8 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(Client.class)
-		public Client feignClient() {
-			return new OkHttpClient(this.okHttpClient);
+		public Client feignClient(okhttp3.OkHttpClient client) {
+			return new OkHttpClient(client);
 		}
 	}
 
