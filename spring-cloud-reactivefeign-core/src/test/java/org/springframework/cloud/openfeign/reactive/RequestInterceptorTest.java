@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
 import static org.springframework.cloud.openfeign.reactive.TestUtils.equalsComparingFieldByFieldRecursively;
 import static org.springframework.cloud.openfeign.reactive.utils.MultiValueMapUtils.add;
+import static org.springframework.cloud.openfeign.reactive.utils.MultiValueMapUtils.addOrdered;
 
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -68,7 +69,7 @@ abstract public class RequestInterceptorTest {
 
 		IcecreamServiceApi clientWithAuth = builder()
 				.requestInterceptor(request -> {
-					add(request.headers(), "Authorization", "Bearer mytoken123");
+					addOrdered(request.headers(), "Authorization", "Bearer mytoken123");
 					return request;
 				})
 				.target(IcecreamServiceApi.class,

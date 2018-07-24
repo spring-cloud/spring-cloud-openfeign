@@ -67,9 +67,8 @@ public class ReactiveFeign {
 	}
 
 	public static <T> Builder<T> builder(
-			Function<String, UriBuilder> uriBuilderFactory,
 			Function<MethodMetadata, ReactiveHttpClient<T>> clientFactory) {
-		return new Builder<>(uriBuilderFactory, clientFactory);
+		return new Builder<>(clientFactory);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -107,7 +106,6 @@ public class ReactiveFeign {
 	 */
 	public static class Builder<T> {
 		protected Contract contract = new ReactiveDelegatingContract(new Contract.Default());
-		protected final Function<String, UriBuilder> uriBuilderFactory;
 		protected final Function<MethodMetadata, ReactiveHttpClient<T>> clientFactory;
 		protected ReactiveHttpRequestInterceptor requestInterceptor;
 		protected BiFunction<MethodMetadata, ReactiveHttpResponse<T>, ReactiveHttpResponse<T>> responseMapper;
@@ -118,13 +116,9 @@ public class ReactiveFeign {
 
 		private Function<Flux<Throwable>, Publisher<Throwable>> retryFunction;
 
-		public Builder(Function<String, UriBuilder> uriBuilderFactory,
-					   Function<MethodMetadata, ReactiveHttpClient<T>> clientFactory){
-			checkNotNull(uriBuilderFactory,
-					"uriBuilderFactory wasn't provided in ReactiveFeign builder");
+		public Builder(Function<MethodMetadata, ReactiveHttpClient<T>> clientFactory){
 			checkNotNull(clientFactory,
 					"clientFactory wasn't provided in ReactiveFeign builder");
-			this.uriBuilderFactory = uriBuilderFactory;
 			this.clientFactory = clientFactory;
 		}
 
@@ -218,7 +212,7 @@ public class ReactiveFeign {
 		}
 
 		protected ReactiveMethodHandlerFactory buildReactiveMethodHandlerFactory() {
-			return new ReactiveClientMethodHandler.Factory(uriBuilderFactory, buildReactiveClientFactory());
+			return new ReactiveClientMethodHandler.Factory(buildReactiveClientFactory());
 		}
 
 		protected ReactiveClientFactory buildReactiveClientFactory() {

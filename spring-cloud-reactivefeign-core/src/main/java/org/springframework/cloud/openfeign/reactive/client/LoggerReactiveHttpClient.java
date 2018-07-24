@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign.reactive.client;
 import feign.MethodMetadata;
 import org.reactivestreams.Publisher;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.openfeign.reactive.utils.Pair;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -165,15 +166,4 @@ public class LoggerReactiveHttpClient<T> implements ReactiveHttpClient<T> {
 			return supplier.get().toString();
 		}
 	}
-
-	private static class Pair<L, R> {
-		final L left;
-		final R right;
-
-		private Pair(L left, R right) {
-			this.left = left;
-			this.right = right;
-		}
-	}
-
 }

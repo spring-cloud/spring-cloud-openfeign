@@ -67,7 +67,6 @@ public class WebClientReactiveFeign {
 
 	public static <T> ReactiveFeign.Builder<T> builder(WebClient webClient) {
 		return new ReactiveFeign.Builder<>(
-				org.springframework.cloud.openfeign.reactive.webclient.UriBuilder::new,
 				methodMetadata -> new WebReactiveHttpClient<>(methodMetadata, webClient)
 		);
 	}
