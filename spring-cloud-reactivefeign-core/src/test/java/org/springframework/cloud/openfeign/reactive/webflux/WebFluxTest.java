@@ -14,45 +14,50 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.reactive.allfeatures;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static reactor.core.publisher.Flux.empty;
-import static reactor.core.publisher.Mono.fromFuture;
-import static reactor.core.publisher.Mono.just;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
+package org.springframework.cloud.openfeign.reactive.webflux;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.openfeign.reactive.ReactiveFeign;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.reactive.function.client.WebClient;
-
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import static java.nio.ByteBuffer.wrap;
+import static org.assertj.core.api.Assertions.assertThat;
+import static reactor.core.publisher.Flux.empty;
+import static reactor.core.publisher.Mono.fromFuture;
+import static reactor.core.publisher.Mono.just;
 
 /**
  * @author Sergii Karpenko
  * 
- * Tests ReactiveFeign in conjunction with WebFlux rest controller.
+ * Tests ReactiveFeign seamless integration with WebFlux rest controller.
  */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
 		AllFeaturesController.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@EnableAutoConfiguration
-public class AllFeaturesTest {
+abstract public class WebFluxTest {
 
 	private AllFeaturesApi client;
 
@@ -62,10 +67,13 @@ public class AllFeaturesTest {
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
+	abstract protected ReactiveFeign.Builder<AllFeaturesApi> builder();
+
 	@Before
 	public void setUp() {
-		client = ReactiveFeign.<AllFeaturesApi>builder().webClient(WebClient.create())
-				.decode404().target(AllFeaturesApi.class, "http://localhost:" + port);
+		client = builder()
+				.decode404()
+				.target(AllFeaturesApi.class, "http://localhost:" + port);
 	}
 
 	@Test
@@ -75,10 +83,11 @@ public class AllFeaturesTest {
 				put("paramKey", "paramValue");
 			}
 		};
-		Map<String, String> returned = client.mirrorParameters(555, 777, paramMap)
+		Map<String, String> returned = client.mirrorParameters(555, "666", 777, paramMap)
 				.block();
 
 		assertThat(returned).containsEntry("paramInPath", "555");
+		assertThat(returned).containsEntry("paramInPath2", "666");
 		assertThat(returned).containsEntry("paramInUrl", "777");
 		assertThat(returned).containsAllEntriesOf(paramMap);
 	}
@@ -140,6 +149,47 @@ public class AllFeaturesTest {
 	}
 
 	@Test
+	public void shouldMirrorStreamingBinaryBodyReactive() throws InterruptedException {
+
+		CountDownLatch countDownLatch = new CountDownLatch(2);
+
+		AtomicInteger sentCount = new AtomicInteger();
+		ConcurrentLinkedQueue<DataBuffer> receivedAll = new ConcurrentLinkedQueue<>();
+
+		CompletableFuture<DataBuffer> firstReceived = new CompletableFuture<>();
+
+		Flux<DataBuffer> returned = client
+				.mirrorStreamingBinaryBodyReactive(Flux.just(fromByteArray(new byte[]{1,2,3}), fromByteArray(new byte[]{4,5,6})))
+				.delayUntil(testObject -> sentCount.get() == 1 ? fromFuture(firstReceived)
+						: empty())
+				.doOnNext(sent -> sentCount.incrementAndGet());
+
+		returned.doOnNext(received -> {
+			receivedAll.add(received);
+			assertThat(receivedAll.size()).isEqualTo(sentCount.get());
+			firstReceived.complete(received);
+			countDownLatch.countDown();
+		}).subscribe();
+
+		countDownLatch.await();
+
+		assertThat(receivedAll.stream().map(DataBuffer::asByteBuffer).collect(Collectors.toList()))
+				.containsExactly(wrap(new byte[]{1,2,3}), wrap(new byte[]{4,5,6}));
+	}
+
+	private static DataBuffer fromByteArray(byte[] data){
+		return new DefaultDataBufferFactory().wrap(data);
+	}
+
+	@Test
+	public void shouldMirrorResourceReactiveWithZeroCopying(){
+		byte[] data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+		ByteArrayResource resource = new ByteArrayResource(data);
+		Flux<DataBuffer> returned = client.mirrorResourceReactiveWithZeroCopying(resource);
+		assertThat(DataBufferUtils.join(returned).block().asByteBuffer()).isEqualTo(wrap(data));
+	}
+
+	@Test
 	public void shouldReturnBodyMapReactive() {
 		Map<String, String> bodyMap = new HashMap<String, String>() {
 			{
@@ -148,9 +198,11 @@ public class AllFeaturesTest {
 			}
 		};
 
-		Map<String, String> returned = client.mirrorBodyMapReactive(just(bodyMap))
-				.block();
-		assertThat(returned).containsAllEntriesOf(bodyMap);
+		Mono<Map<String, String>> publisher = client.mirrorBodyMapReactive(just(bodyMap));
+
+		StepVerifier.create(publisher)
+				.consumeNextWith(map -> assertThat(map).containsAllEntriesOf(bodyMap))
+				.verifyComplete();
 	}
 
 	@Test

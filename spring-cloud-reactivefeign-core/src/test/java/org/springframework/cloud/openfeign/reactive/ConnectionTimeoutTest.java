@@ -16,24 +16,19 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
+import org.hamcrest.Matchers;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
+import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
-import org.springframework.web.reactive.function.client.WebClient;
-
 /**
  * @author Sergii Karpenko
  */
-public class ConnectionTimeoutTest {
+abstract public class ConnectionTimeoutTest {
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
@@ -41,6 +36,8 @@ public class ConnectionTimeoutTest {
 	private ServerSocket serverSocket;
 	private Socket socket;
 	private int port;
+
+	abstract protected ReactiveFeign.Builder<IcecreamServiceApi> builder(ReactiveOptions options);
 
 	@Before
 	public void before() throws IOException {
@@ -70,10 +67,12 @@ public class ConnectionTimeoutTest {
 		expectedException.expectCause(
 				Matchers.any(io.netty.channel.ConnectTimeoutException.class));
 
-		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create())
-				.options(new ReactiveOptions.Builder().setConnectTimeoutMillis(300)
-						.setReadTimeoutMillis(100).build())
+		IcecreamServiceApi client = builder(
+				new ReactiveOptions.Builder()
+						.setConnectTimeoutMillis(300)
+						.setReadTimeoutMillis(100)
+						.build()
+		)
 				.target(IcecreamServiceApi.class, "http://localhost:" + port);
 
 		client.findOrder(1).block();

@@ -16,9 +16,18 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import static feign.Util.checkNotNull;
-import static feign.Util.isDefault;
-import static java.util.Arrays.asList;
+import feign.*;
+import feign.InvocationHandlerFactory.MethodHandler;
+import feign.codec.ErrorDecoder;
+import org.reactivestreams.Publisher;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequestInterceptor;
+import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpResponse;
+import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandler;
+import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandlers;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -27,39 +36,17 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-import org.reactivestreams.Publisher;
-import org.springframework.cloud.openfeign.reactive.client.ReactiveClientFactory;
-import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpClient;
-import org.springframework.cloud.openfeign.reactive.client.ReactiveHttpRequestInterceptor;
-import org.springframework.cloud.openfeign.reactive.client.RetryReactiveHttpClient;
-import org.springframework.cloud.openfeign.reactive.client.WebReactiveHttpClient;
-import org.springframework.cloud.openfeign.reactive.client.statushandler.CompositeStatusHandler;
-import org.springframework.cloud.openfeign.reactive.client.statushandler.DefaultFeignErrorDecoder;
-import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandler;
-import org.springframework.cloud.openfeign.reactive.client.statushandler.SimpleStatusHandler;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import feign.Contract;
-import feign.Feign;
-import feign.FeignException;
-import feign.InvocationHandlerFactory;
-import feign.InvocationHandlerFactory.MethodHandler;
-import feign.MethodMetadata;
-import feign.Request;
-import feign.Target;
-import feign.codec.ErrorDecoder;
-import io.netty.channel.ChannelOption;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import static feign.Util.checkNotNull;
+import static feign.Util.isDefault;
+import static org.springframework.cloud.openfeign.reactive.client.InterceptorReactiveHttpClient.intercept;
+import static org.springframework.cloud.openfeign.reactive.client.LoggerReactiveHttpClient.log;
+import static org.springframework.cloud.openfeign.reactive.client.ResponseMappers.ignore404;
+import static org.springframework.cloud.openfeign.reactive.client.ResponseMappers.mapResponse;
+import static org.springframework.cloud.openfeign.reactive.client.RetryReactiveHttpClient.retry;
+import static org.springframework.cloud.openfeign.reactive.client.StatusHandlerReactiveHttpClient.handleStatus;
 
 /**
  * Allows Feign interfaces to accept {@link Publisher} as body and return reactive
@@ -72,14 +59,16 @@ public class ReactiveFeign {
 	private final ParseHandlersByName targetToHandlersByName;
 	private final InvocationHandlerFactory factory;
 
-	protected ReactiveFeign(final ParseHandlersByName targetToHandlersByName,
+	protected ReactiveFeign(
+			final ParseHandlersByName targetToHandlersByName,
 			final InvocationHandlerFactory factory) {
 		this.targetToHandlersByName = targetToHandlersByName;
 		this.factory = factory;
 	}
 
-	public static <T> Builder<T> builder() {
-		return new Builder<>();
+	public static <T> Builder<T> builder(
+			Function<MethodMetadata, ReactiveHttpClient<T>> clientFactory) {
+		return new Builder<>(clientFactory);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -116,21 +105,21 @@ public class ReactiveFeign {
 	 * ReactiveFeign builder.
 	 */
 	public static class Builder<T> {
-		protected Contract contract = new ReactiveDelegatingContract(
-				new Contract.Default());
-		protected WebClient webClient = WebClient.create();
-		protected ReactiveHttpRequestInterceptor requestInterceptor = request -> request;
-		protected ReactiveStatusHandler statusHandler = new DefaultFeignErrorDecoder(
-				new ErrorDecoder.Default());
+		protected Contract contract = new ReactiveDelegatingContract(new Contract.Default());
+		protected final Function<MethodMetadata, ReactiveHttpClient<T>> clientFactory;
+		protected ReactiveHttpRequestInterceptor requestInterceptor;
+		protected BiFunction<MethodMetadata, ReactiveHttpResponse<T>, ReactiveHttpResponse<T>> responseMapper;
+		protected ReactiveStatusHandler statusHandler = ReactiveStatusHandlers.defaultFeign(new ErrorDecoder.Default());
 		protected InvocationHandlerFactory invocationHandlerFactory = new ReactiveInvocationHandler.Factory();
 		protected boolean decode404 = false;
 		protected Target<T> target;
 
 		private Function<Flux<Throwable>, Publisher<Throwable>> retryFunction;
 
-		public Builder<T> webClient(final WebClient webClient) {
-			this.webClient = webClient;
-			return this;
+		public Builder(Function<MethodMetadata, ReactiveHttpClient<T>> clientFactory){
+			checkNotNull(clientFactory,
+					"clientFactory wasn't provided in ReactiveFeign builder");
+			this.clientFactory = clientFactory;
 		}
 
 		/**
@@ -173,43 +162,14 @@ public class ReactiveFeign {
 			return this;
 		}
 
-		public Builder<T> throwOnStatusCode(Predicate<HttpStatus> statusPredicate,
-				BiFunction<String, ClientResponse, Throwable> errorFunction) {
-			return statusHandler(new CompositeStatusHandler(
-					asList(new SimpleStatusHandler(statusPredicate, errorFunction),
-							statusHandler)));
-		}
-
 		/**
-		 * Sets request options using Feign {@link Request.Options}
+		 * The most common way to introduce custom logic on handling http response
 		 *
-		 * @param options Feign {@code Request.Options} object
-		 * @return this builder
+		 * @param responseMapper
+		 * @return
 		 */
-		public Builder<T> options(final ReactiveOptions options) {
-
-			if (!options.isEmpty()) {
-				ReactorClientHttpConnector connector = new ReactorClientHttpConnector(
-						opts -> {
-							if (options.getConnectTimeoutMillis() != null) {
-								opts.option(ChannelOption.CONNECT_TIMEOUT_MILLIS,
-										options.getConnectTimeoutMillis());
-							}
-							if (options.getReadTimeoutMillis() != null) {
-								opts.afterNettyContextInit(ctx -> {
-									ctx.addHandlerLast(new ReadTimeoutHandler(
-											options.getReadTimeoutMillis(),
-											TimeUnit.MILLISECONDS));
-
-								});
-							}
-							if (options.isTryUseCompression() != null) {
-								opts.compression(options.isTryUseCompression());
-							}
-						});
-
-				this.webClient = webClient.mutate().clientConnector(connector).build();
-			}
+		public Builder<T> responseMapper(BiFunction<MethodMetadata, ReactiveHttpResponse<T>, ReactiveHttpResponse<T>> responseMapper){
+			this.responseMapper = responseMapper;
 			return this;
 		}
 
@@ -246,9 +206,6 @@ public class ReactiveFeign {
 		}
 
 		protected ReactiveFeign build() {
-			checkNotNull(this.webClient,
-					"WebClient instance wasn't provided in ReactiveFeign builder");
-
 			final ParseHandlersByName handlersByName = new ParseHandlersByName(contract,
 					buildReactiveMethodHandlerFactory());
 			return new ReactiveFeign(handlersByName, invocationHandlerFactory);
@@ -260,19 +217,37 @@ public class ReactiveFeign {
 
 		protected ReactiveClientFactory buildReactiveClientFactory() {
 			return methodMetadata -> {
-				ReactiveHttpClient reactiveClient = new WebReactiveHttpClient(
-						methodMetadata, webClient, requestInterceptor, statusHandler,
-						decode404);
-				if (retryFunction != null) {
-					reactiveClient = new RetryReactiveHttpClient(reactiveClient,
-							methodMetadata, retryFunction);
+
+				ReactiveHttpClient<T> reactiveClient = clientFactory.apply(methodMetadata);
+
+				if(requestInterceptor != null) {
+					reactiveClient = intercept(reactiveClient, requestInterceptor);
 				}
+
+				reactiveClient = log(reactiveClient, methodMetadata);
+
+				if(responseMapper != null){
+					reactiveClient = mapResponse(reactiveClient, methodMetadata, responseMapper);
+				}
+
+				if(decode404){
+					reactiveClient = mapResponse(reactiveClient, methodMetadata, ignore404());
+				}
+
+				if(statusHandler != null) {
+					reactiveClient = handleStatus(reactiveClient, methodMetadata, statusHandler);
+				}
+
+				if (retryFunction != null) {
+					reactiveClient = retry(reactiveClient, methodMetadata, retryFunction);
+				}
+
 				return reactiveClient;
 			};
 		}
 	}
 
-	static final class ParseHandlersByName {
+	public static final class ParseHandlersByName {
 		private final Contract contract;
 		private final ReactiveMethodHandlerFactory factory;
 

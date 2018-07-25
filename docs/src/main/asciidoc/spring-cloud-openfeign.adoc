@@ -453,11 +453,11 @@ for details on setting up your build system with the current Spring Cloud Releas
 ----
 public interface StoreClient {
     @RequestLine("GET /stores")
-    List<Store> getStores();
+    Flux<Store> getStores();
 
     @RequestLine("POST /stores/{storeId}")
     @Headers({ "Content-Type: application/json" })
-    Store update(@Param("storeId") Long storeId, Store store);
+    Mono<Store> update(@Param("storeId") Long storeId, Store store);
 }
 ----
 
@@ -589,7 +589,7 @@ ReactiveFeign supports boilerplate apis via single-inheritance interfaces. This 
 [source,java,indent=0]
 ----
 public interface UserService {
-    User getUser(long id);
+    Mono<User> getUser(long id);
 }
 ----
 
@@ -601,7 +601,7 @@ public class UserResource implements UserService {
 
     @Override
     @RequestMapping(method = RequestMethod.GET, value ="/users/{id}")
-    User getUser(@PathVariable("id") long id);
+    Mono<User> getUser(@PathVariable("id") long id);
 }
 ----
 
@@ -614,6 +614,6 @@ public interface UserClient extends UserService {
 
     @Override
     @RequestLine("POST /users/{id}")
-    User getUser(@Param("id") long id);
+    Mono<User> getUser(@Param("id") long id);
 }
 ----

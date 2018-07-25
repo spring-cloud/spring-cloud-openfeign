@@ -16,52 +16,43 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
-import static org.apache.http.HttpHeaders.RETRY_AFTER;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.isA;
-
-import java.util.Arrays;
-import java.util.List;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
+import feign.RetryableException;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.cloud.openfeign.reactive.client.RetryReactiveHttpClient;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.Mixin;
 import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
-import org.springframework.web.reactive.function.client.WebClient;
+import reactor.test.StepVerifier;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
+import java.util.Arrays;
 
-import feign.RetryableException;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+import static org.apache.http.HttpHeaders.RETRY_AFTER;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.isA;
+import static org.springframework.cloud.openfeign.reactive.TestUtils.equalsComparingFieldByFieldRecursively;
 
 /**
  * @author Sergii Karpenko
  */
-public class RetryingTest {
+public abstract class RetryingTest {
 
 	@ClassRule
 	public static WireMockClassRule wireMockRule = new WireMockClassRule(
 			wireMockConfig().dynamicPort());
 
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	abstract protected ReactiveFeign.Builder<IcecreamServiceApi> builder();
 
 	@Before
 	public void resetServers() {
@@ -80,15 +71,14 @@ public class RetryingTest {
 				aResponse().withStatus(200).withHeader("Content-Type", "application/json")
 						.withBody(orderStr));
 
-		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create())
+		IcecreamServiceApi client = builder()
 				.retryWhen(ReactiveRetryers.retryWithBackoff(3, 0))
 				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
-		IceCreamOrder order = client.findOrder(1).block();
-
-		assertThat(order).isEqualToComparingFieldByFieldRecursively(orderGenerated);
+		StepVerifier.create(client.findOrder(1))
+				.expectNextMatches(equalsComparingFieldByFieldRecursively(orderGenerated))
+				.verifyComplete();
 	}
 
 	@Test
@@ -104,16 +94,13 @@ public class RetryingTest {
 						.withHeader("Content-Type", "application/json")
 						.withBody(mixinsStr));
 
-		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create())
+		IcecreamServiceApi client = builder()
 				.retryWhen(ReactiveRetryers.retryWithBackoff(3, 0))
-				.target(IcecreamServiceApi.class,
-						"http://localhost:" + wireMockRule.port());
+				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
 
-		List<Mixin> mixins = client.getAvailableMixins().collectList().block();
-
-		assertThat(mixins).hasSize(Mixin.values().length)
-				.containsAll(Arrays.asList(Mixin.values()));
+		StepVerifier.create(client.getAvailableMixins())
+				.expectNextSequence(Arrays.asList(Mixin.values()))
+				.verifyComplete();
 	}
 
 	@Test
@@ -128,15 +115,13 @@ public class RetryingTest {
 						.withHeader("Content-Type", "application/json")
 						.withBody(orderStr));
 
-		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create())
+		IcecreamServiceApi client = builder()
 				.retryWhen(ReactiveRetryers.retryWithBackoff(3, 0))
-				.target(IcecreamServiceApi.class,
-						"http://localhost:" + wireMockRule.port());
+				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
 
-		IceCreamOrder order = client.findOrder(1).block();
-
-		assertThat(order).isEqualToComparingFieldByFieldRecursively(orderGenerated);
+		StepVerifier.create(client.findOrder(1))
+				.expectNextMatches(equalsComparingFieldByFieldRecursively(orderGenerated))
+				.verifyComplete();
 	}
 
 	private static void mockResponseAfterSeveralAttempts(WireMockClassRule rule,
@@ -161,10 +146,26 @@ public class RetryingTest {
 	@Test
 	public void shouldFailAsNoMoreRetries() {
 
-		expectedException.expect(RuntimeException.class);
-		expectedException.expectCause(
-				allOf(isA(RetryReactiveHttpClient.OutOfRetriesException.class),
-						hasProperty("cause", isA(RetryableException.class))));
+		String orderUrl = "/icecream/orders/1";
+
+		wireMockRule.stubFor(get(urlEqualTo(orderUrl))
+				.withHeader("Accept", equalTo("application/json"))
+				.willReturn(aResponse().withStatus(503).withHeader(RETRY_AFTER, "1")));
+
+		IcecreamServiceApi client = builder()
+				.retryWhen(ReactiveRetryers.retry(3))
+				.target(IcecreamServiceApi.class,"http://localhost:" + wireMockRule.port());
+
+		StepVerifier.create(client.findOrder(1))
+				.expectErrorMatches(throwable ->
+						throwable instanceof RuntimeException
+						&& allOf(isA(RetryReactiveHttpClient.OutOfRetriesException.class),
+						hasProperty("cause", isA(RetryableException.class)))
+						.matches(throwable.getCause()));
+	}
+
+	@Test
+	public void shouldFailAsNoMoreRetriesWithBackoff() {
 
 		String orderUrl = "/icecream/orders/1";
 
@@ -172,12 +173,16 @@ public class RetryingTest {
 				.withHeader("Accept", equalTo("application/json"))
 				.willReturn(aResponse().withStatus(503).withHeader(RETRY_AFTER, "1")));
 
-		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create()).retryWhen(ReactiveRetryers.retry(3))
-				.target(IcecreamServiceApi.class,
-						"http://localhost:" + wireMockRule.port());
+		IcecreamServiceApi client = builder()
+				.retryWhen(ReactiveRetryers.retryWithBackoff(3, 5))
+				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
 
-		client.findOrder(1).block();
+		StepVerifier.create(client.findOrder(1))
+				.expectErrorMatches(throwable ->
+						throwable instanceof RuntimeException
+								&& allOf(isA(RetryReactiveHttpClient.OutOfRetriesException.class),
+								hasProperty("cause", isA(RetryableException.class)))
+								.matches(throwable.getCause()));
 	}
 
 }

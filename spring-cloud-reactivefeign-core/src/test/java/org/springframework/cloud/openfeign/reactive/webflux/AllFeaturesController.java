@@ -14,34 +14,33 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.reactive.allfeatures;
+package org.springframework.cloud.openfeign.reactive.webflux;
 
-import static reactor.core.publisher.Mono.just;
+import org.reactivestreams.Publisher;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-import org.reactivestreams.Publisher;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import static reactor.core.publisher.Mono.just;
 
 @RestController
 public class AllFeaturesController implements AllFeaturesApi {
 
-	@GetMapping(path = "/mirrorParameters/{paramInPath}")
+	@GetMapping(path = "/mirrorParameters/{paramInPath}/{paramInPath2}")
 	@Override
 	public Mono<Map<String, String>> mirrorParameters(
 			@PathVariable("paramInPath") long paramInPath,
+			@PathVariable("paramInPath2") String paramInPath2,
 			@RequestParam("paramInUrl") long paramInUrl,
 			@RequestParam Map<String, String> paramMap) {
 		paramMap.put("paramInPath", Long.toString(paramInPath));
+		paramMap.put("paramInPath2", paramInPath2);
 		paramMap.put("paramInUrl", Long.toString(paramInUrl));
 		return just(paramMap);
 	}
@@ -82,6 +81,18 @@ public class AllFeaturesController implements AllFeaturesApi {
 	@Override
 	public Mono<String> mirrorBodyReactive(@RequestBody Publisher<String> body) {
 		return Mono.from(body);
+	}
+
+	@PostMapping(path = "/mirrorStreamingBinaryBodyReactive")
+	@Override
+	public Flux<DataBuffer> mirrorStreamingBinaryBodyReactive(@RequestBody Publisher<DataBuffer> body) {
+		return Flux.from(body);
+	}
+
+	@PostMapping(path = "/mirrorResourceReactiveWithZeroCopying")
+	@Override
+	public Flux<DataBuffer> mirrorResourceReactiveWithZeroCopying(@RequestBody Resource resource) {
+		return DataBufferUtils.read(resource, new DefaultDataBufferFactory(), 3);
 	}
 
 	@PostMapping(path = "/mirrorBodyMapReactive")

@@ -1,40 +1,29 @@
 package org.springframework.cloud.openfeign.reactive;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
-import feign.FeignException;
 import feign.RetryableException;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandler;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.IceCreamOrder;
-import org.springframework.cloud.openfeign.reactive.testcase.domain.OrderGenerator;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.springframework.cloud.openfeign.reactive.client.statushandler.CompositeStatusHandler.compose;
+import static org.springframework.cloud.openfeign.reactive.client.statushandler.ReactiveStatusHandlers.throwOnStatus;
 
 /**
  * @author Sergii Karpenko
  */
-public class StatusHandlerTest {
+public abstract class StatusHandlerTest {
 
 	@ClassRule
 	public static WireMockClassRule wireMockRule = new WireMockClassRule(
 			wireMockConfig().dynamicPort());
 
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	abstract protected ReactiveFeign.Builder<IcecreamServiceApi> builder();
 
 	@Before
 	public void resetServers() {
@@ -42,55 +31,50 @@ public class StatusHandlerTest {
 	}
 
 	@Test
-	public void shouldThrowRetryException() throws JsonProcessingException {
+	public void shouldThrowRetryException() {
 
-		String orderUrl = "/icecream/orders/1";
-
-		IceCreamOrder orderGenerated = new OrderGenerator().generate(1);
-
-		wireMockRule.stubFor(get(urlEqualTo(orderUrl))
+		wireMockRule.stubFor(get(urlEqualTo("/icecream/orders/1"))
 				.withHeader("Accept", equalTo("application/json"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_SERVICE_UNAVAILABLE)))
-				.setPriority(100);
+				.willReturn(aResponse().withStatus(HttpStatus.SC_SERVICE_UNAVAILABLE)));
+		IcecreamServiceApi client = builder()
+				.statusHandler(throwOnStatus(
+						status -> status == HttpStatus.SC_SERVICE_UNAVAILABLE,
+						(methodTag, response) -> new RetryableException("Should retry on next node", null)
+				))
+				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
 
-		IcecreamServiceApi clientWithoutAuth = ReactiveFeign.<IcecreamServiceApi>builder()
-				.statusHandler(new ReactiveStatusHandler() {
-					@Override
-					public boolean shouldHandle(org.springframework.http.HttpStatus status) {
-						return status.value() == HttpStatus.SC_SERVICE_UNAVAILABLE;
-					}
-
-					@Override
-					public Mono<? extends Throwable> decode(String methodKey, ClientResponse response) {
-						return Mono.just(new RetryableException("Should retry on next node", null));
-					}
-				})
-				.target(IcecreamServiceApi.class,
-						"http://localhost:" + wireMockRule.port());
-
-		assertThatThrownBy(() -> clientWithoutAuth.findFirstOrder().block())
-				.isInstanceOf(RetryableException.class);
+		StepVerifier.create(client.findFirstOrder())
+				.expectError(RetryableException.class);
 	}
 
 	@Test
-	public void shouldThrowOnStatusCode() throws JsonProcessingException {
-
-		String orderUrl = "/icecream/orders/1";
-
-
-		wireMockRule.stubFor(get(urlEqualTo(orderUrl))
+	public void shouldThrowOnStatusCode() {
+		wireMockRule.stubFor(get(urlEqualTo("/icecream/orders/1"))
 				.withHeader("Accept", equalTo("application/json"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_SERVICE_UNAVAILABLE)))
-				.setPriority(100);
+				.willReturn(aResponse().withStatus(HttpStatus.SC_SERVICE_UNAVAILABLE)));
 
-		IcecreamServiceApi clientWithoutAuth = ReactiveFeign.<IcecreamServiceApi>builder()
-				.throwOnStatusCode(
-						httpStatus -> httpStatus.value() == HttpStatus.SC_SERVICE_UNAVAILABLE,
-						(s, clientResponse) -> new RetryableException("Should retry on next node", null))
-				.target(IcecreamServiceApi.class,
-						"http://localhost:" + wireMockRule.port());
+		wireMockRule.stubFor(get(urlEqualTo("/icecream/orders/2"))
+				.withHeader("Accept", equalTo("application/json"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_UNAUTHORIZED)));
 
-		assertThatThrownBy(() -> clientWithoutAuth.findFirstOrder().block())
-				.isInstanceOf(RetryableException.class);
+
+		IcecreamServiceApi client = builder()
+				.statusHandler(compose(
+						throwOnStatus(
+								status -> status == HttpStatus.SC_SERVICE_UNAVAILABLE,
+								(methodTag, response) -> new RetryableException("Should retry on next node", null)
+						),
+						throwOnStatus(
+								status -> status == HttpStatus.SC_UNAUTHORIZED,
+								(methodTag, response) -> new RuntimeException("Should login", null)
+						)))
+				.target(IcecreamServiceApi.class, "http://localhost:" + wireMockRule.port());
+
+		StepVerifier.create(client.findFirstOrder())
+				.expectError(RetryableException.class);
+
+		StepVerifier.create(client.findOrder(2))
+				.expectError(RuntimeException.class);
+
 	}
 }

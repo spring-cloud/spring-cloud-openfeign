@@ -17,13 +17,25 @@
 package org.springframework.cloud.openfeign.reactive.client;
 
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
+
+import java.lang.reflect.Type;
 
 /**
  * Client that execute http requests reactively
  *
  * @author Sergii Karpenko
  */
-public interface ReactiveHttpClient {
+public interface ReactiveHttpClient<T> {
 
-	Publisher<Object> executeRequest(ReactiveHttpRequest request);
+	Mono<ReactiveHttpResponse<T>> executeRequest(ReactiveHttpRequest request);
+
+	default Publisher<T> executeRequest(ReactiveHttpRequest request, Type returnPublisherType) {
+		Mono<ReactiveHttpResponse<T>> response = executeRequest(request);
+		if (returnPublisherType == Mono.class) {
+			return response.flatMap(resp -> (Mono<T>) resp.body());
+		} else {
+			return response.flatMapMany(resp -> resp.body());
+		}
+	}
 }

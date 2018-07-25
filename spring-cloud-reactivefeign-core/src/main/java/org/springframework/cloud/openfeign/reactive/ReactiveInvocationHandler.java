@@ -16,20 +16,19 @@
 
 package org.springframework.cloud.openfeign.reactive;
 
-import static feign.Util.checkNotNull;
+import feign.InvocationHandlerFactory;
+import feign.InvocationHandlerFactory.MethodHandler;
+import feign.Target;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
-import org.reactivestreams.Publisher;
-
-import feign.InvocationHandlerFactory;
-import feign.InvocationHandlerFactory.MethodHandler;
-import feign.Target;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import static feign.Util.checkNotNull;
 
 /**
  * {@link InvocationHandler} implementation that transforms calls to methods of feign
@@ -45,21 +44,31 @@ public final class ReactiveInvocationHandler implements InvocationHandler {
 			final Map<Method, MethodHandler> dispatch) {
 		this.target = checkNotNull(target, "target must not be null");
 		this.dispatch = checkNotNull(dispatch, "dispatch must not be null");
+		defineObjectMethodsHandlers();
+	}
+
+	private void defineObjectMethodsHandlers()  {
+		try {
+			dispatch.put(Object.class.getMethod("equals", Object.class),
+                    args -> {
+                        Object otherHandler = args.length > 0 && args[0] != null
+								? Proxy.getInvocationHandler(args[0]) : null;
+                        return equals(otherHandler);
+                    });
+			dispatch.put(Object.class.getMethod("hashCode"),
+					args -> hashCode());
+			dispatch.put(Object.class.getMethod("toString"),
+					args -> toString());
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
-	public Object invoke(final Object proxy, final Method method, final Object[] args)
-			throws Throwable {
-		switch (method.getName()) {
-		case "equals":
-			final Object otherHandler = args.length > 0 && args[0] != null
-					? Proxy.getInvocationHandler(args[0]) : null;
-			return equals(otherHandler);
-		case "hashCode":
-			return hashCode();
-		case "toString":
-			return toString();
-		default:
+	public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+		if(method.getDeclaringClass().equals(Object.class)){
+			return dispatch.get(method).invoke(args);
+		} else {
 			return invokeRequestMethod(method, args);
 		}
 	}

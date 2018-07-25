@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.reactive.allfeatures;
+package org.springframework.cloud.openfeign.reactive.webflux;
 
 import java.util.Map;
 
@@ -25,15 +25,20 @@ import feign.Headers;
 import feign.Param;
 import feign.QueryMap;
 import feign.RequestLine;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 @Headers({ "Accept: application/json" })
 public interface AllFeaturesApi {
 
-	@RequestLine("GET /mirrorParameters/{parameterInPathPlaceholder}?paramInUrl={paramInQueryPlaceholder}")
+	@RequestLine("GET /mirrorParameters/{parameterInPathPlaceholder}/{parameterInPathPlaceholder2}?paramInUrl={paramInQueryPlaceholder}")
 	Mono<Map<String, String>> mirrorParameters(
 			@Param("parameterInPathPlaceholder") long paramInPath,
+			@Param("parameterInPathPlaceholder2") String paramInPath2,
 			@Param("paramInQueryPlaceholder") long paramInQuery,
 			@QueryMap Map<String, String> paramMap);
 
@@ -58,6 +63,14 @@ public interface AllFeaturesApi {
 	@RequestLine("POST " + "/mirrorBodyReactive")
 	@Headers({ "Content-Type: application/json" })
 	Mono<String> mirrorBodyReactive(Publisher<String> body);
+
+	@RequestLine("POST " + "/mirrorStreamingBinaryBodyReactive")
+	@Headers({ "Content-Type: "+APPLICATION_OCTET_STREAM_VALUE })
+	Flux<DataBuffer> mirrorStreamingBinaryBodyReactive(Publisher<DataBuffer> body);
+
+	@RequestLine("POST " + "/mirrorResourceReactiveWithZeroCopying")
+	@Headers({ "Content-Type: "+APPLICATION_OCTET_STREAM_VALUE })
+	Flux<DataBuffer> mirrorResourceReactiveWithZeroCopying(Resource resource);
 
 	@RequestLine("POST " + "/mirrorBodyMapReactive")
 	@Headers({ "Content-Type: application/json" })

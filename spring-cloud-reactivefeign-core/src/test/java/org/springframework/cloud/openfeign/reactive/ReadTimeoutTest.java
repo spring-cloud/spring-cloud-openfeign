@@ -21,6 +21,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.springframework.cloud.openfeign.reactive.TestUtils.equalsComparingFieldByFieldRecursively;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -28,31 +29,25 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.cloud.openfeign.reactive.testcase.IcecreamServiceApi;
+import org.springframework.cloud.openfeign.reactive.webclient.WebClientReactiveFeign;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
+import reactor.test.StepVerifier;
 
 /**
  * @author Sergii Karpenko
  */
-public class ReadTimeoutTest {
+abstract public class ReadTimeoutTest {
 
 	@ClassRule
 	public static WireMockClassRule wireMockRule = new WireMockClassRule(
 			wireMockConfig().dynamicPort());
 
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
-
-	@Before
-	public void resetServers() {
-		wireMockRule.resetAll();
-	}
+	abstract protected ReactiveFeign.Builder<IcecreamServiceApi> builder(ReactiveOptions options);
 
 	@Test
 	public void shouldFailOnReadTimeout() {
-
-		expectedException.expect(io.netty.handler.timeout.ReadTimeoutException.class);
 
 		String orderUrl = "/icecream/orders/1";
 
@@ -60,13 +55,16 @@ public class ReadTimeoutTest {
 				.withHeader("Accept", equalTo("application/json"))
 				.willReturn(aResponse().withFixedDelay(200)));
 
-		IcecreamServiceApi client = ReactiveFeign.<IcecreamServiceApi>builder()
-				.webClient(WebClient.create())
-				.options(new ReactiveOptions.Builder().setConnectTimeoutMillis(300)
-						.setReadTimeoutMillis(100).build())
+		IcecreamServiceApi client = builder(
+				new ReactiveOptions.Builder()
+						.setConnectTimeoutMillis(300)
+						.setReadTimeoutMillis(100)
+						.build()
+		)
 				.target(IcecreamServiceApi.class,
 						"http://localhost:" + wireMockRule.port());
 
-		client.findOrder(1).block();
+		StepVerifier.create(client.findOrder(1))
+				.expectError(io.netty.handler.timeout.ReadTimeoutException.class);
 	}
 }
