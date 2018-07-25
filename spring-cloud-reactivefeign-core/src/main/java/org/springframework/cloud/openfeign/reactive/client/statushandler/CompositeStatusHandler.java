@@ -5,12 +5,18 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static java.util.Arrays.asList;
+
 /**
  * @author Sergii Karpenko
  */
 public class CompositeStatusHandler implements ReactiveStatusHandler {
 
 	private final List<ReactiveStatusHandler> handlers;
+
+	public static CompositeStatusHandler compose(ReactiveStatusHandler... handlers){
+		return new CompositeStatusHandler(asList(handlers));
+	}
 
 	public CompositeStatusHandler(List<ReactiveStatusHandler> handlers) {
 		this.handlers = handlers;
