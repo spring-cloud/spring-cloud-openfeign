@@ -71,6 +71,8 @@ public class SpringMvcContract extends Contract.BaseContract
 
 	private static final TypeDescriptor STRING_TYPE_DESCRIPTOR =
 			TypeDescriptor.valueOf(String.class);
+	private static final TypeDescriptor ITERABLE_TYPE_DESCRIPTOR =
+			TypeDescriptor.valueOf(Iterable.class);
 
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
@@ -248,12 +250,12 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		if (isHttpAnnotation && data.indexToExpander().get(paramIndex) == null) {
 			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
-
 			if (conversionService.canConvert(typeDescriptor, STRING_TYPE_DESCRIPTOR)) {
-				Param.Expander expander
-						= convertingExpanderFactory.getExpander(typeDescriptor);
-
-				data.indexToExpander().put(paramIndex, expander);
+				Param.Expander expander =
+						convertingExpanderFactory.getExpander(typeDescriptor);
+				if (expander != null) {
+					data.indexToExpander().put(paramIndex, expander);
+				}
 			}
 		}
 		return isHttpAnnotation;
@@ -263,7 +265,24 @@ public class SpringMvcContract extends Contract.BaseContract
 		Parameter parameter = method.getParameters()[paramIndex];
 		MethodParameter methodParameter = MethodParameter.forParameter(parameter);
 
-		return new TypeDescriptor(methodParameter);
+		TypeDescriptor typeDescriptor = new TypeDescriptor(methodParameter);
+
+		// Feign applies the Param.Expander to each element of an Iterable, thus we need
+		// to provide a TypeDescriptor of the element(s) when the param is an Iterable.
+		// Otherwise, ConversionService will fail - converting an instance of the element
+		// type, given a source TypeDescriptor for the (outer) Iterable type.
+		if (typeDescriptor.isAssignableTo(ITERABLE_TYPE_DESCRIPTOR)) {
+			TypeDescriptor elementTypeDescriptor =
+					typeDescriptor.getElementTypeDescriptor();
+
+			checkState(elementTypeDescriptor != null,
+					"Could not resolve element type of Iterable type %s. Not declared?",
+					typeDescriptor);
+
+			typeDescriptor = elementTypeDescriptor;
+		}
+
+		return typeDescriptor;
 	}
 
 	private void parseProduces(MethodMetadata md, Method method,
