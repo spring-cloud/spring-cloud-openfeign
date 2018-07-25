@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +52,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.Formatter;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -186,6 +188,11 @@ public class FeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/helloparams")
 		List<String> getParams(@RequestParam("params") List<String> params);
+
+		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
+		List<LocalDate> getFormattedParams(
+				@RequestParam("params")
+				@DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
 		HystrixCommand<List<Hello>> getHellosHystrix();
@@ -441,6 +448,13 @@ public class FeignClientTests {
 			return params;
 		}
 
+		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
+		public List<LocalDate> getFormattedParams(
+				@RequestParam("params")
+				@DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params) {
+			return params;
+		}
+
 		@RequestMapping(method = RequestMethod.GET, path = "/noContent")
 		ResponseEntity<Void> noContent() {
 			return ResponseEntity.noContent().build();
@@ -581,6 +595,17 @@ public class FeignClientTests {
 		List<String> params = this.testClient.getParams(list);
 		assertNotNull("params was null", params);
 		assertEquals("params size was wrong", list.size(), params.size());
+	}
+
+	@Test
+	public void testFormattedParams() {
+		List<LocalDate> list
+				= Arrays.asList(LocalDate.of(2001, 1, 1), LocalDate.of(2018, 6, 10));
+
+		List<LocalDate> params = this.testClient.getFormattedParams(list);
+
+		assertNotNull("params was null", params);
+		assertEquals("params not converted correctly", list, params);
 	}
 
 	@Test
