@@ -35,9 +35,10 @@ import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 @Headers({ "Accept: application/json" })
 public interface AllFeaturesApi {
 
-	@RequestLine("GET /mirrorParameters/{parameterInPathPlaceholder}?paramInUrl={paramInQueryPlaceholder}")
+	@RequestLine("GET /mirrorParameters/{parameterInPathPlaceholder}/{parameterInPathPlaceholder2}?paramInUrl={paramInQueryPlaceholder}")
 	Mono<Map<String, String>> mirrorParameters(
 			@Param("parameterInPathPlaceholder") long paramInPath,
+			@Param("parameterInPathPlaceholder2") String paramInPath2,
 			@Param("paramInQueryPlaceholder") long paramInQuery,
 			@QueryMap Map<String, String> paramMap);
 

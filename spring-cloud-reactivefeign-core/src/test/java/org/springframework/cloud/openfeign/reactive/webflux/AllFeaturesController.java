@@ -32,13 +32,15 @@ import static reactor.core.publisher.Mono.just;
 @RestController
 public class AllFeaturesController implements AllFeaturesApi {
 
-	@GetMapping(path = "/mirrorParameters/{paramInPath}")
+	@GetMapping(path = "/mirrorParameters/{paramInPath}/{paramInPath2}")
 	@Override
 	public Mono<Map<String, String>> mirrorParameters(
 			@PathVariable("paramInPath") long paramInPath,
+			@PathVariable("paramInPath2") String paramInPath2,
 			@RequestParam("paramInUrl") long paramInUrl,
 			@RequestParam Map<String, String> paramMap) {
 		paramMap.put("paramInPath", Long.toString(paramInPath));
+		paramMap.put("paramInPath2", paramInPath2);
 		paramMap.put("paramInUrl", Long.toString(paramInUrl));
 		return just(paramMap);
 	}

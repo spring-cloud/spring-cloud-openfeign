@@ -83,10 +83,11 @@ abstract public class WebFluxTest {
 				put("paramKey", "paramValue");
 			}
 		};
-		Map<String, String> returned = client.mirrorParameters(555, 777, paramMap)
+		Map<String, String> returned = client.mirrorParameters(555, "666", 777, paramMap)
 				.block();
 
 		assertThat(returned).containsEntry("paramInPath", "555");
+		assertThat(returned).containsEntry("paramInPath2", "666");
 		assertThat(returned).containsEntry("paramInUrl", "777");
 		assertThat(returned).containsAllEntriesOf(paramMap);
 	}

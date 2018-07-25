@@ -30,6 +30,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -212,18 +213,36 @@ public class ReactiveClientMethodHandler implements ReactiveMethodHandler {
 	 * @param template
 	 * @return function that able to map substitutions map to actual value for specified template
 	 */
-	// TODO refactor to chunks instead of regexp for better performance
-	private static Function<Map<String, ?>, String> buildExpandFunction(final String template) {
-		return substitutionsMap -> {
-			String headerExpanded = template;
-			for (Map.Entry<String, ?> entry : substitutionsMap.entrySet()) {
-				Pattern substitutionPattern = Pattern.compile("{" + entry.getKey() + "}",
-						Pattern.LITERAL);
-				headerExpanded = substitutionPattern.matcher(headerExpanded)
-						.replaceAll(entry.getValue().toString());
+	private static final Pattern PATTERN = Pattern.compile("\\{([^}]+)\\}");
+
+	private static Function<Map<String, ?>, String> buildExpandFunction(String template){
+		List<Function<Map<String, ?>, String>> chunks = new ArrayList<>();
+		Matcher matcher = PATTERN.matcher(template);
+		int previousMatchEnd = 0;
+		while (matcher.find()) {
+			String textChunk = template.substring(previousMatchEnd, matcher.start());
+			if(textChunk.length() > 0) {
+				chunks.add(data -> textChunk);
 			}
-			return headerExpanded;
-		};
+
+			String substitute = matcher.group(1);
+			chunks.add(data -> {
+				Object substitution = data.get(substitute);
+				if (substitution != null) {
+					return substitution.toString();
+				} else {
+					return substitute;
+				}
+			});
+			previousMatchEnd = matcher.end();
+		}
+
+		String textChunk = template.substring(previousMatchEnd, template.length());
+		if(textChunk.length() > 0) {
+			chunks.add(data -> textChunk);
+		}
+
+		return traceData -> chunks.stream().map(chunk -> chunk.apply(traceData)).collect(Collectors.joining());
 	}
 
 	public static class Factory implements ReactiveMethodHandlerFactory {
