@@ -268,10 +268,8 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		TypeDescriptor typeDescriptor = new TypeDescriptor(methodParameter);
 
-		// Feign applies the Param.Expander to each element of an Iterable, thus we need
-		// to provide a TypeDescriptor of the element(s) when the param is an Iterable.
-		// Otherwise, ConversionService will fail - converting an instance of the element
-		// type, given a source TypeDescriptor for the (outer) Iterable type.
+		// Feign applies the Param.Expander to each element of an Iterable, so in those
+		// cases we need to provide a TypeDescriptor of the element.
 		if (typeDescriptor.isAssignableTo(ITERABLE_TYPE_DESCRIPTOR)) {
 			TypeDescriptor elementTypeDescriptor =
 					typeDescriptor.getElementTypeDescriptor();
