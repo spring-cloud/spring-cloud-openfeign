@@ -49,14 +49,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import static feign.Util.checkState;
+import static feign.Util.emptyToNull;
+import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
+
 import feign.Contract;
 import feign.Feign;
 import feign.MethodMetadata;
 import feign.Param;
-
-import static feign.Util.checkState;
-import static feign.Util.emptyToNull;
-import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
 
 /**
  * @author Spencer Gibb
@@ -265,7 +265,6 @@ public class SpringMvcContract extends Contract.BaseContract
 	private static TypeDescriptor createTypeDescriptor(Method method, int paramIndex) {
 		Parameter parameter = method.getParameters()[paramIndex];
 		MethodParameter methodParameter = MethodParameter.forParameter(parameter);
-
 		TypeDescriptor typeDescriptor = new TypeDescriptor(methodParameter);
 
 		// Feign applies the Param.Expander to each element of an Iterable, so in those
@@ -280,7 +279,6 @@ public class SpringMvcContract extends Contract.BaseContract
 
 			typeDescriptor = elementTypeDescriptor;
 		}
-
 		return typeDescriptor;
 	}
 
@@ -426,7 +424,6 @@ public class SpringMvcContract extends Contract.BaseContract
 			return value -> {
 				Object converted = this.conversionService.convert(
 						value, typeDescriptor, STRING_TYPE_DESCRIPTOR);
-
 				return (String) converted;
 			};
 		}

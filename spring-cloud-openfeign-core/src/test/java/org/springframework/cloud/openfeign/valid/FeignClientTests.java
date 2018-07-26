@@ -600,8 +600,8 @@ public class FeignClientTests {
 
 	@Test
 	public void testFormattedParams() {
-		List<LocalDate> list
-				= Arrays.asList(LocalDate.of(2001, 1, 1), LocalDate.of(2018, 6, 10));
+		List<LocalDate> list = Arrays.asList(
+				LocalDate.of(2001, 1, 1), LocalDate.of(2018, 6, 10));
 		List<LocalDate> params = this.testClient.getFormattedParams(list);
 		assertNotNull("params was null", params);
 		assertEquals("params not converted correctly", list, params);

@@ -76,18 +76,14 @@ public class SpringMvcContractTests {
 		EXECUTABLE_TYPE = executableType;
 	}
 
-	private static final FormattingConversionServiceFactoryBean CONVERSION_SERVICE_FACTORY
-			= new FormattingConversionServiceFactoryBean();
-
-	static {
-		CONVERSION_SERVICE_FACTORY.afterPropertiesSet();
-	}
-
 	private SpringMvcContract contract;
 
 	@Before
 	public void setup() {
-		ConversionService conversionService = CONVERSION_SERVICE_FACTORY.getObject();
+		FormattingConversionServiceFactoryBean conversionServiceFactoryBean
+				= new FormattingConversionServiceFactoryBean();
+		conversionServiceFactoryBean.afterPropertiesSet();
+		ConversionService conversionService = conversionServiceFactoryBean.getObject();
 
 		this.contract = new SpringMvcContract(Collections.emptyList(), conversionService);
 	}
