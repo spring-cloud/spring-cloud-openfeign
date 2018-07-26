@@ -60,6 +60,7 @@ import feign.MethodMetadata;
 
 /**
  * @author chadjaros
+ * @author Halvdan Hoem Grelland
  */
 public class SpringMvcContractTests {
 	private static final Class<?> EXECUTABLE_TYPE;

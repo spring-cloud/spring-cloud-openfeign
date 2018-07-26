@@ -95,6 +95,7 @@ import rx.Single;
  * @author Spencer Gibb
  * @author Jakub Narloch
  * @author Erik Kringen
+ * @author Halvdan Hoem Grelland
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
@@ -601,9 +602,7 @@ public class FeignClientTests {
 	public void testFormattedParams() {
 		List<LocalDate> list
 				= Arrays.asList(LocalDate.of(2001, 1, 1), LocalDate.of(2018, 6, 10));
-
 		List<LocalDate> params = this.testClient.getFormattedParams(list);
-
 		assertNotNull("params was null", params);
 		assertEquals("params not converted correctly", list, params);
 	}
