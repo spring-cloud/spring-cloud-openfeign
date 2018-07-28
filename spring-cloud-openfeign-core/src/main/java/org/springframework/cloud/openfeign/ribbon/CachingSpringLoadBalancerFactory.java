@@ -36,8 +36,8 @@ import com.netflix.loadbalancer.ILoadBalancer;
  */
 public class CachingSpringLoadBalancerFactory {
 
-	private final SpringClientFactory factory;
-	private LoadBalancedRetryFactory loadBalancedRetryFactory = null;
+	protected final SpringClientFactory factory;
+	protected LoadBalancedRetryFactory loadBalancedRetryFactory = null;
 
 	private volatile Map<String, FeignLoadBalancer> cache = new ConcurrentReferenceHashMap<>();
 
