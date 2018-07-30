@@ -396,7 +396,10 @@ public class SpringMvcContract extends Contract.BaseContract
 		}
 	}
 
-	// TODO Can this go? Doesn't seem to be referenced anymore (but is public).
+	/**
+	 * @deprecated Not used internally anymore. Will be removed in the future.
+	 */
+	@Deprecated
 	public static class ConvertingExpander implements Param.Expander {
 
 		private final ConversionService conversionService;
