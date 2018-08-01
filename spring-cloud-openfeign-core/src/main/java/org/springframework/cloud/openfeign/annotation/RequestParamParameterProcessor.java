@@ -16,16 +16,17 @@
 
 package org.springframework.cloud.openfeign.annotation;
 
+import static feign.Util.checkState;
+import static feign.Util.emptyToNull;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import static feign.Util.checkState;
-import static feign.Util.emptyToNull;
 
 import feign.MethodMetadata;
 
@@ -34,6 +35,7 @@ import feign.MethodMetadata;
  *
  * @author Jakub Narloch
  * @author Abhijit Sarkar
+ * @author Mike Safonov
  * @see AnnotatedParameterProcessor
  */
 public class RequestParamParameterProcessor implements AnnotatedParameterProcessor {
@@ -46,13 +48,15 @@ public class RequestParamParameterProcessor implements AnnotatedParameterProcess
 	}
 
 	@Override
-	public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
+	public boolean processArgument(AnnotatedParameterContext context,
+			Annotation annotation, Method method) {
 		int parameterIndex = context.getParameterIndex();
 		Class<?> parameterType = method.getParameterTypes()[parameterIndex];
 		MethodMetadata data = context.getMethodMetadata();
 
-		if (Map.class.isAssignableFrom(parameterType)) {
-			checkState(data.queryMapIndex() == null, "Query map can only be present once.");
+		if (Map.class.isAssignableFrom(parameterType) || isCustomClass(parameterType)) {
+			checkState(data.queryMapIndex() == null,
+					"Query map can only be present once.");
 			data.queryMapIndex(parameterIndex);
 
 			return true;
@@ -61,13 +65,17 @@ public class RequestParamParameterProcessor implements AnnotatedParameterProcess
 		RequestParam requestParam = ANNOTATION.cast(annotation);
 		String name = requestParam.value();
 		checkState(emptyToNull(name) != null,
-				"RequestParam.value() was empty on parameter %s",
-				parameterIndex);
+				"RequestParam.value() was empty on parameter %s", parameterIndex);
 		context.setParameterName(name);
 
 		Collection<String> query = context.setTemplateParameter(name,
 				data.template().queries().get(name));
 		data.template().query(name, query);
 		return true;
+	}
+
+	private boolean isCustomClass(Class<?> clazz) {
+		return !BeanUtils.isSimpleProperty(clazz)
+				&& !Collection.class.isAssignableFrom(clazz);
 	}
 }

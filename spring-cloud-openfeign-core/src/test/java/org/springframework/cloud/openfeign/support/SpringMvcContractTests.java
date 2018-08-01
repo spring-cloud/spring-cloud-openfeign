@@ -16,6 +16,10 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -28,26 +32,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
 
 import feign.MethodMetadata;
 
 /**
  * @author chadjaros
+ * @author Mike Safonov
  */
 public class SpringMvcContractTests {
 	private static final Class<?> EXECUTABLE_TYPE;
@@ -296,13 +289,23 @@ public class SpringMvcContractTests {
 	public void testProcessAnnotations_ListParamsWithoutName() throws Exception {
 		Method method = TestTemplate_ListParamsWithoutName.class.getDeclaredMethod("getTest",
 				List.class);
+		try {
+			MethodMetadata data = this.contract
+					.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		} catch (IllegalStateException e) {
+			assertEquals("RequestParam.value() was empty on parameter 0", e.getMessage());
+		}
+	}
+
+	@Test
+	public void testProcessAnnotations_DtoParams() throws Exception{
+		Method method = TestTemplate_DtoParams.class.getDeclaredMethod("getTest", TestDto.class);
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
-
 		assertEquals("/test", data.template().url());
 		assertEquals("GET", data.template().method());
-		assertEquals("[{id}]", data.template().queries().get("id").toString());
-		assertNotNull(data.indexToExpander().get(0));
+		assertNotNull(data.queryMapIndex());
+		assertEquals(0, data.queryMapIndex().intValue());
 	}
 
 	@Test
@@ -492,6 +495,11 @@ public class SpringMvcContractTests {
 		ResponseEntity<TestObject> getTest(@RequestParam Map<String, String> params);
 	}
 
+	public interface TestTemplate_DtoParams{
+		@RequestMapping(value = "/test", method = RequestMethod.GET)
+		ResponseEntity<TestObject> getTest(@RequestParam TestDto testDto);
+	}
+
 	public interface TestTemplate_HeaderMap {
 		@RequestMapping(path = "/headerMap")
 		String headerMap(
@@ -591,4 +599,10 @@ public class SpringMvcContractTests {
 					.append("}").toString();
 		}
 	}
+
+	public class TestDto {
+		private String message;
+		private int number;
+	}
+
 }
