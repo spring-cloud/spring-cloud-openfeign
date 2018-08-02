@@ -21,9 +21,10 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import com.netflix.loadbalancer.BaseLoadBalancer;
+import com.netflix.loadbalancer.RoundRobinRule;
 import com.netflix.loadbalancer.reactive.LoadBalancerCommand;
 import org.junit.Before;
 import org.junit.Test;
@@ -175,38 +176,15 @@ public class FeignLoadBalancerTests {
 		when(this.config.get(IsSecure)).thenReturn(false);
 		Server server1 = new Server("foo", 6666);
 		Server server2 = new Server("foo", 7777);
-
-		this.feignLoadBalancer = new FeignLoadBalancer(new ILoadBalancer() {
+		BaseLoadBalancer baseLoadBalancer = new BaseLoadBalancer();
+		baseLoadBalancer.setRule(new RoundRobinRule() {
 			@Override
-			public void addServers(List<Server> list) {
-
-			}
-
-			@Override
-			public Server chooseServer(Object loadBalancerKey) {
+			public Server choose(Object loadBalancerKey) {
 				return loadBalancerKey == null ? server2 : server1;
 			}
+		});
 
-			@Override
-			public void markServerDown(Server server) {
-
-			}
-
-			@Override
-			public List<Server> getServerList(boolean b) {
-				return null;
-			}
-
-			@Override
-			public List<Server> getReachableServers() {
-				return null;
-			}
-
-			@Override
-			public List<Server> getAllServers() {
-				return null;
-			}
-		}, this.config,
+		this.feignLoadBalancer = new FeignLoadBalancer(baseLoadBalancer, this.config,
 				this.inspector) {
 			protected void customizeLoadBalancerCommandBuilder(final FeignLoadBalancer.RibbonRequest request, final IClientConfig config,
 															   final LoadBalancerCommand.Builder<FeignLoadBalancer.RibbonResponse> builder) {
