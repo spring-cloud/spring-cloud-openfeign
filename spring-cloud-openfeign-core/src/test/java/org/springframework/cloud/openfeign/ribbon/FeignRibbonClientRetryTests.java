@@ -31,8 +31,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
+import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -78,6 +80,7 @@ public class FeignRibbonClientRetryTests {
 	@RestController
 	@EnableFeignClients(clients = TestClient.class)
 	@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
+	@Import(NoSecurityConfiguration.class)
 	public static class Application {
 
 		private AtomicInteger retries = new AtomicInteger(1);

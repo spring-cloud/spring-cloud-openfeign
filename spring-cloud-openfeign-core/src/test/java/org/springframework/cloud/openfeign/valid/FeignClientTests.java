@@ -47,8 +47,10 @@ import org.springframework.cloud.openfeign.support.FallbackCommand;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
+import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.format.Formatter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpEntity;
@@ -358,6 +360,7 @@ public class FeignClientTests {
 		@RibbonClient(name = "localapp4", configuration = LocalRibbonClientConfiguration.class),
 		@RibbonClient(name = "localapp5", configuration = LocalRibbonClientConfiguration.class)
 	})
+	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
 		// needs to be in parent context to test multiple HystrixClient beans

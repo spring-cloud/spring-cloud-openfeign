@@ -30,8 +30,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
@@ -144,6 +146,7 @@ public class FeignClientUsingPropertiesTests {
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
+	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/foo")
