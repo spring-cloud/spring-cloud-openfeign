@@ -31,8 +31,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.FeignClientBuilder;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -66,11 +69,23 @@ public class FeignClientTests {
 	@Autowired
 	private org.springframework.cloud.openfeign.beans.extra.TestClient extraClient;
 
+	@Qualifier("build-by-builder")
+	@Autowired
+	private TestClient buildByBuilder;
+
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients
+	@Import(FeignClientBuilder.class)
 	protected static class Application {
+
+		@Bean("build-by-builder")
+		public TestClient buildByBuilder(final FeignClientBuilder feignClientBuilder) {
+			return feignClientBuilder
+					.forType(TestClient.class, "builderapp")
+					.build();
+		}
 
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		public Hello getHello() {
@@ -112,7 +127,7 @@ public class FeignClientTests {
 	}
 
 	@Test
-	public void testAnnnotations() throws Exception {
+	public void testAnnotations() {
 		Map<String, Object> beans = this.context
 				.getBeansWithAnnotation(FeignClient.class);
 		assertTrue("Wrong clients: " + beans,
@@ -122,10 +137,28 @@ public class FeignClientTests {
 	@Test
 	public void testClient() {
 		assertNotNull("testClient was null", this.testClient);
-		assertNotNull("testClient was null", this.extraClient);
+		assertNotNull("extraClient was null", this.extraClient);
 		assertTrue("testClient is not a java Proxy",
 				Proxy.isProxyClass(this.testClient.getClass()));
 		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.testClient);
+		assertNotNull("invocationHandler was null", invocationHandler);
+	}
+
+	@Test
+	public void extraClient() {
+		assertNotNull("extraClient was null", this.extraClient);
+		assertTrue("extraClient is not a java Proxy",
+				Proxy.isProxyClass(this.extraClient.getClass()));
+		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.extraClient);
+		assertNotNull("invocationHandler was null", invocationHandler);
+	}
+
+	@Test
+	public void buildByBuilder() {
+		assertNotNull("buildByBuilder was null", this.buildByBuilder);
+		assertTrue("buildByBuilder is not a java Proxy",
+				Proxy.isProxyClass(this.buildByBuilder.getClass()));
+		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.buildByBuilder);
 		assertNotNull("invocationHandler was null", invocationHandler);
 	}
 
