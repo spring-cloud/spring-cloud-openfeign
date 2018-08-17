@@ -66,6 +66,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerList;
 
@@ -128,6 +129,12 @@ public class FeignClientTests {
 
 	@Autowired
 	private HystrixClientWithFallBackFactory hystrixClientWithFallBackFactory;
+
+	@Autowired
+	private InvalidTypeHystrixClientWithFallBackFactory invalidTypeHystrixClientWithFallBackFactory;
+
+	@Autowired
+	private NullHystrixClientWithFallBackFactory nullHystrixClientWithFallBackFactory;
 
 	@Autowired
 	@Qualifier("localapp3FeignClient")
@@ -275,6 +282,20 @@ public class FeignClientTests {
 		Hello fail();
 	}
 
+	@FeignClient(name = "localapp6", fallbackFactory = InvalidTypeHystrixClientFallbackFactory.class)
+	protected interface InvalidTypeHystrixClientWithFallBackFactory {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		Hello fail();
+	}
+
+	@FeignClient(name = "localapp7", fallbackFactory = NullHystrixClientFallbackFactory.class)
+	protected interface NullHystrixClientWithFallBackFactory {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		Hello fail();
+	}
+
 	static class HystrixClientFallbackFactory implements FallbackFactory<HystrixClientWithFallBackFactory> {
 
 		@Override
@@ -286,6 +307,22 @@ public class FeignClientTests {
 					return new Hello("Hello from the fallback side: " + cause.getMessage());
 				}
 			};
+		}
+	}
+
+	static class InvalidTypeHystrixClientFallbackFactory implements FallbackFactory<String> {
+
+		@Override
+		public String create(final Throwable cause) {
+			return "hello";
+		}
+	}
+
+	static class NullHystrixClientFallbackFactory implements FallbackFactory<String> {
+
+		@Override
+		public String create(final Throwable cause) {
+			return null;
 		}
 	}
 
@@ -348,7 +385,8 @@ public class FeignClientTests {
 	@RestController
 	@EnableFeignClients(clients = { TestClientServiceId.class, TestClient.class,
 		DecodingTestClient.class, HystrixClient.class, HystrixClientWithFallBackFactory.class,
-		HystrixSetterFactoryClient.class},
+		HystrixSetterFactoryClient.class, InvalidTypeHystrixClientWithFallBackFactory.class,
+	NullHystrixClientWithFallBackFactory.class},
 		defaultConfiguration = TestDefaultFeignConfig.class)
 	@RibbonClients({
 		@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class),
@@ -356,7 +394,9 @@ public class FeignClientTests {
 		@RibbonClient(name = "localapp2", configuration = LocalRibbonClientConfiguration.class),
 		@RibbonClient(name = "localapp3", configuration = LocalRibbonClientConfiguration.class),
 		@RibbonClient(name = "localapp4", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp5", configuration = LocalRibbonClientConfiguration.class)
+		@RibbonClient(name = "localapp5", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp6", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp7", configuration = LocalRibbonClientConfiguration.class)
 	})
 	protected static class Application {
 
@@ -369,6 +409,16 @@ public class FeignClientTests {
 		@Bean
 		public HystrixClientFallbackFactory hystrixClientFallbackFactory() {
 			return new HystrixClientFallbackFactory();
+		}
+
+		@Bean
+		public InvalidTypeHystrixClientFallbackFactory invalidTypeHystrixClientFallbackFactory() {
+			return new InvalidTypeHystrixClientFallbackFactory();
+		}
+
+		@Bean
+		public NullHystrixClientFallbackFactory nullHystrixClientFallbackFactory() {
+			return new NullHystrixClientFallbackFactory();
 		}
 
 		@Bean
@@ -720,6 +770,16 @@ public class FeignClientTests {
 		assertNotNull("hello#message was null", hello.getMessage());
 		assertTrue("hello#message did not contain the cause (status code) of the fallback invocation",
 			hello.getMessage().contains("500"));
+	}
+
+	@Test(expected = HystrixRuntimeException.class)
+	public void testInvalidTypeHystrixFallbackFactory() throws Exception {
+		invalidTypeHystrixClientWithFallBackFactory.fail();
+	}
+
+	@Test(expected = HystrixRuntimeException.class)
+	public void testNullHystrixFallbackFactory() throws Exception {
+		nullHystrixClientWithFallBackFactory.fail();
 	}
 
 	@Test
