@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.openfeign.ribbon.CachingSpringLoadBalancerFactory;
@@ -51,7 +52,7 @@ public class SpringRetryDisabledTests {
 
 	@Before
 	public void setUp() {
-		context = new SpringApplicationBuilder().web(false)
+		context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
 				.sources(RibbonAutoConfiguration.class, LoadBalancerAutoConfiguration.class, RibbonClientConfiguration.class,
 						FeignRibbonClientAutoConfiguration.class).run();
 	}

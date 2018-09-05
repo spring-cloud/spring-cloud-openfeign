@@ -40,9 +40,11 @@ import org.springframework.http.converter.AbstractGenericHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -50,6 +52,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import feign.RequestTemplate;
+import feign.codec.EncodeException;
 
 /**
  * @author Spencer Gibb
@@ -93,6 +96,31 @@ public class SpringEncoderTests {
 		RequestTemplate request = new RequestTemplate();
 
 		encoder.encode("hi".getBytes(), null, request);
+
+		assertThat("request charset is not null", request.charset(), is(nullValue()));
+	}
+
+	@Test(expected = EncodeException.class)
+	public void testMultipartFile1() {
+		SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
+		assertThat(encoder, is(notNullValue()));
+		RequestTemplate request = new RequestTemplate();
+
+		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
+		encoder.encode(multipartFile, MultipartFile.class, request);
+
+		assertThat("request charset is not null", request.charset(), is(nullValue()));
+	}
+
+	@Test
+	public void testMultipartFile2() {
+		SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
+		assertThat(encoder, is(notNullValue()));
+		RequestTemplate request = new RequestTemplate();
+		request = request.header("Content-Type", MediaType.MULTIPART_FORM_DATA_VALUE);
+
+		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
+		encoder.encode(multipartFile, MultipartFile.class, request);
 
 		assertThat("request charset is not null", request.charset(), is(nullValue()));
 	}

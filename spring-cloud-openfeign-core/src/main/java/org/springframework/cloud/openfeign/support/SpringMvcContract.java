@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign.support;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,9 +36,11 @@ import org.springframework.cloud.openfeign.annotation.RequestParamParameterProce
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
@@ -58,6 +61,7 @@ import feign.Param;
 /**
  * @author Spencer Gibb
  * @author Abhijit Sarkar
+ * @author Halvdan Hoem Grelland
  */
 public class SpringMvcContract extends Contract.BaseContract
 		implements ResourceLoaderAware {
@@ -66,13 +70,18 @@ public class SpringMvcContract extends Contract.BaseContract
 
 	private static final String CONTENT_TYPE = "Content-Type";
 
+	private static final TypeDescriptor STRING_TYPE_DESCRIPTOR =
+			TypeDescriptor.valueOf(String.class);
+	private static final TypeDescriptor ITERABLE_TYPE_DESCRIPTOR =
+			TypeDescriptor.valueOf(Iterable.class);
+
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
 	private final Map<Class<? extends Annotation>, AnnotatedParameterProcessor> annotatedArgumentProcessors;
 	private final Map<String, Method> processedMethods = new HashMap<>();
 
 	private final ConversionService conversionService;
-	private final Param.Expander expander;
+	private final ConvertingExpanderFactory convertingExpanderFactory;
 	private ResourceLoader resourceLoader = new DefaultResourceLoader();
 
 	public SpringMvcContract() {
@@ -100,7 +109,7 @@ public class SpringMvcContract extends Contract.BaseContract
 		}
 		this.annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
 		this.conversionService = conversionService;
-		this.expander = new ConvertingExpander(conversionService);
+		this.convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
 	}
 
 	@Override
@@ -239,12 +248,38 @@ public class SpringMvcContract extends Contract.BaseContract
 						processParameterAnnotation, method);
 			}
 		}
-		if (isHttpAnnotation && data.indexToExpander().get(paramIndex) == null
-				&& this.conversionService.canConvert(
-						method.getParameterTypes()[paramIndex], String.class)) {
-			data.indexToExpander().put(paramIndex, this.expander);
+
+		if (isHttpAnnotation && data.indexToExpander().get(paramIndex) == null) {
+			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
+			if (conversionService.canConvert(typeDescriptor, STRING_TYPE_DESCRIPTOR)) {
+				Param.Expander expander =
+						convertingExpanderFactory.getExpander(typeDescriptor);
+				if (expander != null) {
+					data.indexToExpander().put(paramIndex, expander);
+				}
+			}
 		}
 		return isHttpAnnotation;
+	}
+
+	private static TypeDescriptor createTypeDescriptor(Method method, int paramIndex) {
+		Parameter parameter = method.getParameters()[paramIndex];
+		MethodParameter methodParameter = MethodParameter.forParameter(parameter);
+		TypeDescriptor typeDescriptor = new TypeDescriptor(methodParameter);
+
+		// Feign applies the Param.Expander to each element of an Iterable, so in those
+		// cases we need to provide a TypeDescriptor of the element.
+		if (typeDescriptor.isAssignableTo(ITERABLE_TYPE_DESCRIPTOR)) {
+			TypeDescriptor elementTypeDescriptor =
+					typeDescriptor.getElementTypeDescriptor();
+
+			checkState(elementTypeDescriptor != null,
+					"Could not resolve element type of Iterable type %s. Not declared?",
+					typeDescriptor);
+
+			typeDescriptor = elementTypeDescriptor;
+		}
+		return typeDescriptor;
 	}
 
 	private void parseProduces(MethodMetadata md, Method method,
@@ -361,6 +396,10 @@ public class SpringMvcContract extends Contract.BaseContract
 		}
 	}
 
+	/**
+	 * @deprecated Not used internally anymore. Will be removed in the future.
+	 */
+	@Deprecated
 	public static class ConvertingExpander implements Param.Expander {
 
 		private final ConversionService conversionService;
@@ -374,5 +413,22 @@ public class SpringMvcContract extends Contract.BaseContract
 			return this.conversionService.convert(value, String.class);
 		}
 
+	}
+
+	private static class ConvertingExpanderFactory {
+
+		private final ConversionService conversionService;
+
+		ConvertingExpanderFactory(ConversionService conversionService) {
+			this.conversionService = conversionService;
+		}
+
+		Param.Expander getExpander(TypeDescriptor typeDescriptor) {
+			return value -> {
+				Object converted = this.conversionService.convert(
+						value, typeDescriptor, STRING_TYPE_DESCRIPTOR);
+				return (String) converted;
+			};
+		}
 	}
 }
