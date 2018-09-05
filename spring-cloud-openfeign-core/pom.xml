@@ -94,6 +94,10 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
+			<groupId>io.github.openfeign.form</groupId>
+			<artifactId>feign-form-spring</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-slf4j</artifactId>
 			<optional>true</optional>
