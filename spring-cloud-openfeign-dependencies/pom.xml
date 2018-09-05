@@ -14,6 +14,7 @@
 	<description>Spring Cloud OpenFeign Dependencies</description>
 	<properties>
 		<feign.version>9.7.0</feign.version>
+		<feign-form.version>3.3.0</feign-form.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -31,6 +32,11 @@
 				<groupId>io.github.openfeign</groupId>
 				<artifactId>feign-core</artifactId>
 				<version>${feign.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.openfeign.form</groupId>
+				<artifactId>feign-form-spring</artifactId>
+				<version>${feign-form.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.openfeign</groupId>

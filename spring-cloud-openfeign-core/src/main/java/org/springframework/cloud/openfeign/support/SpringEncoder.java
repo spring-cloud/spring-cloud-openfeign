@@ -24,6 +24,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,10 +36,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
+import org.springframework.web.multipart.MultipartFile;
 
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
+import feign.form.spring.SpringFormEncoder;
 
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHeaders;
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
@@ -50,6 +53,8 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
 public class SpringEncoder implements Encoder {
 
 	private static final Log log = LogFactory.getLog(SpringEncoder.class);
+
+	private final SpringFormEncoder springFormEncoder = new SpringFormEncoder();
 
 	private ObjectFactory<HttpMessageConverters> messageConverters;
 
@@ -69,6 +74,18 @@ public class SpringEncoder implements Encoder {
 			if (contentTypes != null && !contentTypes.isEmpty()) {
 				String type = contentTypes.iterator().next();
 				requestContentType = MediaType.valueOf(type);
+			}
+
+			if (bodyType != null && bodyType.equals(MultipartFile.class)) {
+				if (Objects.equals(requestContentType, MediaType.MULTIPART_FORM_DATA)) {
+					springFormEncoder.encode(requestBody, bodyType, request);
+					return;
+				} else {
+					String message = "Content-Type \"" + MediaType.MULTIPART_FORM_DATA +
+									 "\" not set for request body of type " +
+									 requestBody.getClass().getSimpleName();
+					throw new EncodeException(message);
+				}
 			}
 
 			for (HttpMessageConverter<?> messageConverter : this.messageConverters

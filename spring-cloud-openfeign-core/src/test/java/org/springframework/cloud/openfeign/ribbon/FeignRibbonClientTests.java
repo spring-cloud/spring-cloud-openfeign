@@ -37,7 +37,9 @@ import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 /**
  * @author Dave Syer
@@ -88,13 +90,23 @@ public class FeignRibbonClientTests {
 	}
 
 	@Test
+	public void remoteRequestIsSentAtRoot() throws Exception {
+		Request request = new RequestTemplate().method("GET").append("http://foo")
+				.request();
+		this.client.execute(request, new Options());
+		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
+		verify(this.delegate).execute(argThat(matcher),
+				any(Options.class));
+	}
+
+	@Test
 	public void remoteRequestIsSent() throws Exception {
 		Request request = new RequestTemplate().method("GET").append("http://foo/")
 				.request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
-		/*FIXME verify(this.delegate).execute(argThat(matcher),
-				any(Options.class));*/
+		verify(this.delegate).execute(argThat(matcher),
+				any(Options.class));
 	}
 
 	@Test
@@ -103,8 +115,8 @@ public class FeignRibbonClientTests {
 				.request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("https://foo.com:8000/");
-		/*FIXME verify(this.delegate).execute(argThat(matcher),
-				any(Options.class));*/
+		verify(this.delegate).execute(argThat(matcher),
+				any(Options.class));
 	}
 
 	private final static class RequestMatcher extends CustomMatcher<Request> {
