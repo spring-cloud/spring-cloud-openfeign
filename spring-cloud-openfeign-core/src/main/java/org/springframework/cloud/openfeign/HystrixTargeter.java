@@ -62,19 +62,6 @@ class HystrixTargeter implements Targeter {
 											Class<?> fallbackFactoryClass) {
 		FallbackFactory<? extends T> fallbackFactory = (FallbackFactory<? extends T>)
 			getFromContext("fallbackFactory", feignClientName, context, fallbackFactoryClass, FallbackFactory.class);
-		/* We take a sample fallback from the fallback factory to check if it returns a fallback
-		that is compatible with the annotated feign interface. */
-		Object exampleFallback = fallbackFactory.create(new RuntimeException());
-		Assert.notNull(exampleFallback,
-			String.format(
-			"Incompatible fallbackFactory instance for feign client %s. Factory may not produce null!",
-				feignClientName));
-		if (!target.type().isAssignableFrom(exampleFallback.getClass())) {
-			throw new IllegalStateException(
-				String.format(
-					"Incompatible fallbackFactory instance for feign client %s. Factory produces instances of '%s', but should produce instances of '%s'",
-					feignClientName, exampleFallback.getClass(), target.type()));
-		}
 		return builder.target(target, fallbackFactory);
 	}
 

@@ -240,44 +240,4 @@ public class FeignClientValidationTests {
 		}
 
 	}
-
-	@Test
-	public void testWrongFallbackFactoryGenericType() {
-		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-			WrongFallbackFactoryGenericTypeConfiguration.class)) {
-			this.expected.expectMessage("Incompatible fallbackFactory instance");
-			assertNotNull(context.getBean(WrongFallbackFactoryGenericTypeConfiguration.Client.class));
-		}
-	}
-
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = WrongFallbackFactoryGenericTypeConfiguration.Client.class)
-	protected static class WrongFallbackFactoryGenericTypeConfiguration {
-
-		@FeignClient(name = "foobar", url = "http://localhost", fallbackFactory = ClientFallback.class)
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-		}
-
-		@Bean
-		ClientFallback dummy() {
-			return new ClientFallback();
-		}
-
-		class ClientFallback implements FallbackFactory<String> {
-
-			@Override
-			public String create(Throwable cause) {
-				return "tryinToTrickYa";
-			}
-		}
-
-		@Bean
-		public Feign.Builder feignBuilder() {
-			return HystrixFeign.builder();
-		}
-
-	}
 }
