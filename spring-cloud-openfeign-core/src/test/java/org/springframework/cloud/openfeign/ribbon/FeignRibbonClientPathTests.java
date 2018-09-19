@@ -26,12 +26,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
+import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -84,16 +87,16 @@ public class FeignRibbonClientPathTests {
 	@FeignClient(name = "localapp", path = "/base/path")
 	protected interface TestClient1 extends TestClient { }
 
-	@FeignClient(name = "localapp", path = "base/path")
+	@FeignClient(name = "localapp1", path = "base/path")
 	protected interface TestClient2 extends TestClient { }
 
-	@FeignClient(name = "localapp", path = "base/path/")
+	@FeignClient(name = "localapp2", path = "base/path/")
 	protected interface TestClient3 extends TestClient { }
 
-	@FeignClient(name = "localapp", path = "/base/path/")
+	@FeignClient(name = "localapp3", path = "/base/path/")
 	protected interface TestClient4 extends TestClient { }
 
-	@FeignClient(name = "localapp", path = "${test.path.prefix}")
+	@FeignClient(name = "localapp4", path = "${test.path.prefix}")
 	protected interface TestClient5 extends TestClient { }
 	
 	@Configuration
@@ -104,7 +107,8 @@ public class FeignRibbonClientPathTests {
 		TestClient1.class, TestClient2.class, TestClient3.class, TestClient4.class,
 		TestClient5.class
 	})
-	@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
+	@RibbonClients(defaultConfiguration = LocalRibbonClientConfiguration.class)
+	@Import(NoSecurityConfiguration.class)
 	public static class Application {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")

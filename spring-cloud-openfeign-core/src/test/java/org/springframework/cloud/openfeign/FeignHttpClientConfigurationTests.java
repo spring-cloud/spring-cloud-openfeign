@@ -28,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.cloud.test.ClassPathExclusions;
@@ -49,8 +50,11 @@ public class FeignHttpClientConfigurationTests {
 
 	@Before
 	public void setUp() {
-		context = new SpringApplicationBuilder().properties("debug=true","feign.httpclient.disableSslValidation=true").web(false)
-				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
+		context = new SpringApplicationBuilder()
+				.properties("debug=true","feign.httpclient.disableSslValidation=true")
+				.web(WebApplicationType.NONE)
+				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
+				.run();
 	}
 
 	@After

@@ -26,5 +26,5 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public interface UsernameClient {
 
 	@RequestMapping("/username")
-	public String getUsername();
+	String getUsername();
 }

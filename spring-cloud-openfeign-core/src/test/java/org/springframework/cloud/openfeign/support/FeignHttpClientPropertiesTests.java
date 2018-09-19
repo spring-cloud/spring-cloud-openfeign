@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnvironment;
 
 /**
  * @author Ryan Baxter
@@ -63,12 +63,12 @@ public class FeignHttpClientPropertiesTests {
 
 	@Test
 	public void testCustomization() {
-		addEnvironment(this.context, "feign.httpclient.maxConnections=2",
+		TestPropertyValues.of("feign.httpclient.maxConnections=2",
 				"feign.httpclient.connectionTimeout=2",
 				"feign.httpclient.maxConnectionsPerRoute=2",
 				"feign.httpclient.timeToLive=2",
 				"feign.httpclient.disableSslValidation=true",
-				"feign.httpclient.followRedirects=false");
+				"feign.httpclient.followRedirects=false").applyTo(this.context);
 		setupContext();
 		assertEquals(2, getProperties().getMaxConnections());
 		assertEquals(2, getProperties().getConnectionTimeout());

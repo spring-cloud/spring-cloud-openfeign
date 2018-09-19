@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,10 +48,13 @@ import org.springframework.cloud.openfeign.support.FallbackCommand;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
+import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.format.Formatter;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -94,6 +98,7 @@ import rx.Single;
  * @author Spencer Gibb
  * @author Jakub Narloch
  * @author Erik Kringen
+ * @author Halvdan Hoem Grelland
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
@@ -193,6 +198,11 @@ public class FeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/helloparams")
 		List<String> getParams(@RequestParam("params") List<String> params);
+
+		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
+		List<LocalDate> getFormattedParams(
+				@RequestParam("params")
+				@DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
 		HystrixCommand<List<Hello>> getHellosHystrix();
@@ -398,6 +408,7 @@ public class FeignClientTests {
 			@RibbonClient(name = "localapp6", configuration = LocalRibbonClientConfiguration.class),
 			@RibbonClient(name = "localapp7", configuration = LocalRibbonClientConfiguration.class)
 	})
+	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
 		// needs to be in parent context to test multiple HystrixClient beans
@@ -488,6 +499,13 @@ public class FeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/helloparams")
 		public List<String> getParams(@RequestParam("params") List<String> params) {
+			return params;
+		}
+
+		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
+		public List<LocalDate> getFormattedParams(
+				@RequestParam("params")
+				@DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params) {
 			return params;
 		}
 
@@ -631,6 +649,15 @@ public class FeignClientTests {
 		List<String> params = this.testClient.getParams(list);
 		assertNotNull("params was null", params);
 		assertEquals("params size was wrong", list.size(), params.size());
+	}
+
+	@Test
+	public void testFormattedParams() {
+		List<LocalDate> list = Arrays.asList(
+				LocalDate.of(2001, 1, 1), LocalDate.of(2018, 6, 10));
+		List<LocalDate> params = this.testClient.getFormattedParams(list);
+		assertNotNull("params was null", params);
+		assertEquals("params not converted correctly", list, params);
 	}
 
 	@Test

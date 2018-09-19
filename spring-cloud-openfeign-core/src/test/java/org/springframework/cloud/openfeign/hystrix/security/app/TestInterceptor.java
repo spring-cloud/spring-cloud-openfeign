@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
  * 
  * @author Daniel Lavoie
  */
-@Component
 public class TestInterceptor implements RequestInterceptor {
 
 	@Override
