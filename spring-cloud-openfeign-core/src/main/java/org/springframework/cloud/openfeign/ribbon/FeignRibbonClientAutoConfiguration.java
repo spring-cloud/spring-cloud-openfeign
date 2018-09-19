@@ -54,6 +54,7 @@ public class FeignRibbonClientAutoConfiguration {
 
 	@Bean
 	@Primary
+	@ConditionalOnMissingBean
 	@ConditionalOnMissingClass("org.springframework.retry.support.RetryTemplate")
 	public CachingSpringLoadBalancerFactory cachingLBClientFactory(
 			SpringClientFactory factory) {
@@ -62,6 +63,7 @@ public class FeignRibbonClientAutoConfiguration {
 
 	@Bean
 	@Primary
+	@ConditionalOnMissingBean
 	@ConditionalOnClass(name = "org.springframework.retry.support.RetryTemplate")
 	public CachingSpringLoadBalancerFactory retryabeCachingLBClientFactory(
 		SpringClientFactory factory,
