@@ -24,13 +24,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
+import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -96,7 +99,7 @@ public class FeignOkHttpTests {
 		User getUser(@PathVariable("id") long id);
 	}
 
-	@FeignClient("localapp")
+	@FeignClient("localapp1")
 	protected interface UserClient extends UserService {
 	}
 
@@ -104,7 +107,11 @@ public class FeignOkHttpTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = { TestClient.class, UserClient.class })
-	@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
+	@RibbonClients({
+			@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp1", configuration = LocalRibbonClientConfiguration.class)
+	})
+	@Import(NoSecurityConfiguration.class)
 	protected static class Application implements UserService {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")

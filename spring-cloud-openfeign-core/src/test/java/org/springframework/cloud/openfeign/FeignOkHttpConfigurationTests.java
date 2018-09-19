@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
@@ -45,7 +46,7 @@ public class FeignOkHttpConfigurationTests {
 	@Before
 	public void setUp() {
 		context = new SpringApplicationBuilder().properties("debug=true","feign.httpclient.disableSslValidation=true",
-				"feign.okhttp.enabled=true", "feign.httpclient.enabled=false").web(false)
+				"feign.okhttp.enabled=true", "feign.httpclient.enabled=false").web(WebApplicationType.NONE)
 				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
 	}
 

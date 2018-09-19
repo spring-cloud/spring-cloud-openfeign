@@ -23,6 +23,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.netflix.loadbalancer.BaseLoadBalancer;
+import com.netflix.loadbalancer.RoundRobinRule;
+import com.netflix.loadbalancer.reactive.LoadBalancerCommand;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -166,6 +169,36 @@ public class FeignLoadBalancerTests {
 
 		assertThat(cloneRequest.url(),is(url));
 
+	}
+
+	@Test
+	public void testOverrideFeignLoadBalancer() throws Exception {
+		when(this.config.get(IsSecure)).thenReturn(false);
+		Server server1 = new Server("foo", 6666);
+		Server server2 = new Server("foo", 7777);
+		BaseLoadBalancer baseLoadBalancer = new BaseLoadBalancer();
+		baseLoadBalancer.setRule(new RoundRobinRule() {
+			@Override
+			public Server choose(Object loadBalancerKey) {
+				return loadBalancerKey == null ? server2 : server1;
+			}
+		});
+
+		this.feignLoadBalancer = new FeignLoadBalancer(baseLoadBalancer, this.config,
+				this.inspector) {
+			protected void customizeLoadBalancerCommandBuilder(final FeignLoadBalancer.RibbonRequest request, final IClientConfig config,
+															   final LoadBalancerCommand.Builder<FeignLoadBalancer.RibbonResponse> builder) {
+				builder.withServerLocator(request.getRequest().headers().get("c_ip"));
+			}
+		};
+		Request request = new RequestTemplate().method("GET").request();
+		RibbonResponse resp = this.feignLoadBalancer.executeWithLoadBalancer(new RibbonRequest(this.delegate, request,
+				new URI(request.url())), null);
+		assertThat(resp.getRequestedURI().getPort(), is(7777));
+		request = new RequestTemplate().method("GET").header("c_ip", "666").request();
+		resp = this.feignLoadBalancer.executeWithLoadBalancer(new RibbonRequest(this.delegate, request,
+				new URI(request.url())), null);
+		assertThat(resp.getRequestedURI().getPort(), is(6666));
 	}
 
 }

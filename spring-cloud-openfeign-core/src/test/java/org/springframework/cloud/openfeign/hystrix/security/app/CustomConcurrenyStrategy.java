@@ -1,10 +1,9 @@
 package org.springframework.cloud.openfeign.hystrix.security.app;
 
-import java.util.concurrent.Callable;
-import org.springframework.stereotype.Component;
 import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
 
-@Component
+import java.util.concurrent.Callable;
+
 public class CustomConcurrenyStrategy extends HystrixConcurrencyStrategy {
 	private boolean hookCalled;
 

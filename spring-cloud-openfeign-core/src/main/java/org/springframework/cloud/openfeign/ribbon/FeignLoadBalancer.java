@@ -118,7 +118,7 @@ public class FeignLoadBalancer extends
 		private final Request request;
 		private final Client client;
 
-		RibbonRequest(Client client, Request request, URI uri) {
+		protected RibbonRequest(Client client, Request request, URI uri) {
 			this.client = client;
 			setUri(uri);
 			this.request = toRequest(request);
@@ -170,6 +170,13 @@ public class FeignLoadBalancer extends
 			};
 		}
 
+		public Request getRequest() {
+			return request;
+		}
+
+		public Client getClient() {
+			return client;
+		}
 
 		@Override
 		public Object clone() {
@@ -182,7 +189,7 @@ public class FeignLoadBalancer extends
 		private final URI uri;
 		private final Response response;
 
-		RibbonResponse(URI uri, Response response) {
+		protected RibbonResponse(URI uri, Response response) {
 			this.uri = uri;
 			this.response = response;
 		}

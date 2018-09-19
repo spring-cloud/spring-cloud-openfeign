@@ -28,7 +28,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -201,6 +203,7 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
+	@Import(NoSecurityConfiguration.class)
 	protected static class Application implements TestClient {
 
 		@Override
