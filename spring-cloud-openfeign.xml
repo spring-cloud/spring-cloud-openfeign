@@ -289,7 +289,7 @@ static class HystrixClientFallbackFactory implements FallbackFactory&lt;HystrixC
 <simpara>There is a limitation with the implementation of fallbacks in Feign and how Hystrix fallbacks work. Fallbacks are currently not supported for methods that return <literal>com.netflix.hystrix.HystrixCommand</literal> and <literal>rx.Observable</literal>.</simpara>
 </warning>
 </section>
-<section xml:id="_feign_and_literal_primary_literal">
+<section xml:id="_feign_and_primary">
 <title>Feign and <literal>@Primary</literal></title>
 <simpara>When using Feign with Hystrix fallbacks, there are multiple beans in the <literal>ApplicationContext</literal> of the same type. This will cause <literal>@Autowired</literal> to not work because there isn&#8217;t exactly one bean, or one marked as primary. To work around this, Spring Cloud Netflix marks all Feign instances as <literal>@Primary</literal>, so Spring Framework will know which bean to inject. In some cases, this may not be desirable. To turn off this behavior set the <literal>primary</literal> attribute of <literal>@FeignClient</literal> to false.</simpara>
 <programlisting language="java" linenumbering="unnumbered">@FeignClient(name = "hello", primary = false)
@@ -338,7 +338,7 @@ doesn&#8217;t work with Spring MVC in its current form (method parameter
 mapping is not inherited).</simpara>
 </note>
 </section>
-<section xml:id="_feign_request_response_compression">
+<section xml:id="_feign_requestresponse_compression">
 <title>Feign request/response compression</title>
 <simpara>You may consider enabling the request or response GZIP compression for your
 Feign requests. You can do this by enabling one of the properties:</simpara>
