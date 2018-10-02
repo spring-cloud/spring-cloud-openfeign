@@ -4,8 +4,30 @@
 	    "name": "feign.hystrix.enabled",
 	    "type": "java.lang.Boolean",
 	    "description": "If true, an OpenFeign client will be wrapped with a Hystrix circuit breaker.",
-	    "sourceType": "org.springframework.cloud.openfeign.FeignClientsConfiguration",
 	    "defaultValue": "false"
+	},
+	{
+		"name": "feign.httpclient.enabled",
+		"type": "java.lang.Boolean",
+		"description": "Enables the use of the Apache HTTP Client by Feign.",
+		"defaultValue": "true"
+	},
+	{
+		"name": "feign.okhttp.enabled",
+		"type": "java.lang.Boolean",
+		"description": "Enables the use of the OK HTTP Client by Feign.",
+		"defaultValue": "false"
+	},
+	{
+		"name": "feign.compression.response.enabled",
+		"type": "java.lang.Boolean",
+		"description": "Enables the response from Feign to be compressed.",
+		"defaultValue": "false"
+	},
+	{
+		"name": "feign.compression.request.enabled",
+		"type": "java.lang.Boolean",
+		"description": "Enables the request sent by Feign to be compressed.",
+		"defaultValue": "false"
 	}
-], "hints": [
 ]}
