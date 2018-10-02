@@ -198,12 +198,19 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		AnnotationAttributes annotation = AnnotationAttributes.fromMap(attributes);
 		// This blows up if an aliased property is overspecified
 		// FIXME annotation.getAliasedString("name", FeignClient.class, null);
+		validateFallback(annotation.getClass("fallback"));
+		validateFallbackFactory(annotation.getClass("fallbackFactory"));
+	}
+
+	static void validateFallback(final Class clazz) {
 		Assert.isTrue(
-			!annotation.getClass("fallback").isInterface(),
+			!clazz.isInterface(),
 			"Fallback class must implement the interface annotated by @FeignClient"
 		);
-		Assert.isTrue(
-			!annotation.getClass("fallbackFactory").isInterface(),
+	}
+
+	static void validateFallbackFactory(final Class clazz) {
+		Assert.isTrue(!clazz.isInterface(),
 			"Fallback factory must produce instances of fallback classes that implement the interface annotated by @FeignClient"
 		);
 	}
@@ -217,6 +224,10 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 			name = (String) attributes.get("value");
 		}
 		name = resolve(name);
+		return getName(name);
+	}
+
+	static String getName(String name) {
 		if (!StringUtils.hasText(name)) {
 			return "";
 		}
@@ -247,6 +258,10 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 
 	private String getUrl(Map<String, Object> attributes) {
 		String url = resolve((String) attributes.get("url"));
+		return getUrl(url);
+	}
+
+	static String getUrl(String url) {
 		if (StringUtils.hasText(url) && !(url.startsWith("#{") && url.contains("}"))) {
 			if (!url.contains("://")) {
 				url = "http://" + url;
@@ -263,6 +278,10 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 
 	private String getPath(Map<String, Object> attributes) {
 		String path = resolve((String) attributes.get("path"));
+		return getPath(path);
+	}
+
+	static String getPath(String path) {
 		if (StringUtils.hasText(path)) {
 			path = path.trim();
 			if (!path.startsWith("/")) {

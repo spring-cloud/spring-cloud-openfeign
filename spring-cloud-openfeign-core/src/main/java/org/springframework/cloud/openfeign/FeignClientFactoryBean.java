@@ -229,6 +229,14 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 
 	@Override
 	public Object getObject() throws Exception {
+		return getTarget();
+	}
+
+	/**
+	 * @param <T> the target type of the Feign client
+	 * @return a {@link Feign} client created with the specified data and the context information
+	 */
+	<T> T getTarget() {
 		FeignContext context = applicationContext.getBean(FeignContext.class);
 		Feign.Builder builder = feign(context);
 
@@ -241,7 +249,7 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 				url = this.name;
 			}
 			url += cleanPath();
-			return loadBalance(builder, context, new HardCodedTarget<>(this.type,
+			return (T) loadBalance(builder, context, new HardCodedTarget<>(this.type,
 					this.name, url));
 		}
 		if (StringUtils.hasText(this.url) && !this.url.startsWith("http")) {
@@ -258,7 +266,7 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 			builder.client(client);
 		}
 		Targeter targeter = get(context, Targeter.class);
-		return targeter.target(this, builder, context, new HardCodedTarget<>(
+		return (T) targeter.target(this, builder, context, new HardCodedTarget<>(
 				this.type, this.name, url));
 	}
 
