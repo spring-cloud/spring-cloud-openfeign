@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestParamParameterProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -62,6 +63,7 @@ import feign.Param;
  * @author Spencer Gibb
  * @author Abhijit Sarkar
  * @author Halvdan Hoem Grelland
+ * @author Aram Peres
  */
 public class SpringMvcContract extends Contract.BaseContract
 		implements ResourceLoaderAware {
@@ -332,6 +334,7 @@ public class SpringMvcContract extends Contract.BaseContract
 		annotatedArgumentResolvers.add(new PathVariableParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestParamParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestHeaderParameterProcessor());
+		annotatedArgumentResolvers.add(new QueryMapParameterProcessor());
 
 		return annotatedArgumentResolvers;
 	}
