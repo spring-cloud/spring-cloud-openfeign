@@ -31,6 +31,7 @@ import feign.Param;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.NumberFormat;
@@ -488,6 +489,20 @@ public class SpringMvcContractTests {
 		assertEquals("{aParam}", params.get("aParam").iterator().next());
 	}
 
+	@Test
+	public void testProcessQueryMapObject() throws Exception {
+		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapObject",
+				TestObject.class, String.class);
+		MethodMetadata data = this.contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertEquals("/queryMapObject", data.template().url());
+		assertEquals("GET", data.template().method());
+		assertEquals(0, data.queryMapIndex().intValue());
+		Map<String, Collection<String>> params = data.template().queries();
+		assertEquals("{aParam}", params.get("aParam").iterator().next());
+	}
+
 	@Test(expected = IllegalStateException.class)
 	public void testProcessQueryMapMoreThanOnce() throws Exception {
 		Method method = TestTemplate_QueryMap.class.getDeclaredMethod(
@@ -573,6 +588,11 @@ public class SpringMvcContractTests {
 		String queryMapMoreThanOnce(
 				@RequestParam MultiValueMap<String, String> queryMap1,
 				@RequestParam MultiValueMap<String, String> queryMap2);
+
+		@RequestMapping(path = "/queryMapObject")
+		String queryMapObject(
+				@SpringQueryMap TestObject queryMap,
+				@RequestParam(name = "aParam") String aParam);
 	}
 
 	@JsonAutoDetect
