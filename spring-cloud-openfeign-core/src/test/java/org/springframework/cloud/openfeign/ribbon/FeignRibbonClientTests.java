@@ -35,6 +35,7 @@ import org.springframework.cloud.netflix.ribbon.DefaultServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 
+import static feign.Request.HttpMethod.GET;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -91,7 +92,7 @@ public class FeignRibbonClientTests {
 
 	@Test
 	public void remoteRequestIsSentAtRoot() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("http://foo")
+		Request request = new RequestTemplate().method(GET).uri("http://foo")
 				.request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
@@ -101,7 +102,7 @@ public class FeignRibbonClientTests {
 
 	@Test
 	public void remoteRequestIsSent() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("http://foo/")
+		Request request = new RequestTemplate().method(GET).uri("http://foo/")
 				.request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
@@ -111,7 +112,7 @@ public class FeignRibbonClientTests {
 
 	@Test
 	public void remoteRequestIsSecure() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("https://foo/")
+		Request request = new RequestTemplate().method(GET).uri("https://foo/")
 				.request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("https://foo.com:8000/");

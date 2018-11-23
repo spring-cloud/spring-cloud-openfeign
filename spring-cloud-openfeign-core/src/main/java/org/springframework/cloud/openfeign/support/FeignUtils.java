@@ -24,6 +24,8 @@ import java.util.Map;
 
 import org.springframework.http.HttpHeaders;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author Spencer Gibb
  */
@@ -45,6 +47,13 @@ public class FeignUtils {
 		}
 
 		return headers;
+	}
+
+	static Collection<String> addTemplateParameter(Collection<String> possiblyNull,
+			String paramName) {
+		Collection<String> params = ofNullable(possiblyNull).orElse(new ArrayList<>());
+		params.add(String.format("{%s}", paramName));
+		return params;
 	}
 
 }

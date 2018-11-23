@@ -29,6 +29,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import feign.Contract;
+import feign.Feign;
+import feign.MethodMetadata;
+import feign.Param;
+import feign.template.UriTemplate;
+
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
@@ -51,12 +57,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
+import static org.springframework.cloud.openfeign.support.FeignUtils.addTemplateParameter;
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
-
-import feign.Contract;
-import feign.Feign;
-import feign.MethodMetadata;
-import feign.Param;
 
 /**
  * @author Spencer Gibb
@@ -186,7 +188,7 @@ public class SpringMvcContract extends Contract.BaseContract
 				pathValue = resolve(pathValue);
 				// Append path from @RequestMapping if value is present on method
 				if (!pathValue.startsWith("/")
-						&& !data.template().toString().endsWith("/")) {
+						&& !data.template().path().endsWith("/")) {
 					pathValue = "/" + pathValue;
 				}
 				data.template().append(pathValue);
@@ -392,7 +394,7 @@ public class SpringMvcContract extends Contract.BaseContract
 		@Override
 		public Collection<String> setTemplateParameter(String name,
 				Collection<String> rest) {
-			return addTemplatedParam(rest, name);
+			return addTemplateParameter(rest, name);
 		}
 	}
 

@@ -85,8 +85,8 @@ public class SpringEncoderTests {
 		String header = contentTypeHeader.iterator().next();
 		assertThat("content type header is wrong", header, is("application/mytype"));
 		
-		assertThat("request charset is null", request.charset(), is(notNullValue()));
-		assertThat("request charset is wrong", request.charset(), is(Charset.forName("UTF-8")));
+		assertThat("request charset is null", request.requestCharset(), is(notNullValue()));
+		assertThat("request charset is wrong", request.requestCharset(), is(Charset.forName("UTF-8")));
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class SpringEncoderTests {
 
 		encoder.encode("hi".getBytes(), null, request);
 
-		assertThat("request charset is not null", request.charset(), is(nullValue()));
+		assertThat("request charset is not null", request.requestCharset(), is(nullValue()));
 	}
 
 	@Test(expected = EncodeException.class)
@@ -109,7 +109,7 @@ public class SpringEncoderTests {
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 
-		assertThat("request charset is not null", request.charset(), is(nullValue()));
+		assertThat("request charset is not null", request.requestCharset(), is(nullValue()));
 	}
 
 	@Test
@@ -122,7 +122,7 @@ public class SpringEncoderTests {
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 
-		assertThat("request charset is not null", request.charset(), is(nullValue()));
+		assertThat("request charset is not null", request.requestCharset(), is(nullValue()));
 	}
 	
 	class MediaTypeMatcher implements ArgumentMatcher<MediaType> {
@@ -192,10 +192,7 @@ public class SpringEncoderTests {
 
 			@Override
 			public boolean canWrite(Class<?> clazz, MediaType mediaType) {
-				if (clazz == String.class) {
-					return true;
-				}
-				return false;
+				return clazz == String.class;
 			}
 
 			@Override

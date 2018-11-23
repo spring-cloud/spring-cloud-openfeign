@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -125,7 +126,7 @@ public class ProtobufSpringEncoderTest {
                 return new BasicHttpResponse(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, null));
             }
         });
-        new ApacheHttpClient(httpClient).execute(requestTemplate.request(), new feign.Request.Options());
+        new ApacheHttpClient(httpClient).execute(requestTemplate.resolve(new HashMap<>()).request(), new feign.Request.Options());
         HttpUriRequest httpUriRequest = request.get(0);
         return  ((HttpEntityEnclosingRequestBase)httpUriRequest).getEntity();
     }
