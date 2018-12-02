@@ -453,7 +453,7 @@ public class Params {
     private String param1;
     private String param2;
 
-    // [Getters and setters ommitted for brievety]
+    // [Getters and setters omitted for brevity]
 }
 ----
 
