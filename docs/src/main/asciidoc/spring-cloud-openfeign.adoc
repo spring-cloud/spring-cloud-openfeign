@@ -434,3 +434,37 @@ via discovery, and all requests are executed in a
 <<hystrix-fallbacks-for-routes, hystrix command>>, so
 failures will show up in Hystrix metrics, and once the circuit is open
 the proxy will not try to contact the service.
+
+=== Feign `@QueryMap` support
+
+The OpenFeign `@QueryMap` annotation provides support for POJOs to be used as
+GET parameter maps. Unfortunately, the default OpenFeign QueryMap annotation is
+incompatible with Spring because it lacks a `value` property.
+
+Spring Cloud OpenFeign provides an equivalent `@SpringQueryMap` annotation, which
+is used to annotate a POJO or Map parameter as a query parameter map.
+
+For example, the `Params` class defines parameters `param1` and `param2`:
+
+[source,java,indent=0]
+----
+// Params.java
+public class Params {
+    private String param1;
+    private String param2;
+
+    // [Getters and setters ommitted for brievety]
+}
+----
+
+The following feign client uses the `Params` class by using the `@SpringQueryMap` annotation:
+
+[source,java,indent=0]
+----
+@FeignClient("demo")
+public class DemoTemplate {
+
+    @GetMapping(path = "/demo")
+    String demoEndpoint(@SpringQueryMap Params params);
+}
+----
