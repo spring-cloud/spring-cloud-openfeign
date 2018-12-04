@@ -171,6 +171,8 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		definition.addPropertyValue("path", getPath(attributes));
 		String name = getName(attributes);
 		definition.addPropertyValue("name", name);
+		String serviceId = getServiceId(attributes);
+		definition.addPropertyValue("serviceId", serviceId);
 		definition.addPropertyValue("type", className);
 		definition.addPropertyValue("decode404", attributes.get("decode404"));
 		definition.addPropertyValue("fallback", attributes.get("fallback"));
@@ -216,15 +218,20 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 	}
 
 	/* for testing */ String getName(Map<String, Object> attributes) {
-		String name = (String) attributes.get("serviceId");
-		if (!StringUtils.hasText(name)) {
-			name = (String) attributes.get("name");
-		}
+		String name = (String) attributes.get("name");
 		if (!StringUtils.hasText(name)) {
 			name = (String) attributes.get("value");
 		}
+		if (!StringUtils.hasText(name)) {
+			name = (String) attributes.get("serviceId");
+		}
 		name = resolve(name);
 		return getName(name);
+	}
+
+	private String getServiceId(Map<String, Object> attributes) {
+		String path = resolve((String) attributes.get("serviceId"));
+		return getName(path);
 	}
 
 	static String getName(String name) {

@@ -16,9 +16,11 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.util.Map;
-import java.util.Objects;
-
+import feign.*;
+import feign.Target.HardCodedTarget;
+import feign.codec.Decoder;
+import feign.codec.Encoder;
+import feign.codec.ErrorDecoder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
@@ -30,17 +32,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import feign.Client;
-import feign.Contract;
-import feign.Feign;
-import feign.Logger;
-import feign.Request;
-import feign.RequestInterceptor;
-import feign.Retryer;
-import feign.Target.HardCodedTarget;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
-import feign.codec.ErrorDecoder;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Spencer Gibb
@@ -59,6 +52,8 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 	private String name;
 
 	private String url;
+
+	private String serviceId;
 
 	private String path;
 
@@ -242,11 +237,20 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 
 		if (!StringUtils.hasText(this.url)) {
 			String url;
-			if (!this.name.startsWith("http")) {
-				url = "http://" + this.name;
-			}
-			else {
-				url = this.name;
+			if (StringUtils.hasText(this.serviceId)) {
+				if (!this.serviceId.startsWith("http")) {
+					url = "http://" + this.serviceId;
+				}
+				else {
+					url = this.serviceId;
+				}
+			} else {
+				if (!this.name.startsWith("http")) {
+					url = "http://" + this.name;
+				}
+				else {
+					url = this.name;
+				}
 			}
 			url += cleanPath();
 			return (T) loadBalance(builder, context, new HardCodedTarget<>(this.type,
@@ -307,6 +311,14 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getServiceId() {
+		return serviceId;
+	}
+
+	public void setServiceId(String serviceId) {
+		this.serviceId = serviceId;
 	}
 
 	public String getUrl() {

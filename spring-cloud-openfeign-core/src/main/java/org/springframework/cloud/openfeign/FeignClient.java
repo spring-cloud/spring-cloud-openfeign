@@ -47,11 +47,9 @@ public @interface FeignClient {
 	String value() default "";
 
 	/**
-	 * The service id with optional protocol prefix. Synonym for {@link #value() value}.
+	 * The service id with optional protocol prefix. Will be used instead of {@link #value() value} if present.
 	 *
-	 * @deprecated use {@link #name() name} instead
 	 */
-	@Deprecated
 	String serviceId() default "";
 
 	/**
