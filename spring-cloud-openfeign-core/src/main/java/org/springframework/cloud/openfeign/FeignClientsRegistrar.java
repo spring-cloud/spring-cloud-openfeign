@@ -230,8 +230,13 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 	}
 
 	private String getServiceId(Map<String, Object> attributes) {
-		String path = resolve((String) attributes.get("serviceId"));
-		return getName(path);
+		String serviceId = (String) attributes.get("serviceId");
+		if (!StringUtils.hasText(serviceId)) {
+			serviceId = getName(attributes);
+		}
+
+		serviceId = resolve(serviceId);
+		return getName(serviceId);
 	}
 
 	static String getName(String name) {
