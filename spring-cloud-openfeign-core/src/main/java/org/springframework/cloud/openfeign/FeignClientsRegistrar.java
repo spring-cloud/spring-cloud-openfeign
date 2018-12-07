@@ -150,8 +150,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 					Map<String, Object> attributes = annotationMetadata
 							.getAnnotationAttributes(
 									FeignClient.class.getCanonicalName());
-
-					String name = getClientName(attributes);
+					String name = getClientName(attributes) + annotationMetadata.getClassName();
 					registerClientConfiguration(registry, name,
 							attributes.get("configuration"));
 
