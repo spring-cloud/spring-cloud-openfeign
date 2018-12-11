@@ -1,6 +1,6 @@
 <html><head>
       <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-   <title>Spring Cloud OpenFeign</title><link rel="stylesheet" type="text/css" href="css/manual-singlepage.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book"><div class="titlepage"><div><div><h1 class="title"><a name="d0e3"></a>Spring Cloud OpenFeign</h1></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="preface"><a href="#d0e9"></a></span></dt><dt><span class="chapter"><a href="#spring-cloud-feign">1. Declarative REST Client: Feign</a></span></dt><dd><dl><dt><span class="section"><a href="#netflix-feign-starter">1.1. How to Include Feign</a></span></dt><dt><span class="section"><a href="#spring-cloud-feign-overriding-defaults">1.2. Overriding Feign Defaults</a></span></dt><dt><span class="section"><a href="#_creating_feign_clients_manually">1.3. Creating Feign Clients Manually</a></span></dt><dt><span class="section"><a href="#spring-cloud-feign-hystrix">1.4. Feign Hystrix Support</a></span></dt><dt><span class="section"><a href="#spring-cloud-feign-hystrix-fallback">1.5. Feign Hystrix Fallbacks</a></span></dt><dt><span class="section"><a href="#_feign_and_primary">1.6. Feign and <code class="literal">@Primary</code></a></span></dt><dt><span class="section"><a href="#spring-cloud-feign-inheritance">1.7. Feign Inheritance Support</a></span></dt><dt><span class="section"><a href="#_feign_requestresponse_compression">1.8. Feign request/response compression</a></span></dt><dt><span class="section"><a href="#_feign_logging">1.9. Feign logging</a></span></dt><dt><span class="section"><a href="#_feign_querymap_support">1.10. Feign <code class="literal">@QueryMap</code> support</a></span></dt></dl></dd></dl></div><div class="preface"><div class="titlepage"><div><div><h1 class="title"><a name="d0e9" href="#d0e9"></a></h1></div></div></div><p><span class="strong"><strong>2.1.0.BUILD-SNAPSHOT</strong></span></p><p>This project provides OpenFeign integrations for Spring Boot apps through autoconfiguration
+   <title>Spring Cloud OpenFeign</title><link rel="stylesheet" type="text/css" href="css/manual-singlepage.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book"><div class="titlepage"><div><div><h1 class="title"><a name="d0e3"></a>Spring Cloud OpenFeign</h1></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="preface"><a href="#d0e9"></a></span></dt><dt><span class="chapter"><a href="#spring-cloud-feign">1. Declarative REST Client: Feign</a></span></dt><dd><dl><dt><span class="section"><a href="#netflix-feign-starter">1.1. How to Include Feign</a></span></dt><dt><span class="section"><a href="#spring-cloud-feign-overriding-defaults">1.2. Overriding Feign Defaults</a></span></dt><dt><span class="section"><a href="#_creating_feign_clients_manually">1.3. Creating Feign Clients Manually</a></span></dt><dt><span class="section"><a href="#spring-cloud-feign-hystrix">1.4. Feign Hystrix Support</a></span></dt><dt><span class="section"><a href="#spring-cloud-feign-hystrix-fallback">1.5. Feign Hystrix Fallbacks</a></span></dt><dt><span class="section"><a href="#_feign_and_primary">1.6. Feign and <code class="literal">@Primary</code></a></span></dt><dt><span class="section"><a href="#spring-cloud-feign-inheritance">1.7. Feign Inheritance Support</a></span></dt><dt><span class="section"><a href="#_feign_requestresponse_compression">1.8. Feign request/response compression</a></span></dt><dt><span class="section"><a href="#_feign_logging">1.9. Feign logging</a></span></dt></dl></dd></dl></div><div class="preface"><div class="titlepage"><div><div><h1 class="title"><a name="d0e9" href="#d0e9"></a></h1></div></div></div><p><span class="strong"><strong>2.1.0.BUILD-SNAPSHOT</strong></span></p><p>This project provides OpenFeign integrations for Spring Boot apps through autoconfiguration
 and binding to the Spring Environment and other Spring programming model idioms.</p></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="spring-cloud-feign" href="#spring-cloud-feign"></a>1.&nbsp;Declarative REST Client: Feign</h1></div></div></div><p><a class="link" href="https://github.com/Netflix/feign" target="_top">Feign</a> is a declarative web service client.  It makes writing web service clients easier.  To use Feign create an interface and annotate it.  It has pluggable annotation support including Feign annotations and JAX-RS annotations. Feign also supports pluggable encoders and decoders.  Spring Cloud adds support for Spring MVC annotations and for using the same <code class="literal">HttpMessageConverters</code> used by default in Spring Web.  Spring Cloud integrates Ribbon and Eureka to provide a load balanced http client when using Feign.</p><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="netflix-feign-starter" href="#netflix-feign-starter"></a>1.1&nbsp;How to Include Feign</h2></div></div></div><p>To include Feign in your project use the starter with group <code class="literal">org.springframework.cloud</code>
 and artifact id <code class="literal">spring-cloud-starter-openfeign</code>. See the <a class="link" href="http://projects.spring.io/spring-cloud/" target="_top">Spring Cloud Project page</a>
 for details on setting up your build system with the current Spring Cloud Release Train.</p><p>Example spring boot app</p><pre class="programlisting"><em><span class="hl-annotation" style="color: gray">@SpringBootApplication</span></em>
@@ -190,25 +190,25 @@ feign.compression.request.min-request-size=<span class="hl-number">2048</span></
     Logger.Level feignLoggerLevel() {
         <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">return</span> Logger.Level.FULL;
     }
-}</pre><pre class="literallayout">        OtherClass.someMethod(myprop.get());
-    }
 }
-stripped). The proxy uses Ribbon to locate an instance to forward to
-via discovery, and all requests are executed in a
-&lt;&lt;hystrix-fallbacks-for-routes, hystrix command&gt;&gt;, so
-failures will show up in Hystrix metrics, and once the circuit is open
-the proxy will not try to contact the service.</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_feign_querymap_support" href="#_feign_querymap_support"></a>1.10&nbsp;Feign <code class="literal">@QueryMap</code> support</h2></div></div></div><p>The OpenFeign <code class="literal">@QueryMap</code> annotation provides support for POJOs to be used as
-GET parameter maps. Unfortunately, the default OpenFeign QueryMap annotation is
-incompatible with Spring because it lacks a <code class="literal">value</code> property.</p><p>Spring Cloud OpenFeign provides an equivalent <code class="literal">@SpringQueryMap</code> annotation, which
-is used to annotate a POJO or Map parameter as a query parameter map.</p><p>For example, the <code class="literal">Params</code> class defines parameters <code class="literal">param1</code> and <code class="literal">param2</code>:</p><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment">// Params.java</span>
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">public</span> <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">class</span> Params {
-    <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">private</span> String param1;
-    <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">private</span> String param2;
 
-    <span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment">// [Getters and setters omitted for brevity]</span>
-}</pre><p>The following feign client uses the <code class="literal">Params</code> class by using the <code class="literal">@SpringQueryMap</code> annotation:</p><pre class="programlisting"><em><span class="hl-annotation" style="color: gray">@FeignClient("demo")</span></em>
-<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">public</span> <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">class</span> DemoTemplate {
+=== Feign `<em><span class="hl-annotation" style="color: gray">@QueryMap`</span></em> support
 
-    <em><span class="hl-annotation" style="color: gray">@GetMapping(path = "/demo")</span></em>
-    String demoEndpoint(<em><span class="hl-annotation" style="color: gray">@SpringQueryMap</span></em> Params params);
-}</pre></div></div></div></body></html>
+The OpenFeign `<em><span class="hl-annotation" style="color: gray">@QueryMap`</span></em> annotation provides support <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">for</span> POJOs to be used as
+GET parameter maps. Unfortunately, the <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">default</span> OpenFeign QueryMap annotation is
+incompatible with Spring because it lacks a `value` property.
+
+Spring Cloud OpenFeign provides an equivalent `<em><span class="hl-annotation" style="color: gray">@SpringQueryMap`</span></em> annotation, which
+is used to annotate a POJO or Map parameter as a query parameter map.
+
+For example, the `Params` <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">class</span> defines parameters `param1` and `param2`:
+
+[source,java,indent=<span class="hl-number">0</span>]</pre><p>public class Params {
+    private String param1;
+    private String param2;</p><pre class="literallayout">    // [Getters and setters omitted for brevity]
+}</pre><pre class="screen">The following feign client uses the `Params` class by using the `@SpringQueryMap` annotation:
+
+[source,java,indent=0]</pre><p>@FeignClient("demo")
+public class DemoTemplate {</p><pre class="literallayout">    @GetMapping(path = "/demo")
+    String demoEndpoint(@SpringQueryMap Params params);
+}</pre><pre class="screen"></pre></div></div></div></body></html>

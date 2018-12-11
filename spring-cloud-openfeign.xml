@@ -381,38 +381,34 @@ public class FooConfiguration {
     Logger.Level feignLoggerLevel() {
         return Logger.Level.FULL;
     }
-}</programlisting>
-<literallayout class="monospaced">        OtherClass.someMethod(myprop.get());
-    }
 }
-stripped). The proxy uses Ribbon to locate an instance to forward to
-via discovery, and all requests are executed in a
-&lt;&lt;hystrix-fallbacks-for-routes, hystrix command&gt;&gt;, so
-failures will show up in Hystrix metrics, and once the circuit is open
-the proxy will not try to contact the service.</literallayout>
-</section>
-<section xml:id="_feign_querymap_support">
-<title>Feign <literal>@QueryMap</literal> support</title>
-<simpara>The OpenFeign <literal>@QueryMap</literal> annotation provides support for POJOs to be used as
+
+=== Feign `@QueryMap` support
+
+The OpenFeign `@QueryMap` annotation provides support for POJOs to be used as
 GET parameter maps. Unfortunately, the default OpenFeign QueryMap annotation is
-incompatible with Spring because it lacks a <literal>value</literal> property.</simpara>
-<simpara>Spring Cloud OpenFeign provides an equivalent <literal>@SpringQueryMap</literal> annotation, which
-is used to annotate a POJO or Map parameter as a query parameter map.</simpara>
-<simpara>For example, the <literal>Params</literal> class defines parameters <literal>param1</literal> and <literal>param2</literal>:</simpara>
-<programlisting language="java" linenumbering="unnumbered">// Params.java
-public class Params {
+incompatible with Spring because it lacks a `value` property.
+
+Spring Cloud OpenFeign provides an equivalent `@SpringQueryMap` annotation, which
+is used to annotate a POJO or Map parameter as a query parameter map.
+
+For example, the `Params` class defines parameters `param1` and `param2`:
+
+[source,java,indent=0]</programlisting>
+<simpara>public class Params {
     private String param1;
-    private String param2;
+    private String param2;</simpara>
+<literallayout class="monospaced">    // [Getters and setters omitted for brevity]
+}</literallayout>
+<screen>The following feign client uses the `Params` class by using the `@SpringQueryMap` annotation:
 
-    // [Getters and setters omitted for brevity]
-}</programlisting>
-<simpara>The following feign client uses the <literal>Params</literal> class by using the <literal>@SpringQueryMap</literal> annotation:</simpara>
-<programlisting language="java" linenumbering="unnumbered">@FeignClient("demo")
-public class DemoTemplate {
-
-    @GetMapping(path = "/demo")
+[source,java,indent=0]</screen>
+<simpara>@FeignClient("demo")
+public class DemoTemplate {</simpara>
+<literallayout class="monospaced">    @GetMapping(path = "/demo")
     String demoEndpoint(@SpringQueryMap Params params);
-}</programlisting>
+}</literallayout>
+<screen></screen>
 </section>
 </chapter>
 </book>
