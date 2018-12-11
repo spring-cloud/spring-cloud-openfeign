@@ -91,23 +91,28 @@ public class FeignClientValidationTests {
 
 	@Test
 	public void testDuplicatedClientNames() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+		context.setAllowBeanDefinitionOverriding(false);
+		context.register(
 				LoadBalancerAutoConfiguration.class,
 				RibbonAutoConfiguration.class,
 				FeignRibbonClientAutoConfiguration.class,
-				DuplicatedFeignClientNamesConfiguration.class);
+				DuplicatedFeignClientNamesConfiguration.class
+		);
+		context.refresh();
 		assertNotNull(context.getBean(DuplicatedFeignClientNamesConfiguration.FooClient.class));
 		assertNotNull(context.getBean(DuplicatedFeignClientNamesConfiguration.BarClient.class));
 		context.close();
 	}
 
 	@Configuration
+
 	@Import({FeignAutoConfiguration.class, HttpClientConfiguration.class})
 	@EnableFeignClients(clients = {DuplicatedFeignClientNamesConfiguration.FooClient.class,
 			DuplicatedFeignClientNamesConfiguration.BarClient.class})
 	protected static class DuplicatedFeignClientNamesConfiguration {
 
-		@FeignClient(name = "bar", serviceId = "bar")
+		@FeignClient(name = "foo", serviceId = "bar")
 		interface FooClient {
 			@RequestMapping(method = RequestMethod.GET, value = "/")
 			String get();
