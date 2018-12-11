@@ -425,15 +425,6 @@ public class FooConfiguration {
         return Logger.Level.FULL;
     }
 }
-----
-        OtherClass.someMethod(myprop.get());
-    }
-}
-stripped). The proxy uses Ribbon to locate an instance to forward to
-via discovery, and all requests are executed in a
-<<hystrix-fallbacks-for-routes, hystrix command>>, so
-failures will show up in Hystrix metrics, and once the circuit is open
-the proxy will not try to contact the service.
 
 === Feign `@QueryMap` support
 
