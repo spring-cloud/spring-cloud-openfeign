@@ -189,25 +189,18 @@ feign.compression.request.min-request-size=<span class="hl-number">2048</span></
     Logger.Level feignLoggerLevel() {
         <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">return</span> Logger.Level.FULL;
     }
-}
+}</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="_feign_querymap_support" href="#_feign_querymap_support"></a>1.10&nbsp;Feign @QueryMap support</h2></div></div></div><p>The OpenFeign <code class="literal">@QueryMap</code> annotation provides support for POJOs to be used as
+GET parameter maps. Unfortunately, the default OpenFeign QueryMap annotation is
+incompatible with Spring because it lacks a <code class="literal">value</code> property.</p><p>Spring Cloud OpenFeign provides an equivalent <code class="literal">@SpringQueryMap</code> annotation, which
+is used to annotate a POJO or Map parameter as a query parameter map.</p><p>For example, the <code class="literal">Params</code> class defines parameters <code class="literal">param1</code> and <code class="literal">param2</code>:</p><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment">// Params.java</span>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">public</span> <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">class</span> Params {
+    <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">private</span> String param1;
+    <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">private</span> String param2;
 
-=== Feign `<em><span class="hl-annotation" style="color: gray">@QueryMap`</span></em> support
+    <span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment">// [Getters and setters omitted for brevity]</span>
+}</pre><p>The following feign client uses the <code class="literal">Params</code> class by using the <code class="literal">@SpringQueryMap</code> annotation:</p><pre class="programlisting"><em><span class="hl-annotation" style="color: gray">@FeignClient("demo")</span></em>
+<span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">public</span> <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">class</span> DemoTemplate {
 
-The OpenFeign `<em><span class="hl-annotation" style="color: gray">@QueryMap`</span></em> annotation provides support <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">for</span> POJOs to be used as
-GET parameter maps. Unfortunately, the <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">default</span> OpenFeign QueryMap annotation is
-incompatible with Spring because it lacks a `value` property.
-
-Spring Cloud OpenFeign provides an equivalent `<em><span class="hl-annotation" style="color: gray">@SpringQueryMap`</span></em> annotation, which
-is used to annotate a POJO or Map parameter as a query parameter map.
-
-For example, the `Params` <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">class</span> defines parameters `param1` and `param2`:
-
-[source,java,indent=<span class="hl-number">0</span>]</pre><p>public class Params {
-    private String param1;
-    private String param2;</p><pre class="literallayout">    // [Getters and setters omitted for brevity]
-}</pre><pre class="screen">The following feign client uses the `Params` class by using the `@SpringQueryMap` annotation:
-
-[source,java,indent=0]</pre><p>@FeignClient("demo")
-public class DemoTemplate {</p><pre class="literallayout">    @GetMapping(path = "/demo")
-    String demoEndpoint(@SpringQueryMap Params params);
-}</pre><pre class="screen"></pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="multi_pr01.html">Prev</a>&nbsp;</td><td width="20%" align="center">&nbsp;</td><td width="40%" align="right">&nbsp;</td></tr><tr><td width="40%" align="left" valign="top">&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="multi_spring-cloud-openfeign.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;</td></tr></table></div></body></html>
+    <em><span class="hl-annotation" style="color: gray">@GetMapping(path = "/demo")</span></em>
+    String demoEndpoint(<em><span class="hl-annotation" style="color: gray">@SpringQueryMap</span></em> Params params);
+}</pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="multi_pr01.html">Prev</a>&nbsp;</td><td width="20%" align="center">&nbsp;</td><td width="40%" align="right">&nbsp;</td></tr><tr><td width="40%" align="left" valign="top">&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="multi_spring-cloud-openfeign.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;</td></tr></table></div></body></html>
