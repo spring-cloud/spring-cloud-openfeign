@@ -425,8 +425,9 @@ public class FooConfiguration {
         return Logger.Level.FULL;
     }
 }
+----
 
-=== Feign `@QueryMap` support
+=== Feign @QueryMap support
 
 The OpenFeign `@QueryMap` annotation provides support for POJOs to be used as
 GET parameter maps. Unfortunately, the default OpenFeign QueryMap annotation is
