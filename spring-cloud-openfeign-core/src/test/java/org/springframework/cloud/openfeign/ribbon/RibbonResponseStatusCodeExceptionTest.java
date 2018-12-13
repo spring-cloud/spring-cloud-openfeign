@@ -15,9 +15,6 @@
  */
 package org.springframework.cloud.openfeign.ribbon;
 
-import feign.Request;
-import feign.Response;
-
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -26,11 +23,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import feign.Request;
+import feign.Response;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.util.StreamUtils;
 
+import static feign.Request.HttpMethod.GET;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -45,7 +47,7 @@ public class RibbonResponseStatusCodeExceptionTest {
 		List<String> fooValues = new ArrayList<String>();
 		fooValues.add("bar");
 		headers.put("foo", fooValues);
-		Request request = Request.create("GET", "http://service.com",
+		Request request = Request.create(GET, "http://service.com",
 				new HashMap<String, Collection<String>>(), new byte[]{}, Charset.defaultCharset());
 		byte[] body = "foo".getBytes();
 		ByteArrayInputStream is = new ByteArrayInputStream(body);

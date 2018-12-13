@@ -16,10 +16,6 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
-import feign.Client;
-import feign.Request;
-import feign.Response;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -29,11 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.cloud.netflix.ribbon.RibbonProperties;
-import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpRequest;
 import com.netflix.client.AbstractLoadBalancerAwareClient;
 import com.netflix.client.ClientException;
 import com.netflix.client.ClientRequest;
@@ -43,6 +34,15 @@ import com.netflix.client.RetryHandler;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
+import feign.Client;
+import feign.Request;
+import feign.Response;
+
+import org.springframework.cloud.netflix.ribbon.RibbonProperties;
+import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpRequest;
 
 import static org.springframework.cloud.netflix.ribbon.RibbonUtils.updateToSecureConnectionIfNeeded;
 
@@ -97,7 +97,7 @@ public class FeignLoadBalancer extends
 			return new RequestSpecificRetryHandler(true, true, this.getRetryHandler(),
 					requestConfig);
 		}
-		if (!request.toRequest().method().equals("GET")) {
+		if (!request.toRequest().httpMethod().name().equals("GET")) {
 			return new RequestSpecificRetryHandler(true, false, this.getRetryHandler(),
 					requestConfig);
 		}
@@ -127,7 +127,8 @@ public class FeignLoadBalancer extends
 		private Request toRequest(Request request) {
 			Map<String, Collection<String>> headers = new LinkedHashMap<>(
 					request.headers());
-			return Request.create(request.method(),getUri().toASCIIString(),headers,request.body(),request.charset());
+			return Request.create(request.httpMethod(), getUri().toASCIIString(), headers,
+					request.requestBody());
 		}
 
 		Request toRequest() {
@@ -142,7 +143,8 @@ public class FeignLoadBalancer extends
 			return new HttpRequest() {
 				@Override
 				public HttpMethod getMethod() {
-					return HttpMethod.resolve(RibbonRequest.this.toRequest().method());
+					return HttpMethod
+							.resolve(RibbonRequest.this.toRequest().httpMethod().name());
 				}
 
 				@Override

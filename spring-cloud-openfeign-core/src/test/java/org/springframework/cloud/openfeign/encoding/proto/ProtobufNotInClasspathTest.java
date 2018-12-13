@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign.encoding.proto;
 import feign.RequestTemplate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
@@ -26,6 +27,8 @@ import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.test.ClassPathExclusions;
 import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.http.converter.StringHttpMessageConverter;
+
+import static feign.Request.HttpMethod.POST;
 
 /**
  * Test {@link SpringEncoder} when protobuf is not in classpath
@@ -45,7 +48,7 @@ public class ProtobufNotInClasspathTest {
             }
         };
         RequestTemplate requestTemplate = new RequestTemplate();
-        requestTemplate.method("POST");
+        requestTemplate.method(POST);
         new SpringEncoder(converters).encode("a=b", String.class, requestTemplate);
     }
 

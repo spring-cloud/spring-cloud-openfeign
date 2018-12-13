@@ -16,6 +16,13 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import feign.Request;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import feign.RetryableException;
@@ -25,6 +32,7 @@ import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -43,11 +51,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.Map;
-
+import static com.google.common.base.Charsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -214,7 +218,7 @@ public class FeignClientUsingPropertiesTests {
 			});
 
 			requestTemplate.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-			requestTemplate.body(builder.toString());
+			requestTemplate.body(Request.Body.bodyTemplate(builder.toString(), UTF_8));
 		}
 	}
 

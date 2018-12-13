@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 
+import feign.Client;
+import feign.httpclient.ApacheHttpClient;
 import org.apache.http.Header;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
@@ -36,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockingDetails;
 import org.mockito.Mockito;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -55,13 +58,10 @@ import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockingDetails;
-
-import feign.Client;
-import feign.httpclient.ApacheHttpClient;
 
 /**
  * @author Ryan Baxter

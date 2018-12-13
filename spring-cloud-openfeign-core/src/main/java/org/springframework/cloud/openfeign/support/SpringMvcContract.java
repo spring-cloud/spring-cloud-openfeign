@@ -33,6 +33,7 @@ import feign.Contract;
 import feign.Feign;
 import feign.MethodMetadata;
 import feign.Param;
+import feign.Request;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
@@ -177,7 +178,7 @@ public class SpringMvcContract extends Contract.BaseContract
 			methods = new RequestMethod[] { RequestMethod.GET };
 		}
 		checkOne(method, methods, "method");
-		data.template().method(methods[0].name());
+		data.template().method(Request.HttpMethod.valueOf(methods[0].name()));
 
 		// path
 		checkAtMostOne(method, methodMapping.value(), "value");
@@ -190,7 +191,7 @@ public class SpringMvcContract extends Contract.BaseContract
 						&& !data.template().path().endsWith("/")) {
 					pathValue = "/" + pathValue;
 				}
-				data.template().append(pathValue);
+				data.template().uri(pathValue);
 			}
 		}
 
