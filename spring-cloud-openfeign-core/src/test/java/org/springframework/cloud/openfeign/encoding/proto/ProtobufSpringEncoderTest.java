@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,14 @@
 
 package org.springframework.cloud.openfeign.encoding.proto;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import feign.RequestTemplate;
 import feign.httpclient.ApacheHttpClient;
@@ -30,24 +38,21 @@ import org.apache.http.message.BasicStatusLine;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.BDDMockito;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import static feign.Request.Body.encoded;
+import static feign.Request.HttpMethod.POST;
 
 /**
  * Test {@link SpringEncoder} with {@link ProtobufHttpMessageConverter}
@@ -86,7 +91,9 @@ public class ProtobufSpringEncoderTest {
         RequestTemplate requestTemplate = newRequestTemplate();
         newEncoder().encode(request, Request.class, requestTemplate);
         // set a charset
-        requestTemplate.body(requestTemplate.body(), StandardCharsets.UTF_8);
+        requestTemplate
+                .body(encoded(requestTemplate.requestBody()
+                        .asBytes(), StandardCharsets.UTF_8));
         HttpEntity entity = toApacheHttpEntity(requestTemplate);
         byte[] bytes = read(entity.getContent(), (int) entity.getContentLength());
 
@@ -112,20 +119,22 @@ public class ProtobufSpringEncoderTest {
 
     private RequestTemplate newRequestTemplate() {
         RequestTemplate requestTemplate = new RequestTemplate();
-        requestTemplate.method("POST");
+        requestTemplate.method(POST);
         return requestTemplate;
     }
 
     private HttpEntity toApacheHttpEntity(RequestTemplate requestTemplate) throws IOException, URISyntaxException {
         final List<HttpUriRequest> request = new ArrayList<>(1);
-        BDDMockito.given(httpClient.execute(Matchers.<HttpUriRequest>any())).will(new Answer<HttpResponse>() {
+        BDDMockito.given(httpClient.execute(ArgumentMatchers.<HttpUriRequest>any()))
+                .will(new Answer<HttpResponse>() {
             @Override
             public HttpResponse answer(InvocationOnMock invocationOnMock) throws Throwable {
                 request.add((HttpUriRequest) invocationOnMock.getArguments()[0]);
                 return new BasicHttpResponse(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, null));
             }
         });
-        new ApacheHttpClient(httpClient).execute(requestTemplate.request(), new feign.Request.Options());
+        new ApacheHttpClient(httpClient).execute(requestTemplate.resolve(new HashMap<>())
+                .request(), new feign.Request.Options());
         HttpUriRequest httpUriRequest = request.get(0);
         return  ((HttpEntityEnclosingRequestBase)httpUriRequest).getEntity();
     }

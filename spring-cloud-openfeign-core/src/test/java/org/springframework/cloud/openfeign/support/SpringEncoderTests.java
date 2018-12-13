@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,14 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.List;
 
+import feign.RequestTemplate;
+import feign.codec.EncodeException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -46,16 +50,18 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-
-import feign.RequestTemplate;
-import feign.codec.EncodeException;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 /**
  * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
@@ -85,8 +91,8 @@ public class SpringEncoderTests {
 		String header = contentTypeHeader.iterator().next();
 		assertThat("content type header is wrong", header, is("application/mytype"));
 		
-		assertThat("request charset is null", request.charset(), is(notNullValue()));
-		assertThat("request charset is wrong", request.charset(), is(Charset.forName("UTF-8")));
+		assertThat("request charset is null", request.requestCharset(), is(notNullValue()));
+		assertThat("request charset is wrong", request.requestCharset(), is(Charset.forName("UTF-8")));
 	}
 
 	@Test
@@ -97,7 +103,9 @@ public class SpringEncoderTests {
 
 		encoder.encode("hi".getBytes(), null, request);
 
-		assertThat("request charset is not null", request.charset(), is(nullValue()));
+		assertThat("Request Content-Type is not octet-stream",
+				((List) request.headers().get(CONTENT_TYPE)).get(0),
+				equalTo(APPLICATION_OCTET_STREAM_VALUE));
 	}
 
 	@Test(expected = EncodeException.class)
@@ -109,7 +117,7 @@ public class SpringEncoderTests {
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 
-		assertThat("request charset is not null", request.charset(), is(nullValue()));
+		assertThat("request charset is not null", request.requestCharset(), is(nullValue()));
 	}
 
 	@Test
@@ -122,7 +130,9 @@ public class SpringEncoderTests {
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 
-		assertThat("request charset is not null", request.charset(), is(nullValue()));
+		assertThat("Request Content-Type is not multipart/form-data",
+				(String) ((List) request.headers().get(CONTENT_TYPE)).get(0),
+				containsString(MediaType.MULTIPART_FORM_DATA_VALUE));
 	}
 	
 	class MediaTypeMatcher implements ArgumentMatcher<MediaType> {
@@ -192,10 +202,7 @@ public class SpringEncoderTests {
 
 			@Override
 			public boolean canWrite(Class<?> clazz, MediaType mediaType) {
-				if (clazz == String.class) {
-					return true;
-				}
-				return false;
+				return clazz == String.class;
 			}
 
 			@Override

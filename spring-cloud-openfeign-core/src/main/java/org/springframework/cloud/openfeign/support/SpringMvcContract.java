@@ -29,6 +29,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import feign.Contract;
+import feign.Feign;
+import feign.MethodMetadata;
+import feign.Param;
+import feign.Request;
+
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
@@ -52,18 +58,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
+import static org.springframework.cloud.openfeign.support.FeignUtils.addTemplateParameter;
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
-
-import feign.Contract;
-import feign.Feign;
-import feign.MethodMetadata;
-import feign.Param;
 
 /**
  * @author Spencer Gibb
  * @author Abhijit Sarkar
  * @author Halvdan Hoem Grelland
  * @author Aram Peres
+ * @author Olga Maciaszek-Sharma
  */
 public class SpringMvcContract extends Contract.BaseContract
 		implements ResourceLoaderAware {
@@ -132,7 +135,7 @@ public class SpringMvcContract extends Contract.BaseContract
 					if (!pathValue.startsWith("/")) {
 						pathValue = "/" + pathValue;
 					}
-					data.template().insert(0, pathValue);
+					data.template().uri(pathValue);
 				}
 			}
 		}
@@ -178,7 +181,7 @@ public class SpringMvcContract extends Contract.BaseContract
 			methods = new RequestMethod[] { RequestMethod.GET };
 		}
 		checkOne(method, methods, "method");
-		data.template().method(methods[0].name());
+		data.template().method(Request.HttpMethod.valueOf(methods[0].name()));
 
 		// path
 		checkAtMostOne(method, methodMapping.value(), "value");
@@ -188,10 +191,10 @@ public class SpringMvcContract extends Contract.BaseContract
 				pathValue = resolve(pathValue);
 				// Append path from @RequestMapping if value is present on method
 				if (!pathValue.startsWith("/")
-						&& !data.template().toString().endsWith("/")) {
+						&& !data.template().path().endsWith("/")) {
 					pathValue = "/" + pathValue;
 				}
-				data.template().append(pathValue);
+				data.template().uri(pathValue, true);
 			}
 		}
 
@@ -395,7 +398,7 @@ public class SpringMvcContract extends Contract.BaseContract
 		@Override
 		public Collection<String> setTemplateParameter(String name,
 				Collection<String> rest) {
-			return addTemplatedParam(rest, name);
+			return addTemplateParameter(rest, name);
 		}
 	}
 

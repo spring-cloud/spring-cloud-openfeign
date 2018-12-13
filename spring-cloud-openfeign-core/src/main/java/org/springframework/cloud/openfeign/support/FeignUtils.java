@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,11 @@ import java.util.Map;
 
 import org.springframework.http.HttpHeaders;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
 public class FeignUtils {
 
@@ -45,6 +48,13 @@ public class FeignUtils {
 		}
 
 		return headers;
+	}
+
+	static Collection<String> addTemplateParameter(Collection<String> possiblyNull,
+			String paramName) {
+		Collection<String> params = ofNullable(possiblyNull).orElse(new ArrayList<>());
+		params.add(String.format("{%s}", paramName));
+		return params;
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,33 +18,31 @@
 package org.springframework.cloud.openfeign.ribbon;
 
 import java.net.URI;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.BaseLoadBalancer;
+import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.RoundRobinRule;
+import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.LoadBalancerCommand;
+import feign.Client;
+import feign.Request;
+import feign.Request.Options;
+import feign.RequestTemplate;
+import feign.Response;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer.RibbonRequest;
-import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer.RibbonResponse;
+
 import org.springframework.cloud.netflix.ribbon.DefaultServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
-
-import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.ILoadBalancer;
-import com.netflix.loadbalancer.Server;
-
-import feign.Client;
-import feign.Request;
-import feign.RequestTemplate;
-import feign.Response;
-import feign.Request.Options;
+import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer.RibbonRequest;
+import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer.RibbonResponse;
 
 import static com.netflix.client.config.CommonClientConfigKey.ConnectTimeout;
 import static com.netflix.client.config.CommonClientConfigKey.IsSecure;
@@ -54,11 +52,12 @@ import static com.netflix.client.config.CommonClientConfigKey.OkToRetryOnAllOper
 import static com.netflix.client.config.CommonClientConfigKey.ReadTimeout;
 import static com.netflix.client.config.DefaultClientConfigImpl.DEFAULT_MAX_AUTO_RETRIES;
 import static com.netflix.client.config.DefaultClientConfigImpl.DEFAULT_MAX_AUTO_RETRIES_NEXT_SERVER;
+import static feign.Request.HttpMethod.GET;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 public class FeignLoadBalancerTests {
@@ -96,19 +95,27 @@ public class FeignLoadBalancerTests {
 
 		this.feignLoadBalancer = new FeignLoadBalancer(this.lb, this.config,
 				this.inspector);
-		Request request = new RequestTemplate().method("GET").append("http://foo/")
+		Request request = new RequestTemplate()
+				.method(GET)
+				.target("http://foo/")
+				.resolve(new HashMap<>())
 				.request();
 		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate, request,
 				new URI(request.url()));
 
-		Response response = Response.create(200, "Test",
-				Collections.<String, Collection<String>> emptyMap(), new byte[0]);
+		Response response = Response.builder()
+				.request(request)
+				.status(200)
+				.reason("Test")
+				.headers(Collections.emptyMap())
+				.body(new byte[0])
+				.build();
 		when(this.delegate.execute(any(Request.class), any(Options.class)))
 				.thenReturn(response);
 
 		RibbonResponse resp = this.feignLoadBalancer.execute(ribbonRequest, null);
 
-		assertThat(resp.getRequestedURI(), is(new URI("http://foo/")));
+		assertThat(resp.getRequestedURI(), is(new URI("http://foo")));
 	}
 
 	@Test
@@ -159,7 +166,7 @@ public class FeignLoadBalancerTests {
 	@Test
 	public void testRibbonRequestURLEncode() throws Exception {
 		String url = "http://foo/?name=%7bcookie";//name={cookie
-		Request request = Request.create("GET",url,new HashMap(),null,null);
+		Request request = Request.create(GET, url, new HashMap<>(), null, null);
 
 		assertThat(request.url(),is(url));
 
@@ -191,11 +198,15 @@ public class FeignLoadBalancerTests {
 				builder.withServerLocator(request.getRequest().headers().get("c_ip"));
 			}
 		};
-		Request request = new RequestTemplate().method("GET").request();
+		Request request = new RequestTemplate().method(GET).resolve(new HashMap<>()).request();
 		RibbonResponse resp = this.feignLoadBalancer.executeWithLoadBalancer(new RibbonRequest(this.delegate, request,
 				new URI(request.url())), null);
 		assertThat(resp.getRequestedURI().getPort(), is(7777));
-		request = new RequestTemplate().method("GET").header("c_ip", "666").request();
+		request = new RequestTemplate()
+				.method(GET)
+				.header("c_ip", "666")
+				.resolve(new HashMap<>())
+				.request();
 		resp = this.feignLoadBalancer.executeWithLoadBalancer(new RibbonRequest(this.delegate, request,
 				new URI(request.url())), null);
 		assertThat(resp.getRequestedURI().getPort(), is(6666));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
 
+import feign.Request;
+import feign.RequestTemplate;
+import feign.codec.EncodeException;
+import feign.codec.Encoder;
+import feign.form.spring.SpringFormEncoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.HttpHeaders;
@@ -37,11 +43,6 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 import org.springframework.web.multipart.MultipartFile;
-
-import feign.RequestTemplate;
-import feign.codec.EncodeException;
-import feign.codec.Encoder;
-import feign.form.spring.SpringFormEncoder;
 
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHeaders;
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
@@ -129,7 +130,8 @@ public class SpringEncoder implements Encoder {
 					} else {
 						charset = StandardCharsets.UTF_8;
 					}
-					request.body(outputMessage.getOutputStream().toByteArray(), charset);
+					request.body(Request.Body.encoded(outputMessage.getOutputStream()
+							.toByteArray(), charset));
 					return;
 				}
 			}

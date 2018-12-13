@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,31 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
-import feign.Client;
-import feign.Request;
-import feign.Response;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
+
+import com.netflix.client.DefaultLoadBalancerRetryHandler;
+import com.netflix.client.RequestSpecificRetryHandler;
+import com.netflix.client.config.CommonClientConfigKey;
+import com.netflix.client.config.IClientConfig;
+import com.netflix.loadbalancer.ILoadBalancer;
+import com.netflix.loadbalancer.Server;
+import feign.Client;
+import feign.Request;
+import feign.Response;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryPolicy;
@@ -46,7 +52,6 @@ import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryPolicy;
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancerContext;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-import org.springframework.http.HttpRequest;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
@@ -55,13 +60,6 @@ import org.springframework.retry.backoff.BackOffContext;
 import org.springframework.retry.backoff.BackOffInterruptedException;
 import org.springframework.retry.backoff.BackOffPolicy;
 
-import com.netflix.client.DefaultLoadBalancerRetryHandler;
-import com.netflix.client.RequestSpecificRetryHandler;
-import com.netflix.client.config.CommonClientConfigKey;
-import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.ILoadBalancer;
-import com.netflix.loadbalancer.Server;
-
 import static com.netflix.client.config.CommonClientConfigKey.ConnectTimeout;
 import static com.netflix.client.config.CommonClientConfigKey.MaxAutoRetries;
 import static com.netflix.client.config.CommonClientConfigKey.MaxAutoRetriesNextServer;
@@ -69,15 +67,16 @@ import static com.netflix.client.config.CommonClientConfigKey.OkToRetryOnAllOper
 import static com.netflix.client.config.CommonClientConfigKey.ReadTimeout;
 import static com.netflix.client.config.DefaultClientConfigImpl.DEFAULT_MAX_AUTO_RETRIES;
 import static com.netflix.client.config.DefaultClientConfigImpl.DEFAULT_MAX_AUTO_RETRIES_NEXT_SERVER;
+import static feign.Request.HttpMethod.GET;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -88,6 +87,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author Ryan Baxter
  * @author Gang Li
+ * @author Olga Maciaszek-Sharma
  */
 public class RetryableFeignLoadBalancerTests {
 	@Mock
@@ -126,12 +126,15 @@ public class RetryableFeignLoadBalancerTests {
 		doReturn("404,502,foo, ,").when(config).getPropertyAsString(eq(RibbonLoadBalancedRetryPolicy.RETRYABLE_STATUS_CODES),eq(""));
 		doReturn(config).when(clientFactory).getClientConfig(eq("default"));
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(clientFactory);
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://foo", new HashMap<String, Collection<String>>(),
-				new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://foo"));
-		Response response = Response.builder().status(200).headers(new HashMap<String, Collection<String>>()).build();
+		Response response = Response.builder()
+				.status(200)
+				.request(feignRequest)
+				.headers(new HashMap<>())
+				.build();
 		doReturn(response).when(client).execute(any(Request.class), any(Request.Options.class));
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(lb, config, inspector, loadBalancedRetryFactory);
 		FeignLoadBalancer.RibbonResponse ribbonResponse = feignLb.execute(request, null);
@@ -141,9 +144,8 @@ public class RetryableFeignLoadBalancerTests {
 
 	@Test
 	public void executeNeverRetry() throws Exception {
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://foo", new HashMap<String, Collection<String>>(),
-				new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://foo"));
 		doThrow(new IOException("boom")).when(client).execute(any(Request.class), any(Request.Options.class));
@@ -192,12 +194,15 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://foo", new HashMap<String, Collection<String>>(),
-				new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://foo"));
-		Response response = Response.builder().status(200).headers(new HashMap<String, Collection<String>>()).build();
+		Response response = Response.builder()
+				.status(200)
+				.request(feignRequest)
+				.headers(new HashMap<>())
+				.build();
 		doThrow(new IOException("boom")).doReturn(response).when(client).execute(any(Request.class), any(Request.Options.class));
 
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(lb, config, inspector, loadBalancedRetryFactory);
@@ -227,13 +232,20 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://foo", new HashMap<String, Collection<String>>(),
-				new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://foo"));
-		Response response = Response.builder().status(200).headers(new HashMap<String, Collection<String>>()).build();
-		Response fourOFourResponse = Response.builder().status(404).headers(new HashMap<String, Collection<String>>()).build();
+		Response response = Response
+				.builder()
+				.request(feignRequest)
+				.status(200)
+				.headers(new HashMap<>())
+				.build();
+		Response fourOFourResponse = Response.builder()
+				.request(feignRequest)
+				.status(404)
+				.headers(new HashMap<>()).build();
 		doReturn(fourOFourResponse).doReturn(response).when(client).execute(any(Request.class), any(Request.Options.class));
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(lb, config, inspector, loadBalancedRetryFactory);
 		FeignLoadBalancer.RibbonResponse ribbonResponse = feignLb.execute(request, null);
@@ -247,7 +259,7 @@ public class RetryableFeignLoadBalancerTests {
 			int retriesNextServer = 0;
 			when(this.config.get(MaxAutoRetriesNextServer,
 							DEFAULT_MAX_AUTO_RETRIES_NEXT_SERVER)).thenReturn(retriesNextServer);
-			doReturn(new Server("foo", 80)).when(lb).chooseServer(anyObject());
+			doReturn(new Server("foo", 80)).when(lb).chooseServer(any());
 			RibbonLoadBalancerContext lbContext = new RibbonLoadBalancerContext(lb, config);
 			SpringClientFactory clientFactory = mock(SpringClientFactory.class);
 			IClientConfig config = mock(IClientConfig.class);
@@ -266,18 +278,25 @@ public class RetryableFeignLoadBalancerTests {
 					return backOffPolicy;
 				}
 			};
-			HttpRequest springRequest = mock(HttpRequest.class);
-			Request feignRequest = Request.create("GET", "http://foo", new HashMap<String, Collection<String>>(),
-							new byte[]{}, StandardCharsets.UTF_8);
+			Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+					new byte[] {}, UTF_8);
 			Client client = mock(Client.class);
 			FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://foo"));
-			Response response = Response.builder().status(404).headers(new HashMap<String, Collection<String>>()).build();
-			Response fourOFourResponse = Response.builder().status(404).headers(new HashMap<String, Collection<String>>()).build();
+			Response response = Response.builder()
+					.request(feignRequest)
+					.status(404)
+					.headers(new HashMap<>())
+					.build();
+			Response fourOFourResponse = Response.builder()
+					.request(feignRequest)
+					.status(404)
+					.headers(new HashMap<>())
+					.build();
 			doReturn(fourOFourResponse).doReturn(response).when(client).execute(any(Request.class), any(Request.Options.class));
 			RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(lb, config, inspector, loadBalancedRetryFactory);
 			FeignLoadBalancer.RibbonResponse ribbonResponse = feignLb.execute(request, null);
 			assertEquals(404, ribbonResponse.toResponse().status());
-			assertEquals(new Integer(0), ribbonResponse.toResponse().body().length());
+			assertEquals(Integer.valueOf(0), ribbonResponse.toResponse().body().length());
 			verify(client, times(2)).execute(any(Request.class), any(Request.Options.class));
 			assertEquals(1, backOffPolicy.getCount());
 	}
@@ -288,12 +307,15 @@ public class RetryableFeignLoadBalancerTests {
 		SpringClientFactory clientFactory = mock(SpringClientFactory.class);
 		doReturn(lbContext).when(clientFactory).getLoadBalancerContext(any(String.class));
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(clientFactory);
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://foo", new HashMap<String, Collection<String>>(),
-				new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://foo"));
-		Response response = Response.builder().status(200).headers(new HashMap<String, Collection<String>>()).build();
+		Response response = Response.builder()
+				.request(feignRequest)
+				.status(200)
+				.headers(new HashMap<>())
+				.build();
 		doReturn(response).when(client).execute(any(Request.class), any(Request.Options.class));
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(lb, config, inspector, loadBalancedRetryFactory);
 		RequestSpecificRetryHandler retryHandler = feignLb.getRequestSpecificRetryHandler(request, config);
@@ -308,12 +330,15 @@ public class RetryableFeignLoadBalancerTests {
 		SpringClientFactory clientFactory = mock(SpringClientFactory.class);
 		doReturn(lbContext).when(clientFactory).getLoadBalancerContext(any(String.class));
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(clientFactory);
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://foo", new HashMap<String, Collection<String>>(),
-				new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request
+				.create(GET, "http://foo", new HashMap<>(),
+						new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://foo"));
-		Response response = Response.builder().status(200).headers(new HashMap<String, Collection<String>>()).build();
+		Response response = Response.builder()
+				.request(feignRequest)
+				.status(200).headers(new HashMap<>())
+				.build();
 		doReturn(response).when(client).execute(any(Request.class), any(Request.Options.class));
 		final Server server = new Server("foo", 80);
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(new ILoadBalancer() {
@@ -379,12 +404,15 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://listener", new HashMap<String, Collection<String>>(),
-			new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request.create(GET, "http://listener", new HashMap<>(),
+				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://listener"));
-		Response response = Response.builder().status(200).headers(new HashMap<String, Collection<String>>()).build();
+		Response response = Response.builder()
+				.request(feignRequest)
+				.status(200)
+				.headers(new HashMap<>())
+				.build();
 		doThrow(new IOException("boom")).doReturn(response).when(client).execute(any(Request.class), any(Request.Options.class));
 
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(lb, config, inspector, loadBalancedRetryFactory);
@@ -408,7 +436,6 @@ public class RetryableFeignLoadBalancerTests {
 		doReturn("").when(config).getPropertyAsString(eq(RibbonLoadBalancedRetryPolicy.RETRYABLE_STATUS_CODES),eq(""));
 		doReturn(config).when(clientFactory).getClientConfig(eq("default"));
 		doReturn(lbContext).when(clientFactory).getLoadBalancerContext(any(String.class));
-		Response response = Response.builder().status(200).headers(new HashMap<String, Collection<String>>()).build();
 		MyBackOffPolicy backOffPolicy = new MyBackOffPolicy();
 		MyRetryListenerNotRetry myRetryListenerNotRetry = new MyRetryListenerNotRetry();
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(clientFactory){
@@ -422,9 +449,8 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://listener", new HashMap<String, Collection<String>>(),
-			new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request.create(GET, "http://listener", new HashMap<>(),
+				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://listener"));
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(lb, config, inspector, loadBalancedRetryFactory);
@@ -451,12 +477,15 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://listener", new HashMap<String, Collection<String>>(),
-			new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request.create(GET, "http://listener", new HashMap<>(),
+				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://listener"));
-		Response response = Response.builder().status(200).headers(new HashMap<String, Collection<String>>()).build();
+		Response response = Response.builder()
+				.request(feignRequest)
+				.status(200)
+				.headers(new HashMap<>())
+				.build();
 		doThrow(new IOException("boom")).doReturn(response).when(client).execute(any(Request.class), any(Request.Options.class));
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(lb, config, inspector, loadBalancedRetryPolicyFactory);
 		FeignLoadBalancer.RibbonResponse ribbonResponse = feignLb.execute(request, null);
@@ -486,12 +515,14 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		HttpRequest springRequest = mock(HttpRequest.class);
-		Request feignRequest = Request.create("GET", "http://foo", new HashMap<String, Collection<String>>(),
-				new byte[]{}, StandardCharsets.UTF_8);
+		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(client, feignRequest, new URI("http://foo"));
-		Response fourOFourResponse = Response.builder().status(404).headers(new HashMap<String, Collection<String>>())
+		Response fourOFourResponse = Response.builder()
+				.request(feignRequest)
+				.status(404)
+				.headers(new HashMap<>())
 				.body(new Response.Body() { //set content into response
 					@Override
 					public Integer length() {
@@ -510,7 +541,12 @@ public class RetryableFeignLoadBalancerTests {
 
 					@Override
 					public Reader asReader() throws IOException {
-						return new InputStreamReader(asInputStream(), "UTF-8");
+						return new InputStreamReader(asInputStream(), UTF_8);
+					}
+
+					@Override
+					public Reader asReader(Charset charset) throws IOException {
+						return new InputStreamReader(asInputStream(), charset);
 					}
 
 					@Override

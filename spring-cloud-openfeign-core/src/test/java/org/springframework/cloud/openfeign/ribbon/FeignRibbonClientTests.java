@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
+import java.util.HashMap;
+
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
@@ -31,11 +33,13 @@ import feign.RequestTemplate;
 import org.hamcrest.CustomMatcher;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.cloud.netflix.ribbon.DefaultServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 
-import static org.mockito.Matchers.any;
+import static feign.Request.HttpMethod.GET;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -91,7 +95,10 @@ public class FeignRibbonClientTests {
 
 	@Test
 	public void remoteRequestIsSentAtRoot() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("http://foo")
+		Request request = new RequestTemplate()
+				.method(GET)
+				.target("http://foo")
+				.resolve(new HashMap<>())
 				.request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
@@ -101,7 +108,10 @@ public class FeignRibbonClientTests {
 
 	@Test
 	public void remoteRequestIsSent() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("http://foo/")
+		Request request = new RequestTemplate()
+				.method(GET)
+				.target("http://foo/")
+				.resolve(new HashMap<>())
 				.request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
@@ -111,7 +121,10 @@ public class FeignRibbonClientTests {
 
 	@Test
 	public void remoteRequestIsSecure() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("https://foo/")
+		Request request = new RequestTemplate()
+				.method(GET)
+				.target("https://foo/")
+				.resolve(new HashMap<>())
 				.request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("https://foo.com:8000/");

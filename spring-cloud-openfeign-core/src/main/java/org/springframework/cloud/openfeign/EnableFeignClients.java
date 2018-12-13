@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ public @interface EnableFeignClients {
 
 	/**
 	 * List of classes annotated with @FeignClient. If not empty, disables classpath scanning.
-	 * @return
+	 * @return list of FeignClient classes
 	 */
 	Class<?>[] clients() default {};
 }
