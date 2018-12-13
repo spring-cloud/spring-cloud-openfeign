@@ -112,13 +112,13 @@ public class FeignClientValidationTests {
 			DuplicatedFeignClientNamesConfiguration.BarClient.class})
 	protected static class DuplicatedFeignClientNamesConfiguration {
 
-		@FeignClient(name = "foo", serviceId = "bar")
+		@FeignClient(contextId = "foo", name = "bar")
 		interface FooClient {
 			@RequestMapping(method = RequestMethod.GET, value = "/")
 			String get();
 		}
 
-		@FeignClient(name = "bar", serviceId = "bar")
+		@FeignClient(name = "bar")
 		interface BarClient {
 			@RequestMapping(method = RequestMethod.GET, value = "/")
 			String get();

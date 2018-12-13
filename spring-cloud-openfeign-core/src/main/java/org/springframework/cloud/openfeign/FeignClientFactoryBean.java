@@ -60,7 +60,7 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 
 	private String url;
 
-	private String serviceId;
+	private String contextId;
 
 	private String path;
 
@@ -74,6 +74,7 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		Assert.hasText(this.contextId, "Context id must be set");
 		Assert.hasText(this.name, "Name must be set");
 	}
 
@@ -106,10 +107,10 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 			if (properties.isDefaultToProperties()) {
 				configureUsingConfiguration(context, builder);
 				configureUsingProperties(properties.getConfig().get(properties.getDefaultConfig()), builder);
-				configureUsingProperties(properties.getConfig().get(this.name), builder);
+				configureUsingProperties(properties.getConfig().get(this.contextId), builder);
 			} else {
 				configureUsingProperties(properties.getConfig().get(properties.getDefaultConfig()), builder);
-				configureUsingProperties(properties.getConfig().get(this.name), builder);
+				configureUsingProperties(properties.getConfig().get(this.contextId), builder);
 				configureUsingConfiguration(context, builder);
 			}
 		} else {
@@ -135,7 +136,7 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 			builder.options(options);
 		}
 		Map<String, RequestInterceptor> requestInterceptors = context.getInstances(
-				this.name, RequestInterceptor.class);
+				this.contextId, RequestInterceptor.class);
 		if (requestInterceptors != null) {
 			builder.requestInterceptors(requestInterceptors.values());
 		}
@@ -204,16 +205,16 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 	}
 
 	protected <T> T get(FeignContext context, Class<T> type) {
-		T instance = context.getInstance(this.name, type);
+		T instance = context.getInstance(this.contextId, type);
 		if (instance == null) {
 			throw new IllegalStateException("No bean found of type " + type + " for "
-					+ this.name);
+					+ this.contextId);
 		}
 		return instance;
 	}
 
 	protected <T> T getOptional(FeignContext context, Class<T> type) {
-		return context.getInstance(this.name, type);
+		return context.getInstance(this.contextId, type);
 	}
 
 	protected <T> T loadBalance(Feign.Builder builder, FeignContext context,
@@ -243,12 +244,11 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 		Feign.Builder builder = feign(context);
 
 		if (!StringUtils.hasText(this.url)) {
-			String url;
-			if (!this.serviceId.startsWith("http")) {
-				url = "http://" + this.serviceId;
+			if (!this.name.startsWith("http")) {
+				url = "http://" + this.name;
 			}
 			else {
-				url = this.serviceId;
+				url = this.name;
 			}
 			url += cleanPath();
 			return (T) loadBalance(builder, context, new HardCodedTarget<>(this.type,
@@ -311,12 +311,12 @@ class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 		this.name = name;
 	}
 
-	public String getServiceId() {
-		return serviceId;
+	public String getContextId() {
+		return contextId;
 	}
 
-	public void setServiceId(String serviceId) {
-		this.serviceId = serviceId;
+	public void setContextId(String contextId) {
+		this.contextId = contextId;
 	}
 
 	public String getUrl() {

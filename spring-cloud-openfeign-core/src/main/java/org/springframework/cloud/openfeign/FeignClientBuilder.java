@@ -49,7 +49,7 @@ public class FeignClientBuilder {
 			this.feignClientFactoryBean.setApplicationContext(applicationContext);
 			this.feignClientFactoryBean.setType(type);
 			this.feignClientFactoryBean.setName(FeignClientsRegistrar.getName(name));
-			this.feignClientFactoryBean.setServiceId(FeignClientsRegistrar.getName(name));
+			this.feignClientFactoryBean.setContextId(FeignClientsRegistrar.getName(name));
 			// preset default values - these values resemble the default values on the
 			// FeignClient annotation
 			this.url("").path("").decode404(false).fallback(void.class)
@@ -61,8 +61,8 @@ public class FeignClientBuilder {
 			return this;
 		}
 
-		public Builder serviceId(final String serviceId) {
-			this.feignClientFactoryBean.setServiceId(serviceId);
+		public Builder contextId(final String contextId) {
+			this.feignClientFactoryBean.setContextId(contextId);
 			return this;
 		}
 
