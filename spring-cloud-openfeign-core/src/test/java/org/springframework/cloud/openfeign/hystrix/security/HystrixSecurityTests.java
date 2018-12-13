@@ -90,9 +90,9 @@ public class HystrixSecurityTests {
 				.as("Username should have been intercepted by feign interceptor.")
 				.isEqualTo(username);
 
-		/* FIXME: 2.1.0 assertThat(customConcurrenyStrategy.isHookCalled())
+		 assertThat(customConcurrenyStrategy.isHookCalled())
 				.as("Custom hook should have been called.")
-				.isTrue();*/
+				.isTrue();
 	}
 
 	public static HttpHeaders createBasicAuthHeader(final String username,

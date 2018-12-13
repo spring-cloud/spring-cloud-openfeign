@@ -80,11 +80,6 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.openfeign</groupId>
-				<artifactId>feign-java8</artifactId>
-				<version>${feign.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.github.openfeign</groupId>
 				<artifactId>feign-jaxb</artifactId>
 				<version>${feign.version}</version>
 			</dependency>
