@@ -95,12 +95,16 @@ public class FeignLoadBalancerTests {
 
 		this.feignLoadBalancer = new FeignLoadBalancer(this.lb, this.config,
 				this.inspector);
-		Request request = new RequestTemplate().method(GET).uri("http://foo/")
+		Request request = new RequestTemplate()
+				.method(GET)
+				.target("http://foo/")
+				.resolve(new HashMap<>())
 				.request();
 		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate, request,
 				new URI(request.url()));
 
 		Response response = Response.builder()
+				.request(request)
 				.status(200)
 				.reason("Test")
 				.headers(Collections.emptyMap())
@@ -111,7 +115,7 @@ public class FeignLoadBalancerTests {
 
 		RibbonResponse resp = this.feignLoadBalancer.execute(ribbonRequest, null);
 
-		assertThat(resp.getRequestedURI(), is(new URI("http://foo/")));
+		assertThat(resp.getRequestedURI(), is(new URI("http://foo")));
 	}
 
 	@Test
@@ -198,7 +202,11 @@ public class FeignLoadBalancerTests {
 		RibbonResponse resp = this.feignLoadBalancer.executeWithLoadBalancer(new RibbonRequest(this.delegate, request,
 				new URI(request.url())), null);
 		assertThat(resp.getRequestedURI().getPort(), is(7777));
-		request = new RequestTemplate().method(GET).header("c_ip", "666").request();
+		request = new RequestTemplate()
+				.method(GET)
+				.header("c_ip", "666")
+				.resolve(new HashMap<>())
+				.request();
 		resp = this.feignLoadBalancer.executeWithLoadBalancer(new RibbonRequest(this.delegate, request,
 				new URI(request.url())), null);
 		assertThat(resp.getRequestedURI().getPort(), is(6666));

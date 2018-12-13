@@ -33,7 +33,6 @@ import feign.Contract;
 import feign.Feign;
 import feign.MethodMetadata;
 import feign.Param;
-import feign.template.UriTemplate;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
@@ -132,7 +131,7 @@ public class SpringMvcContract extends Contract.BaseContract
 					if (!pathValue.startsWith("/")) {
 						pathValue = "/" + pathValue;
 					}
-					data.template().insert(0, pathValue);
+					data.template().uri(pathValue);
 				}
 			}
 		}

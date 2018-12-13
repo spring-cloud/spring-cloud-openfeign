@@ -21,10 +21,14 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.List;
 
+import feign.RequestTemplate;
+import feign.codec.EncodeException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -46,13 +50,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-
-import feign.RequestTemplate;
-import feign.codec.EncodeException;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 /**
  * @author Spencer Gibb
@@ -97,7 +102,9 @@ public class SpringEncoderTests {
 
 		encoder.encode("hi".getBytes(), null, request);
 
-		assertThat("request charset is not null", request.requestCharset(), is(nullValue()));
+		assertThat("Request Content-Type is not octet-stream",
+				((List) request.headers().get(CONTENT_TYPE)).get(0),
+				equalTo(APPLICATION_OCTET_STREAM_VALUE));
 	}
 
 	@Test(expected = EncodeException.class)
@@ -122,7 +129,9 @@ public class SpringEncoderTests {
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 
-		assertThat("request charset is not null", request.requestCharset(), is(nullValue()));
+		assertThat("Request Content-Type is not multipart/form-data",
+				(String) ((List) request.headers().get(CONTENT_TYPE)).get(0),
+				containsString(MediaType.MULTIPART_FORM_DATA_VALUE));
 	}
 	
 	class MediaTypeMatcher implements ArgumentMatcher<MediaType> {
