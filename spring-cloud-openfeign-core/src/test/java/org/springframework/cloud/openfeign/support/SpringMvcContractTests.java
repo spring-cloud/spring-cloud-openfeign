@@ -504,7 +504,8 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertEquals("/queryMapObject", data.template().url());
+		assertEquals("/queryMapObject?aParam=" + encode("{aParam}", UTF_8),
+				data.template().url());
 		assertEquals("GET", data.template().method());
 		assertEquals(0, data.queryMapIndex().intValue());
 		Map<String, Collection<String>> params = data.template().queries();
