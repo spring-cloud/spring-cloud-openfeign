@@ -64,6 +64,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Spencer Gibb
  * @author Abhijit Sarkar
  * @author Halvdan Hoem Grelland
+ * @author Olga Maciaszek-Sharma
  */
 public class SpringMvcContract extends Contract.BaseContract
 		implements ResourceLoaderAware {

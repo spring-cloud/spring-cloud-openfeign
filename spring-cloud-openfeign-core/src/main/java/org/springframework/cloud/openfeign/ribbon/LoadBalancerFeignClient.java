@@ -19,10 +19,13 @@ package org.springframework.cloud.openfeign.ribbon;
 import java.io.IOException;
 import java.net.URI;
 
+import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
+
 import com.netflix.client.ClientException;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
+
 import feign.Client;
 import feign.Request;
 import feign.Response;

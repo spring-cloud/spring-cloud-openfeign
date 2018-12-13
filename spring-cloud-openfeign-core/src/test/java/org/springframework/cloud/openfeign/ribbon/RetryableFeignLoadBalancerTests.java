@@ -602,7 +602,7 @@ public class RetryableFeignLoadBalancerTests {
 			onError++;
 		}
 
-		int getOnError() {
+		public int getOnError() {
 			return onError;
 		}
 	}

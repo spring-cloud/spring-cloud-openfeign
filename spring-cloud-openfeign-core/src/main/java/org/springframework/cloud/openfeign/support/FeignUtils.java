@@ -28,6 +28,7 @@ import static java.util.Optional.ofNullable;
 
 /**
  * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
 public class FeignUtils {
 
