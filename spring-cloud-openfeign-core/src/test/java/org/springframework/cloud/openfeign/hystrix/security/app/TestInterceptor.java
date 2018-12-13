@@ -20,7 +20,6 @@ import feign.RequestInterceptor;
 import feign.RequestTemplate;
 
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
 /**
  * This interceptor should be called from an Hyxtrix command execution thread. It is

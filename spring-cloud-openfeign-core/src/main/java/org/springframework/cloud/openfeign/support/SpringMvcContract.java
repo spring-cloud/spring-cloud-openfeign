@@ -191,7 +191,7 @@ public class SpringMvcContract extends Contract.BaseContract
 						&& !data.template().path().endsWith("/")) {
 					pathValue = "/" + pathValue;
 				}
-				data.template().uri(pathValue);
+				data.template().uri(pathValue, true);
 			}
 		}
 

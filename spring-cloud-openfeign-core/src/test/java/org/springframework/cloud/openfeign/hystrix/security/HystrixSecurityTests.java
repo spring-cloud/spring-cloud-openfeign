@@ -16,12 +16,15 @@
 
 package org.springframework.cloud.openfeign.hystrix.security;
 
+import java.util.Base64;
+
 import com.netflix.hystrix.strategy.HystrixPlugins;
 import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,9 +34,7 @@ import org.springframework.cloud.netflix.hystrix.security.SecurityContextConcurr
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.cloud.openfeign.hystrix.security.app.CustomConcurrenyStrategy;
-import org.springframework.cloud.openfeign.valid.FeignClientTests;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -44,8 +45,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Base64;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

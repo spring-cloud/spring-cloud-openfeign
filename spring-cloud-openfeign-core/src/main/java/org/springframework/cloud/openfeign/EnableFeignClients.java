@@ -82,7 +82,7 @@ public @interface EnableFeignClients {
 
 	/**
 	 * List of classes annotated with @FeignClient. If not empty, disables classpath scanning.
-	 * @return
+	 * @return list of FeignClient classes
 	 */
 	Class<?>[] clients() default {};
 }

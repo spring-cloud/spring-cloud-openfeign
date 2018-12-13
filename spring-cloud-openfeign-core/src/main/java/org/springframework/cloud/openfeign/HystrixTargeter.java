@@ -17,8 +17,6 @@
 
 package org.springframework.cloud.openfeign;
 
-import org.springframework.util.Assert;
-
 import feign.Feign;
 import feign.Target;
 import feign.hystrix.FallbackFactory;

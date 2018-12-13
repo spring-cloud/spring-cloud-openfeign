@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign.encoding.proto;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
+import static feign.Request.Body.encoded;
 import static feign.Request.HttpMethod.POST;
 
 /**
@@ -89,7 +91,9 @@ public class ProtobufSpringEncoderTest {
         RequestTemplate requestTemplate = newRequestTemplate();
         newEncoder().encode(request, Request.class, requestTemplate);
         // set a charset
-        requestTemplate.body(requestTemplate.requestBody());
+        requestTemplate
+                .body(encoded(requestTemplate.requestBody()
+                        .asBytes(), StandardCharsets.UTF_8));
         HttpEntity entity = toApacheHttpEntity(requestTemplate);
         byte[] bytes = read(entity.getContent(), (int) entity.getContentLength());
 

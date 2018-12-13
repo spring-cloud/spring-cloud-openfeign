@@ -15,13 +15,12 @@
  */
 package org.springframework.cloud.openfeign.ribbon;
 
+import java.io.ByteArrayInputStream;
+import java.net.URI;
+
 import feign.Response;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.URI;
 import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
-import org.springframework.util.StreamUtils;
 
 /**
  * A {@link RetryableStatusCodeException} for {@link Response}s

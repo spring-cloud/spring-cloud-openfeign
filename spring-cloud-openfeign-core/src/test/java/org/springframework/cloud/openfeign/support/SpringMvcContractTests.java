@@ -55,6 +55,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import static com.google.common.base.Charsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.springframework.web.util.UriUtils.encode;
 
@@ -402,7 +403,7 @@ public class SpringMvcContractTests {
 
 		assertEquals("/test/{id}", data.template().url());
 		assertEquals("GET", data.template().method());
-		assertEquals(true, data.template().headers().isEmpty());
+		assertTrue(data.template().headers().isEmpty());
 	}
 
 	@Test
