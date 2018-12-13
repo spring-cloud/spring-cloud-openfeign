@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author Ryan Baxter
  * @author Gang Li
+ * @author Olga Maciaszek-Sharma
  */
 public class RetryableFeignLoadBalancerTests {
 	@Mock
@@ -577,7 +578,7 @@ public class RetryableFeignLoadBalancerTests {
 			count++;
 		}
 
-		int getCount() {
+		public int getCount() {
 			return count;
 		}
 
