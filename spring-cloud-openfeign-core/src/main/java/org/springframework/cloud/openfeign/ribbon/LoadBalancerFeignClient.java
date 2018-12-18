@@ -97,7 +97,12 @@ public class LoadBalancerFeignClient implements Client {
 	}
 
 	static URI cleanUrl(String originalUrl, String host) {
-		String newUrl = originalUrl.replaceFirst(host, "");
+		String newUrl = originalUrl;
+		if(originalUrl.startsWith("https://")) {
+			newUrl = originalUrl.substring(0, 8) + originalUrl.substring(8 + host.length());
+		} else if(originalUrl.startsWith("http")) {
+			newUrl = originalUrl.substring(0, 7) + originalUrl.substring(7 + host.length());
+		}
 		StringBuffer buffer = new StringBuffer(newUrl);
 		if((newUrl.startsWith("https://") && newUrl.length() == 8) ||
 				(newUrl.startsWith("http://") && newUrl.length() == 7)) {
