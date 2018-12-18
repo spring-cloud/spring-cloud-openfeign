@@ -121,7 +121,10 @@ public class FeignRibbonClientTests {
 
 	@Test
 	public void verifyCleanUrl() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("http://tp/abc/bcd.json")
+		Request request = new RequestTemplate()
+				.method(GET)
+				.target("http://tp/abc/bcd.json")
+				.resolve(new HashMap<>())
 				.request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/abc/bcd.json");
