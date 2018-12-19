@@ -4,7 +4,7 @@ import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
 
 import java.util.concurrent.Callable;
 
-public class CustomConcurrenyStrategy extends HystrixConcurrencyStrategy {
+public class CustomConcurrencyStrategy extends HystrixConcurrencyStrategy {
 	private boolean hookCalled;
 
 	@Override

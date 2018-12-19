@@ -33,7 +33,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.netflix.hystrix.security.SecurityContextConcurrencyStrategy;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
-import org.springframework.cloud.openfeign.hystrix.security.app.CustomConcurrenyStrategy;
+import org.springframework.cloud.openfeign.hystrix.security.app.CustomConcurrencyStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
@@ -60,7 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("proxysecurity")
 public class HystrixSecurityTests {
 	@Autowired
-	private CustomConcurrenyStrategy customConcurrenyStrategy;
+	private CustomConcurrencyStrategy CustomConcurrencyStrategy;
 
 	@LocalServerPort
 	private String serverPort;
@@ -90,7 +90,7 @@ public class HystrixSecurityTests {
 				.as("Username should have been intercepted by feign interceptor.")
 				.isEqualTo(username);
 
-		 assertThat(customConcurrenyStrategy.isHookCalled())
+		 assertThat(CustomConcurrencyStrategy.isHookCalled())
 				.as("Custom hook should have been called.")
 				.isTrue();
 	}

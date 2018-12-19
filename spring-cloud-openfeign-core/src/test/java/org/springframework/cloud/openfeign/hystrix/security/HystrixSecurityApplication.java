@@ -18,7 +18,7 @@ package org.springframework.cloud.openfeign.hystrix.security;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.cloud.openfeign.hystrix.security.app.CustomConcurrenyStrategy;
+import org.springframework.cloud.openfeign.hystrix.security.app.CustomConcurrencyStrategy;
 import org.springframework.cloud.openfeign.hystrix.security.app.ProxyUsernameController;
 import org.springframework.cloud.openfeign.hystrix.security.app.TestInterceptor;
 import org.springframework.cloud.openfeign.hystrix.security.app.UsernameClient;
@@ -38,8 +38,8 @@ import org.springframework.context.annotation.Import;
 public class HystrixSecurityApplication {
 
 	@Bean
-	public CustomConcurrenyStrategy customConcurrenyStrategy() {
-		return new CustomConcurrenyStrategy();
+	public CustomConcurrencyStrategy CustomConcurrencyStrategy() {
+		return new CustomConcurrencyStrategy();
 	}
 
 	@Bean
