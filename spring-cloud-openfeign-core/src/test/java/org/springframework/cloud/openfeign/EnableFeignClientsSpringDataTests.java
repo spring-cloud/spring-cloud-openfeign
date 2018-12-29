@@ -17,67 +17,34 @@
 
 package org.springframework.cloud.openfeign;
 
+import feign.codec.Encoder;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
-import org.springframework.cloud.openfeign.support.SpringEncoder;
-import org.springframework.cloud.openfeign.support.SpringMvcContract;
+import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import feign.Contract;
-import feign.Feign;
-import feign.Logger;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
-import feign.optionals.OptionalDecoder;
-import feign.slf4j.Slf4jLogger;
-
 /**
  * @author Spencer Gibb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = EnableFeignClientsTests.PlainConfiguration.class)
+@SpringBootTest(classes = EnableFeignClientsSpringDataTests.PlainConfiguration.class)
 @DirtiesContext
-@Category({NonSpringDataTest.class})
-public class EnableFeignClientsTests {
+public class EnableFeignClientsSpringDataTests {
 
 	@Autowired
 	private FeignContext feignContext;
 
 	@Test
-	public void decoderDefaultCorrect() {
-		OptionalDecoder.class
-				.cast(this.feignContext.getInstance("foo", Decoder.class));
-	}
-
-	@Test
 	public void encoderDefaultCorrect() {
 
-		SpringEncoder.class.cast(this.feignContext.getInstance("foo", Encoder.class));
-	}
-
-	@Test
-	public void loggerDefaultCorrect() {
-		Slf4jLogger.class.cast(this.feignContext.getInstance("foo", Logger.class));
-	}
-
-	@Test
-	public void contractDefaultCorrect() {
-		SpringMvcContract.class
-				.cast(this.feignContext.getInstance("foo", Contract.class));
-	}
-
-	@Test
-	public void builderDefaultCorrect() {
-		Feign.Builder.class
-				.cast(this.feignContext.getInstance("foo", Feign.Builder.class));
+		PageableSpringEncoder.class.cast(this.feignContext.getInstance("foo", Encoder.class));
 	}
 
 	@Configuration

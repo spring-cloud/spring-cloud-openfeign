@@ -22,6 +22,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.databind.Module;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.RegistryBuilder;
@@ -39,8 +40,10 @@ import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
+import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Page;
 
 import feign.Client;
 import feign.Feign;
@@ -207,4 +210,9 @@ public class FeignAutoConfiguration {
 		}
 	}
 
+	@Bean
+	@ConditionalOnClass(Page.class)
+	public Module pageJacksonModule(){
+		return new PageJacksonModule();
+	}
 }

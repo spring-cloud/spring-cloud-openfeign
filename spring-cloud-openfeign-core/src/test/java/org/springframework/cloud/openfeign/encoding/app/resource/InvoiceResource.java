@@ -17,6 +17,8 @@
 package org.springframework.cloud.openfeign.encoding.app.resource;
 
 import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,6 +50,12 @@ public class InvoiceResource {
 	ResponseEntity<List<Invoice>> saveInvoices(@RequestBody List<Invoice> invoices) {
 
 		return ResponseEntity.ok(invoices);
+	}
+
+	@RequestMapping(value = "invoicesPaged", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<Invoice>> getInvoicesPaged(org.springframework.data.domain.Pageable pageable) {
+		Page<Invoice> page = new PageImpl<>(createInvoiceList(pageable.getPageSize()), pageable, 100);
+		return ResponseEntity.ok(page);
 	}
 
 	private List<Invoice> createInvoiceList(int count) {
