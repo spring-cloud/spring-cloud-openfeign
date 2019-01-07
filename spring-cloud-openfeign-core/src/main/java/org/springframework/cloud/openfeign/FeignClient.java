@@ -55,6 +55,11 @@ public @interface FeignClient {
 	String serviceId() default "";
 
 	/**
+	 * This will be used as the bean name instead of name if present, but will not be used as a service id.
+	 */
+	String contextId() default "";
+
+	/**
 	 * The service id with optional protocol prefix. Synonym for {@link #value() value}.
 	 */
 	@AliasFor("value")

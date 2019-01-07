@@ -171,13 +171,15 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		definition.addPropertyValue("path", getPath(attributes));
 		String name = getName(attributes);
 		definition.addPropertyValue("name", name);
+		String contextId = getContextId(attributes);
+		definition.addPropertyValue("contextId", contextId);
 		definition.addPropertyValue("type", className);
 		definition.addPropertyValue("decode404", attributes.get("decode404"));
 		definition.addPropertyValue("fallback", attributes.get("fallback"));
 		definition.addPropertyValue("fallbackFactory", attributes.get("fallbackFactory"));
 		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
 
-		String alias = name + "FeignClient";
+		String alias = contextId + "FeignClient";
 		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
 
 		boolean primary = (Boolean)attributes.get("primary"); // has a default, won't be null
@@ -225,6 +227,16 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		}
 		name = resolve(name);
 		return getName(name);
+	}
+
+	private String getContextId(Map<String, Object> attributes) {
+		String contextId = (String) attributes.get("contextId");
+		if (!StringUtils.hasText(contextId)) {
+			return getName(attributes);
+		}
+
+		contextId = resolve(contextId);
+		return getName(contextId);
 	}
 
 	static String getName(String name) {
@@ -350,7 +362,10 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		if (client == null) {
 			return null;
 		}
-		String value = (String) client.get("value");
+		String value = (String) client.get("contextId");
+		if (!StringUtils.hasText(value)) {
+			value = (String) client.get("value");
+		}
 		if (!StringUtils.hasText(value)) {
 			value = (String) client.get("name");
 		}

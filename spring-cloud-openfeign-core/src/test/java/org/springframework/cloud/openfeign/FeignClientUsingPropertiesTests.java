@@ -81,15 +81,15 @@ public class FeignClientUsingPropertiesTests {
 
 	public FeignClientUsingPropertiesTests() {
 		fooFactoryBean = new FeignClientFactoryBean();
-		fooFactoryBean.setName("foo");
+		fooFactoryBean.setContextId("foo");
 		fooFactoryBean.setType(FeignClientFactoryBean.class);
 
 		barFactoryBean = new FeignClientFactoryBean();
-		barFactoryBean.setName("bar");
+		barFactoryBean.setContextId("bar");
 		barFactoryBean.setType(FeignClientFactoryBean.class);
 
 		formFactoryBean = new FeignClientFactoryBean();
-		formFactoryBean.setName("form");
+		formFactoryBean.setContextId("form");
 		formFactoryBean.setType(FeignClientFactoryBean.class);
 	}
 
