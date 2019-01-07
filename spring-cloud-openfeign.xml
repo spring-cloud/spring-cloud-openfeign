@@ -61,7 +61,9 @@ in your external configuration (see
 <section xml:id="spring-cloud-feign-overriding-defaults">
 <title>Overriding Feign Defaults</title>
 <simpara>A central concept in Spring Cloud&#8217;s Feign support is that of the named client. Each feign client is part of an ensemble of components that work together to contact a remote server on demand, and the ensemble has a name that you give it as an application developer using the <literal>@FeignClient</literal> annotation. Spring Cloud creates a new ensemble as an
-<literal>ApplicationContext</literal> on demand for each named client using <literal>FeignClientsConfiguration</literal>. This contains (amongst other things) an <literal>feign.Decoder</literal>, a <literal>feign.Encoder</literal>, and a <literal>feign.Contract</literal>.</simpara>
+<literal>ApplicationContext</literal> on demand for each named client using <literal>FeignClientsConfiguration</literal>. This contains (amongst other things) an <literal>feign.Decoder</literal>, a <literal>feign.Encoder</literal>, and a <literal>feign.Contract</literal>.
+It is possible to override the name of that ensemble by using the <literal>contextId</literal>
+attribute of the <literal>@FeignClient</literal> annotation.</simpara>
 <simpara>Spring Cloud lets you take full control of the feign client by declaring additional configuration (on top of the <literal>FeignClientsConfiguration</literal>) using <literal>@FeignClient</literal>. Example:</simpara>
 <programlisting language="java" linenumbering="unnumbered">@FeignClient(name = "stores", configuration = FooConfiguration.class)
 public interface StoreClient {
@@ -73,6 +75,11 @@ public interface StoreClient {
 </note>
 <note>
 <simpara>The <literal>serviceId</literal> attribute is now deprecated in favor of the <literal>name</literal> attribute.</simpara>
+</note>
+<note>
+<simpara>Using <literal>contextId</literal> attribute of the <literal>@FeignClient</literal> annotation in addition to changing the name of
+the <literal>ApplicationContext</literal> ensemble, it will override the alias of the client name
+and it will be used as part of the name of the configuration bean created for that client.</simpara>
 </note>
 <warning>
 <simpara>Previously, using the <literal>url</literal> attribute, did not require the <literal>name</literal> attribute. Using <literal>name</literal> is now required.</simpara>
@@ -188,6 +195,18 @@ hystrix:
       execution:
         isolation:
           strategy: SEMAPHORE</programlisting>
+<simpara>If we want to create multiple feign clients with the same name or url
+so that they would point to the same server but each with a different custom configuration then
+we have to use <literal>contextId</literal> attribute of the <literal>@FeignClient</literal> in order to avoid name
+collision of these configuration beans.</simpara>
+<programlisting language="java" linenumbering="unnumbered">@FeignClient(contextId = "fooClient", name = "stores", configuration = FooConfiguration.class)
+public interface FooClient {
+    //..
+}</programlisting>
+<programlisting language="java" linenumbering="unnumbered">@FeignClient(contextId = "barClient", name = "stores", configuration = BarConfiguration.class)
+public interface BarClient {
+    //..
+}</programlisting>
 </section>
 <section xml:id="_creating_feign_clients_manually">
 <title>Creating Feign Clients Manually</title>
