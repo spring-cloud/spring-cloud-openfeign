@@ -15,7 +15,7 @@
 	<description>Spring Cloud OpenFeign Dependencies</description>
 	<properties>
 		<feign.version>10.1.0</feign.version>
-		<feign-form.version>3.3.0</feign-form.version>
+		<feign-form.version>3.5.0</feign-form.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
