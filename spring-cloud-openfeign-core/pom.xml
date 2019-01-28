@@ -220,36 +220,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-			</plugin>
-		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<configuration>
-						<excludedGroups>org.springframework.cloud.openfeign.NonSpringDataTest</excludedGroups>
-					</configuration>
-					<executions>
-						<execution>
-							<id>Non-Spring-Data</id>
-							<configuration>
-								<groups>org.springframework.cloud.openfeign.NonSpringDataTest</groups>
-								<classpathDependencyExcludes>
-									<classpathDependencyExcludes>org.springframework.data:spring-data-commons</classpathDependencyExcludes>
-								</classpathDependencyExcludes>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
 	<profiles>
 		<profile>
 			<id>java8plus</id>

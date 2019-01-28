@@ -28,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.cloud.openfeign.encoding.app.client.InvoiceClient;
 import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
@@ -85,7 +86,7 @@ public class FeignPageableEncodingTests {
 	@RibbonClient(name = "local", configuration = LocalRibbonClientConfiguration.class)
 	@SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
 	@EnableSpringDataWebSupport
-	@Import(NoSecurityConfiguration.class)
+	@Import({NoSecurityConfiguration.class, FeignClientsConfiguration.class})
 	public static class Application {
 	}
 
