@@ -62,6 +62,7 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 
 	public SpringDecoderTests() {
 		setName("test");
+		setContextId("test");
 	}
 
 	public TestClient testClient() {

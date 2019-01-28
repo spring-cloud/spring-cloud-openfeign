@@ -23,9 +23,13 @@ import feign.hystrix.HystrixFeign;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
+import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,24 +68,61 @@ public class FeignClientValidationTests {
 
 	@Test
 	public void testServiceIdAndValue() {
-		this.expected.expectMessage("only one is permitted");
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				NameAndValueConfiguration.class);
+				LoadBalancerAutoConfiguration.class,
+				RibbonAutoConfiguration.class,
+				FeignRibbonClientAutoConfiguration.class,
+				NameAndServiceIdConfiguration.class);
 		assertNotNull(context.getBean(NameAndServiceIdConfiguration.Client.class));
 		context.close();
 	}
 
 	@Configuration
-	@Import(FeignAutoConfiguration.class)
+	@Import({FeignAutoConfiguration.class, HttpClientConfiguration.class})
 	@EnableFeignClients(clients = NameAndServiceIdConfiguration.Client.class)
 	protected static class NameAndServiceIdConfiguration {
 
-		@FeignClient(serviceId = "foo", name = "bar")
+		@FeignClient(name = "bar", serviceId = "foo")
 		interface Client {
 			@RequestMapping(method = RequestMethod.GET, value = "/")
 			String get();
 		}
+	}
 
+	@Test
+	public void testDuplicatedClientNames() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+		context.setAllowBeanDefinitionOverriding(false);
+		context.register(
+				LoadBalancerAutoConfiguration.class,
+				RibbonAutoConfiguration.class,
+				FeignRibbonClientAutoConfiguration.class,
+				DuplicatedFeignClientNamesConfiguration.class
+		);
+		context.refresh();
+		assertNotNull(context.getBean(DuplicatedFeignClientNamesConfiguration.FooClient.class));
+		assertNotNull(context.getBean(DuplicatedFeignClientNamesConfiguration.BarClient.class));
+		context.close();
+	}
+
+	@Configuration
+
+	@Import({FeignAutoConfiguration.class, HttpClientConfiguration.class})
+	@EnableFeignClients(clients = {DuplicatedFeignClientNamesConfiguration.FooClient.class,
+			DuplicatedFeignClientNamesConfiguration.BarClient.class})
+	protected static class DuplicatedFeignClientNamesConfiguration {
+
+		@FeignClient(contextId = "foo", name = "bar")
+		interface FooClient {
+			@RequestMapping(method = RequestMethod.GET, value = "/")
+			String get();
+		}
+
+		@FeignClient(name = "bar")
+		interface BarClient {
+			@RequestMapping(method = RequestMethod.GET, value = "/")
+			String get();
+		}
 	}
 
 	@Test

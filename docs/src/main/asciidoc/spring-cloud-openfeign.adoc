@@ -73,6 +73,8 @@ in your external configuration (see
 
 A central concept in Spring Cloud's Feign support is that of the named client. Each feign client is part of an ensemble of components that work together to contact a remote server on demand, and the ensemble has a name that you give it as an application developer using the `@FeignClient` annotation. Spring Cloud creates a new ensemble as an
 `ApplicationContext` on demand for each named client using `FeignClientsConfiguration`. This contains (amongst other things) an `feign.Decoder`, a `feign.Encoder`, and a `feign.Contract`.
+It is possible to override the name of that ensemble by using the `contextId`
+attribute of the `@FeignClient` annotation.
 
 Spring Cloud lets you take full control of the feign client by declaring additional configuration (on top of the `FeignClientsConfiguration`) using `@FeignClient`. Example:
 
@@ -89,6 +91,10 @@ In this case the client is composed from the components already in `FeignClients
 NOTE: `FooConfiguration` does not need to be annotated with `@Configuration`. However, if it is, then take care to exclude it from any `@ComponentScan` that would otherwise include this configuration as it will become the default source for `feign.Decoder`, `feign.Encoder`, `feign.Contract`, etc., when specified. This can be avoided by putting it in a separate, non-overlapping package from any `@ComponentScan` or `@SpringBootApplication`, or it can be explicitly excluded in `@ComponentScan`.
 
 NOTE: The `serviceId` attribute is now deprecated in favor of the `name` attribute.
+
+NOTE: Using `contextId` attribute of the `@FeignClient` annotation in addition to changing the name of
+the `ApplicationContext` ensemble, it will override the alias of the client name
+and it will be used as part of the name of the configuration bean created for that client.
 
 WARNING: Previously, using the `url` attribute, did not require the `name` attribute. Using `name` is now required.
 
@@ -204,6 +210,27 @@ hystrix:
       execution:
         isolation:
           strategy: SEMAPHORE
+----
+
+If we want to create multiple feign clients with the same name or url
+so that they would point to the same server but each with a different custom configuration then
+we have to use `contextId` attribute of the `@FeignClient` in order to avoid name
+collision of these configuration beans.
+
+[source,java,indent=0]
+----
+@FeignClient(contextId = "fooClient", name = "stores", configuration = FooConfiguration.class)
+public interface FooClient {
+    //..
+}
+----
+
+[source,java,indent=0]
+----
+@FeignClient(contextId = "barClient", name = "stores", configuration = BarConfiguration.class)
+public interface BarClient {
+    //..
+}
 ----
 
 === Creating Feign Clients Manually

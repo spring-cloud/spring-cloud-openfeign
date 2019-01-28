@@ -101,7 +101,7 @@ public class RetryableFeignLoadBalancer extends FeignLoadBalancer implements Ser
 					feignRequest = request.toRequest();
 				}
 				Response response = request.client().execute(feignRequest, options);
-				if (retryPolicy.retryableStatusCode(response.status())) {
+				if (retryPolicy != null && retryPolicy.retryableStatusCode(response.status())) {
 					byte[] byteArray = response.body() == null ? new byte[]{} : StreamUtils.copyToByteArray(response.body().asInputStream());
 					response.close();
 					throw new RibbonResponseStatusCodeException(RetryableFeignLoadBalancer.this.clientName, response,

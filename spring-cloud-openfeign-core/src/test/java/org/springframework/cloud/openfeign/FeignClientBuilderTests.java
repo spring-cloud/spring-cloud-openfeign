@@ -91,7 +91,7 @@ public class FeignClientBuilderTests {
 		// on this builder class.
 		// (2) Or a new field was added and the builder class has to be extended with this
 		// new field.
-		Assert.assertThat(methodNames, Matchers.contains("decode404", "fallback",
+		Assert.assertThat(methodNames, Matchers.contains("contextId", "decode404", "fallback",
 				"fallbackFactory", "name", "path", "url"));
 	}
 
@@ -105,6 +105,7 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "applicationContext", applicationContext);
 		assertFactoryBeanField(builder, "type", FeignClientBuilderTests.class);
 		assertFactoryBeanField(builder, "name", "TestClient");
+		assertFactoryBeanField(builder, "contextId", "TestClient");
 
 		// and:
 		assertFactoryBeanField(builder, "url",
