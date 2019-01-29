@@ -56,8 +56,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 /**
  * @author Spencer Gibb
@@ -120,19 +123,32 @@ public class SpringEncoderTests {
 		assertThat("request charset is not null", request.requestCharset(), is(nullValue()));
 	}
 
+	// gh-105, gh-107
 	@Test
 	public void testMultipartFile2() {
 		SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
 		assertThat(encoder, is(notNullValue()));
 		RequestTemplate request = new RequestTemplate();
-		request = request.header("Content-Type", MediaType.MULTIPART_FORM_DATA_VALUE);
+		request.header(ACCEPT, MediaType.MULTIPART_FORM_DATA_VALUE);
+		request.header(CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE);
 
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 
 		assertThat("Request Content-Type is not multipart/form-data",
 				(String) ((List) request.headers().get(CONTENT_TYPE)).get(0),
-				containsString(MediaType.MULTIPART_FORM_DATA_VALUE));
+				containsString("multipart/form-data; charset=UTF-8; boundary="));
+		assertThat("There is more than one Content-Type request header",
+				request.headers().get(CONTENT_TYPE).size(), equalTo(1));
+		assertThat("Request Accept header is not multipart/form-data",
+				((List) request.headers().get(ACCEPT)).get(0),
+				equalTo(MULTIPART_FORM_DATA_VALUE));
+			assertThat("Request Content-Length is not equal to 186",
+				((List) request.headers().get(CONTENT_LENGTH)).get(0),
+				equalTo("186"));
+		assertThat("Body content cannot be decoded",
+				new String(request.requestBody().asBytes()),
+				containsString("hi"));
 	}
 	
 	class MediaTypeMatcher implements ArgumentMatcher<MediaType> {
