@@ -130,7 +130,7 @@ public class SpringEncoderTests {
 		assertThat(encoder, is(notNullValue()));
 		RequestTemplate request = new RequestTemplate();
 		request.header(ACCEPT, MediaType.MULTIPART_FORM_DATA_VALUE);
-		request = request.header(CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE);
+		request.header(CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE);
 
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
@@ -143,7 +143,7 @@ public class SpringEncoderTests {
 		assertThat("Request Accept header is not multipart/form-data",
 				((List) request.headers().get(ACCEPT)).get(0),
 				equalTo(MULTIPART_FORM_DATA_VALUE));
-		assertThat("Request Content-Length is not equal to 186",
+			assertThat("Request Content-Length is not equal to 186",
 				((List) request.headers().get(CONTENT_LENGTH)).get(0),
 				equalTo("186"));
 		assertThat("Body content cannot be decoded",
