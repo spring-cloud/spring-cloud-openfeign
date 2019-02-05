@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign;
@@ -20,6 +19,7 @@ package org.springframework.cloud.openfeign;
 import java.util.Collections;
 
 import org.junit.Test;
+
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -27,8 +27,7 @@ import org.springframework.mock.env.MockEnvironment;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
@@ -40,7 +39,6 @@ public class FeignClientsRegistrarTests {
 	public void badNameHttpPrefix() {
 		testGetName("http://bad_hostname");
 	}
-
 
 	@Test(expected = IllegalStateException.class)
 	public void badNameHttpsPrefix() {
@@ -60,19 +58,19 @@ public class FeignClientsRegistrarTests {
 	@Test
 	public void goodName() {
 		String name = testGetName("good-name");
-		assertThat("name was wrong", name, is("good-name"));
+		assertThat(name).as("name was wrong").isEqualTo("good-name");
 	}
 
 	@Test
 	public void goodNameHttpPrefix() {
 		String name = testGetName("http://good-name");
-		assertThat("name was wrong", name, is("http://good-name"));
+		assertThat(name).as("name was wrong").isEqualTo("http://good-name");
 	}
 
 	@Test
 	public void goodNameHttpsPrefix() {
 		String name = testGetName("https://goodname");
-		assertThat("name was wrong", name, is("https://goodname"));
+		assertThat(name).as("name was wrong").isEqualTo("https://goodname");
 	}
 
 	private String testGetName(String name) {
@@ -80,7 +78,6 @@ public class FeignClientsRegistrarTests {
 		registrar.setEnvironment(new MockEnvironment());
 		return registrar.getName(Collections.<String, Object>singletonMap("name", name));
 	}
-
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testFallback() {
@@ -92,30 +89,35 @@ public class FeignClientsRegistrarTests {
 		new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
 	}
 
-	@Configuration
-	@EnableAutoConfiguration
-	@EnableFeignClients(clients = { FeignClientsRegistrarTests.FallbackClient.class})
-	protected static class FallbackTestConfig {
-
-	}
-
 	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)
 	protected interface FallbackClient {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		String fallbackTest();
-	}
-
-	@Configuration
-	@EnableAutoConfiguration
-	@EnableFeignClients(clients = { FeignClientsRegistrarTests.FallbackFactoryClient.class})
-	protected static class FallbackFactoryTestConfig {
 
 	}
 
 	@FeignClient(name = "fallbackFactoryTestClient", url = "http://localhost:8081/", fallbackFactory = FallbackFactoryClient.class)
 	protected interface FallbackFactoryClient {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		String fallbackFactoryTest();
+
+	}
+
+	@Configuration
+	@EnableAutoConfiguration
+	@EnableFeignClients(clients = { FeignClientsRegistrarTests.FallbackClient.class })
+	protected static class FallbackTestConfig {
+
+	}
+
+	@Configuration
+	@EnableAutoConfiguration
+	@EnableFeignClients(clients = {
+			FeignClientsRegistrarTests.FallbackFactoryClient.class })
+	protected static class FallbackFactoryTestConfig {
+
 	}
 
 }

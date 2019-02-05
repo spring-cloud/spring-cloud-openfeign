@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign.encoding;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+
 import org.springframework.util.Assert;
 
 /**
@@ -34,7 +35,6 @@ public abstract class BaseRequestInterceptor implements RequestInterceptor {
 
 	/**
 	 * Creates new instance of {@link BaseRequestInterceptor}.
-	 *
 	 * @param properties the encoding properties
 	 */
 	protected BaseRequestInterceptor(FeignClientEncodingProperties properties) {
@@ -44,12 +44,12 @@ public abstract class BaseRequestInterceptor implements RequestInterceptor {
 
 	/**
 	 * Adds the header if it wasn't yet specified.
-	 *
 	 * @param requestTemplate the request
-	 * @param name			the header name
-	 * @param values		  the header values
+	 * @param name the header name
+	 * @param values the header values
 	 */
-	protected void addHeader(RequestTemplate requestTemplate, String name, String... values) {
+	protected void addHeader(RequestTemplate requestTemplate, String name,
+			String... values) {
 
 		if (!requestTemplate.headers().containsKey(name)) {
 			requestTemplate.header(name, values);
@@ -57,7 +57,7 @@ public abstract class BaseRequestInterceptor implements RequestInterceptor {
 	}
 
 	protected FeignClientEncodingProperties getProperties() {
-		return properties;
+		return this.properties;
 	}
 
 }

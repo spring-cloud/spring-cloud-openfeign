@@ -1,24 +1,23 @@
 /*
+ * Copyright 2013-2019 the original author or authors.
  *
- *  * Copyright 2013-2016 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.springframework.cloud.openfeign.support;
 
 import java.util.concurrent.TimeUnit;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -26,26 +25,65 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "feign.httpclient")
 public class FeignHttpClientProperties {
+
+	/**
+	 * Default value for disabling SSL validation.
+	 */
 	public static final boolean DEFAULT_DISABLE_SSL_VALIDATION = false;
+
+	/**
+	 * Default value for max number od connections.
+	 */
 	public static final int DEFAULT_MAX_CONNECTIONS = 200;
+
+	/**
+	 * Default value for max number od connections per route.
+	 */
 	public static final int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 50;
+
+	/**
+	 * Default value for time to live.
+	 */
 	public static final long DEFAULT_TIME_TO_LIVE = 900L;
+
+	/**
+	 * Default time to live unit.
+	 */
 	public static final TimeUnit DEFAULT_TIME_TO_LIVE_UNIT = TimeUnit.SECONDS;
+
+	/**
+	 * Default value for following redirects.
+	 */
 	public static final boolean DEFAULT_FOLLOW_REDIRECTS = true;
+
+	/**
+	 * Default value for connection timeout.
+	 */
 	public static final int DEFAULT_CONNECTION_TIMEOUT = 2000;
+
+	/**
+	 * Default value for connection timer repeat.
+	 */
 	public static final int DEFAULT_CONNECTION_TIMER_REPEAT = 3000;
 
 	private boolean disableSslValidation = DEFAULT_DISABLE_SSL_VALIDATION;
+
 	private int maxConnections = DEFAULT_MAX_CONNECTIONS;
+
 	private int maxConnectionsPerRoute = DEFAULT_MAX_CONNECTIONS_PER_ROUTE;
+
 	private long timeToLive = DEFAULT_TIME_TO_LIVE;
+
 	private TimeUnit timeToLiveUnit = DEFAULT_TIME_TO_LIVE_UNIT;
+
 	private boolean followRedirects = DEFAULT_FOLLOW_REDIRECTS;
+
 	private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+
 	private int connectionTimerRepeat = DEFAULT_CONNECTION_TIMER_REPEAT;
 
 	public int getConnectionTimerRepeat() {
-		return connectionTimerRepeat;
+		return this.connectionTimerRepeat;
 	}
 
 	public void setConnectionTimerRepeat(int connectionTimerRepeat) {
@@ -53,7 +91,7 @@ public class FeignHttpClientProperties {
 	}
 
 	public boolean isDisableSslValidation() {
-		return disableSslValidation;
+		return this.disableSslValidation;
 	}
 
 	public void setDisableSslValidation(boolean disableSslValidation) {
@@ -61,7 +99,7 @@ public class FeignHttpClientProperties {
 	}
 
 	public int getMaxConnections() {
-		return maxConnections;
+		return this.maxConnections;
 	}
 
 	public void setMaxConnections(int maxConnections) {
@@ -69,7 +107,7 @@ public class FeignHttpClientProperties {
 	}
 
 	public int getMaxConnectionsPerRoute() {
-		return maxConnectionsPerRoute;
+		return this.maxConnectionsPerRoute;
 	}
 
 	public void setMaxConnectionsPerRoute(int maxConnectionsPerRoute) {
@@ -77,7 +115,7 @@ public class FeignHttpClientProperties {
 	}
 
 	public long getTimeToLive() {
-		return timeToLive;
+		return this.timeToLive;
 	}
 
 	public void setTimeToLive(long timeToLive) {
@@ -85,7 +123,7 @@ public class FeignHttpClientProperties {
 	}
 
 	public TimeUnit getTimeToLiveUnit() {
-		return timeToLiveUnit;
+		return this.timeToLiveUnit;
 	}
 
 	public void setTimeToLiveUnit(TimeUnit timeToLiveUnit) {
@@ -93,7 +131,7 @@ public class FeignHttpClientProperties {
 	}
 
 	public boolean isFollowRedirects() {
-		return followRedirects;
+		return this.followRedirects;
 	}
 
 	public void setFollowRedirects(boolean followRedirects) {
@@ -101,10 +139,11 @@ public class FeignHttpClientProperties {
 	}
 
 	public int getConnectionTimeout() {
-		return connectionTimeout;
+		return this.connectionTimeout;
 	}
 
 	public void setConnectionTimeout(int connectionTimeout) {
 		this.connectionTimeout = connectionTimeout;
 	}
+
 }

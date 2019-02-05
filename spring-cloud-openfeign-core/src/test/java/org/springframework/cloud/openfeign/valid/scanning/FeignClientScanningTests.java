@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -41,14 +40,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
  * @author Spencer Gibb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientScanningTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
+@SpringBootTest(classes = FeignClientScanningTests.Application.class, webEnvironment = RANDOM_PORT, value = {
 		"spring.application.name=feignclienttest", "feign.httpclient.enabled=false" })
 @DirtiesContext
 public class FeignClientScanningTests {
@@ -66,16 +65,34 @@ public class FeignClientScanningTests {
 	@SuppressWarnings("unused")
 	private Client feignClient;
 
+	@Test
+	public void testSimpleType() {
+		String hello = this.testClient.getHello();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match").isEqualTo("hello world 1");
+	}
+
+	@Test
+	public void testSimpleTypeByKey() {
+		String hello = this.testClientByKey.getHello();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match").isEqualTo("hello world 1");
+	}
+
 	@FeignClient("localapp123")
 	protected interface TestClient {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		String getHello();
+
 	}
 
 	@FeignClient("${feignClient.localappName}")
 	protected interface TestClientByKey {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		String getHello();
+
 	}
 
 	@Configuration
@@ -85,25 +102,12 @@ public class FeignClientScanningTests {
 	@RibbonClients(defaultConfiguration = LocalRibbonClientConfiguration.class)
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		public String getHello() {
 			return "hello world 1";
 		}
 
-	}
-
-	@Test
-	public void testSimpleType() {
-		String hello = this.testClient.getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", "hello world 1", hello);
-	}
-
-	@Test
-	public void testSimpleTypeByKey() {
-		String hello = this.testClientByKey.getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", "hello world 1", hello);
 	}
 
 	// Load balancer with fixed server list for "local" pointing to localhost
@@ -119,4 +123,5 @@ public class FeignClientScanningTests {
 		}
 
 	}
+
 }

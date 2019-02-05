@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,62 +14,64 @@
  * limitations under the License.
  */
 
-
 package org.springframework.cloud.openfeign;
 
 import java.util.Map;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
 import org.springframework.cloud.openfeign.ribbon.CachingSpringLoadBalancerFactory;
 import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer;
 import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
 import org.springframework.cloud.openfeign.ribbon.RetryableFeignLoadBalancer;
-import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
-import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
 import org.springframework.cloud.test.ClassPathExclusions;
 import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.Is.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
  */
 @RunWith(ModifiedClassPathRunner.class)
-@ClassPathExclusions({"spring-retry-*.jar", "spring-boot-starter-aop-*.jar"})
+@ClassPathExclusions({ "spring-retry-*.jar", "spring-boot-starter-aop-*.jar" })
 public class SpringRetryDisabledTests {
 
 	private ConfigurableApplicationContext context;
 
 	@Before
 	public void setUp() {
-		context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
-				.sources(RibbonAutoConfiguration.class, LoadBalancerAutoConfiguration.class, RibbonClientConfiguration.class,
-						FeignRibbonClientAutoConfiguration.class).run();
+		this.context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
+				.sources(RibbonAutoConfiguration.class,
+						LoadBalancerAutoConfiguration.class,
+						RibbonClientConfiguration.class,
+						FeignRibbonClientAutoConfiguration.class)
+				.run();
 	}
 
 	@After
 	public void tearDown() {
-		if(context != null) {
-			context.close();
+		if (this.context != null) {
+			this.context.close();
 		}
 	}
 
 	@Test
 	public void testLoadBalancedRetryFactoryBean() throws Exception {
-		Map<String, CachingSpringLoadBalancerFactory> lbFactorys =  context.getBeansOfType(CachingSpringLoadBalancerFactory.class);
-		assertThat(lbFactorys.values(), hasSize(1));
-		FeignLoadBalancer lb =lbFactorys.values().iterator().next().create("foo");
-		assertThat(lb, instanceOf(FeignLoadBalancer.class));
-		assertThat(lb, is(not(instanceOf(RetryableFeignLoadBalancer.class))));
+		Map<String, CachingSpringLoadBalancerFactory> lbFactorys = this.context
+				.getBeansOfType(CachingSpringLoadBalancerFactory.class);
+		assertThat(lbFactorys.values()).hasSize(1);
+		FeignLoadBalancer lb = lbFactorys.values().iterator().next().create("foo");
+		assertThat(lb).isInstanceOf(FeignLoadBalancer.class);
+		assertThat(lb).isNotInstanceOf(RetryableFeignLoadBalancer.class);
 	}
+
 }

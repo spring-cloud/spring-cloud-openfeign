@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,20 +32,19 @@ public interface AnnotatedParameterProcessor {
 
 	/**
 	 * Retrieves the processor supported annotation type.
-	 *
 	 * @return the annotation type
 	 */
 	Class<? extends Annotation> getAnnotationType();
 
 	/**
 	 * Process the annotated parameter.
-	 *
-	 * @param context	the parameter context
+	 * @param context the parameter context
 	 * @param annotation the annotation instance
-	 * @param method	 the method that contains the annotation
+	 * @param method the method that contains the annotation
 	 * @return whether the parameter is http
 	 */
-	boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method);
+	boolean processArgument(AnnotatedParameterContext context, Annotation annotation,
+			Method method);
 
 	/**
 	 * Specifies the parameter context.
@@ -56,32 +55,30 @@ public interface AnnotatedParameterProcessor {
 
 		/**
 		 * Retrieves the method metadata.
-		 *
 		 * @return the method metadata
 		 */
 		MethodMetadata getMethodMetadata();
 
 		/**
 		 * Retrieves the index of the parameter.
-		 *
 		 * @return the parameter index
 		 */
 		int getParameterIndex();
 
 		/**
 		 * Sets the parameter name.
-		 *
 		 * @param name the name of the parameter
 		 */
 		void setParameterName(String name);
 
 		/**
 		 * Sets the template parameter.
-		 *
 		 * @param name the template parameter
 		 * @param rest the existing parameter values
 		 * @return parameters
 		 */
 		Collection<String> setTemplateParameter(String name, Collection<String> rest);
+
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,18 +75,22 @@ public class SpringMvcContract extends Contract.BaseContract
 
 	private static final String CONTENT_TYPE = "Content-Type";
 
-	private static final TypeDescriptor STRING_TYPE_DESCRIPTOR =
-			TypeDescriptor.valueOf(String.class);
-	private static final TypeDescriptor ITERABLE_TYPE_DESCRIPTOR =
-			TypeDescriptor.valueOf(Iterable.class);
+	private static final TypeDescriptor STRING_TYPE_DESCRIPTOR = TypeDescriptor
+			.valueOf(String.class);
+
+	private static final TypeDescriptor ITERABLE_TYPE_DESCRIPTOR = TypeDescriptor
+			.valueOf(Iterable.class);
 
 	private static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
 	private final Map<Class<? extends Annotation>, AnnotatedParameterProcessor> annotatedArgumentProcessors;
+
 	private final Map<String, Method> processedMethods = new HashMap<>();
 
 	private final ConversionService conversionService;
+
 	private final ConvertingExpanderFactory convertingExpanderFactory;
+
 	private ResourceLoader resourceLoader = new DefaultResourceLoader();
 
 	public SpringMvcContract() {
@@ -115,6 +119,26 @@ public class SpringMvcContract extends Contract.BaseContract
 		this.annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
 		this.conversionService = conversionService;
 		this.convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
+	}
+
+	private static TypeDescriptor createTypeDescriptor(Method method, int paramIndex) {
+		Parameter parameter = method.getParameters()[paramIndex];
+		MethodParameter methodParameter = MethodParameter.forParameter(parameter);
+		TypeDescriptor typeDescriptor = new TypeDescriptor(methodParameter);
+
+		// Feign applies the Param.Expander to each element of an Iterable, so in those
+		// cases we need to provide a TypeDescriptor of the element.
+		if (typeDescriptor.isAssignableTo(ITERABLE_TYPE_DESCRIPTOR)) {
+			TypeDescriptor elementTypeDescriptor = typeDescriptor
+					.getElementTypeDescriptor();
+
+			checkState(elementTypeDescriptor != null,
+					"Could not resolve element type of Iterable type %s. Not declared?",
+					typeDescriptor);
+
+			typeDescriptor = elementTypeDescriptor;
+		}
+		return typeDescriptor;
 	}
 
 	@Override
@@ -190,8 +214,7 @@ public class SpringMvcContract extends Contract.BaseContract
 			if (pathValue != null) {
 				pathValue = resolve(pathValue);
 				// Append path from @RequestMapping if value is present on method
-				if (!pathValue.startsWith("/")
-						&& !data.template().path().endsWith("/")) {
+				if (!pathValue.startsWith("/") && !data.template().path().endsWith("/")) {
 					pathValue = "/" + pathValue;
 				}
 				data.template().uri(pathValue, true);
@@ -256,35 +279,16 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		if (isHttpAnnotation && data.indexToExpander().get(paramIndex) == null) {
 			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
-			if (conversionService.canConvert(typeDescriptor, STRING_TYPE_DESCRIPTOR)) {
-				Param.Expander expander =
-						convertingExpanderFactory.getExpander(typeDescriptor);
+			if (this.conversionService.canConvert(typeDescriptor,
+					STRING_TYPE_DESCRIPTOR)) {
+				Param.Expander expander = this.convertingExpanderFactory
+						.getExpander(typeDescriptor);
 				if (expander != null) {
 					data.indexToExpander().put(paramIndex, expander);
 				}
 			}
 		}
 		return isHttpAnnotation;
-	}
-
-	private static TypeDescriptor createTypeDescriptor(Method method, int paramIndex) {
-		Parameter parameter = method.getParameters()[paramIndex];
-		MethodParameter methodParameter = MethodParameter.forParameter(parameter);
-		TypeDescriptor typeDescriptor = new TypeDescriptor(methodParameter);
-
-		// Feign applies the Param.Expander to each element of an Iterable, so in those
-		// cases we need to provide a TypeDescriptor of the element.
-		if (typeDescriptor.isAssignableTo(ITERABLE_TYPE_DESCRIPTOR)) {
-			TypeDescriptor elementTypeDescriptor =
-					typeDescriptor.getElementTypeDescriptor();
-
-			checkState(elementTypeDescriptor != null,
-					"Could not resolve element type of Iterable type %s. Not declared?",
-					typeDescriptor);
-
-			typeDescriptor = elementTypeDescriptor;
-		}
-		return typeDescriptor;
 	}
 
 	private void parseProduces(MethodMetadata md, Method method,
@@ -315,7 +319,7 @@ public class SpringMvcContract extends Contract.BaseContract
 				int index = header.indexOf('=');
 				if (!header.contains("!=") && index >= 0) {
 					md.template().header(resolve(header.substring(0, index)),
-						resolve(header.substring(index + 1).trim()));
+							resolve(header.substring(index + 1).trim()));
 				}
 			}
 		}
@@ -360,46 +364,12 @@ public class SpringMvcContract extends Contract.BaseContract
 				parameterAnnotation.annotationType(), null);
 	}
 
-	private boolean shouldAddParameterName(int parameterIndex, Type[] parameterTypes, String[] parameterNames) {
+	private boolean shouldAddParameterName(int parameterIndex, Type[] parameterTypes,
+			String[] parameterNames) {
 		// has a parameter name
 		return parameterNames != null && parameterNames.length > parameterIndex
-				// has a type
+		// has a type
 				&& parameterTypes != null && parameterTypes.length > parameterIndex;
-	}
-
-	private class SimpleAnnotatedParameterContext
-			implements AnnotatedParameterProcessor.AnnotatedParameterContext {
-
-		private final MethodMetadata methodMetadata;
-
-		private final int parameterIndex;
-
-		public SimpleAnnotatedParameterContext(MethodMetadata methodMetadata,
-				int parameterIndex) {
-			this.methodMetadata = methodMetadata;
-			this.parameterIndex = parameterIndex;
-		}
-
-		@Override
-		public MethodMetadata getMethodMetadata() {
-			return this.methodMetadata;
-		}
-
-		@Override
-		public int getParameterIndex() {
-			return this.parameterIndex;
-		}
-
-		@Override
-		public void setParameterName(String name) {
-			nameParam(this.methodMetadata, name, this.parameterIndex);
-		}
-
-		@Override
-		public Collection<String> setTemplateParameter(String name,
-				Collection<String> rest) {
-			return addTemplateParameter(rest, name);
-		}
 	}
 
 	/**
@@ -431,10 +401,48 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		Param.Expander getExpander(TypeDescriptor typeDescriptor) {
 			return value -> {
-				Object converted = this.conversionService.convert(
-						value, typeDescriptor, STRING_TYPE_DESCRIPTOR);
+				Object converted = this.conversionService.convert(value, typeDescriptor,
+						STRING_TYPE_DESCRIPTOR);
 				return (String) converted;
 			};
 		}
+
 	}
+
+	private class SimpleAnnotatedParameterContext
+			implements AnnotatedParameterProcessor.AnnotatedParameterContext {
+
+		private final MethodMetadata methodMetadata;
+
+		private final int parameterIndex;
+
+		SimpleAnnotatedParameterContext(MethodMetadata methodMetadata,
+				int parameterIndex) {
+			this.methodMetadata = methodMetadata;
+			this.parameterIndex = parameterIndex;
+		}
+
+		@Override
+		public MethodMetadata getMethodMetadata() {
+			return this.methodMetadata;
+		}
+
+		@Override
+		public int getParameterIndex() {
+			return this.parameterIndex;
+		}
+
+		@Override
+		public void setParameterName(String name) {
+			nameParam(this.methodMetadata, name, this.parameterIndex);
+		}
+
+		@Override
+		public Collection<String> setTemplateParameter(String name,
+				Collection<String> rest) {
+			return addTemplateParameter(rest, name);
+		}
+
+	}
+
 }

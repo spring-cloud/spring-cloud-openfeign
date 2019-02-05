@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,13 +57,13 @@ public class CachingSpringLoadBalancerFactoryTests {
 		when(this.delegate.getClientConfig("client2")).thenReturn(config);
 
 		this.factory = new CachingSpringLoadBalancerFactory(this.delegate,
-				loadBalancedRetryFactory);
+				this.loadBalancedRetryFactory);
 	}
 
 	@Test
 	public void delegateCreatesWhenMissing() {
 		FeignLoadBalancer client = this.factory.create("client1");
-		assertNotNull("client was null", client);
+		assertThat(client).as("client was null").isNotNull();
 
 		verify(this.delegate, times(1)).getClientConfig("client1");
 	}
@@ -70,10 +71,10 @@ public class CachingSpringLoadBalancerFactoryTests {
 	@Test
 	public void cacheWorks() {
 		FeignLoadBalancer client = this.factory.create("client2");
-		assertNotNull("client was null", client);
+		assertThat(client).as("client was null").isNotNull();
 
 		client = this.factory.create("client2");
-		assertNotNull("client was null", client);
+		assertThat(client).as("client was null").isNotNull();
 
 		verify(this.delegate, times(1)).getClientConfig("client2");
 	}
@@ -84,9 +85,10 @@ public class CachingSpringLoadBalancerFactoryTests {
 		config.set(CommonClientConfigKey.ConnectTimeout, 1000);
 		config.set(CommonClientConfigKey.ReadTimeout, 500);
 		when(this.delegate.getClientConfig("retry")).thenReturn(config);
-		CachingSpringLoadBalancerFactory factory = new CachingSpringLoadBalancerFactory(this.delegate);
+		CachingSpringLoadBalancerFactory factory = new CachingSpringLoadBalancerFactory(
+				this.delegate);
 		FeignLoadBalancer client = this.factory.create("retry");
-		assertNotNull("client was null", client);
+		assertThat(client).as("client was null").isNotNull();
 	}
 
 	@Test
@@ -95,8 +97,10 @@ public class CachingSpringLoadBalancerFactoryTests {
 		config.set(CommonClientConfigKey.ConnectTimeout, 1000);
 		config.set(CommonClientConfigKey.ReadTimeout, 500);
 		when(this.delegate.getClientConfig("retry")).thenReturn(config);
-		CachingSpringLoadBalancerFactory factory = new CachingSpringLoadBalancerFactory(this.delegate, loadBalancedRetryFactory);
+		CachingSpringLoadBalancerFactory factory = new CachingSpringLoadBalancerFactory(
+				this.delegate, this.loadBalancedRetryFactory);
 		FeignLoadBalancer client = this.factory.create("retry");
-		assertNotNull("client was null", client);
+		assertThat(client).as("client was null").isNotNull();
 	}
+
 }

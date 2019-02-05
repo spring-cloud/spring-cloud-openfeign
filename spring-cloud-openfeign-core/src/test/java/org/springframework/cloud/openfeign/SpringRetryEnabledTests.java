@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,46 +17,49 @@
 package org.springframework.cloud.openfeign;
 
 import java.util.Map;
-import org.hamcrest.Matchers;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.BeansException;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
 import org.springframework.cloud.openfeign.ribbon.CachingSpringLoadBalancerFactory;
 import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer;
 import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
 import org.springframework.cloud.openfeign.ribbon.RetryableFeignLoadBalancer;
-import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
-import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {RibbonAutoConfiguration.class, RibbonClientConfiguration.class, LoadBalancerAutoConfiguration.class,
-		FeignRibbonClientAutoConfiguration.class, HttpClientConfiguration.class})
+@ContextConfiguration(classes = { RibbonAutoConfiguration.class,
+		RibbonClientConfiguration.class, LoadBalancerAutoConfiguration.class,
+		FeignRibbonClientAutoConfiguration.class, HttpClientConfiguration.class })
 public class SpringRetryEnabledTests implements ApplicationContextAware {
 
 	private ApplicationContext context;
 
 	@Test
 	public void testLoadBalancedRetryFactoryBean() throws Exception {
-		Map<String, CachingSpringLoadBalancerFactory> lbFactorys =  context.getBeansOfType(CachingSpringLoadBalancerFactory.class);
-		assertThat(lbFactorys.values(), Matchers.hasSize(1));
-		FeignLoadBalancer lb =lbFactorys.values().iterator().next().create("foo");
-		assertThat(lb, instanceOf(RetryableFeignLoadBalancer.class));
+		Map<String, CachingSpringLoadBalancerFactory> lbFactorys = this.context
+				.getBeansOfType(CachingSpringLoadBalancerFactory.class);
+		assertThat(lbFactorys.values()).hasSize(1);
+		FeignLoadBalancer lb = lbFactorys.values().iterator().next().create("foo");
+		assertThat(lb).isInstanceOf(RetryableFeignLoadBalancer.class);
 	}
 
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 		this.context = context;
 	}
+
 }

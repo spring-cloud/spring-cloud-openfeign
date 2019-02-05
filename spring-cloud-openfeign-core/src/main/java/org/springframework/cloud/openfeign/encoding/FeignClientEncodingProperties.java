@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.openfeign.encoding;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.Arrays;
 import java.util.Objects;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * The Feign encoding properties.
@@ -32,7 +32,8 @@ public class FeignClientEncodingProperties {
 	/**
 	 * The list of supported mime types.
 	 */
-	private String[] mimeTypes = new String[]{"text/xml", "application/xml", "application/json"};
+	private String[] mimeTypes = new String[] { "text/xml", "application/xml",
+			"application/json" };
 
 	/**
 	 * The minimum threshold content size.
@@ -40,7 +41,7 @@ public class FeignClientEncodingProperties {
 	private int minRequestSize = 2048;
 
 	public String[] getMimeTypes() {
-		return mimeTypes;
+		return this.mimeTypes;
 	}
 
 	public void setMimeTypes(String[] mimeTypes) {
@@ -48,7 +49,7 @@ public class FeignClientEncodingProperties {
 	}
 
 	public int getMinRequestSize() {
-		return minRequestSize;
+		return this.minRequestSize;
 	}
 
 	public void setMinRequestSize(int minRequestSize) {
@@ -57,24 +58,28 @@ public class FeignClientEncodingProperties {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		FeignClientEncodingProperties that = (FeignClientEncodingProperties) o;
-		return Arrays.equals(mimeTypes, that.mimeTypes) &&
-				Objects.equals(minRequestSize, that.minRequestSize);
+		return Arrays.equals(this.mimeTypes, that.mimeTypes)
+				&& Objects.equals(this.minRequestSize, that.minRequestSize);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(mimeTypes, minRequestSize);
+		return Objects.hash(this.mimeTypes, this.minRequestSize);
 	}
 
 	@Override
 	public String toString() {
-		return new StringBuilder("FeignClientEncodingProperties{")
-				.append("mimeTypes=").append(Arrays.toString(mimeTypes)).append(", ")
-				.append("minRequestSize=").append(minRequestSize)
-				.append("}").toString();
+		return new StringBuilder("FeignClientEncodingProperties{").append("mimeTypes=")
+				.append(Arrays.toString(this.mimeTypes)).append(", ")
+				.append("minRequestSize=").append(this.minRequestSize).append("}")
+				.toString();
 	}
 
 }

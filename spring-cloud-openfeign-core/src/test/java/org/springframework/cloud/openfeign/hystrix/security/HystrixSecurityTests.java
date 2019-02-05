@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,49 +51,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests that a secured web service returning values using a feign client properly access
  * the security context from a hystrix command.
+ *
  * @author Daniel Lavoie
  */
 @RunWith(SpringRunner.class)
 @DirtiesContext
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
-		properties = { "feign.hystrix.enabled=true"})
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = {
+		"feign.hystrix.enabled=true" })
 @ActiveProfiles("proxysecurity")
 public class HystrixSecurityTests {
+
 	@Autowired
 	private CustomConcurrenyStrategy customConcurrenyStrategy;
 
 	@LocalServerPort
 	private String serverPort;
 
-	//TODO: move to constants in TestAutoConfiguration
+	// TODO: move to constants in TestAutoConfiguration
 	private String username = "user";
 
 	private String password = "password";
-
-	@Test
-	public void testSecurityConcurrencyStrategyInstalled() {
-		HystrixConcurrencyStrategy concurrencyStrategy = HystrixPlugins.getInstance().getConcurrencyStrategy();
-		assertThat(concurrencyStrategy).isInstanceOf(SecurityContextConcurrencyStrategy.class);
-	}
-
-	@Test
-	public void testFeignHystrixSecurity() {
-		HttpHeaders headers = createBasicAuthHeader(username, password);
-
-		ResponseEntity<String> entity = new RestTemplate()
-				.exchange("http://localhost:" + serverPort + "/proxy-username",
-						HttpMethod.GET, new HttpEntity<Void>(headers), String.class);
-
-		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-		assertThat(entity.getBody())
-				.as("Username should have been intercepted by feign interceptor.")
-				.isEqualTo(username);
-
-		 assertThat(customConcurrenyStrategy.isHookCalled())
-				.as("Custom hook should have been called.")
-				.isTrue();
-	}
 
 	public static HttpHeaders createBasicAuthHeader(final String username,
 			final String password) {
@@ -109,10 +86,38 @@ public class HystrixSecurityTests {
 		};
 	}
 
+	@Test
+	public void testSecurityConcurrencyStrategyInstalled() {
+		HystrixConcurrencyStrategy concurrencyStrategy = HystrixPlugins.getInstance()
+				.getConcurrencyStrategy();
+		assertThat(concurrencyStrategy)
+				.isInstanceOf(SecurityContextConcurrencyStrategy.class);
+	}
+
+	@Test
+	public void testFeignHystrixSecurity() {
+		HttpHeaders headers = createBasicAuthHeader(this.username, this.password);
+
+		ResponseEntity<String> entity = new RestTemplate().exchange(
+				"http://localhost:" + this.serverPort + "/proxy-username", HttpMethod.GET,
+				new HttpEntity<Void>(headers), String.class);
+
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+		assertThat(entity.getBody())
+				.as("Username should have been intercepted by feign interceptor.")
+				.isEqualTo(this.username);
+
+		assertThat(this.customConcurrenyStrategy.isHookCalled())
+				.as("Custom hook should have been called.").isTrue();
+	}
+
 	@SpringBootConfiguration
 	@Import(HystrixSecurityApplication.class)
 	@RibbonClient(name = "username", configuration = LocalRibbonClientConfiguration.class)
-	protected static class TestConfig { }
+	protected static class TestConfig {
+
+	}
 
 	protected static class LocalRibbonClientConfiguration {
 
@@ -125,4 +130,5 @@ public class HystrixSecurityTests {
 		}
 
 	}
+
 }

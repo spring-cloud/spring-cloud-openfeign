@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,8 +43,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
@@ -73,6 +73,44 @@ public class FeignClientTests {
 	@Autowired
 	private TestClient buildByBuilder;
 
+	@Test
+	public void testAnnotations() {
+		Map<String, Object> beans = this.context
+				.getBeansWithAnnotation(FeignClient.class);
+		assertThat(beans.containsKey(TestClient.class.getName()))
+				.as("Wrong clients: " + beans).isTrue();
+	}
+
+	@Test
+	public void testClient() {
+		assertThat(this.testClient).as("testClient was null").isNotNull();
+		assertThat(this.extraClient).as("extraClient was null").isNotNull();
+		assertThat(Proxy.isProxyClass(this.testClient.getClass()))
+				.as("testClient is not a java Proxy").isTrue();
+		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.testClient);
+		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
+	}
+
+	@Test
+	public void extraClient() {
+		assertThat(this.extraClient).as("extraClient was null").isNotNull();
+		assertThat(Proxy.isProxyClass(this.extraClient.getClass()))
+				.as("extraClient is not a java Proxy").isTrue();
+		InvocationHandler invocationHandler = Proxy
+				.getInvocationHandler(this.extraClient);
+		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
+	}
+
+	@Test
+	public void buildByBuilder() {
+		assertThat(this.buildByBuilder).as("buildByBuilder was null").isNotNull();
+		assertThat(Proxy.isProxyClass(this.buildByBuilder.getClass()))
+				.as("buildByBuilder is not a java Proxy").isTrue();
+		InvocationHandler invocationHandler = Proxy
+				.getInvocationHandler(this.buildByBuilder);
+		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
@@ -82,18 +120,18 @@ public class FeignClientTests {
 
 		@Bean("build-by-builder")
 		public TestClient buildByBuilder(final FeignClientBuilder feignClientBuilder) {
-			return feignClientBuilder
-					.forType(TestClient.class, "builderapp")
-					.build();
+			return feignClientBuilder.forType(TestClient.class, "builderapp").build();
 		}
 
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		public Hello getHello() {
 			return new Hello("hello world 1");
 		}
+
 	}
 
 	public static class Hello {
+
 		private String message;
 
 		public Hello() {
@@ -104,7 +142,7 @@ public class FeignClientTests {
 		}
 
 		public String getMessage() {
-			return message;
+			return this.message;
 		}
 
 		public void setMessage(String message) {
@@ -113,56 +151,27 @@ public class FeignClientTests {
 
 		@Override
 		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
 			Hello that = (Hello) o;
 
-			return Objects.equals(message, that.message);
+			return Objects.equals(this.message, that.message);
 		}
 
 		@Override
 		public int hashCode() {
-			return message != null ? message.hashCode() : 0;
+			return this.message != null ? this.message.hashCode() : 0;
 		}
-	}
 
-	@Test
-	public void testAnnotations() {
-		Map<String, Object> beans = this.context
-				.getBeansWithAnnotation(FeignClient.class);
-		assertTrue("Wrong clients: " + beans,
-				beans.containsKey(TestClient.class.getName()));
-	}
-
-	@Test
-	public void testClient() {
-		assertNotNull("testClient was null", this.testClient);
-		assertNotNull("extraClient was null", this.extraClient);
-		assertTrue("testClient is not a java Proxy",
-				Proxy.isProxyClass(this.testClient.getClass()));
-		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.testClient);
-		assertNotNull("invocationHandler was null", invocationHandler);
-	}
-
-	@Test
-	public void extraClient() {
-		assertNotNull("extraClient was null", this.extraClient);
-		assertTrue("extraClient is not a java Proxy",
-				Proxy.isProxyClass(this.extraClient.getClass()));
-		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.extraClient);
-		assertNotNull("invocationHandler was null", invocationHandler);
-	}
-
-	@Test
-	public void buildByBuilder() {
-		assertNotNull("buildByBuilder was null", this.buildByBuilder);
-		assertTrue("buildByBuilder is not a java Proxy",
-				Proxy.isProxyClass(this.buildByBuilder.getClass()));
-		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.buildByBuilder);
-		assertNotNull("invocationHandler was null", invocationHandler);
 	}
 
 	@Configuration
 	public static class TestDefaultFeignConfig {
+
 	}
+
 }

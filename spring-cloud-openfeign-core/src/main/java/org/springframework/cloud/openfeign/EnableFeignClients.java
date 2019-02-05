@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ public @interface EnableFeignClients {
 	 * <p>
 	 * Use {@link #basePackageClasses()} for a type-safe alternative to String-based
 	 * package names.
-	 *
 	 * @return the array of 'basePackages'.
 	 */
 	String[] basePackages() default {};
@@ -66,7 +65,6 @@ public @interface EnableFeignClients {
 	 * <p>
 	 * Consider creating a special no-op marker class or interface in each package that
 	 * serves no purpose other than being referenced by this attribute.
-	 *
 	 * @return the array of 'basePackageClasses'.
 	 */
 	Class<?>[] basePackageClasses() default {};
@@ -77,12 +75,15 @@ public @interface EnableFeignClients {
 	 * {@link feign.codec.Decoder}, {@link feign.codec.Encoder}, {@link feign.Contract}.
 	 *
 	 * @see FeignClientsConfiguration for the defaults
+	 * @return list of default configurations
 	 */
 	Class<?>[] defaultConfiguration() default {};
 
 	/**
-	 * List of classes annotated with @FeignClient. If not empty, disables classpath scanning.
+	 * List of classes annotated with @FeignClient. If not empty, disables classpath
+	 * scanning.
 	 * @return list of FeignClient classes
 	 */
 	Class<?>[] clients() default {};
+
 }

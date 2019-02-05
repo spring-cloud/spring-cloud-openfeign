@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign.ribbon;
 
 import feign.Client;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.context.annotation.Bean;
@@ -28,11 +28,13 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 class DefaultFeignLoadBalancedConfiguration {
+
 	@Bean
 	@ConditionalOnMissingBean
 	public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
-							  SpringClientFactory clientFactory) {
-		return new LoadBalancerFeignClient(new Client.Default(null, null),
-				cachingFactory, clientFactory);
+			SpringClientFactory clientFactory) {
+		return new LoadBalancerFeignClient(new Client.Default(null, null), cachingFactory,
+				clientFactory);
 	}
+
 }

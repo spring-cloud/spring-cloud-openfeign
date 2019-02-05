@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.openfeign;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import feign.Contract;
 import feign.Logger;
@@ -22,12 +28,8 @@ import feign.Retryer;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Eko Kurniawan Khannedy
@@ -42,7 +44,7 @@ public class FeignClientProperties {
 	private Map<String, FeignClientConfiguration> config = new HashMap<>();
 
 	public boolean isDefaultToProperties() {
-		return defaultToProperties;
+		return this.defaultToProperties;
 	}
 
 	public void setDefaultToProperties(boolean defaultToProperties) {
@@ -50,7 +52,7 @@ public class FeignClientProperties {
 	}
 
 	public String getDefaultConfig() {
-		return defaultConfig;
+		return this.defaultConfig;
 	}
 
 	public void setDefaultConfig(String defaultConfig) {
@@ -58,7 +60,7 @@ public class FeignClientProperties {
 	}
 
 	public Map<String, FeignClientConfiguration> getConfig() {
-		return config;
+		return this.config;
 	}
 
 	public void setConfig(Map<String, FeignClientConfiguration> config) {
@@ -67,19 +69,26 @@ public class FeignClientProperties {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		FeignClientProperties that = (FeignClientProperties) o;
-		return defaultToProperties == that.defaultToProperties &&
-				Objects.equals(defaultConfig, that.defaultConfig) &&
-				Objects.equals(config, that.config);
+		return this.defaultToProperties == that.defaultToProperties
+				&& Objects.equals(this.defaultConfig, that.defaultConfig)
+				&& Objects.equals(this.config, that.config);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(defaultToProperties, defaultConfig, config);
+		return Objects.hash(this.defaultToProperties, this.defaultConfig, this.config);
 	}
 
+	/**
+	 * Feign client configuration.
+	 */
 	public static class FeignClientConfiguration {
 
 		private Logger.Level loggerLevel;
@@ -103,7 +112,7 @@ public class FeignClientProperties {
 		private Class<Contract> contract;
 
 		public Logger.Level getLoggerLevel() {
-			return loggerLevel;
+			return this.loggerLevel;
 		}
 
 		public void setLoggerLevel(Logger.Level loggerLevel) {
@@ -111,7 +120,7 @@ public class FeignClientProperties {
 		}
 
 		public Integer getConnectTimeout() {
-			return connectTimeout;
+			return this.connectTimeout;
 		}
 
 		public void setConnectTimeout(Integer connectTimeout) {
@@ -119,7 +128,7 @@ public class FeignClientProperties {
 		}
 
 		public Integer getReadTimeout() {
-			return readTimeout;
+			return this.readTimeout;
 		}
 
 		public void setReadTimeout(Integer readTimeout) {
@@ -127,7 +136,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<Retryer> getRetryer() {
-			return retryer;
+			return this.retryer;
 		}
 
 		public void setRetryer(Class<Retryer> retryer) {
@@ -135,7 +144,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<ErrorDecoder> getErrorDecoder() {
-			return errorDecoder;
+			return this.errorDecoder;
 		}
 
 		public void setErrorDecoder(Class<ErrorDecoder> errorDecoder) {
@@ -143,15 +152,16 @@ public class FeignClientProperties {
 		}
 
 		public List<Class<RequestInterceptor>> getRequestInterceptors() {
-			return requestInterceptors;
+			return this.requestInterceptors;
 		}
 
-		public void setRequestInterceptors(List<Class<RequestInterceptor>> requestInterceptors) {
+		public void setRequestInterceptors(
+				List<Class<RequestInterceptor>> requestInterceptors) {
 			this.requestInterceptors = requestInterceptors;
 		}
 
 		public Boolean getDecode404() {
-			return decode404;
+			return this.decode404;
 		}
 
 		public void setDecode404(Boolean decode404) {
@@ -159,7 +169,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<Decoder> getDecoder() {
-			return decoder;
+			return this.decoder;
 		}
 
 		public void setDecoder(Class<Decoder> decoder) {
@@ -167,7 +177,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<Encoder> getEncoder() {
-			return encoder;
+			return this.encoder;
 		}
 
 		public void setEncoder(Class<Encoder> encoder) {
@@ -175,7 +185,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<Contract> getContract() {
-			return contract;
+			return this.contract;
 		}
 
 		public void setContract(Class<Contract> contract) {
@@ -184,26 +194,32 @@ public class FeignClientProperties {
 
 		@Override
 		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
 			FeignClientConfiguration that = (FeignClientConfiguration) o;
-			return loggerLevel == that.loggerLevel &&
-					Objects.equals(connectTimeout, that.connectTimeout) &&
-					Objects.equals(readTimeout, that.readTimeout) &&
-					Objects.equals(retryer, that.retryer) &&
-					Objects.equals(errorDecoder, that.errorDecoder) &&
-					Objects.equals(requestInterceptors, that.requestInterceptors) &&
-					Objects.equals(decode404, that.decode404) &&
-					Objects.equals(encoder, that.encoder) &&
-					Objects.equals(decoder, that.decoder) &&
-					Objects.equals(contract, that.contract);
+			return this.loggerLevel == that.loggerLevel
+					&& Objects.equals(this.connectTimeout, that.connectTimeout)
+					&& Objects.equals(this.readTimeout, that.readTimeout)
+					&& Objects.equals(this.retryer, that.retryer)
+					&& Objects.equals(this.errorDecoder, that.errorDecoder)
+					&& Objects.equals(this.requestInterceptors, that.requestInterceptors)
+					&& Objects.equals(this.decode404, that.decode404)
+					&& Objects.equals(this.encoder, that.encoder)
+					&& Objects.equals(this.decoder, that.decoder)
+					&& Objects.equals(this.contract, that.contract);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer,
-					errorDecoder, requestInterceptors, decode404, encoder, decoder, contract);
+			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout,
+					this.retryer, this.errorDecoder, this.requestInterceptors,
+					this.decode404, this.encoder, this.decoder, this.contract);
 		}
+
 	}
 
 }

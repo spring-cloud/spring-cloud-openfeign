@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,17 +39,17 @@ import static feign.Request.HttpMethod.POST;
 @ClassPathExclusions("protobuf-*.jar")
 public class ProtobufNotInClasspathTest {
 
-    @Test
-    public void testEncodeWhenProtobufNotInClasspath() {
-        ObjectFactory<HttpMessageConverters> converters = new ObjectFactory<HttpMessageConverters>() {
-            @Override
-            public HttpMessageConverters getObject() throws BeansException {
-                return new HttpMessageConverters(new StringHttpMessageConverter());
-            }
-        };
-        RequestTemplate requestTemplate = new RequestTemplate();
-        requestTemplate.method(POST);
-        new SpringEncoder(converters).encode("a=b", String.class, requestTemplate);
-    }
+	@Test
+	public void testEncodeWhenProtobufNotInClasspath() {
+		ObjectFactory<HttpMessageConverters> converters = new ObjectFactory<HttpMessageConverters>() {
+			@Override
+			public HttpMessageConverters getObject() throws BeansException {
+				return new HttpMessageConverters(new StringHttpMessageConverter());
+			}
+		};
+		RequestTemplate requestTemplate = new RequestTemplate();
+		requestTemplate.method(POST);
+		new SpringEncoder(converters).encode("a=b", String.class, requestTemplate);
+	}
 
 }

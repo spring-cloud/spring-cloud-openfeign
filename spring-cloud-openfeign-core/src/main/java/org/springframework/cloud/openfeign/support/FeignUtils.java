@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,11 @@ import static java.util.Optional.ofNullable;
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  */
-public class FeignUtils {
+public final class FeignUtils {
+
+	private FeignUtils() {
+		throw new IllegalStateException("Can't instantiate a utility class");
+	}
 
 	static HttpHeaders getHttpHeaders(Map<String, Collection<String>> headers) {
 		HttpHeaders httpHeaders = new HttpHeaders();

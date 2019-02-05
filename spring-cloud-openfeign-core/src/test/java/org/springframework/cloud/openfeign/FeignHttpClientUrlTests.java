@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,28 +12,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
 import java.lang.reflect.Field;
 import java.util.Objects;
 
+import feign.Client;
+import feign.Feign;
+import feign.Target;
+import feign.httpclient.ApacheHttpClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,22 +43,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import feign.Client;
-import feign.Feign;
-import feign.Target;
-import feign.httpclient.ApacheHttpClient;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 /**
  * @author Spencer Gibb
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignHttpClientUrlTests.TestConfig.class, webEnvironment = WebEnvironment.DEFINED_PORT, value = {
+@SpringBootTest(classes = FeignHttpClientUrlTests.TestConfig.class, webEnvironment = DEFINED_PORT, value = {
 		"spring.application.name=feignclienturltest", "feign.hystrix.enabled=false",
 		"feign.okhttp.enabled=false" })
 @DirtiesContext
 public class FeignHttpClientUrlTests {
 
 	static int port;
+
+	@Autowired
+	BeanUrlClientNoProtocol beanClientNoProtocol;
+
+	@Autowired
+	private UrlClient urlClient;
+
+	@Autowired
+	private BeanUrlClient beanClient;
 
 	@BeforeClass
 	public static void beforeClass() {
@@ -74,37 +78,61 @@ public class FeignHttpClientUrlTests {
 		System.clearProperty("server.port");
 	}
 
-	@Autowired
-	private UrlClient urlClient;
+	@Test
+	public void testUrlHttpClient() {
+		assertThat(this.urlClient).as("UrlClient was null").isNotNull();
+		Hello hello = this.urlClient.getHello();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match")
+				.isEqualTo(new Hello("hello world 1"));
+	}
 
-	@Autowired
-	private BeanUrlClient beanClient;
+	@Test
+	public void testBeanUrl() {
+		Hello hello = this.beanClient.getHello();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match")
+				.isEqualTo(new Hello("hello world 1"));
+	}
 
-	@Autowired BeanUrlClientNoProtocol beanClientNoProtocol;
+	@Test
+	public void testBeanUrlNoProtocol() {
+		Hello hello = this.beanClientNoProtocol.getHello();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match")
+				.isEqualTo(new Hello("hello world 1"));
+	}
 
 	// this tests that
 	@FeignClient(name = "localappurl", url = "http://localhost:${server.port}/")
 	protected interface UrlClient {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		Hello getHello();
+
 	}
 
 	@FeignClient(name = "beanappurl", url = "#{SERVER_URL}path")
 	protected interface BeanUrlClient {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		Hello getHello();
+
 	}
 
 	@FeignClient(name = "beanappurlnoprotocol", url = "#{SERVER_URL_NO_PROTOCOL}path")
 	protected interface BeanUrlClientNoProtocol {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		Hello getHello();
+
 	}
 
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
-	@EnableFeignClients(clients = { UrlClient.class, BeanUrlClient.class, BeanUrlClientNoProtocol.class })
+	@EnableFeignClients(clients = { UrlClient.class, BeanUrlClient.class,
+			BeanUrlClientNoProtocol.class })
 	@Import(NoSecurityConfiguration.class)
 	protected static class TestConfig {
 
@@ -118,12 +146,12 @@ public class FeignHttpClientUrlTests {
 			return getHello();
 		}
 
-		@Bean(name="SERVER_URL")
+		@Bean(name = "SERVER_URL")
 		public String serverUrl() {
 			return "http://localhost:" + port + "/";
 		}
 
-		@Bean(name="SERVER_URL_NO_PROTOCOL")
+		@Bean(name = "SERVER_URL_NO_PROTOCOL")
 		public String serverUrlNoProtocol() {
 			return "localhost:" + port + "/";
 		}
@@ -139,8 +167,8 @@ public class FeignHttpClientUrlTests {
 					ReflectionUtils.makeAccessible(field);
 					Client client = (Client) ReflectionUtils.getField(field, feign);
 					if (target.name().equals("localappurl")) {
-						assertThat("client was wrong type", client,
-								is(instanceOf(ApacheHttpClient.class)));
+						assertThat(client).isInstanceOf(ApacheHttpClient.class)
+								.as("client was wrong type");
 					}
 					return feign.target(target);
 				}
@@ -149,29 +177,8 @@ public class FeignHttpClientUrlTests {
 
 	}
 
-	@Test
-	public void testUrlHttpClient() {
-		assertNotNull("UrlClient was null", this.urlClient);
-		Hello hello = this.urlClient.getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", new Hello("hello world 1"), hello);
-	}
-
-	@Test
-	public void testBeanUrl() {
-		Hello hello = this.beanClient.getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", new Hello("hello world 1"), hello);
-	}
-
-	@Test
-	public void testBeanUrlNoProtocol() {
-		Hello hello = this.beanClientNoProtocol.getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", new Hello("hello world 1"), hello);
-	}
-
 	public static class Hello {
+
 		private String message;
 
 		public Hello() {
@@ -182,7 +189,7 @@ public class FeignHttpClientUrlTests {
 		}
 
 		public String getMessage() {
-			return message;
+			return this.message;
 		}
 
 		public void setMessage(String message) {
@@ -191,15 +198,21 @@ public class FeignHttpClientUrlTests {
 
 		@Override
 		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
 			Hello that = (Hello) o;
-			return Objects.equals(message, that.message);
+			return Objects.equals(this.message, that.message);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(message);
+			return Objects.hash(this.message);
 		}
+
 	}
+
 }

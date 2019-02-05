@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.openfeign.ribbon;
 
 import java.io.ByteArrayInputStream;
@@ -23,22 +24,26 @@ import feign.Response;
 import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
 
 /**
- * A {@link RetryableStatusCodeException} for {@link Response}s
+ * A {@link RetryableStatusCodeException} for {@link Response}s.
+ *
  * @author Ryan Baxter
  */
 public class RibbonResponseStatusCodeException extends RetryableStatusCodeException {
-	private Response response;
 
-	public RibbonResponseStatusCodeException(String serviceId, Response response, byte[] body, URI uri) {
+	private final Response response;
+
+	public RibbonResponseStatusCodeException(String serviceId, Response response,
+			byte[] body, URI uri) {
 		super(serviceId, response.status(), response, uri);
-		this.response = Response.builder().body(new ByteArrayInputStream(body), body.length)
+		this.response = Response.builder()
+				.body(new ByteArrayInputStream(body), body.length)
 				.headers(response.headers()).reason(response.reason())
 				.status(response.status()).request(response.request()).build();
 	}
 
 	@Override
 	public Response getResponse() {
-		return response;
+		return this.response;
 	}
 
 }

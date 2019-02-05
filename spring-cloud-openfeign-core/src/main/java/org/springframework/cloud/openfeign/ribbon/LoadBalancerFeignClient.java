@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,10 @@ package org.springframework.cloud.openfeign.ribbon;
 import java.io.IOException;
 import java.net.URI;
 
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-
 import com.netflix.client.ClientException;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
-
 import feign.Client;
 import feign.Request;
 import feign.Response;
@@ -41,15 +38,35 @@ public class LoadBalancerFeignClient implements Client {
 	static final Request.Options DEFAULT_OPTIONS = new Request.Options();
 
 	private final Client delegate;
+
 	private CachingSpringLoadBalancerFactory lbClientFactory;
+
 	private SpringClientFactory clientFactory;
 
 	public LoadBalancerFeignClient(Client delegate,
-								   CachingSpringLoadBalancerFactory lbClientFactory,
-								   SpringClientFactory clientFactory) {
+			CachingSpringLoadBalancerFactory lbClientFactory,
+			SpringClientFactory clientFactory) {
 		this.delegate = delegate;
 		this.lbClientFactory = lbClientFactory;
 		this.clientFactory = clientFactory;
+	}
+
+	static URI cleanUrl(String originalUrl, String host) {
+		String newUrl = originalUrl;
+		if (originalUrl.startsWith("https://")) {
+			newUrl = originalUrl.substring(0, 8)
+					+ originalUrl.substring(8 + host.length());
+		}
+		else if (originalUrl.startsWith("http")) {
+			newUrl = originalUrl.substring(0, 7)
+					+ originalUrl.substring(7 + host.length());
+		}
+		StringBuffer buffer = new StringBuffer(newUrl);
+		if ((newUrl.startsWith("https://") && newUrl.length() == 8)
+				|| (newUrl.startsWith("http://") && newUrl.length() == 7)) {
+			buffer.append("/");
+		}
+		return URI.create(buffer.toString());
 	}
 
 	@Override
@@ -62,8 +79,8 @@ public class LoadBalancerFeignClient implements Client {
 					this.delegate, request, uriWithoutHost);
 
 			IClientConfig requestConfig = getClientConfig(options, clientName);
-			return lbClient(clientName).executeWithLoadBalancer(ribbonRequest,
-					requestConfig).toResponse();
+			return lbClient(clientName)
+					.executeWithLoadBalancer(ribbonRequest, requestConfig).toResponse();
 		}
 		catch (ClientException e) {
 			IOException io = findIOException(e);
@@ -78,7 +95,8 @@ public class LoadBalancerFeignClient implements Client {
 		IClientConfig requestConfig;
 		if (options == DEFAULT_OPTIONS) {
 			requestConfig = this.clientFactory.getClientConfig(clientName);
-		} else {
+		}
+		else {
 			requestConfig = new FeignOptionsClientConfig(options);
 		}
 		return requestConfig;
@@ -98,28 +116,13 @@ public class LoadBalancerFeignClient implements Client {
 		return this.delegate;
 	}
 
-	static URI cleanUrl(String originalUrl, String host) {
-		String newUrl = originalUrl;
-		if(originalUrl.startsWith("https://")) {
-			newUrl = originalUrl.substring(0, 8) + originalUrl.substring(8 + host.length());
-		} else if(originalUrl.startsWith("http")) {
-			newUrl = originalUrl.substring(0, 7) + originalUrl.substring(7 + host.length());
-		}
-		StringBuffer buffer = new StringBuffer(newUrl);
-		if((newUrl.startsWith("https://") && newUrl.length() == 8) ||
-				(newUrl.startsWith("http://") && newUrl.length() == 7)) {
-			buffer.append("/");
-		}
-		return URI.create(buffer.toString());
-	}
-
 	private FeignLoadBalancer lbClient(String clientName) {
 		return this.lbClientFactory.create(clientName);
 	}
 
 	static class FeignOptionsClientConfig extends DefaultClientConfigImpl {
 
-		public FeignOptionsClientConfig(Request.Options options) {
+		FeignOptionsClientConfig(Request.Options options) {
 			setProperty(CommonClientConfigKey.ConnectTimeout,
 					options.connectTimeoutMillis());
 			setProperty(CommonClientConfigKey.ReadTimeout, options.readTimeoutMillis());
@@ -136,4 +139,5 @@ public class LoadBalancerFeignClient implements Client {
 		}
 
 	}
+
 }

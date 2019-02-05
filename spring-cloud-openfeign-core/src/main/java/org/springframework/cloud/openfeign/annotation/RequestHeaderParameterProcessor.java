@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import feign.MethodMetadata;
+
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.web.bind.annotation.RequestHeader;
-
-import feign.MethodMetadata;
 
 import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
@@ -46,13 +46,15 @@ public class RequestHeaderParameterProcessor implements AnnotatedParameterProces
 	}
 
 	@Override
-	public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
+	public boolean processArgument(AnnotatedParameterContext context,
+			Annotation annotation, Method method) {
 		int parameterIndex = context.getParameterIndex();
 		Class<?> parameterType = method.getParameterTypes()[parameterIndex];
 		MethodMetadata data = context.getMethodMetadata();
 
 		if (Map.class.isAssignableFrom(parameterType)) {
-			checkState(data.headerMapIndex() == null, "Header map can only be present once.");
+			checkState(data.headerMapIndex() == null,
+					"Header map can only be present once.");
 			data.headerMapIndex(parameterIndex);
 
 			return true;
@@ -63,8 +65,10 @@ public class RequestHeaderParameterProcessor implements AnnotatedParameterProces
 				"RequestHeader.value() was empty on parameter %s", parameterIndex);
 		context.setParameterName(name);
 
-		Collection<String> header = context.setTemplateParameter(name, data.template().headers().get(name));
+		Collection<String> header = context.setTemplateParameter(name,
+				data.template().headers().get(name));
 		data.template().header(name, header);
 		return true;
 	}
+
 }

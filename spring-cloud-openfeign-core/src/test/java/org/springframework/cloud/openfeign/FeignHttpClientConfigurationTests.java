@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,14 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
+
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Field;
+
 import javax.net.ssl.SSLContextSpi;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
+
 import org.apache.http.config.Lookup;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -28,6 +30,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
@@ -36,8 +39,7 @@ import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ReflectionUtils;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
@@ -50,8 +52,8 @@ public class FeignHttpClientConfigurationTests {
 
 	@Before
 	public void setUp() {
-		context = new SpringApplicationBuilder()
-				.properties("debug=true","feign.httpclient.disableSslValidation=true")
+		this.context = new SpringApplicationBuilder()
+				.properties("debug=true", "feign.httpclient.disableSslValidation=true")
 				.web(WebApplicationType.NONE)
 				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
 				.run();
@@ -59,29 +61,38 @@ public class FeignHttpClientConfigurationTests {
 
 	@After
 	public void tearDown() {
-		if(context != null) {
-			context.close();
+		if (this.context != null) {
+			this.context.close();
 		}
 	}
 
 	@Test
 	public void disableSslTest() throws Exception {
-		HttpClientConnectionManager connectionManager = context.getBean(HttpClientConnectionManager.class);
-		Lookup<ConnectionSocketFactory> socketFactoryRegistry = getConnectionSocketFactoryLookup(connectionManager);
-		assertNotNull(socketFactoryRegistry.lookup("https"));
-		assertNull(this.getX509TrustManager(socketFactoryRegistry).getAcceptedIssuers());
+		HttpClientConnectionManager connectionManager = this.context
+				.getBean(HttpClientConnectionManager.class);
+		Lookup<ConnectionSocketFactory> socketFactoryRegistry = getConnectionSocketFactoryLookup(
+				connectionManager);
+		assertThat(socketFactoryRegistry.lookup("https")).isNotNull();
+		assertThat(this.getX509TrustManager(socketFactoryRegistry).getAcceptedIssuers())
+				.isNull();
 	}
 
-	private Lookup<ConnectionSocketFactory> getConnectionSocketFactoryLookup(HttpClientConnectionManager connectionManager) {
-		DefaultHttpClientConnectionOperator connectionOperator = (DefaultHttpClientConnectionOperator)this.getField(connectionManager, "connectionOperator");
-		return (Lookup)this.getField(connectionOperator, "socketFactoryRegistry");
+	private Lookup<ConnectionSocketFactory> getConnectionSocketFactoryLookup(
+			HttpClientConnectionManager connectionManager) {
+		DefaultHttpClientConnectionOperator connectionOperator = (DefaultHttpClientConnectionOperator) this
+				.getField(connectionManager, "connectionOperator");
+		return (Lookup) this.getField(connectionOperator, "socketFactoryRegistry");
 	}
 
-	private X509TrustManager getX509TrustManager(Lookup<ConnectionSocketFactory> socketFactoryRegistry) {
-		ConnectionSocketFactory connectionSocketFactory = (ConnectionSocketFactory)socketFactoryRegistry.lookup("https");
-		SSLSocketFactory sslSocketFactory = (SSLSocketFactory)this.getField(connectionSocketFactory, "socketfactory");
-		SSLContextSpi sslContext = (SSLContextSpi)this.getField(sslSocketFactory, "context");
-		return (X509TrustManager)this.getField(sslContext, "trustManager");
+	private X509TrustManager getX509TrustManager(
+			Lookup<ConnectionSocketFactory> socketFactoryRegistry) {
+		ConnectionSocketFactory connectionSocketFactory = (ConnectionSocketFactory) socketFactoryRegistry
+				.lookup("https");
+		SSLSocketFactory sslSocketFactory = (SSLSocketFactory) this
+				.getField(connectionSocketFactory, "socketfactory");
+		SSLContextSpi sslContext = (SSLContextSpi) this.getField(sslSocketFactory,
+				"context");
+		return (X509TrustManager) this.getField(sslContext, "trustManager");
 	}
 
 	protected <T> Object getField(Object target, String name) {

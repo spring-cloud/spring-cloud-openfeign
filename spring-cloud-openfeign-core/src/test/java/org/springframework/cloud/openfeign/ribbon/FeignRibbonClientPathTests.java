@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -40,21 +39,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
  * @author Venil Noronha
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignRibbonClientPathTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,value = {
-		"spring.application.name=feignribbonclientpathtest",
-		"feign.okhttp.enabled=false",
-		"feign.httpclient.enabled=false",
-		"feign.hystrix.enabled=false",
+@SpringBootTest(classes = FeignRibbonClientPathTests.Application.class, webEnvironment = RANDOM_PORT, value = {
+		"spring.application.name=feignribbonclientpathtest", "feign.okhttp.enabled=false",
+		"feign.httpclient.enabled=false", "feign.hystrix.enabled=false",
 		"test.path.prefix=/base/path" // For pathWithPlaceholder test
-	}
-)
+})
 @DirtiesContext
 public class FeignRibbonClientPathTests {
 
@@ -72,50 +68,9 @@ public class FeignRibbonClientPathTests {
 
 	@Autowired
 	private TestClient4 testClient4;
-	
+
 	@Autowired
 	private TestClient5 testClient5;
-
-	protected interface TestClient {
-
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		Hello getHello();
-
-	}
-
-	@FeignClient(name = "localapp", path = "/base/path")
-	protected interface TestClient1 extends TestClient { }
-
-	@FeignClient(name = "localapp1", path = "base/path")
-	protected interface TestClient2 extends TestClient { }
-
-	@FeignClient(name = "localapp2", path = "base/path/")
-	protected interface TestClient3 extends TestClient { }
-
-	@FeignClient(name = "localapp3", path = "/base/path/")
-	protected interface TestClient4 extends TestClient { }
-
-	@FeignClient(name = "localapp4", path = "${test.path.prefix}")
-	protected interface TestClient5 extends TestClient { }
-	
-	@Configuration
-	@EnableAutoConfiguration
-	@RestController
-	@RequestMapping("/base/path")
-	@EnableFeignClients(clients = {
-		TestClient1.class, TestClient2.class, TestClient3.class, TestClient4.class,
-		TestClient5.class
-	})
-	@RibbonClients(defaultConfiguration = LocalRibbonClientConfiguration.class)
-	@Import(NoSecurityConfiguration.class)
-	public static class Application {
-
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		public Hello getHello() {
-			return new Hello("hello world");
-		}
-
-	}
 
 	@Test
 	public void pathWithLeadingButNotTrailingSlash() {
@@ -144,27 +99,79 @@ public class FeignRibbonClientPathTests {
 
 	private void testClientPath(TestClient testClient) {
 		Hello hello = testClient.getHello();
-		assertNotNull("Object returned was null", hello);
-		assertEquals("Response object value didn't match", "hello world",
-				hello.getMessage());
+		assertThat(hello).as("Object returned was null").isNotNull();
+		assertThat(hello.getMessage()).as("Response object value didn't match")
+				.isEqualTo("hello world");
+	}
+
+	protected interface TestClient {
+
+		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		Hello getHello();
+
+	}
+
+	@FeignClient(name = "localapp", path = "/base/path")
+	protected interface TestClient1 extends TestClient {
+
+	}
+
+	@FeignClient(name = "localapp1", path = "base/path")
+	protected interface TestClient2 extends TestClient {
+
+	}
+
+	@FeignClient(name = "localapp2", path = "base/path/")
+	protected interface TestClient3 extends TestClient {
+
+	}
+
+	@FeignClient(name = "localapp3", path = "/base/path/")
+	protected interface TestClient4 extends TestClient {
+
+	}
+
+	@FeignClient(name = "localapp4", path = "${test.path.prefix}")
+	protected interface TestClient5 extends TestClient {
+
+	}
+
+	@Configuration
+	@EnableAutoConfiguration
+	@RestController
+	@RequestMapping("/base/path")
+	@EnableFeignClients(clients = { TestClient1.class, TestClient2.class,
+			TestClient3.class, TestClient4.class, TestClient5.class })
+	@RibbonClients(defaultConfiguration = LocalRibbonClientConfiguration.class)
+	@Import(NoSecurityConfiguration.class)
+	public static class Application {
+
+		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		public Hello getHello() {
+			return new Hello("hello world");
+		}
+
 	}
 
 	public static class Hello {
+
 		private String message;
 
-		public Hello() {}
+		public Hello() {
+		}
 
 		public Hello(String message) {
 			this.message = message;
 		}
 
 		public String getMessage() {
-			return message;
+			return this.message;
 		}
 
 		public void setMessage(String message) {
 			this.message = message;
 		}
+
 	}
 
 	@Configuration

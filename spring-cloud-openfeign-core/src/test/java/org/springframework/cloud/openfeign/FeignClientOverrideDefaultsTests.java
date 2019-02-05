@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,30 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
-import org.springframework.cloud.openfeign.support.SpringEncoder;
-import org.springframework.cloud.openfeign.support.SpringMvcContract;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import feign.Contract;
 import feign.Feign;
@@ -52,6 +31,24 @@ import feign.codec.ErrorDecoder;
 import feign.hystrix.HystrixFeign;
 import feign.optionals.OptionalDecoder;
 import feign.slf4j.Slf4jLogger;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
+import org.springframework.cloud.openfeign.support.SpringEncoder;
+import org.springframework.cloud.openfeign.support.SpringMvcContract;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
@@ -72,8 +69,8 @@ public class FeignClientOverrideDefaultsTests {
 
 	@Test
 	public void clientsAvailable() {
-		assertNotNull(this.foo);
-		assertNotNull(this.bar);
+		assertThat(this.foo).isNotNull();
+		assertThat(this.bar).isNotNull();
 	}
 
 	@Test
@@ -102,45 +99,62 @@ public class FeignClientOverrideDefaultsTests {
 
 	@Test
 	public void overrideLoggerLevel() {
-		assertNull(this.context.getInstance("foo", Logger.Level.class));
-		assertEquals(Logger.Level.HEADERS,
-				this.context.getInstance("bar", Logger.Level.class));
+		assertThat(this.context.getInstance("foo", Logger.Level.class)).isNull();
+		assertThat(this.context.getInstance("bar", Logger.Level.class))
+				.isEqualTo(Logger.Level.HEADERS);
 	}
 
 	@Test
 	public void overrideRetryer() {
-		assertEquals(Retryer.NEVER_RETRY, this.context.getInstance("foo", Retryer.class));
+		assertThat(this.context.getInstance("foo", Retryer.class))
+				.isEqualTo(Retryer.NEVER_RETRY);
 		Retryer.Default.class.cast(this.context.getInstance("bar", Retryer.class));
 	}
 
 	@Test
 	public void overrideErrorDecoder() {
-		assertNull(this.context.getInstance("foo", ErrorDecoder.class));
+		assertThat(this.context.getInstance("foo", ErrorDecoder.class)).isNull();
 		ErrorDecoder.Default.class
 				.cast(this.context.getInstance("bar", ErrorDecoder.class));
 	}
 
 	@Test
 	public void overrideBuilder() {
-		HystrixFeign.Builder.class.cast(this.context.getInstance("foo", Feign.Builder.class));
-		Feign.Builder.class
-				.cast(this.context.getInstance("bar", Feign.Builder.class));
+		HystrixFeign.Builder.class
+				.cast(this.context.getInstance("foo", Feign.Builder.class));
+		Feign.Builder.class.cast(this.context.getInstance("bar", Feign.Builder.class));
 	}
 
 	@Test
 	public void overrideRequestOptions() {
-		assertNull(this.context.getInstance("foo", Request.Options.class));
+		assertThat(this.context.getInstance("foo", Request.Options.class)).isNull();
 		Request.Options options = this.context.getInstance("bar", Request.Options.class);
-		assertEquals(1, options.connectTimeoutMillis());
-		assertEquals(1, options.readTimeoutMillis());
+		assertThat(options.connectTimeoutMillis()).isEqualTo(1);
+		assertThat(options.readTimeoutMillis()).isEqualTo(1);
 	}
 
 	@Test
 	public void addRequestInterceptor() {
-		assertEquals(1,
-				this.context.getInstances("foo", RequestInterceptor.class).size());
-		assertEquals(2,
-				this.context.getInstances("bar", RequestInterceptor.class).size());
+		assertThat(this.context.getInstances("foo", RequestInterceptor.class).size())
+				.isEqualTo(1);
+		assertThat(this.context.getInstances("bar", RequestInterceptor.class).size())
+				.isEqualTo(2);
+	}
+
+	@FeignClient(name = "foo", url = "http://foo", configuration = FooConfiguration.class)
+	interface FooClient {
+
+		@RequestLine("GET /")
+		String get();
+
+	}
+
+	@FeignClient(name = "bar", url = "http://bar", configuration = BarConfiguration.class)
+	interface BarClient {
+
+		@RequestMapping(value = "/", method = RequestMethod.GET)
+		String get();
+
 	}
 
 	@Configuration
@@ -148,6 +162,7 @@ public class FeignClientOverrideDefaultsTests {
 	@Import({ PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
 			FeignAutoConfiguration.class })
 	protected static class TestConfiguration {
+
 		@Bean
 		RequestInterceptor defaultRequestInterceptor() {
 			return new RequestInterceptor() {
@@ -156,16 +171,11 @@ public class FeignClientOverrideDefaultsTests {
 				}
 			};
 		}
-	}
-
-	@FeignClient(name = "foo", url = "http://foo", configuration = FooConfiguration.class)
-	interface FooClient {
-		@RequestLine("GET /")
-		String get();
 
 	}
 
 	public static class FooConfiguration {
+
 		@Bean
 		public Decoder feignDecoder() {
 			return new Decoder.Default();
@@ -190,15 +200,11 @@ public class FeignClientOverrideDefaultsTests {
 		public Feign.Builder feignBuilder() {
 			return HystrixFeign.builder();
 		}
-	}
 
-	@FeignClient(name = "bar", url = "http://bar", configuration = BarConfiguration.class)
-	interface BarClient {
-		@RequestMapping(value = "/", method = RequestMethod.GET)
-		String get();
 	}
 
 	public static class BarConfiguration {
+
 		@Bean
 		Logger.Level feignLevel() {
 			return Logger.Level.HEADERS;
@@ -223,5 +229,7 @@ public class FeignClientOverrideDefaultsTests {
 		RequestInterceptor feignRequestInterceptor() {
 			return new BasicAuthRequestInterceptor("user", "pass");
 		}
+
 	}
+
 }

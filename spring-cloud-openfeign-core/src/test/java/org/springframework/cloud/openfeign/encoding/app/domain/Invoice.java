@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public class Invoice {
 	private BigDecimal amount;
 
 	public String getTitle() {
-		return title;
+		return this.title;
 	}
 
 	public void setTitle(String title) {
@@ -38,10 +38,11 @@ public class Invoice {
 	}
 
 	public BigDecimal getAmount() {
-		return amount;
+		return this.amount;
 	}
 
 	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
+
 }

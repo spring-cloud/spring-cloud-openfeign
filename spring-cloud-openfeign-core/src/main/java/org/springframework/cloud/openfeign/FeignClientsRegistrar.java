@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,8 +58,8 @@ import org.springframework.util.StringUtils;
  * @author Venil Noronha
  * @author Gang Li
  */
-class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
-		ResourceLoaderAware, EnvironmentAware {
+class FeignClientsRegistrar
+		implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
 	// patterned after Spring Integration IntegrationComponentScanRegistrar
 	// and RibbonClientsConfigurationRegistgrar
@@ -68,7 +68,68 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 
 	private Environment environment;
 
-	public FeignClientsRegistrar() {
+	FeignClientsRegistrar() {
+	}
+
+	static void validateFallback(final Class clazz) {
+		Assert.isTrue(!clazz.isInterface(),
+				"Fallback class must implement the interface annotated by @FeignClient");
+	}
+
+	static void validateFallbackFactory(final Class clazz) {
+		Assert.isTrue(!clazz.isInterface(), "Fallback factory must produce instances "
+				+ "of fallback classes that implement the interface annotated by @FeignClient");
+	}
+
+	static String getName(String name) {
+		if (!StringUtils.hasText(name)) {
+			return "";
+		}
+
+		String host = null;
+		try {
+			String url;
+			if (!name.startsWith("http://") && !name.startsWith("https://")) {
+				url = "http://" + name;
+			}
+			else {
+				url = name;
+			}
+			host = new URI(url).getHost();
+
+		}
+		catch (URISyntaxException e) {
+		}
+		Assert.state(host != null, "Service id not legal hostname (" + name + ")");
+		return name;
+	}
+
+	static String getUrl(String url) {
+		if (StringUtils.hasText(url) && !(url.startsWith("#{") && url.contains("}"))) {
+			if (!url.contains("://")) {
+				url = "http://" + url;
+			}
+			try {
+				new URL(url);
+			}
+			catch (MalformedURLException e) {
+				throw new IllegalArgumentException(url + " is malformed", e);
+			}
+		}
+		return url;
+	}
+
+	static String getPath(String path) {
+		if (StringUtils.hasText(path)) {
+			path = path.trim();
+			if (!path.startsWith("/")) {
+				path = "/" + path;
+			}
+			if (path.endsWith("/")) {
+				path = path.substring(0, path.length() - 1);
+			}
+		}
+		return path;
 	}
 
 	@Override
@@ -182,7 +243,8 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		String alias = contextId + "FeignClient";
 		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
 
-		boolean primary = (Boolean)attributes.get("primary"); // has a default, won't be null
+		boolean primary = (Boolean) attributes.get("primary"); // has a default, won't be
+																// null
 
 		beanDefinition.setPrimary(primary);
 
@@ -202,19 +264,6 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		// FIXME annotation.getAliasedString("name", FeignClient.class, null);
 		validateFallback(annotation.getClass("fallback"));
 		validateFallbackFactory(annotation.getClass("fallbackFactory"));
-	}
-
-	static void validateFallback(final Class clazz) {
-		Assert.isTrue(
-			!clazz.isInterface(),
-			"Fallback class must implement the interface annotated by @FeignClient"
-		);
-	}
-
-	static void validateFallbackFactory(final Class clazz) {
-		Assert.isTrue(!clazz.isInterface(),
-			"Fallback factory must produce instances of fallback classes that implement the interface annotated by @FeignClient"
-		);
 	}
 
 	/* for testing */ String getName(Map<String, Object> attributes) {
@@ -239,28 +288,6 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		return getName(contextId);
 	}
 
-	static String getName(String name) {
-		if (!StringUtils.hasText(name)) {
-			return "";
-		}
-
-		String host = null;
-		try {
-			String url;
-			if (!name.startsWith("http://") && !name.startsWith("https://")) {
-				url = "http://" + name;
-			} else {
-				url = name;
-			}
-			host = new URI(url).getHost();
-
-		}
-		catch (URISyntaxException e) {
-		}
-		Assert.state(host != null, "Service id not legal hostname (" + name + ")");
-		return name;
-	}
-
 	private String resolve(String value) {
 		if (StringUtils.hasText(value)) {
 			return this.environment.resolvePlaceholders(value);
@@ -273,43 +300,16 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		return getUrl(url);
 	}
 
-	static String getUrl(String url) {
-		if (StringUtils.hasText(url) && !(url.startsWith("#{") && url.contains("}"))) {
-			if (!url.contains("://")) {
-				url = "http://" + url;
-			}
-			try {
-				new URL(url);
-			}
-			catch (MalformedURLException e) {
-				throw new IllegalArgumentException(url + " is malformed", e);
-			}
-		}
-		return url;
-	}
-
 	private String getPath(Map<String, Object> attributes) {
 		String path = resolve((String) attributes.get("path"));
 		return getPath(path);
 	}
 
-	static String getPath(String path) {
-		if (StringUtils.hasText(path)) {
-			path = path.trim();
-			if (!path.startsWith("/")) {
-				path = "/" + path;
-			}
-			if (path.endsWith("/")) {
-				path = path.substring(0, path.length() - 1);
-			}
-		}
-		return path;
-	}
-
 	protected ClassPathScanningCandidateComponentProvider getScanner() {
 		return new ClassPathScanningCandidateComponentProvider(false, this.environment) {
 			@Override
-			protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
+			protected boolean isCandidateComponent(
+					AnnotatedBeanDefinition beanDefinition) {
 				boolean isCandidate = false;
 				if (beanDefinition.getMetadata().isIndependent()) {
 					if (!beanDefinition.getMetadata().isAnnotation()) {
@@ -346,7 +346,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 		}
 		return basePackages;
 	}
-	
+
 	private String getQualifier(Map<String, Object> client) {
 		if (client == null) {
 			return null;
@@ -408,10 +408,9 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 
 		/**
 		 * Creates a new {@link AllTypeFilter} to match if all the given delegates match.
-		 *
 		 * @param delegates must not be {@literal null}.
 		 */
-		public AllTypeFilter(List<TypeFilter> delegates) {
+		AllTypeFilter(List<TypeFilter> delegates) {
 			Assert.notNull(delegates, "This argument is required, it must not be null");
 			this.delegates = delegates;
 		}
@@ -428,5 +427,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 
 			return true;
 		}
+
 	}
+
 }
