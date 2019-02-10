@@ -12,7 +12,8 @@
 	<suppress files=".*LoadBalancerFeignClientOverrideTests.*" checks="LineLengthCheck" />
 	<suppress files=".*ProtobufSpringEncoderTest.*" checks="LineLengthCheck" />
 	<suppress files=".*ProtobufTest.*" checks="LineLengthCheck" />
-
+	<suppress files=".*FeignPageableEncodingTests.*" checks="LineLengthCheck" />
+	<suppress files=".*PageableEncoderTests.*" checks="LineLengthCheck" />
 	<!-- Important -->
 	<suppress files=".*HttpEncoding.*" checks="InterfaceIsTypeCheck" />
 </suppressions>

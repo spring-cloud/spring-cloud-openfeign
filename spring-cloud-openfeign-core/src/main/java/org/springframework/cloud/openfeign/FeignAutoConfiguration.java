@@ -218,4 +218,5 @@ public class FeignAutoConfiguration {
 		}
 
 	}
+
 }

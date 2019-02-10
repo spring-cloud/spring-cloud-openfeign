@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,6 @@
 
 package org.springframework.cloud.openfeign;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
@@ -29,7 +23,13 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.optionals.OptionalDecoder;
 import feign.slf4j.Slf4jLogger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
@@ -43,7 +43,7 @@ import org.springframework.context.annotation.Import;
  * @author Spencer Gibb
  */
 @RunWith(ModifiedClassPathRunner.class)
-@ClassPathExclusions({"spring-data-commons-*.jar"})
+@ClassPathExclusions({ "spring-data-commons-*.jar" })
 public class EnableFeignClientsTests {
 
 	private ConfigurableApplicationContext context;
@@ -57,16 +57,14 @@ public class EnableFeignClientsTests {
 
 	@After
 	public void tearDown() {
-		if(context != null) {
+		if (context != null) {
 			context.close();
 		}
 	}
 
-
 	@Test
 	public void decoderDefaultCorrect() {
-		OptionalDecoder.class
-				.cast(this.context.getBeansOfType(Decoder.class).get(0));
+		OptionalDecoder.class.cast(this.context.getBeansOfType(Decoder.class).get(0));
 	}
 
 	@Test
@@ -76,24 +74,21 @@ public class EnableFeignClientsTests {
 
 	@Test
 	public void loggerDefaultCorrect() {
-		Slf4jLogger.class.cast(this.context.getBeansOfType( Logger.class).get(0));
+		Slf4jLogger.class.cast(this.context.getBeansOfType(Logger.class).get(0));
 	}
 
 	@Test
 	public void contractDefaultCorrect() {
-		SpringMvcContract.class
-				.cast(this.context.getBeansOfType(Contract.class).get(0));
+		SpringMvcContract.class.cast(this.context.getBeansOfType(Contract.class).get(0));
 	}
 
 	@Test
 	public void builderDefaultCorrect() {
-		Feign.Builder.class
-				.cast(this.context.getBeansOfType(Feign.Builder.class).get(0));
+		Feign.Builder.class.cast(this.context.getBeansOfType(Feign.Builder.class).get(0));
 	}
 
 	@Configuration
-	@Import({ ArchaiusAutoConfiguration.class,
-			FeignAutoConfiguration.class })
+	@Import({ ArchaiusAutoConfiguration.class, FeignAutoConfiguration.class })
 	protected static class PlainConfiguration {
 
 	}

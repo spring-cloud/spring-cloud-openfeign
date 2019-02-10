@@ -16,11 +16,14 @@
 
 package org.springframework.cloud.openfeign.encoding;
 
+import java.util.Collections;
+
 import com.netflix.loadbalancer.BaseLoadBalancer;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -44,17 +47,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Collections;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests the pagination encoding.
  *
  * @author Charlie Mordant.
  */
-@SpringBootTest(classes = FeignPageableEncodingTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
+@SpringBootTest(classes = FeignPageableEncodingTests.Application.class,
+		webEnvironment = WebEnvironment.RANDOM_PORT, value = {
 		"feign.compression.request.enabled=true",
 		"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
 		"ribbon.OkToRetryOnAllOperations=false" })
@@ -68,17 +69,17 @@ public class FeignPageableEncodingTests {
 	public void testPageable() {
 
 		// given
-		Pageable pageable = PageRequest.of(0,10, Sort.Direction.ASC, "sortProperty");
+		Pageable pageable = PageRequest.of(0, 10, Sort.Direction.ASC, "sortProperty");
 
 		// when
 		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
 				.getInvoicesPaged(pageable);
 
 		// then
-		assertNotNull(response);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertNotNull(response.getBody());
-		assertEquals(pageable.getPageSize(), response.getBody().getSize());
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
 
 	}
 
@@ -86,8 +87,9 @@ public class FeignPageableEncodingTests {
 	@RibbonClient(name = "local", configuration = LocalRibbonClientConfiguration.class)
 	@SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
 	@EnableSpringDataWebSupport
-	@Import({NoSecurityConfiguration.class, FeignClientsConfiguration.class})
+	@Import({ NoSecurityConfiguration.class, FeignClientsConfiguration.class })
 	public static class Application {
+
 	}
 
 	@Configuration
@@ -103,6 +105,7 @@ public class FeignPageableEncodingTests {
 					Collections.singletonList(new Server("localhost", this.port)));
 			return balancer;
 		}
+
 	}
 
 }

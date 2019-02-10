@@ -25,8 +25,9 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * Scans for interfaces that declare they are feign clients (via {@link org.springframework.cloud.openfeign.FeignClient}
- * <code>@FeignClient</code>). Configures component scanning directives for use with
+ * Scans for interfaces that declare they are feign clients (via
+ * {@link org.springframework.cloud.openfeign.FeignClient} <code>@FeignClient</code>).
+ * Configures component scanning directives for use with
  * {@link org.springframework.context.annotation.Configuration}
  * <code>@Configuration</code> classes.
  *

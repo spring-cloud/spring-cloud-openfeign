@@ -35,7 +35,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface InvoiceClient {
 
 	@RequestMapping(value = "invoicesPaged", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<Page<Invoice>> getInvoicesPaged(org.springframework.data.domain.Pageable pageable);
+	ResponseEntity<Page<Invoice>> getInvoicesPaged(
+			org.springframework.data.domain.Pageable pageable);
 
 	@RequestMapping(value = "invoices", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<List<Invoice>> getInvoices();
