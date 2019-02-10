@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,15 @@ public class FeignClientBuilder {
 	}
 
 	public <T> Builder<T> forType(final Class<T> type, final String name) {
-		return new Builder<>(applicationContext, type, name);
+		return new Builder<>(this.applicationContext, type, name);
 	}
 
-	public static class Builder<T> {
+	/**
+	 * Builder of feign targets.
+	 *
+	 * @param <T> type of target
+	 */
+	public static final class Builder<T> {
 
 		private FeignClientFactoryBean feignClientFactoryBean;
 
@@ -95,5 +100,7 @@ public class FeignClientBuilder {
 		public <T> T build() {
 			return this.feignClientFactoryBean.getTarget();
 		}
+
 	}
+
 }

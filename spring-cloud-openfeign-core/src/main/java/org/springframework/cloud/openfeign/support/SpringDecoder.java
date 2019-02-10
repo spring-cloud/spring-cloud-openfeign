@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,18 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign.support;
-
-import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
+
+import feign.FeignException;
+import feign.Response;
+import feign.codec.DecodeException;
+import feign.codec.Decoder;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
@@ -32,10 +34,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.HttpMessageConverterExtractor;
 
-import feign.FeignException;
-import feign.Response;
-import feign.codec.DecodeException;
-import feign.codec.Decoder;
+import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
 
 /**
  * @author Spencer Gibb
@@ -63,7 +62,7 @@ public class SpringDecoder implements Decoder {
 				"type is not an instance of Class or ParameterizedType: " + type);
 	}
 
-	private class FeignResponseAdapter implements ClientHttpResponse {
+	private final class FeignResponseAdapter implements ClientHttpResponse {
 
 		private final Response response;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign.test;
@@ -57,7 +56,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -67,9 +65,8 @@ import static org.mockito.Mockito.mockingDetails;
  * @author Ryan Baxter
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(properties =
-		{"feign.okhttp.enabled: false",
-		"ribbon.eureka.enabled = false"})
+@SpringBootTest(properties = { "feign.okhttp.enabled: false",
+		"ribbon.eureka.enabled = false" })
 @DirtiesContext
 public class ApacheHttpClientConfigurationTests {
 
@@ -84,49 +81,65 @@ public class ApacheHttpClientConfigurationTests {
 
 	@Test
 	public void testFactories() {
-		assertThat(connectionManagerFactory).isInstanceOf(ApacheHttpClientConnectionManagerFactory.class);
-		assertThat(connectionManagerFactory).isInstanceOf(ApacheHttpClientConfigurationTestApp.MyApacheHttpClientConnectionManagerFactory.class);
-		assertThat(httpClientFactory).isInstanceOf(ApacheHttpClientFactory.class);
-		assertThat(httpClientFactory).isInstanceOf(ApacheHttpClientConfigurationTestApp.MyApacheHttpClientFactory.class);
+		assertThat(this.connectionManagerFactory)
+				.isInstanceOf(ApacheHttpClientConnectionManagerFactory.class);
+		assertThat(this.connectionManagerFactory).isInstanceOf(
+				ApacheHttpClientConfigurationTestApp.MyApacheHttpClientConnectionManagerFactory.class);
+		assertThat(this.httpClientFactory).isInstanceOf(ApacheHttpClientFactory.class);
+		assertThat(this.httpClientFactory).isInstanceOf(
+				ApacheHttpClientConfigurationTestApp.MyApacheHttpClientFactory.class);
 	}
 
 	@Test
 	public void testHttpClientWithFeign() {
-		Client delegate = feignClient.getDelegate();
-		assertTrue(ApacheHttpClient.class.isInstance(delegate));
-		ApacheHttpClient apacheHttpClient = (ApacheHttpClient)delegate;
+		Client delegate = this.feignClient.getDelegate();
+		assertThat(ApacheHttpClient.class.isInstance(delegate)).isTrue();
+		ApacheHttpClient apacheHttpClient = (ApacheHttpClient) delegate;
 		HttpClient httpClient = getField(apacheHttpClient, "client");
 		MockingDetails httpClientDetails = mockingDetails(httpClient);
-		assertTrue(httpClientDetails.isMock());
+		assertThat(httpClientDetails.isMock()).isTrue();
 	}
 
 	protected <T> T getField(Object target, String name) {
 		Field field = ReflectionUtils.findField(target.getClass(), name);
 		ReflectionUtils.makeAccessible(field);
 		Object value = ReflectionUtils.getField(field, target);
-		return (T)value;
+		return (T) value;
 	}
 
 	@SpringBootConfiguration
 	@EnableAutoConfiguration
-	@EnableFeignClients(clients = {ApacheHttpClientConfigurationTestApp.FooClient.class})
+	@EnableFeignClients(clients = {
+			ApacheHttpClientConfigurationTestApp.FooClient.class })
 	static class ApacheHttpClientConfigurationTestApp {
 
-		static class MyApacheHttpClientConnectionManagerFactory extends DefaultApacheHttpClientConnectionManagerFactory {
+		@FeignClient(name = "foo", serviceId = "foo")
+		interface FooClient {
+
+		}
+
+		static class MyApacheHttpClientConnectionManagerFactory
+				extends DefaultApacheHttpClientConnectionManagerFactory {
+
 			@Override
-			public HttpClientConnectionManager newConnectionManager(boolean disableSslValidation, int maxTotalConnections, int maxConnectionsPerRoute, long timeToLive, TimeUnit timeUnit, RegistryBuilder registry) {
+			public HttpClientConnectionManager newConnectionManager(
+					boolean disableSslValidation, int maxTotalConnections,
+					int maxConnectionsPerRoute, long timeToLive, TimeUnit timeUnit,
+					RegistryBuilder registry) {
 				return mock(PoolingHttpClientConnectionManager.class);
 			}
+
 		}
 
 		static class MyApacheHttpClientFactory extends DefaultApacheHttpClientFactory {
-			public MyApacheHttpClientFactory(HttpClientBuilder builder) {
+
+			MyApacheHttpClientFactory(HttpClientBuilder builder) {
 				super(builder);
 			}
 
 			@Override
 			public HttpClientBuilder createBuilder() {
-				CloseableHttpClient client =  mock(CloseableHttpClient.class);
+				CloseableHttpClient client = mock(CloseableHttpClient.class);
 				CloseableHttpResponse response = mock(CloseableHttpResponse.class);
 				StatusLine statusLine = mock(StatusLine.class);
 				doReturn(200).when(statusLine).getStatusCode();
@@ -134,21 +147,25 @@ public class ApacheHttpClientConfigurationTests {
 				Header[] headers = new BasicHeader[0];
 				doReturn(headers).when(response).getAllHeaders();
 				try {
-					Mockito.doReturn(response).when(client).execute(any(HttpUriRequest.class));
-				} catch (IOException e) {
+					Mockito.doReturn(response).when(client)
+							.execute(any(HttpUriRequest.class));
+				}
+				catch (IOException e) {
 					e.printStackTrace();
 				}
 				HttpClientBuilder builder = mock(HttpClientBuilder.class);
 				Mockito.doReturn(client).when(builder).build();
 				return builder;
 			}
+
 		}
 
 		@Configuration
 		static class MyConfig {
 
 			@Bean
-			public ApacheHttpClientFactory apacheHttpClientFactory(HttpClientBuilder builder) {
+			public ApacheHttpClientFactory apacheHttpClientFactory(
+					HttpClientBuilder builder) {
 				return new MyApacheHttpClientFactory(builder);
 			}
 
@@ -159,9 +176,6 @@ public class ApacheHttpClientConfigurationTests {
 
 		}
 
-		@FeignClient(name="foo", serviceId = "foo")
-		interface FooClient {}
 	}
 
 }
-

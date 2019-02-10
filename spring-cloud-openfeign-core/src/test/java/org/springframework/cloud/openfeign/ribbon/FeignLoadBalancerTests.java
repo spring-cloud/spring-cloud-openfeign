@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign.ribbon;
@@ -53,8 +52,7 @@ import static com.netflix.client.config.CommonClientConfigKey.ReadTimeout;
 import static com.netflix.client.config.DefaultClientConfigImpl.DEFAULT_MAX_AUTO_RETRIES;
 import static com.netflix.client.config.DefaultClientConfigImpl.DEFAULT_MAX_AUTO_RETRIES_NEXT_SERVER;
 import static feign.Request.HttpMethod.GET;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -64,8 +62,10 @@ public class FeignLoadBalancerTests {
 
 	@Mock
 	private Client delegate;
+
 	@Mock
 	private ILoadBalancer lb;
+
 	@Mock
 	private IClientConfig config;
 
@@ -74,6 +74,7 @@ public class FeignLoadBalancerTests {
 	private ServerIntrospector inspector = new DefaultServerIntrospector();
 
 	private Integer defaultConnectTimeout = 10000;
+
 	private Integer defaultReadTimeout = 10000;
 
 	@Before
@@ -95,27 +96,19 @@ public class FeignLoadBalancerTests {
 
 		this.feignLoadBalancer = new FeignLoadBalancer(this.lb, this.config,
 				this.inspector);
-		Request request = new RequestTemplate()
-				.method(GET)
-				.target("http://foo/")
-				.resolve(new HashMap<>())
-				.request();
+		Request request = new RequestTemplate().method(GET).target("http://foo/")
+				.resolve(new HashMap<>()).request();
 		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate, request,
 				new URI(request.url()));
 
-		Response response = Response.builder()
-				.request(request)
-				.status(200)
-				.reason("Test")
-				.headers(Collections.emptyMap())
-				.body(new byte[0])
-				.build();
+		Response response = Response.builder().request(request).status(200).reason("Test")
+				.headers(Collections.emptyMap()).body(new byte[0]).build();
 		when(this.delegate.execute(any(Request.class), any(Options.class)))
 				.thenReturn(response);
 
 		RibbonResponse resp = this.feignLoadBalancer.execute(ribbonRequest, null);
 
-		assertThat(resp.getRequestedURI(), is(new URI("http://foo")));
+		assertThat(resp.getRequestedURI()).isEqualTo(new URI("http://foo"));
 	}
 
 	@Test
@@ -126,7 +119,7 @@ public class FeignLoadBalancerTests {
 		Server server = new Server("foo", 7777);
 		URI uri = this.feignLoadBalancer.reconstructURIWithServer(server,
 				new URI("http://foo/"));
-		assertThat(uri, is(new URI("https://foo:7777/")));
+		assertThat(uri).isEqualTo(new URI("https://foo:7777/"));
 	}
 
 	@Test
@@ -148,7 +141,7 @@ public class FeignLoadBalancerTests {
 		Server server = new Server("foo", 7777);
 		URI uri = this.feignLoadBalancer.reconstructURIWithServer(server,
 				new URI("http://foo/"));
-		assertThat(uri, is(new URI("http://foo:7777/")));
+		assertThat(uri).isEqualTo(new URI("http://foo:7777/"));
 	}
 
 	@Test
@@ -160,21 +153,22 @@ public class FeignLoadBalancerTests {
 		when(server.getHost()).thenReturn("foo");
 		URI uri = this.feignLoadBalancer.reconstructURIWithServer(server,
 				new URI("http://bar/"));
-		assertThat(uri, is(new URI("https://foo:443/")));
+		assertThat(uri).isEqualTo(new URI("https://foo:443/"));
 	}
 
 	@Test
 	public void testRibbonRequestURLEncode() throws Exception {
-		String url = "http://foo/?name=%7bcookie";//name={cookie
+		String url = "http://foo/?name=%7bcookie"; // name={cookie
 		Request request = Request.create(GET, url, new HashMap<>(), null, null);
 
-		assertThat(request.url(),is(url));
+		assertThat(request.url()).isEqualTo(url);
 
-		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate,request,new URI(request.url()));
+		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate, request,
+				new URI(request.url()));
 
 		Request cloneRequest = ribbonRequest.toRequest();
 
-		assertThat(cloneRequest.url(),is(url));
+		assertThat(cloneRequest.url()).isEqualTo(url);
 
 	}
 
@@ -193,23 +187,23 @@ public class FeignLoadBalancerTests {
 
 		this.feignLoadBalancer = new FeignLoadBalancer(baseLoadBalancer, this.config,
 				this.inspector) {
-			protected void customizeLoadBalancerCommandBuilder(final FeignLoadBalancer.RibbonRequest request, final IClientConfig config,
-															   final LoadBalancerCommand.Builder<FeignLoadBalancer.RibbonResponse> builder) {
+			protected void customizeLoadBalancerCommandBuilder(
+					final FeignLoadBalancer.RibbonRequest request,
+					final IClientConfig config,
+					final LoadBalancerCommand.Builder<FeignLoadBalancer.RibbonResponse> builder) {
 				builder.withServerLocator(request.getRequest().headers().get("c_ip"));
 			}
 		};
-		Request request = new RequestTemplate().method(GET).resolve(new HashMap<>()).request();
-		RibbonResponse resp = this.feignLoadBalancer.executeWithLoadBalancer(new RibbonRequest(this.delegate, request,
-				new URI(request.url())), null);
-		assertThat(resp.getRequestedURI().getPort(), is(7777));
-		request = new RequestTemplate()
-				.method(GET)
-				.header("c_ip", "666")
-				.resolve(new HashMap<>())
+		Request request = new RequestTemplate().method(GET).resolve(new HashMap<>())
 				.request();
-		resp = this.feignLoadBalancer.executeWithLoadBalancer(new RibbonRequest(this.delegate, request,
-				new URI(request.url())), null);
-		assertThat(resp.getRequestedURI().getPort(), is(6666));
+		RibbonResponse resp = this.feignLoadBalancer.executeWithLoadBalancer(
+				new RibbonRequest(this.delegate, request, new URI(request.url())), null);
+		assertThat(resp.getRequestedURI().getPort()).isEqualTo(7777);
+		request = new RequestTemplate().method(GET).header("c_ip", "666")
+				.resolve(new HashMap<>()).request();
+		resp = this.feignLoadBalancer.executeWithLoadBalancer(
+				new RibbonRequest(this.delegate, request, new URI(request.url())), null);
+		assertThat(resp.getRequestedURI().getPort()).isEqualTo(6666);
 	}
 
 }

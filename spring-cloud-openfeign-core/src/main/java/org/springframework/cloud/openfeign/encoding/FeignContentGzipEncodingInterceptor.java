@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package org.springframework.cloud.openfeign.encoding;
 
-import feign.RequestTemplate;
-
 import java.util.Collection;
 import java.util.Map;
 
+import feign.RequestTemplate;
+
 /**
- * Enables the HTTP request payload compression by specifying the {@code Content-Encoding} headers.
+ * Enables the HTTP request payload compression by specifying the {@code Content-Encoding}
+ * headers.
  *
  * @author Jakub Narloch
  */
@@ -30,10 +31,10 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 
 	/**
 	 * Creates new instance of {@link FeignContentGzipEncodingInterceptor}.
-	 *
 	 * @param properties the encoding properties
 	 */
-	protected FeignContentGzipEncodingInterceptor(FeignClientEncodingProperties properties) {
+	protected FeignContentGzipEncodingInterceptor(
+			FeignClientEncodingProperties properties) {
 		super(properties);
 	}
 
@@ -44,14 +45,13 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 	public void apply(RequestTemplate template) {
 
 		if (requiresCompression(template)) {
-			addHeader(template, HttpEncoding.CONTENT_ENCODING_HEADER, HttpEncoding.GZIP_ENCODING,
-					HttpEncoding.DEFLATE_ENCODING);
+			addHeader(template, HttpEncoding.CONTENT_ENCODING_HEADER,
+					HttpEncoding.GZIP_ENCODING, HttpEncoding.DEFLATE_ENCODING);
 		}
 	}
 
 	/**
 	 * Returns whether the request requires GZIP compression.
-	 *
 	 * @param template the request template
 	 * @return true if request requires compression, false otherwise
 	 */
@@ -64,7 +64,6 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 
 	/**
 	 * Returns whether the request content length exceed configured minimum size.
-	 *
 	 * @param contentLength the content length header value
 	 * @return true if length is grater than minimum size, false otherwise
 	 */
@@ -78,14 +77,14 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 			final String strLen = contentLength.iterator().next();
 			final long length = Long.parseLong(strLen);
 			return length > getProperties().getMinRequestSize();
-		} catch (NumberFormatException ex) {
+		}
+		catch (NumberFormatException ex) {
 			return false;
 		}
 	}
 
 	/**
 	 * Returns whether the content mime types matches the configures mime types.
-	 *
 	 * @param contentTypes the content types
 	 * @return true if any specified content type matches the request content types
 	 */
@@ -94,7 +93,8 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 			return false;
 		}
 
-		if (getProperties().getMimeTypes() == null || getProperties().getMimeTypes().length == 0) {
+		if (getProperties().getMimeTypes() == null
+				|| getProperties().getMimeTypes().length == 0) {
 			// no specific mime types has been set - matching everything
 			return true;
 		}
@@ -107,4 +107,5 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 
 		return false;
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /**
  * This interceptor should be called from an Hyxtrix command execution thread. It is
  * access the SecurityContext and settings an http header from the authentication details.
- * 
+ *
  * @author Daniel Lavoie
  */
 public class TestInterceptor implements RequestInterceptor {
 
 	@Override
 	public void apply(RequestTemplate template) {
-		if (SecurityContextHolder.getContext().getAuthentication() != null)
+		if (SecurityContextHolder.getContext().getAuthentication() != null) {
 			template.header("username",
 					SecurityContextHolder.getContext().getAuthentication().getName());
+		}
 	}
+
 }

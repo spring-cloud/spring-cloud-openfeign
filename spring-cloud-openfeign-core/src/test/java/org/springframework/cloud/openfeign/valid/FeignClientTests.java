@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,25 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.netflix.hystrix.HystrixCommand;
+import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixCommandKey;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
+import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.ServerList;
+import feign.Client;
+import feign.Feign;
+import feign.Logger;
+import feign.RequestInterceptor;
+import feign.RequestTemplate;
+import feign.Target;
+import feign.hystrix.FallbackFactory;
+import feign.hystrix.SetterFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import rx.Observable;
+import rx.Single;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,14 +57,14 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.cloud.netflix.ribbon.RibbonClients;
+import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignFormatterRegistrar;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.cloud.openfeign.support.FallbackCommand;
-import org.springframework.cloud.netflix.ribbon.RibbonClient;
-import org.springframework.cloud.netflix.ribbon.RibbonClients;
-import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,32 +84,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixCommandGroupKey;
-import com.netflix.hystrix.HystrixCommandKey;
-import com.netflix.hystrix.exception.HystrixRuntimeException;
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerList;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import feign.Client;
-import feign.Feign;
-import feign.Logger;
-import feign.RequestInterceptor;
-import feign.RequestTemplate;
-import feign.Target;
-import feign.hystrix.FallbackFactory;
-import feign.hystrix.SetterFactory;
-import rx.Observable;
-import rx.Single;
 
 /**
  * @author Spencer Gibb
@@ -105,14 +97,27 @@ import rx.Single;
 		"spring.application.name=feignclienttest",
 		"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
 		"feign.httpclient.enabled=false", "feign.okhttp.enabled=false",
-		"feign.hystrix.enabled=true"})
+		"feign.hystrix.enabled=true" })
 @DirtiesContext
 public class FeignClientTests {
 
 	public static final String HELLO_WORLD_1 = "hello world 1";
+
 	public static final String OI_TERRA_2 = "oi terra 2";
+
 	public static final String MYHEADER1 = "myheader1";
+
 	public static final String MYHEADER2 = "myheader2";
+
+	@Autowired
+	HystrixClient hystrixClient;
+
+	@Autowired
+	@Qualifier("localapp3FeignClient")
+	HystrixClient namedHystrixClient;
+
+	@Autowired
+	HystrixSetterFactoryClient hystrixSetterFactoryClient;
 
 	@Value("${local.server.port}")
 	private int port = 0;
@@ -130,9 +135,6 @@ public class FeignClientTests {
 	private Client feignClient;
 
 	@Autowired
-	HystrixClient hystrixClient;
-
-	@Autowired
 	private HystrixClientWithFallBackFactory hystrixClientWithFallBackFactory;
 
 	@Autowired
@@ -141,37 +143,298 @@ public class FeignClientTests {
 	@Autowired
 	private NullHystrixClientWithFallBackFactory nullHystrixClientWithFallBackFactory;
 
-	@Autowired
-	@Qualifier("localapp3FeignClient")
-	HystrixClient namedHystrixClient;
+	private static ArrayList<Hello> getHelloList() {
+		ArrayList<Hello> hellos = new ArrayList<>();
+		hellos.add(new Hello(HELLO_WORLD_1));
+		hellos.add(new Hello(OI_TERRA_2));
+		return hellos;
+	}
 
-	@Autowired
-	HystrixSetterFactoryClient hystrixSetterFactoryClient;
+	@Test
+	public void testClient() {
+		assertThat(this.testClient).as("testClient was null").isNotNull();
+		assertThat(Proxy.isProxyClass(this.testClient.getClass()))
+				.as("testClient is not a java Proxy").isTrue();
+		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.testClient);
+		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
+	}
+
+	@Test
+	public void testRequestMappingClassLevelPropertyReplacement() {
+		Hello hello = this.testClient.getHelloUsingPropertyPlaceHolder();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello(OI_TERRA_2));
+	}
+
+	@Test
+	public void testSimpleType() {
+		Hello hello = this.testClient.getHello();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match")
+				.isEqualTo(new Hello(HELLO_WORLD_1));
+	}
+
+	@Test
+	public void testOptional() {
+		Optional<Hello> hello = this.testClient.getOptionalHello();
+		assertThat(hello).isNotNull().isPresent().contains(new Hello(HELLO_WORLD_1));
+	}
+
+	@Test
+	public void testGenericType() {
+		List<Hello> hellos = this.testClient.getHellos();
+		assertThat(hellos).as("hellos was null").isNotNull();
+		assertThat(getHelloList()).as("hellos didn't match").isEqualTo(hellos);
+	}
+
+	@Test
+	public void testRequestInterceptors() {
+		List<String> headers = this.testClient.getHelloHeaders();
+		assertThat(headers).as("headers was null").isNotNull();
+		assertThat(headers.contains("myheader1value"))
+				.as("headers didn't contain myheader1value").isTrue();
+		assertThat(headers.contains("myheader2value"))
+				.as("headers didn't contain myheader2value").isTrue();
+	}
+
+	@Test
+	public void testHeaderPlaceholders() {
+		String header = this.testClient.getHelloHeadersPlaceholders();
+		assertThat(header).as("header was null").isNotNull();
+		assertThat(header).as("header was wrong").isEqualTo("myPlaceholderHeaderValue");
+	}
+
+	@Test
+	public void testFeignClientType() throws IllegalAccessException {
+		assertThat(this.feignClient).isInstanceOf(LoadBalancerFeignClient.class);
+		LoadBalancerFeignClient client = (LoadBalancerFeignClient) this.feignClient;
+		Client delegate = client.getDelegate();
+		assertThat(delegate).isInstanceOf(Client.Default.class);
+	}
+
+	@Test
+	public void testServiceId() {
+		assertThat(this.testClientServiceId).as("testClientServiceId was null")
+				.isNotNull();
+		final Hello hello = this.testClientServiceId.getHello();
+		assertThat(hello).as("The hello response was null").isNotNull();
+		assertThat(hello).as("first hello didn't match")
+				.isEqualTo(new Hello(HELLO_WORLD_1));
+	}
+
+	@Test
+	public void testParams() {
+		List<String> list = Arrays.asList("a", "1", "test");
+		List<String> params = this.testClient.getParams(list);
+		assertThat(params).as("params was null").isNotNull();
+		assertThat(params.size()).as("params size was wrong").isEqualTo(list.size());
+	}
+
+	@Test
+	public void testFormattedParams() {
+		List<LocalDate> list = Arrays.asList(LocalDate.of(2001, 1, 1),
+				LocalDate.of(2018, 6, 10));
+		List<LocalDate> params = this.testClient.getFormattedParams(list);
+		assertThat(params).as("params was null").isNotNull();
+		assertThat(params).as("params not converted correctly").isEqualTo(list);
+	}
+
+	@Test
+	public void testHystrixCommand() throws NoSuchMethodException {
+		HystrixCommand<List<Hello>> command = this.testClient.getHellosHystrix();
+		assertThat(command).as("command was null").isNotNull();
+		assertThat(command.getCommandGroup().name()).as(
+				"Hystrix command group name should match the name of the feign client")
+				.isEqualTo("localapp");
+		String configKey = Feign.configKey(TestClient.class,
+				TestClient.class.getMethod("getHellosHystrix", (Class<?>[]) null));
+		assertThat(command.getCommandKey().name())
+				.as("Hystrix command key name should match the feign config key")
+				.isEqualTo(configKey);
+		List<Hello> hellos = command.execute();
+		assertThat(hellos).as("hellos was null").isNotNull();
+		assertThat(getHelloList()).as("hellos didn't match").isEqualTo(hellos);
+	}
+
+	@Test
+	public void testSingle() {
+		Single<Hello> single = this.testClient.getHelloSingle();
+		assertThat(single).as("single was null").isNotNull();
+		Hello hello = single.toBlocking().value();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match")
+				.isEqualTo(new Hello(HELLO_WORLD_1));
+	}
+
+	@Test
+	public void testNoContentResponse() {
+		ResponseEntity<Void> response = this.testClient.noContent();
+		assertThat(response).as("response was null").isNotNull();
+		assertThat(response.getStatusCode()).as("status code was wrong")
+				.isEqualTo(HttpStatus.NO_CONTENT);
+	}
+
+	@Test
+	public void testHeadResponse() {
+		ResponseEntity<Void> response = this.testClient.head();
+		assertThat(response).as("response was null").isNotNull();
+		assertThat(response.getStatusCode()).as("status code was wrong")
+				.isEqualTo(HttpStatus.OK);
+	}
+
+	@Test
+	public void testHttpEntity() {
+		HttpEntity<Hello> entity = this.testClient.getHelloEntity();
+		assertThat(entity).as("entity was null").isNotNull();
+		Hello hello = entity.getBody();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match")
+				.isEqualTo(new Hello(HELLO_WORLD_1));
+	}
+
+	@Test
+	public void testMoreComplexHeader() {
+		String response = this.testClient.moreComplexContentType("{\"value\":\"OK\"}");
+		assertThat(response).as("response was null").isNotNull();
+		assertThat(response).as("didn't respond with {\"value\":\"OK\"}")
+				.isEqualTo("{\"value\":\"OK\"}");
+	}
+
+	@Test
+	public void testDecodeNotFound() {
+		ResponseEntity<String> response = this.decodingTestClient.notFound();
+		assertThat(response).as("response was null").isNotNull();
+		assertThat(response.getStatusCode()).as("status code was wrong")
+				.isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(response.getBody()).as("response body was not null").isNull();
+	}
+
+	@Test
+	public void testOptionalNotFound() {
+		Optional<String> s = this.decodingTestClient.optional();
+		assertThat(s).isNotPresent();
+	}
+
+	@Test
+	public void testConvertingExpander() {
+		assertThat(this.testClient.getToString(Arg.A)).isEqualTo(Arg.A.toString());
+		assertThat(this.testClient.getToString(Arg.B)).isEqualTo(Arg.B.toString());
+
+		assertThat(this.testClient.getToString(new OtherArg("foo"))).isEqualTo("bar");
+		List<OtherArg> args = new ArrayList<>();
+		args.add(new OtherArg("foo"));
+		args.add(new OtherArg("goo"));
+		List<String> expectedResult = new ArrayList<>();
+		expectedResult.add("bar");
+		expectedResult.add("goo");
+		assertThat(this.testClient.getToString(args)).isEqualTo(expectedResult);
+	}
+
+	@Test
+	public void testHystrixFallbackWorks() {
+		Hello hello = this.hystrixClient.fail();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello.getMessage()).as("message was wrong").isEqualTo("fallback");
+	}
+
+	@Test
+	public void testHystrixFallbackSingle() {
+		Single<Hello> single = this.hystrixClient.failSingle();
+		assertThat(single).as("single was null").isNotNull();
+		Hello hello = single.toBlocking().value();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello.getMessage()).as("message was wrong")
+				.isEqualTo("fallbacksingle");
+	}
+
+	@Test
+	public void testHystrixFallbackCommand() {
+		HystrixCommand<Hello> command = this.hystrixClient.failCommand();
+		assertThat(command).as("command was null").isNotNull();
+		Hello hello = command.execute();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello.getMessage()).as("message was wrong")
+				.isEqualTo("fallbackcommand");
+	}
+
+	@Test
+	public void testHystrixFallbackObservable() {
+		Observable<Hello> observable = this.hystrixClient.failObservable();
+		assertThat(observable).as("observable was null").isNotNull();
+		Hello hello = observable.toBlocking().first();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello.getMessage()).as("message was wrong")
+				.isEqualTo("fallbackobservable");
+	}
+
+	@Test
+	public void testHystrixFallbackFuture() throws Exception {
+		Future<Hello> future = this.hystrixClient.failFuture();
+		assertThat(future).as("future was null").isNotNull();
+		Hello hello = future.get(1, TimeUnit.SECONDS);
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello.getMessage()).as("message was wrong")
+				.isEqualTo("fallbackfuture");
+	}
+
+	@Test
+	public void testHystrixClientWithFallBackFactory() throws Exception {
+		Hello hello = this.hystrixClientWithFallBackFactory.fail();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello.getMessage()).as("hello#message was null").isNotNull();
+		assertThat(hello.getMessage().contains("500")).as(
+				"hello#message did not contain the cause (status code) of the fallback invocation")
+				.isTrue();
+	}
+
+	@Test(expected = HystrixRuntimeException.class)
+	public void testInvalidTypeHystrixFallbackFactory() throws Exception {
+		this.invalidTypeHystrixClientWithFallBackFactory.fail();
+	}
+
+	@Test(expected = HystrixRuntimeException.class)
+	public void testNullHystrixFallbackFactory() throws Exception {
+		this.nullHystrixClientWithFallBackFactory.fail();
+	}
+
+	@Test
+	public void namedFeignClientWorks() {
+		assertThat(this.namedHystrixClient).as("namedHystrixClient was null").isNotNull();
+	}
+
+	@Test
+	public void testHystrixSetterFactory() {
+		HystrixCommand<List<Hello>> command = this.hystrixSetterFactoryClient
+				.getHellosHystrix();
+		assertThat(command).as("command was null").isNotNull();
+		String setterPrefix = TestHystrixSetterFactoryClientConfig.SETTER_PREFIX;
+		assertThat(command.getCommandGroup().name()).as(
+				"Hystrix command group name should match the name of the feign client with a prefix of "
+						+ setterPrefix)
+				.isEqualTo(setterPrefix + "localapp5");
+		assertThat(command.getCommandKey().name()).as(
+				"Hystrix command key name should match the request method (space) request path with a prefix of "
+						+ setterPrefix)
+				.isEqualTo(setterPrefix + "GET /hellos");
+		List<Hello> hellos = command.execute();
+		assertThat(hellos).as("hellos was null").isNotNull();
+		assertThat(getHelloList()).as("hellos didn't match").isEqualTo(hellos);
+	}
 
 	protected enum Arg {
+
 		A, B;
 
 		@Override
 		public String toString() {
 			return name().toLowerCase(Locale.ENGLISH);
 		}
-	}
 
-	protected static class OtherArg {
-		public final String value;
-
-		public OtherArg(String value) {
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return value;
-		}
 	}
 
 	@FeignClient(name = "localapp", configuration = TestClientConfig.class)
 	protected interface TestClient {
+
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")
 		Hello getHello();
 
@@ -201,8 +464,7 @@ public class FeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
 		List<LocalDate> getFormattedParams(
-				@RequestParam("params")
-				@DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params);
+				@RequestParam("params") @DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
 		HystrixCommand<List<Hello>> getHellosHystrix();
@@ -227,6 +489,93 @@ public class FeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostringcollection")
 		Collection<String> getToString(@RequestParam("arg") Collection<OtherArg> args);
+
+	}
+
+	@FeignClient(name = "localapp1")
+	protected interface TestClientServiceId {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/hello")
+		Hello getHello();
+
+	}
+
+	@FeignClient(name = "localapp2", decode404 = true)
+	protected interface DecodingTestClient {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/notFound")
+		ResponseEntity<String> notFound();
+
+		@RequestMapping(method = RequestMethod.GET, path = "/notFound")
+		Optional<String> optional();
+
+	}
+
+	@FeignClient(name = "localapp3", fallback = HystrixClientFallback.class)
+	protected interface HystrixClient {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		Single<Hello> failSingle();
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		Hello fail();
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		HystrixCommand<Hello> failCommand();
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		Observable<Hello> failObservable();
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		Future<Hello> failFuture();
+
+	}
+
+	@FeignClient(name = "localapp4", fallbackFactory = HystrixClientFallbackFactory.class)
+	protected interface HystrixClientWithFallBackFactory {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		Hello fail();
+
+	}
+
+	@FeignClient(name = "localapp6", fallbackFactory = InvalidTypeHystrixClientFallbackFactory.class)
+	protected interface InvalidTypeHystrixClientWithFallBackFactory {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		Hello fail();
+
+	}
+
+	@FeignClient(name = "localapp7", fallbackFactory = NullHystrixClientFallbackFactory.class)
+	protected interface NullHystrixClientWithFallBackFactory {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/fail")
+		Hello fail();
+
+	}
+
+	@FeignClient(name = "localapp5", configuration = TestHystrixSetterFactoryClientConfig.class)
+	protected interface HystrixSetterFactoryClient {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
+		HystrixCommand<List<Hello>> getHellosHystrix();
+
+	}
+
+	protected static class OtherArg {
+
+		public final String value;
+
+		public OtherArg(String value) {
+			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return this.value;
+		}
+
 	}
 
 	public static class TestClientConfig {
@@ -250,82 +599,34 @@ public class FeignClientTests {
 				}
 			};
 		}
+
 	}
 
-	@FeignClient(name = "localapp1")
-	protected interface TestClientServiceId {
-		@RequestMapping(method = RequestMethod.GET, path = "/hello")
-		Hello getHello();
-	}
-
-	@FeignClient(name = "localapp2", decode404 = true)
-	protected interface DecodingTestClient {
-		@RequestMapping(method = RequestMethod.GET, path = "/notFound")
-		ResponseEntity<String> notFound();
-
-		@RequestMapping(method = RequestMethod.GET, path = "/notFound")
-		Optional<String> optional();
-	}
-
-	@FeignClient(name = "localapp3", fallback = HystrixClientFallback.class)
-	protected interface HystrixClient {
-		@RequestMapping(method = RequestMethod.GET, path = "/fail")
-		Single<Hello> failSingle();
-
-		@RequestMapping(method = RequestMethod.GET, path = "/fail")
-		Hello fail();
-
-		@RequestMapping(method = RequestMethod.GET, path = "/fail")
-		HystrixCommand<Hello> failCommand();
-
-		@RequestMapping(method = RequestMethod.GET, path = "/fail")
-		Observable<Hello> failObservable();
-
-		@RequestMapping(method = RequestMethod.GET, path = "/fail")
-		Future<Hello> failFuture();
-	}
-
-	@FeignClient(name = "localapp4", fallbackFactory = HystrixClientFallbackFactory.class)
-	protected interface HystrixClientWithFallBackFactory {
-
-		@RequestMapping(method = RequestMethod.GET, path = "/fail")
-		Hello fail();
-	}
-
-	@FeignClient(name = "localapp6", fallbackFactory = InvalidTypeHystrixClientFallbackFactory.class)
-	protected interface InvalidTypeHystrixClientWithFallBackFactory {
-
-		@RequestMapping(method = RequestMethod.GET, path = "/fail")
-		Hello fail();
-	}
-
-	@FeignClient(name = "localapp7", fallbackFactory = NullHystrixClientFallbackFactory.class)
-	protected interface NullHystrixClientWithFallBackFactory {
-
-		@RequestMapping(method = RequestMethod.GET, path = "/fail")
-		Hello fail();
-	}
-
-	static class HystrixClientFallbackFactory implements FallbackFactory<HystrixClientWithFallBackFactory> {
+	static class HystrixClientFallbackFactory
+			implements FallbackFactory<HystrixClientWithFallBackFactory> {
 
 		@Override
 		public HystrixClientWithFallBackFactory create(final Throwable cause) {
 			return new HystrixClientWithFallBackFactory() {
 				@Override
 				public Hello fail() {
-					assertNotNull("Cause was null", cause);
-					return new Hello("Hello from the fallback side: " + cause.getMessage());
+					assertThat(cause).isNotNull().as("Cause was null");
+					return new Hello(
+							"Hello from the fallback side: " + cause.getMessage());
 				}
 			};
 		}
+
 	}
 
-	static class InvalidTypeHystrixClientFallbackFactory implements FallbackFactory<String> {
+	static class InvalidTypeHystrixClientFallbackFactory
+			implements FallbackFactory<String> {
 
 		@Override
 		public String create(final Throwable cause) {
 			return "hello";
 		}
+
 	}
 
 	static class NullHystrixClientFallbackFactory implements FallbackFactory<String> {
@@ -334,9 +635,11 @@ public class FeignClientTests {
 		public String create(final Throwable cause) {
 			return null;
 		}
+
 	}
 
 	static class HystrixClientFallback implements HystrixClient {
+
 		@Override
 		public Hello fail() {
 			return new Hello("fallback");
@@ -361,55 +664,58 @@ public class FeignClientTests {
 		public Future<Hello> failFuture() {
 			return new FallbackCommand<>(new Hello("fallbackfuture")).queue();
 		}
-	}
 
-	@FeignClient(name = "localapp5", configuration = TestHystrixSetterFactoryClientConfig.class)
-	protected interface HystrixSetterFactoryClient {
-		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
-		HystrixCommand<List<Hello>> getHellosHystrix();
 	}
 
 	public static class TestHystrixSetterFactoryClientConfig {
+
 		public static final String SETTER_PREFIX = "SETTER-";
+
 		@Bean
 		public SetterFactory commandKeyIsRequestLineSetterFactory() {
 			return new SetterFactory() {
-				@Override public HystrixCommand.Setter create(Target<?> target,
-					Method method) {
+				@Override
+				public HystrixCommand.Setter create(Target<?> target, Method method) {
 					String groupKey = SETTER_PREFIX + target.name();
 					RequestMapping requestMapping = method
-						.getAnnotation(RequestMapping.class);
-					String commandKey =
-						SETTER_PREFIX + requestMapping.method()[0] + " " + requestMapping
-							.path()[0];
+							.getAnnotation(RequestMapping.class);
+					String commandKey = SETTER_PREFIX + requestMapping.method()[0] + " "
+							+ requestMapping.path()[0];
 					return HystrixCommand.Setter
-						.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
-						.andCommandKey(HystrixCommandKey.Factory.asKey(commandKey));
+							.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
+							.andCommandKey(HystrixCommandKey.Factory.asKey(commandKey));
 				}
 			};
 		}
+
 	}
 
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = { TestClientServiceId.class, TestClient.class,
-		DecodingTestClient.class, HystrixClient.class, HystrixClientWithFallBackFactory.class,
-		HystrixSetterFactoryClient.class, InvalidTypeHystrixClientWithFallBackFactory.class,
-	NullHystrixClientWithFallBackFactory.class},
-		defaultConfiguration = TestDefaultFeignConfig.class)
+			DecodingTestClient.class, HystrixClient.class,
+			HystrixClientWithFallBackFactory.class, HystrixSetterFactoryClient.class,
+			InvalidTypeHystrixClientWithFallBackFactory.class,
+			NullHystrixClientWithFallBackFactory.class }, defaultConfiguration = TestDefaultFeignConfig.class)
 	@RibbonClients({
-		@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp1", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp2", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp3", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp4", configuration = LocalRibbonClientConfiguration.class),
-		@RibbonClient(name = "localapp5", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp1", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp2", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp3", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp4", configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp5", configuration = LocalRibbonClientConfiguration.class),
 			@RibbonClient(name = "localapp6", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp7", configuration = LocalRibbonClientConfiguration.class)
-	})
+			@RibbonClient(name = "localapp7", configuration = LocalRibbonClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
+
+		public static void main(String[] args) {
+			new SpringApplicationBuilder(Application.class)
+					.properties("spring.application.name=feignclienttest",
+							"management.contextPath=/admin")
+					.run(args);
+		}
 
 		// needs to be in parent context to test multiple HystrixClient beans
 		@Bean
@@ -442,7 +748,7 @@ public class FeignClientTests {
 
 						@Override
 						public String print(OtherArg object, Locale locale) {
-							if("foo".equals(object.value)) {
+							if ("foo".equals(object.value)) {
 								return "bar";
 							}
 							return object.value;
@@ -504,8 +810,7 @@ public class FeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
 		public List<LocalDate> getFormattedParams(
-				@RequestParam("params")
-				@DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params) {
+				@RequestParam("params") @DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params) {
 			return params;
 		}
 
@@ -530,9 +835,11 @@ public class FeignClientTests {
 		}
 
 		@RequestMapping(method = RequestMethod.POST, consumes = "application/vnd.io.spring.cloud.test.v1+json", produces = "application/vnd.io.spring.cloud.test.v1+json", path = "/complex")
-		String complex(@RequestBody String body, @RequestHeader("Content-Length") int contentLength) {
+		String complex(@RequestBody String body,
+				@RequestHeader("Content-Length") int contentLength) {
 			if (contentLength <= 0) {
-				throw new IllegalArgumentException("Invalid Content-Length "+ contentLength);
+				throw new IllegalArgumentException(
+						"Invalid Content-Length " + contentLength);
 			}
 			return body;
 		}
@@ -550,290 +857,16 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.GET, path = "/tostringcollection")
 		Collection<String> getToString(@RequestParam("arg") Collection<OtherArg> args) {
 			List<String> result = new ArrayList<>();
-			for(OtherArg arg : args) {
+			for (OtherArg arg : args) {
 				result.add(arg.value);
 			}
 			return result;
 		}
 
-		public static void main(String[] args) {
-			new SpringApplicationBuilder(Application.class)
-					.properties("spring.application.name=feignclienttest",
-							"management.contextPath=/admin")
-					.run(args);
-		}
-	}
-
-	private static ArrayList<Hello> getHelloList() {
-		ArrayList<Hello> hellos = new ArrayList<>();
-		hellos.add(new Hello(HELLO_WORLD_1));
-		hellos.add(new Hello(OI_TERRA_2));
-		return hellos;
-	}
-
-	@Test
-	public void testClient() {
-		assertNotNull("testClient was null", this.testClient);
-		assertTrue("testClient is not a java Proxy",
-				Proxy.isProxyClass(this.testClient.getClass()));
-		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.testClient);
-		assertNotNull("invocationHandler was null", invocationHandler);
-	}
-
-	@Test
-	public void testRequestMappingClassLevelPropertyReplacement() {
-		Hello hello = this.testClient.getHelloUsingPropertyPlaceHolder();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", new Hello(OI_TERRA_2), hello);
-	}
-
-	@Test
-	public void testSimpleType() {
-		Hello hello = this.testClient.getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", new Hello(HELLO_WORLD_1), hello);
-	}
-
-	@Test
-	public void testOptional() {
-		Optional<Hello> hello = this.testClient.getOptionalHello();
-		assertThat(hello)
-				.isNotNull()
-				.isPresent()
-				.contains(new Hello(HELLO_WORLD_1));
-	}
-
-	@Test
-	public void testGenericType() {
-		List<Hello> hellos = this.testClient.getHellos();
-		assertNotNull("hellos was null", hellos);
-		assertEquals("hellos didn't match", hellos, getHelloList());
-	}
-
-	@Test
-	public void testRequestInterceptors() {
-		List<String> headers = this.testClient.getHelloHeaders();
-		assertNotNull("headers was null", headers);
-		assertTrue("headers didn't contain myheader1value",
-				headers.contains("myheader1value"));
-		assertTrue("headers didn't contain myheader2value",
-				headers.contains("myheader2value"));
-	}
-
-	@Test
-	public void testHeaderPlaceholders() {
-		String header = this.testClient.getHelloHeadersPlaceholders();
-		assertNotNull("header was null", header);
-		assertEquals("header was wrong", "myPlaceholderHeaderValue", header);
-	}
-
-	@Test
-	public void testFeignClientType() throws IllegalAccessException {
-		assertThat(this.feignClient, is(instanceOf(LoadBalancerFeignClient.class)));
-		LoadBalancerFeignClient client = (LoadBalancerFeignClient) this.feignClient;
-		Client delegate = client.getDelegate();
-		assertThat(delegate, is(instanceOf(feign.Client.Default.class)));
-	}
-
-	@Test
-	public void testServiceId() {
-		assertNotNull("testClientServiceId was null", this.testClientServiceId);
-		final Hello hello = this.testClientServiceId.getHello();
-		assertNotNull("The hello response was null", hello);
-		assertEquals("first hello didn't match", new Hello(HELLO_WORLD_1), hello);
-	}
-
-	@Test
-	public void testParams() {
-		List<String> list = Arrays.asList("a", "1", "test");
-		List<String> params = this.testClient.getParams(list);
-		assertNotNull("params was null", params);
-		assertEquals("params size was wrong", list.size(), params.size());
-	}
-
-	@Test
-	public void testFormattedParams() {
-		List<LocalDate> list = Arrays.asList(
-				LocalDate.of(2001, 1, 1), LocalDate.of(2018, 6, 10));
-		List<LocalDate> params = this.testClient.getFormattedParams(list);
-		assertNotNull("params was null", params);
-		assertEquals("params not converted correctly", list, params);
-	}
-
-	@Test
-	public void testHystrixCommand() throws NoSuchMethodException {
-		HystrixCommand<List<Hello>> command = this.testClient.getHellosHystrix();
-		assertNotNull("command was null", command);
-		assertEquals(
-			"Hystrix command group name should match the name of the feign client",
-			"localapp", command.getCommandGroup().name());
-		String configKey = Feign.configKey(TestClient.class,
-			TestClient.class.getMethod("getHellosHystrix", (Class<?>[]) null));
-		assertEquals("Hystrix command key name should match the feign config key",
-			configKey, command.getCommandKey().name());
-		List<Hello> hellos = command.execute();
-		assertNotNull("hellos was null", hellos);
-		assertEquals("hellos didn't match", hellos, getHelloList());
-	}
-
-	@Test
-	public void testSingle() {
-		Single<Hello> single = this.testClient.getHelloSingle();
-		assertNotNull("single was null", single);
-		Hello hello = single.toBlocking().value();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", new Hello(HELLO_WORLD_1), hello);
-	}
-
-	@Test
-	public void testNoContentResponse() {
-		ResponseEntity<Void> response = testClient.noContent();
-		assertNotNull("response was null", response);
-		assertEquals("status code was wrong", HttpStatus.NO_CONTENT,
-				response.getStatusCode());
-	}
-
-	@Test
-	public void testHeadResponse() {
-		ResponseEntity<Void> response = testClient.head();
-		assertNotNull("response was null", response);
-		assertEquals("status code was wrong", HttpStatus.OK, response.getStatusCode());
-	}
-
-	@Test
-	public void testHttpEntity() {
-		HttpEntity<Hello> entity = testClient.getHelloEntity();
-		assertNotNull("entity was null", entity);
-		Hello hello = entity.getBody();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", new Hello(HELLO_WORLD_1), hello);
-	}
-
-	@Test
-	public void testMoreComplexHeader() {
-		String response = testClient.moreComplexContentType("{\"value\":\"OK\"}");
-		assertNotNull("response was null", response);
-		assertEquals("didn't respond with {\"value\":\"OK\"}", "{\"value\":\"OK\"}",
-				response);
-	}
-
-	@Test
-	public void testDecodeNotFound() {
-		ResponseEntity<String> response = decodingTestClient.notFound();
-		assertNotNull("response was null", response);
-		assertEquals("status code was wrong", HttpStatus.NOT_FOUND,
-				response.getStatusCode());
-		assertNull("response body was not null", response.getBody());
-	}
-
-	@Test
-	public void testOptionalNotFound() {
-		Optional<String> s = decodingTestClient.optional();
-		assertThat(s).isNotPresent();
-	}
-
-	@Test
-	public void testConvertingExpander() {
-		assertEquals(Arg.A.toString(), testClient.getToString(Arg.A));
-		assertEquals(Arg.B.toString(), testClient.getToString(Arg.B));
-
-		assertEquals("bar", testClient.getToString(new OtherArg("foo")));
-		List<OtherArg> args = new ArrayList<>();
-		args.add(new OtherArg("foo"));
-		args.add(new OtherArg("goo"));
-		List<String> expectedResult = new ArrayList<>();
-		expectedResult.add("bar");
-		expectedResult.add("goo");
-		assertEquals(expectedResult, testClient.getToString(args));
-	}
-
-	@Test
-	public void testHystrixFallbackWorks() {
-		Hello hello = hystrixClient.fail();
-		assertNotNull("hello was null", hello);
-		assertEquals("message was wrong", "fallback", hello.getMessage());
-	}
-
-	@Test
-	public void testHystrixFallbackSingle() {
-		Single<Hello> single = hystrixClient.failSingle();
-		assertNotNull("single was null", single);
-		Hello hello = single.toBlocking().value();
-		assertNotNull("hello was null", hello);
-		assertEquals("message was wrong", "fallbacksingle", hello.getMessage());
-	}
-
-	@Test
-	public void testHystrixFallbackCommand() {
-		HystrixCommand<Hello> command = hystrixClient.failCommand();
-		assertNotNull("command was null", command);
-		Hello hello = command.execute();
-		assertNotNull("hello was null", hello);
-		assertEquals("message was wrong", "fallbackcommand", hello.getMessage());
-	}
-
-	@Test
-	public void testHystrixFallbackObservable() {
-		Observable<Hello> observable = hystrixClient.failObservable();
-		assertNotNull("observable was null", observable);
-		Hello hello = observable.toBlocking().first();
-		assertNotNull("hello was null", hello);
-		assertEquals("message was wrong", "fallbackobservable", hello.getMessage());
-	}
-
-	@Test
-	public void testHystrixFallbackFuture() throws Exception {
-		Future<Hello> future = hystrixClient.failFuture();
-		assertNotNull("future was null", future);
-		Hello hello = future.get(1, TimeUnit.SECONDS);
-		assertNotNull("hello was null", hello);
-		assertEquals("message was wrong", "fallbackfuture", hello.getMessage());
-	}
-
-	@Test
-	public void testHystrixClientWithFallBackFactory() throws Exception {
-		Hello hello = hystrixClientWithFallBackFactory.fail();
-		assertNotNull("hello was null", hello);
-		assertNotNull("hello#message was null", hello.getMessage());
-		assertTrue("hello#message did not contain the cause (status code) of the fallback invocation",
-			hello.getMessage().contains("500"));
-	}
-
-	@Test(expected = HystrixRuntimeException.class)
-	public void testInvalidTypeHystrixFallbackFactory() throws Exception {
-		invalidTypeHystrixClientWithFallBackFactory.fail();
-	}
-
-	@Test(expected = HystrixRuntimeException.class)
-	public void testNullHystrixFallbackFactory() throws Exception {
-		nullHystrixClientWithFallBackFactory.fail();
-	}
-
-	@Test
-	public void namedFeignClientWorks() {
-		assertNotNull("namedHystrixClient was null", this.namedHystrixClient);
-	}
-
-	@Test
-	public void testHystrixSetterFactory() {
-		HystrixCommand<List<Hello>> command = this.hystrixSetterFactoryClient
-			.getHellosHystrix();
-		assertNotNull("command was null", command);
-		String setterPrefix = TestHystrixSetterFactoryClientConfig.SETTER_PREFIX;
-		assertEquals(
-			"Hystrix command group name should match the name of the feign client with a prefix of "
-				+ setterPrefix, setterPrefix + "localapp5",
-			command.getCommandGroup().name());
-		assertEquals(
-			"Hystrix command key name should match the request method (space) request path with a prefix of "
-				+ setterPrefix, setterPrefix + "GET /hellos",
-			command.getCommandKey().name());
-		List<Hello> hellos = command.execute();
-		assertNotNull("hellos was null", hellos);
-		assertEquals("hellos didn't match", hellos, getHelloList());
 	}
 
 	public static class Hello {
+
 		private String message;
 
 		public Hello() {
@@ -844,7 +877,7 @@ public class FeignClientTests {
 		}
 
 		public String getMessage() {
-			return message;
+			return this.message;
 		}
 
 		public void setMessage(String message) {
@@ -853,24 +886,31 @@ public class FeignClientTests {
 
 		@Override
 		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
 			Hello that = (Hello) o;
-			return Objects.equals(message, that.message);
+			return Objects.equals(this.message, that.message);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(message);
+			return Objects.hash(this.message);
 		}
+
 	}
 
 	@Configuration
 	public static class TestDefaultFeignConfig {
+
 		@Bean
 		Logger.Level feignLoggerLevel() {
 			return Logger.Level.FULL;
 		}
+
 	}
 
 	// Load balancer with fixed server list for "local" pointing to localhost
@@ -886,4 +926,5 @@ public class FeignClientTests {
 		}
 
 	}
+
 }

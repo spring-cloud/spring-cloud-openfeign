@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.openfeign;
 
-import org.springframework.cloud.context.named.NamedContextFactory;
-
 import java.util.Arrays;
 import java.util.Objects;
+
+import org.springframework.cloud.context.named.NamedContextFactory;
 
 /**
  * @author Dave Syer
@@ -31,15 +31,16 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 
 	private Class<?>[] configuration;
 
-	public FeignClientSpecification() {}
+	FeignClientSpecification() {
+	}
 
-	public FeignClientSpecification(String name, Class<?>[] configuration) {
+	FeignClientSpecification(String name, Class<?>[] configuration) {
 		this.name = name;
 		this.configuration = configuration;
 	}
 
 	public String getName() {
-		return name;
+		return this.name;
 	}
 
 	public void setName(String name) {
@@ -47,7 +48,7 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 	}
 
 	public Class<?>[] getConfiguration() {
-		return configuration;
+		return this.configuration;
 	}
 
 	public void setConfiguration(Class<?>[] configuration) {
@@ -56,24 +57,27 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		FeignClientSpecification that = (FeignClientSpecification) o;
-		return Objects.equals(name, that.name) &&
-				Arrays.equals(configuration, that.configuration);
+		return Objects.equals(this.name, that.name)
+				&& Arrays.equals(this.configuration, that.configuration);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, configuration);
+		return Objects.hash(this.name, this.configuration);
 	}
 
 	@Override
 	public String toString() {
-		return new StringBuilder("FeignClientSpecification{")
-				.append("name='").append(name).append("', ")
-				.append("configuration=").append(Arrays.toString(configuration))
-				.append("}").toString();
+		return new StringBuilder("FeignClientSpecification{").append("name='")
+				.append(this.name).append("', ").append("configuration=")
+				.append(Arrays.toString(this.configuration)).append("}").toString();
 	}
 
 }

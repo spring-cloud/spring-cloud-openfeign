@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -40,10 +41,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
@@ -72,66 +70,73 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 	public TestClient testClient(boolean decode404) {
 		setType(this.getClass());
 		setDecode404(decode404);
-		return feign(context).target(TestClient.class, "http://localhost:" + this.port);
+		return feign(this.context).target(TestClient.class,
+				"http://localhost:" + this.port);
 	}
 
 	@Test
 	public void testResponseEntity() {
 		ResponseEntity<Hello> response = testClient().getHelloResponse();
-		assertNotNull("response was null", response);
-		assertEquals("wrong status code", HttpStatus.OK, response.getStatusCode());
+		assertThat(response).as("response was null").isNotNull();
+		assertThat(response.getStatusCode()).as("wrong status code")
+				.isEqualTo(HttpStatus.OK);
 		Hello hello = response.getBody();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", new Hello("hello world via response"),
-				hello);
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match")
+				.isEqualTo(new Hello("hello world via response"));
 	}
 
 	@Test
 	public void testSimpleType() {
 		Hello hello = testClient().getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", new Hello("hello world 1"), hello);
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match")
+				.isEqualTo(new Hello("hello world 1"));
 	}
 
 	@Test
 	public void testUserParameterizedTypeDecode() {
 		List<Hello> hellos = testClient().getHellos();
-		assertNotNull("hellos was null", hellos);
-		assertEquals("hellos was not the right size", 2, hellos.size());
-		assertEquals("first hello didn't match", new Hello("hello world 1"),
-				hellos.get(0));
+		assertThat(hellos).as("hellos was null").isNotNull();
+		assertThat(hellos.size()).as("hellos was not the right size").isEqualTo(2);
+		assertThat(hellos.get(0)).as("first hello didn't match")
+				.isEqualTo(new Hello("hello world 1"));
 	}
 
 	@Test
 	public void testSimpleParameterizedTypeDecode() {
 		List<String> hellos = testClient().getHelloStrings();
-		assertNotNull("hellos was null", hellos);
-		assertEquals("hellos was not the right size", 2, hellos.size());
-		assertEquals("first hello didn't match", "hello world 1", hellos.get(0));
+		assertThat(hellos).as("hellos was null").isNotNull();
+		assertThat(hellos.size()).as("hellos was not the right size").isEqualTo(2);
+		assertThat(hellos.get(0)).as("first hello didn't match")
+				.isEqualTo("hello world 1");
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testWildcardTypeDecode() {
 		ResponseEntity<?> wildcard = testClient().getWildcard();
-		assertNotNull("wildcard was null", wildcard);
-		assertEquals("wrong status code", HttpStatus.OK, wildcard.getStatusCode());
+		assertThat(wildcard).as("wildcard was null").isNotNull();
+		assertThat(wildcard.getStatusCode()).as("wrong status code")
+				.isEqualTo(HttpStatus.OK);
 		Object wildcardBody = wildcard.getBody();
-		assertNotNull("wildcardBody was null", wildcardBody);
-		assertTrue("wildcard not an instance of Map", wildcardBody instanceof Map);
+		assertThat(wildcardBody).as("wildcardBody was null").isNotNull();
+		assertThat(wildcardBody instanceof Map).as("wildcard not an instance of Map")
+				.isTrue();
 		Map<String, String> hello = (Map<String, String>) wildcardBody;
-		assertEquals("first hello didn't match", "wildcard", hello.get("message"));
+		assertThat(hello.get("message")).as("first hello didn't match")
+				.isEqualTo("wildcard");
 	}
 
 	@Test
 	public void testResponseEntityVoid() {
 		ResponseEntity<Void> response = testClient().getHelloVoid();
-		assertNotNull("response was null", response);
+		assertThat(response).as("response was null").isNotNull();
 		List<String> headerVals = response.getHeaders().get("X-test-header");
-		assertNotNull("headerVals was null", headerVals);
-		assertEquals("headerVals size was wrong", 1, headerVals.size());
+		assertThat(headerVals).as("headerVals was null").isNotNull();
+		assertThat(headerVals.size()).as("headerVals size was wrong").isEqualTo(1);
 		String header = headerVals.get(0);
-		assertEquals("header was wrong", "myval", header);
+		assertThat(header).as("header was wrong").isEqualTo("myval");
 	}
 
 	@Test(expected = RuntimeException.class)
@@ -142,43 +147,12 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 	@Test
 	public void testDecodes404() {
 		final ResponseEntity<String> response = testClient(true).getNotFound();
-		assertNotNull("response was null", response);
-		assertNull("response body was not null", response.getBody());
-	}
-
-	public static class Hello {
-		private String message;
-
-		public Hello() {
-		}
-
-		public Hello(String message) {
-			this.message = message;
-		}
-
-		public String getMessage() {
-			return message;
-		}
-
-		public void setMessage(String message) {
-			this.message = message;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			Hello that = (Hello) o;
-			return Objects.equals(message, that.message);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(message);
-		}
+		assertThat(response).as("response was null").isNotNull();
+		assertThat(response.getBody()).as("response body was not null").isNull();
 	}
 
 	protected interface TestClient {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/helloresponse")
 		ResponseEntity<Hello> getHelloResponse();
 
@@ -199,6 +173,45 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 
 		@GetMapping("/helloWildcard")
 		ResponseEntity<?> getWildcard();
+
+	}
+
+	public static class Hello {
+
+		private String message;
+
+		public Hello() {
+		}
+
+		public Hello(String message) {
+			this.message = message;
+		}
+
+		public String getMessage() {
+			return this.message;
+		}
+
+		public void setMessage(String message) {
+			this.message = message;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			Hello that = (Hello) o;
+			return Objects.equals(this.message, that.message);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(this.message);
+		}
+
 	}
 
 	@Configuration
@@ -247,7 +260,7 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 		public ResponseEntity<?> getWildcard() {
 			return ResponseEntity.ok(new Hello("wildcard"));
 		}
-		
+
 	}
 
 }

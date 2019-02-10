@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,19 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
+
 package org.springframework.cloud.openfeign;
 
-import okhttp3.OkHttpClient;
-
 import java.lang.reflect.Field;
+
 import javax.net.ssl.HostnameVerifier;
+
+import okhttp3.OkHttpClient;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
@@ -33,6 +34,8 @@ import org.springframework.cloud.test.ClassPathExclusions;
 import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ReflectionUtils;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
@@ -45,23 +48,29 @@ public class FeignOkHttpConfigurationTests {
 
 	@Before
 	public void setUp() {
-		context = new SpringApplicationBuilder().properties("debug=true","feign.httpclient.disableSslValidation=true",
-				"feign.okhttp.enabled=true", "feign.httpclient.enabled=false").web(WebApplicationType.NONE)
-				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
+		this.context = new SpringApplicationBuilder()
+				.properties("debug=true", "feign.httpclient.disableSslValidation=true",
+						"feign.okhttp.enabled=true", "feign.httpclient.enabled=false")
+				.web(WebApplicationType.NONE)
+				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
+				.run();
 	}
 
 	@After
 	public void tearDown() {
-		if(context != null) {
-			context.close();
+		if (this.context != null) {
+			this.context.close();
 		}
 	}
 
 	@Test
 	public void disableSslTest() throws Exception {
-		OkHttpClient httpClient = context.getBean(OkHttpClient.class);
-		HostnameVerifier hostnameVerifier = (HostnameVerifier)this.getField(httpClient, "hostnameVerifier");
-		Assert.assertTrue(OkHttpClientFactory.TrustAllHostnames.class.isInstance(hostnameVerifier));
+		OkHttpClient httpClient = this.context.getBean(OkHttpClient.class);
+		HostnameVerifier hostnameVerifier = (HostnameVerifier) this.getField(httpClient,
+				"hostnameVerifier");
+		assertThat(
+				OkHttpClientFactory.TrustAllHostnames.class.isInstance(hostnameVerifier))
+						.isTrue();
 	}
 
 	protected <T> Object getField(Object target, String name) {
@@ -70,4 +79,5 @@ public class FeignOkHttpConfigurationTests {
 		Object value = ReflectionUtils.getField(field, target);
 		return value;
 	}
+
 }

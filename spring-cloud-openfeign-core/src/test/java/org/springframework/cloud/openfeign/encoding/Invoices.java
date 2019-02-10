@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package org.springframework.cloud.openfeign.encoding;
 
-import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
 
 /**
  * Utility class used for testing.
@@ -35,9 +35,11 @@ final class Invoices {
 		for (int ind = 0; ind < count; ind++) {
 			final Invoice invoice = new Invoice();
 			invoice.setTitle("Invoice " + (ind + 1));
-			invoice.setAmount(new BigDecimal(String.format(Locale.US, "%.2f", Math.random() * 1000)));
+			invoice.setAmount(new BigDecimal(
+					String.format(Locale.US, "%.2f", Math.random() * 1000)));
 			invoices.add(invoice);
 		}
 		return invoices;
 	}
+
 }

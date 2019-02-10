@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign.support;
@@ -51,14 +50,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 /**
  * @author Spencer Gibb
@@ -80,97 +77,94 @@ public class SpringEncoderTests {
 	@Test
 	public void testCustomHttpMessageConverter() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
-		assertThat(encoder, is(notNullValue()));
+		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
 
 		encoder.encode("hi", MyType.class, request);
 
 		Collection<String> contentTypeHeader = request.headers().get("Content-Type");
-		assertThat("missing content type header", contentTypeHeader, is(notNullValue()));
-		assertThat("missing content type header", contentTypeHeader.isEmpty(), is(false));
+		assertThat(contentTypeHeader).as("missing content type header").isNotNull();
+		assertThat(contentTypeHeader.isEmpty()).as("missing content type header")
+				.isFalse();
 
 		String header = contentTypeHeader.iterator().next();
-		assertThat("content type header is wrong", header, is("application/mytype"));
-		
-		assertThat("request charset is null", request.requestCharset(), is(notNullValue()));
-		assertThat("request charset is wrong", request.requestCharset(), is(Charset.forName("UTF-8")));
+		assertThat(header).as("content type header is wrong")
+				.isEqualTo("application/mytype");
+
+		assertThat(request.requestCharset()).as("request charset is null").isNotNull();
+		assertThat(request.requestCharset()).as("request charset is wrong")
+				.isEqualTo(Charset.forName("UTF-8"));
 	}
 
 	@Test
 	public void testBinaryData() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
-		assertThat(encoder, is(notNullValue()));
+		assertThat(encoder).isNotNull();
+
 		RequestTemplate request = new RequestTemplate();
 
 		encoder.encode("hi".getBytes(), null, request);
 
-		assertThat("Request Content-Type is not octet-stream",
-				((List) request.headers().get(CONTENT_TYPE)).get(0),
-				equalTo(APPLICATION_OCTET_STREAM_VALUE));
+		assertThat(((List) request.headers().get(CONTENT_TYPE)).get(0))
+				.as("Request Content-Type is not octet-stream")
+				.isEqualTo(APPLICATION_OCTET_STREAM_VALUE);
 	}
 
 	@Test(expected = EncodeException.class)
 	public void testMultipartFile1() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
-		assertThat(encoder, is(notNullValue()));
+		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
 
-		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
+		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file",
+				"hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 
-		assertThat("request charset is not null", request.requestCharset(), is(nullValue()));
+		assertThat(request.requestCharset()).as("request charset is not null").isNull();
 	}
 
+	// gh-105, gh-107
 	@Test
 	public void testMultipartFile2() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
-		assertThat(encoder, is(notNullValue()));
+		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
-		request = request.header("Content-Type", MediaType.MULTIPART_FORM_DATA_VALUE);
+		request.header(ACCEPT, MediaType.MULTIPART_FORM_DATA_VALUE);
+		request.header(CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE);
 
-		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
+		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file",
+				"hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 
-		assertThat("Request Content-Type is not multipart/form-data",
-				(String) ((List) request.headers().get(CONTENT_TYPE)).get(0),
-				containsString(MediaType.MULTIPART_FORM_DATA_VALUE));
+		assertThat((String) ((List) request.headers().get(CONTENT_TYPE)).get(0))
+				.as("Request Content-Type is not multipart/form-data")
+				.contains("multipart/form-data; charset=UTF-8; boundary=");
+		assertThat(request.headers().get(CONTENT_TYPE).size())
+				.as("There is more than one Content-Type request header").isEqualTo(1);
+		assertThat(((List) request.headers().get(ACCEPT)).get(0))
+				.as("Request Accept header is not multipart/form-data")
+				.isEqualTo(MULTIPART_FORM_DATA_VALUE);
+		assertThat(((List) request.headers().get(CONTENT_LENGTH)).get(0))
+				.as("Request Content-Length is not equal to 186").isEqualTo("186");
+		assertThat(new String(request.requestBody().asBytes()))
+				.as("Body content cannot be decoded").contains("hi");
 	}
-	
-	class MediaTypeMatcher implements ArgumentMatcher<MediaType> {
 
-		private MediaType mediaType;
+	protected interface TestClient {
 
-		public MediaTypeMatcher(String type, String subtype) {
-			this.mediaType = new MediaType(type, subtype);
-		}
-
-		@Override
-		public boolean matches(MediaType argument) {
-			return this.mediaType.equals(argument);
-		}
-
-		@Override
-		public String toString() {
-			final StringBuffer sb = new StringBuffer("MediaTypeMatcher{");
-			sb.append("mediaType=").append(this.mediaType);
-			sb.append('}');
-			return sb.toString();
-		}
 	}
 
 	protected static class MyType {
+
 		private String value;
 
 		public String getValue() {
-			return value;
+			return this.value;
 		}
 
 		public void setValue(String value) {
 			this.value = value;
 		}
-	}
-
-	protected interface TestClient {
 
 	}
 
@@ -187,7 +181,7 @@ public class SpringEncoderTests {
 		private static class MyHttpMessageConverter
 				extends AbstractGenericHttpMessageConverter<Object> {
 
-			public MyHttpMessageConverter() {
+			MyHttpMessageConverter() {
 				super(new MediaType("application", "mytype"));
 			}
 
@@ -225,7 +219,32 @@ public class SpringEncoderTests {
 					throws IOException, HttpMessageNotReadableException {
 				return null;
 			}
+
 		}
+
+	}
+
+	class MediaTypeMatcher implements ArgumentMatcher<MediaType> {
+
+		private MediaType mediaType;
+
+		MediaTypeMatcher(String type, String subtype) {
+			this.mediaType = new MediaType(type, subtype);
+		}
+
+		@Override
+		public boolean matches(MediaType argument) {
+			return this.mediaType.equals(argument);
+		}
+
+		@Override
+		public String toString() {
+			final StringBuffer sb = new StringBuffer("MediaTypeMatcher{");
+			sb.append("mediaType=").append(this.mediaType);
+			sb.append('}');
+			return sb.toString();
+		}
+
 	}
 
 }

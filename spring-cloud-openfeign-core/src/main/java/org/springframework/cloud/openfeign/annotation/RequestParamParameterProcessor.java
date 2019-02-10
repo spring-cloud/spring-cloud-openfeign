@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import feign.MethodMetadata;
+
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
-
-import feign.MethodMetadata;
 
 /**
  * {@link RequestParam} parameter processor.
@@ -46,13 +46,15 @@ public class RequestParamParameterProcessor implements AnnotatedParameterProcess
 	}
 
 	@Override
-	public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
+	public boolean processArgument(AnnotatedParameterContext context,
+			Annotation annotation, Method method) {
 		int parameterIndex = context.getParameterIndex();
 		Class<?> parameterType = method.getParameterTypes()[parameterIndex];
 		MethodMetadata data = context.getMethodMetadata();
 
 		if (Map.class.isAssignableFrom(parameterType)) {
-			checkState(data.queryMapIndex() == null, "Query map can only be present once.");
+			checkState(data.queryMapIndex() == null,
+					"Query map can only be present once.");
 			data.queryMapIndex(parameterIndex);
 
 			return true;
@@ -61,8 +63,7 @@ public class RequestParamParameterProcessor implements AnnotatedParameterProcess
 		RequestParam requestParam = ANNOTATION.cast(annotation);
 		String name = requestParam.value();
 		checkState(emptyToNull(name) != null,
-				"RequestParam.value() was empty on parameter %s",
-				parameterIndex);
+				"RequestParam.value() was empty on parameter %s", parameterIndex);
 		context.setParameterName(name);
 
 		Collection<String> query = context.setTemplateParameter(name,
@@ -70,4 +71,5 @@ public class RequestParamParameterProcessor implements AnnotatedParameterProcess
 		data.template().query(name, query);
 		return true;
 	}
+
 }

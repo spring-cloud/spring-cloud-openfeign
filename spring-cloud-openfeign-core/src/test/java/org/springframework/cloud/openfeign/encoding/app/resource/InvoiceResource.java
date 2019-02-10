@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,11 @@
 
 package org.springframework.cloud.openfeign.encoding.app.resource;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -25,11 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * An sample REST controller, that potentially returns large response - used for testing.
@@ -45,8 +45,7 @@ public class InvoiceResource {
 		return ResponseEntity.ok(createInvoiceList(100));
 	}
 
-	@RequestMapping(value = "invoices", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
-			produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "invoices", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<List<Invoice>> saveInvoices(@RequestBody List<Invoice> invoices) {
 
 		return ResponseEntity.ok(invoices);
@@ -63,9 +62,11 @@ public class InvoiceResource {
 		for (int ind = 0; ind < count; ind++) {
 			final Invoice invoice = new Invoice();
 			invoice.setTitle("Invoice " + (ind + 1));
-			invoice.setAmount(new BigDecimal(String.format(Locale.US, "%.2f", Math.random() * 1000)));
+			invoice.setAmount(new BigDecimal(
+					String.format(Locale.US, "%.2f", Math.random() * 1000)));
 			invoices.add(invoice);
 		}
 		return invoices;
 	}
+
 }

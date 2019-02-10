@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 public class FeignRibbonClientTests {
 
 	private AbstractLoadBalancer loadBalancer = mock(AbstractLoadBalancer.class);
+
 	private Client delegate = mock(Client.class);
 
 	private SpringClientFactory factory = new SpringClientFactory() {
@@ -81,71 +82,58 @@ public class FeignRibbonClientTests {
 
 	// Even though we don't maintain FeignRibbonClient, keep these tests
 	// around to make sure the expected behaviour doesn't break
-	private Client client = new LoadBalancerFeignClient(this.delegate, new CachingSpringLoadBalancerFactory(this.factory), this.factory);
+	private Client client = new LoadBalancerFeignClient(this.delegate,
+			new CachingSpringLoadBalancerFactory(this.factory), this.factory);
 
 	@Before
 	public void init() {
-		when(this.loadBalancer.chooseServer(any())).thenReturn(
-				new Server("foo.com", 8000));
-		//to fix NPE
+		when(this.loadBalancer.chooseServer(any()))
+				.thenReturn(new Server("foo.com", 8000));
+		// to fix NPE
 		LoadBalancerStats stats = mock(LoadBalancerStats.class);
 		when(this.loadBalancer.getLoadBalancerStats()).thenReturn(stats);
-		when(stats.getSingleServerStat(any(Server.class))).thenReturn(mock(ServerStats.class));
+		when(stats.getSingleServerStat(any(Server.class)))
+				.thenReturn(mock(ServerStats.class));
 	}
 
 	@Test
 	public void remoteRequestIsSentAtRoot() throws Exception {
-		Request request = new RequestTemplate()
-				.method(GET)
-				.target("http://foo")
-				.resolve(new HashMap<>())
-				.request();
+		Request request = new RequestTemplate().method(GET).target("http://foo")
+				.resolve(new HashMap<>()).request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
-		verify(this.delegate).execute(argThat(matcher),
-				any(Options.class));
+		verify(this.delegate).execute(argThat(matcher), any(Options.class));
 	}
 
 	@Test
 	public void remoteRequestIsSent() throws Exception {
-		Request request = new RequestTemplate()
-				.method(GET)
-				.target("http://foo/")
-				.resolve(new HashMap<>())
-				.request();
+		Request request = new RequestTemplate().method(GET).target("http://foo/")
+				.resolve(new HashMap<>()).request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
-		verify(this.delegate).execute(argThat(matcher),
-				any(Options.class));
+		verify(this.delegate).execute(argThat(matcher), any(Options.class));
 	}
 
 	@Test
 	public void verifyCleanUrl() throws Exception {
-		Request request = new RequestTemplate()
-				.method(GET)
-				.target("http://tp/abc/bcd.json")
-				.resolve(new HashMap<>())
-				.request();
+		Request request = new RequestTemplate().method(GET)
+				.target("http://tp/abc/bcd.json").resolve(new HashMap<>()).request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/abc/bcd.json");
-		verify(this.delegate).execute(argThat(matcher),
-				any(Options.class));
+		verify(this.delegate).execute(argThat(matcher), any(Options.class));
 	}
 
 	@Test
 	public void remoteRequestIsSecure() throws Exception {
-		Request request = new RequestTemplate()
-				.method(GET)
-				.target("https://foo/")
-				.resolve(new HashMap<>())
-				.request();
+		Request request = new RequestTemplate().method(GET).target("https://foo/")
+				.resolve(new HashMap<>()).request();
 		this.client.execute(request, new Options());
 		RequestMatcher matcher = new RequestMatcher("https://foo.com:8000/");
-		verify(this.delegate).execute(argThat(matcher),
-				any(Options.class));
+		verify(this.delegate).execute(argThat(matcher), any(Options.class));
 	}
 
 	private final static class RequestMatcher extends CustomMatcher<Request> {
+
 		private String url;
 
 		private RequestMatcher(String url) {
@@ -158,6 +146,7 @@ public class FeignRibbonClientTests {
 			Request request = (Request) item;
 			return request.url().equals(this.url);
 		}
+
 	}
 
 }

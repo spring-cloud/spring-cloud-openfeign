@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.openfeign.support;
@@ -49,7 +48,7 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
 
 /**
  * @author Spencer Gibb
- * @author ScienJus
+ * @author Scien Jus
  */
 public class SpringEncoder implements Encoder {
 
@@ -79,12 +78,13 @@ public class SpringEncoder implements Encoder {
 
 			if (bodyType != null && bodyType.equals(MultipartFile.class)) {
 				if (Objects.equals(requestContentType, MediaType.MULTIPART_FORM_DATA)) {
-					springFormEncoder.encode(requestBody, bodyType, request);
+					this.springFormEncoder.encode(requestBody, bodyType, request);
 					return;
-				} else {
-					String message = "Content-Type \"" + MediaType.MULTIPART_FORM_DATA +
-									 "\" not set for request body of type " +
-									 requestBody.getClass().getSimpleName();
+				}
+				else {
+					String message = "Content-Type \"" + MediaType.MULTIPART_FORM_DATA
+							+ "\" not set for request body of type "
+							+ requestBody.getClass().getSimpleName();
 					throw new EncodeException(message);
 				}
 			}
@@ -95,8 +95,8 @@ public class SpringEncoder implements Encoder {
 					if (log.isDebugEnabled()) {
 						if (requestContentType != null) {
 							log.debug("Writing [" + requestBody + "] as \""
-									+ requestContentType + "\" using ["
-									+ messageConverter + "]");
+									+ requestContentType + "\" using [" + messageConverter
+									+ "]");
 						}
 						else {
 							log.debug("Writing [" + requestBody + "] using ["
@@ -124,14 +124,17 @@ public class SpringEncoder implements Encoder {
 					Charset charset;
 					if (messageConverter instanceof ByteArrayHttpMessageConverter) {
 						charset = null;
-					} else if (messageConverter instanceof ProtobufHttpMessageConverter &&
-							ProtobufHttpMessageConverter.PROTOBUF.isCompatibleWith(outputMessage.getHeaders().getContentType())) {
+					}
+					else if (messageConverter instanceof ProtobufHttpMessageConverter
+							&& ProtobufHttpMessageConverter.PROTOBUF.isCompatibleWith(
+									outputMessage.getHeaders().getContentType())) {
 						charset = null;
-					} else {
+					}
+					else {
 						charset = StandardCharsets.UTF_8;
 					}
-					request.body(Request.Body.encoded(outputMessage.getOutputStream()
-							.toByteArray(), charset));
+					request.body(Request.Body.encoded(
+							outputMessage.getOutputStream().toByteArray(), charset));
 					return;
 				}
 			}
@@ -144,14 +147,14 @@ public class SpringEncoder implements Encoder {
 		}
 	}
 
-	private class FeignOutputMessage implements HttpOutputMessage {
+	private final class FeignOutputMessage implements HttpOutputMessage {
 
 		private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 		private final HttpHeaders httpHeaders;
 
 		private FeignOutputMessage(RequestTemplate request) {
-			httpHeaders = getHttpHeaders(request.headers());
+			this.httpHeaders = getHttpHeaders(request.headers());
 		}
 
 		@Override

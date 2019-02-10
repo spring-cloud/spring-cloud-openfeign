@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 
 package org.springframework.cloud.openfeign.annotation;
 
-import feign.MethodMetadata;
-import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
-import org.springframework.cloud.openfeign.SpringQueryMap;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+
+import feign.MethodMetadata;
+
+import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 
 /**
  * {@link SpringQueryMap} parameter processor.
@@ -39,7 +40,8 @@ public class QueryMapParameterProcessor implements AnnotatedParameterProcessor {
 	}
 
 	@Override
-	public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
+	public boolean processArgument(AnnotatedParameterContext context,
+			Annotation annotation, Method method) {
 		int paramIndex = context.getParameterIndex();
 		MethodMetadata metadata = context.getMethodMetadata();
 		if (metadata.queryMapIndex() == null) {
@@ -48,4 +50,5 @@ public class QueryMapParameterProcessor implements AnnotatedParameterProcessor {
 		}
 		return true;
 	}
+
 }

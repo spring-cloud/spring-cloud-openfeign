@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+		"-//Puppy Crawl//DTD Suppressions 1.1//EN"
+		"http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+<suppressions>
+	<suppress files=".*FeignClientTests.*" checks="LineLengthCheck" />
+	<suppress files=".*FeignClientsRegistrarTests.*" checks="LineLengthCheck" />
+	<suppress files=".*FeignRibbonHttpClientConfigurationTests.*" checks="LineLengthCheck" />
+	<suppress files=".*FeignRibbonOkHttpClientConfigurationTests.*" checks="LineLengthCheck" />
+	<suppress files=".*InvoiceClient.*" checks="LineLengthCheck" />
+	<suppress files=".*InvoiceResource.*" checks="LineLengthCheck" />
+	<suppress files=".*LoadBalancerFeignClientOverrideTests.*" checks="LineLengthCheck" />
+	<suppress files=".*ProtobufSpringEncoderTest.*" checks="LineLengthCheck" />
+	<suppress files=".*ProtobufTest.*" checks="LineLengthCheck" />
+
+	<!-- Important -->
+	<suppress files=".*HttpEncoding.*" checks="InterfaceIsTypeCheck" />
+</suppressions>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package org.springframework.cloud.openfeign;
 
-import feign.QueryMap;
-import org.springframework.core.annotation.AliasFor;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import feign.QueryMap;
+
+import org.springframework.core.annotation.AliasFor;
 
 /**
  * Spring MVC equivalent of OpenFeign's {@link feign.QueryMap} parameter annotation.
@@ -32,22 +33,21 @@ import java.lang.annotation.Target;
  * @see org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER})
+@Target({ ElementType.PARAMETER })
 public @interface SpringQueryMap {
 
-    /**
-     * Alias for {@link #encoded()}.
-     *
-     * @see QueryMap#encoded()
-     */
-    @AliasFor("encoded")
-    boolean value() default false;
+	/**
+	 * @see QueryMap#encoded()
+	 * @return alias for {@link #encoded()}.
+	 */
+	@AliasFor("encoded")
+	boolean value() default false;
 
-    /**
-     * Specifies whether parameter names and values are already encoded.
-     *
-     * @see QueryMap#encoded()
-     */
-    @AliasFor("value")
-    boolean encoded() default false;
+	/**
+	 * @see QueryMap#encoded()
+	 * @return Specifies whether parameter names and values are already encoded.
+	 */
+	@AliasFor("value")
+	boolean encoded() default false;
+
 }

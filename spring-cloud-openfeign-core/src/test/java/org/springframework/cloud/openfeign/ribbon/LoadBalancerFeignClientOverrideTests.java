@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
-import static org.junit.Assert.assertEquals;
-
+import com.netflix.client.config.CommonClientConfigKey;
+import com.netflix.client.config.IClientConfig;
+import feign.Request;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,10 +35,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.netflix.client.config.CommonClientConfigKey;
-import com.netflix.client.config.IClientConfig;
-
-import feign.Request;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
@@ -56,20 +55,20 @@ public class LoadBalancerFeignClientOverrideTests {
 		// specific ribbon 'bar' configuration via spring bean
 		Request.Options barOptions = this.context.getInstance("bar",
 				Request.Options.class);
-		assertEquals(1, barOptions.connectTimeoutMillis());
-		assertEquals(2, barOptions.readTimeoutMillis());
+		assertThat(barOptions.connectTimeoutMillis()).isEqualTo(1);
+		assertThat(barOptions.readTimeoutMillis()).isEqualTo(2);
 		assertOptions(barOptions, "bar", 1, 2);
 
 		// specific ribbon 'foo' configuration via application.yml
 		Request.Options fooOptions = this.context.getInstance("foo",
 				Request.Options.class);
-		assertEquals(LoadBalancerFeignClient.DEFAULT_OPTIONS, fooOptions);
+		assertThat(fooOptions).isEqualTo(LoadBalancerFeignClient.DEFAULT_OPTIONS);
 		assertOptions(fooOptions, "foo", 7, 17);
 
 		// generic ribbon default configuration
 		Request.Options bazOptions = this.context.getInstance("baz",
 				Request.Options.class);
-		assertEquals(LoadBalancerFeignClient.DEFAULT_OPTIONS, bazOptions);
+		assertThat(bazOptions).isEqualTo(LoadBalancerFeignClient.DEFAULT_OPTIONS);
 		assertOptions(bazOptions, "baz", 3001, 60001);
 	}
 
@@ -78,44 +77,54 @@ public class LoadBalancerFeignClientOverrideTests {
 		LoadBalancerFeignClient client = this.context.getInstance(name,
 				LoadBalancerFeignClient.class);
 		IClientConfig config = client.getClientConfig(options, name);
-		assertEquals("connect was wrong for " + name, expectedConnect,
-				config.get(CommonClientConfigKey.ConnectTimeout, -1).intValue());
-		assertEquals("read was wrong for " + name, expectedRead,
-				config.get(CommonClientConfigKey.ReadTimeout, -1).intValue());
+		assertThat(config.get(CommonClientConfigKey.ConnectTimeout, -1).intValue())
+				.as("connect was wrong for " + name).isEqualTo(expectedConnect);
+		assertThat(config.get(CommonClientConfigKey.ReadTimeout, -1).intValue())
+				.as("read was wrong for " + name).isEqualTo(expectedRead);
+	}
+
+	@FeignClient(value = "foo", configuration = FooConfiguration.class)
+	interface FooClient {
+
+		@RequestMapping("/")
+		String get();
+
+	}
+
+	@FeignClient(value = "bar", configuration = BarConfiguration.class)
+	interface BarClient {
+
+		@RequestMapping("/")
+		String get();
+
+	}
+
+	@FeignClient("baz")
+	interface BazClient {
+
+		@RequestMapping("/")
+		String get();
+
 	}
 
 	@Configuration
 	@EnableFeignClients(clients = { FooClient.class, BarClient.class, BazClient.class })
 	@EnableAutoConfiguration
 	protected static class TestConfiguration {
-	}
-
-	@FeignClient(value = "foo", configuration = FooConfiguration.class)
-	interface FooClient {
-		@RequestMapping("/")
-		String get();
 
 	}
 
 	public static class FooConfiguration {
-	}
 
-	@FeignClient(value = "bar", configuration = BarConfiguration.class)
-	interface BarClient {
-		@RequestMapping("/")
-		String get();
 	}
 
 	public static class BarConfiguration {
+
 		@Bean
 		public Request.Options feignRequestOptions() {
 			return new Request.Options(1, 2);
 		}
+
 	}
 
-	@FeignClient("baz")
-	interface BazClient {
-		@RequestMapping("/")
-		String get();
-	}
 }

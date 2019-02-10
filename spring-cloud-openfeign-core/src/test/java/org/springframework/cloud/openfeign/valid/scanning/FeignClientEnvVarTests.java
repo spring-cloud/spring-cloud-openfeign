@@ -1,33 +1,35 @@
 /*
+ * Copyright 2013-2019 the original author or authors.
  *
- *  * Copyright 2013-2016 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.springframework.cloud.openfeign.valid.scanning;
 
+import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.ServerList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.cloud.openfeign.testclients.TestClient;
-import org.springframework.cloud.netflix.ribbon.RibbonClient;
-import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -37,17 +39,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerList;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
  * @author Ryan Baxter
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientEnvVarTests.Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, value = {
+@SpringBootTest(classes = FeignClientEnvVarTests.Application.class, webEnvironment = RANDOM_PORT, value = {
 		"spring.application.name=feignclienttest", "feign.httpclient.enabled=false",
 		"basepackage=org.springframework.cloud.openfeign.testclients" })
 @DirtiesContext
@@ -59,22 +58,23 @@ public class FeignClientEnvVarTests {
 	@Test
 	public void testSimpleType() {
 		String hello = this.testClient.getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", "hello world 1", hello);
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match").isEqualTo("hello world 1");
 	}
 
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
-	@EnableFeignClients(basePackages = {"${basepackage}"})
+	@EnableFeignClients(basePackages = { "${basepackage}" })
 	@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
+
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		public String getHello() {
 			return "hello world 1";
 		}
-		
+
 	}
 
 	// Load balancer with fixed server list for "local" pointing to localhost
@@ -90,4 +90,5 @@ public class FeignClientEnvVarTests {
 		}
 
 	}
+
 }

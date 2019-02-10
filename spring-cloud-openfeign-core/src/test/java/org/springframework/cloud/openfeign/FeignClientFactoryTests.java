@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,14 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.Arrays;
+
 import org.junit.Test;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 
-import java.util.Arrays;
-
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
@@ -42,33 +40,43 @@ public class FeignClientFactoryTests {
 				getSpec("bar", BarConfig.class)));
 
 		Foo foo = context.getInstance("foo", Foo.class);
-		assertThat("foo was null", foo, is(notNullValue()));
+		assertThat(foo).as("foo was null").isNotNull();
 
 		Bar bar = context.getInstance("bar", Bar.class);
-		assertThat("bar was null", bar, is(notNullValue()));
+		assertThat(bar).as("bar was null").isNotNull();
 
 		Bar foobar = context.getInstance("foo", Bar.class);
-		assertThat("bar was not null", foobar, is(nullValue()));
+		assertThat(foobar).as("bar was not null").isNull();
 	}
 
 	private FeignClientSpecification getSpec(String name, Class<?> configClass) {
-		return new FeignClientSpecification(name, new Class[]{configClass});
+		return new FeignClientSpecification(name, new Class[] { configClass });
 	}
 
 	static class FooConfig {
+
 		@Bean
 		Foo foo() {
 			return new Foo();
 		}
 
 	}
-	static class Foo{}
+
+	static class Foo {
+
+	}
 
 	static class BarConfig {
+
 		@Bean
 		Bar bar() {
 			return new Bar();
 		}
+
 	}
-	static class Bar{}
+
+	static class Bar {
+
+	}
+
 }

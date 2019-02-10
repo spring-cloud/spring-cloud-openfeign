@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,23 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
+import com.netflix.loadbalancer.ILoadBalancer;
+import feign.Feign;
+import feign.Request;
+
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
+import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
-
-import com.netflix.loadbalancer.ILoadBalancer;
-
-import feign.Feign;
-import feign.Request;
 
 /**
  * Autoconfiguration to be activated if Feign is in use and needs to be use Ribbon as a
@@ -45,8 +44,9 @@ import feign.Request;
 @Configuration
 @AutoConfigureBefore(FeignAutoConfiguration.class)
 @EnableConfigurationProperties({ FeignHttpClientProperties.class })
-//Order is important here, last should be the default, first should be optional
-// see https://github.com/spring-cloud/spring-cloud-netflix/issues/2086#issuecomment-316281653
+// Order is important here, last should be the default, first should be optional
+// see
+// https://github.com/spring-cloud/spring-cloud-netflix/issues/2086#issuecomment-316281653
 @Import({ HttpClientFeignLoadBalancedConfiguration.class,
 		OkHttpFeignLoadBalancedConfiguration.class,
 		DefaultFeignLoadBalancedConfiguration.class })
@@ -66,8 +66,7 @@ public class FeignRibbonClientAutoConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnClass(name = "org.springframework.retry.support.RetryTemplate")
 	public CachingSpringLoadBalancerFactory retryabeCachingLBClientFactory(
-		SpringClientFactory factory,
-		LoadBalancedRetryFactory retryFactory) {
+			SpringClientFactory factory, LoadBalancedRetryFactory retryFactory) {
 		return new CachingSpringLoadBalancerFactory(factory, retryFactory);
 	}
 
@@ -76,4 +75,5 @@ public class FeignRibbonClientAutoConfiguration {
 	public Request.Options feignRequestOptions() {
 		return LoadBalancerFeignClient.DEFAULT_OPTIONS;
 	}
+
 }

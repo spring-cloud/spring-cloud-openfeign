@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -52,14 +51,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
  * @author Eko Kurniawan Khannedy
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class, webEnvironment = RANDOM_PORT)
 @TestPropertySource("classpath:feign-properties.properties")
 @DirtiesContext
 public class FeignClientUsingPropertiesTests {
@@ -80,38 +80,41 @@ public class FeignClientUsingPropertiesTests {
 	private FeignClientFactoryBean formFactoryBean;
 
 	public FeignClientUsingPropertiesTests() {
-		fooFactoryBean = new FeignClientFactoryBean();
-		fooFactoryBean.setContextId("foo");
-		fooFactoryBean.setType(FeignClientFactoryBean.class);
+		this.fooFactoryBean = new FeignClientFactoryBean();
+		this.fooFactoryBean.setContextId("foo");
+		this.fooFactoryBean.setType(FeignClientFactoryBean.class);
 
-		barFactoryBean = new FeignClientFactoryBean();
-		barFactoryBean.setContextId("bar");
-		barFactoryBean.setType(FeignClientFactoryBean.class);
+		this.barFactoryBean = new FeignClientFactoryBean();
+		this.barFactoryBean.setContextId("bar");
+		this.barFactoryBean.setType(FeignClientFactoryBean.class);
 
-		formFactoryBean = new FeignClientFactoryBean();
-		formFactoryBean.setContextId("form");
-		formFactoryBean.setType(FeignClientFactoryBean.class);
+		this.formFactoryBean = new FeignClientFactoryBean();
+		this.formFactoryBean.setContextId("form");
+		this.formFactoryBean.setType(FeignClientFactoryBean.class);
 	}
 
 	public FooClient fooClient() {
-		fooFactoryBean.setApplicationContext(applicationContext);
-		return fooFactoryBean.feign(context).target(FooClient.class, "http://localhost:" + this.port);
+		this.fooFactoryBean.setApplicationContext(this.applicationContext);
+		return this.fooFactoryBean.feign(this.context).target(FooClient.class,
+				"http://localhost:" + this.port);
 	}
 
 	public BarClient barClient() {
-		barFactoryBean.setApplicationContext(applicationContext);
-		return barFactoryBean.feign(context).target(BarClient.class, "http://localhost:" + this.port);
+		this.barFactoryBean.setApplicationContext(this.applicationContext);
+		return this.barFactoryBean.feign(this.context).target(BarClient.class,
+				"http://localhost:" + this.port);
 	}
 
 	public FormClient formClient() {
-		formFactoryBean.setApplicationContext(applicationContext);
-		return formFactoryBean.feign(context).target(FormClient.class, "http://localhost:" + this.port);
+		this.formFactoryBean.setApplicationContext(this.applicationContext);
+		return this.formFactoryBean.feign(this.context).target(FormClient.class,
+				"http://localhost:" + this.port);
 	}
 
 	@Test
 	public void testFoo() {
 		String response = fooClient().foo();
-		assertEquals("OK", response);
+		assertThat(response).isEqualTo("OK");
 	}
 
 	@Test(expected = RetryableException.class)
@@ -124,25 +127,26 @@ public class FeignClientUsingPropertiesTests {
 	public void testForm() {
 		Map<String, String> request = Collections.singletonMap("form", "Data");
 		String response = formClient().form(request);
-		assertEquals("Data", response);
+		assertThat(response).isEqualTo("Data");
 	}
 
 	protected interface FooClient {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/foo")
 		String foo();
+
 	}
 
 	protected interface BarClient {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/bar")
 		String bar();
+
 	}
 
 	protected interface FormClient {
 
-		@RequestMapping(value = "/form", method = RequestMethod.POST,
-				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		@RequestMapping(value = "/form", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		String form(Map<String, String> form);
 
 	}
@@ -155,10 +159,11 @@ public class FeignClientUsingPropertiesTests {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/foo")
 		public String foo(HttpServletRequest request) throws IllegalAccessException {
-			if ("Foo".equals(request.getHeader("Foo")) &&
-					"Bar".equals(request.getHeader("Bar"))) {
+			if ("Foo".equals(request.getHeader("Foo"))
+					&& "Bar".equals(request.getHeader("Bar"))) {
 				return "OK";
-			} else {
+			}
+			else {
 				throw new IllegalAccessException("It should has Foo and Bar header");
 			}
 		}
@@ -169,8 +174,7 @@ public class FeignClientUsingPropertiesTests {
 			return "OK";
 		}
 
-		@RequestMapping(value = "/form", method = RequestMethod.POST,
-				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		@RequestMapping(value = "/form", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		public String form(HttpServletRequest request) {
 			return request.getParameter("form");
 		}
@@ -178,17 +182,21 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	public static class FooRequestInterceptor implements RequestInterceptor {
+
 		@Override
 		public void apply(RequestTemplate template) {
 			template.header("Foo", "Foo");
 		}
+
 	}
 
 	public static class BarRequestInterceptor implements RequestInterceptor {
+
 		@Override
 		public void apply(RequestTemplate template) {
 			template.header("Bar", "Bar");
 		}
+
 	}
 
 	public static class NoRetryer implements Retryer {
@@ -202,24 +210,29 @@ public class FeignClientUsingPropertiesTests {
 		public Retryer clone() {
 			return this;
 		}
+
 	}
 
 	public static class DefaultErrorDecoder extends ErrorDecoder.Default {
+
 	}
 
 	public static class FormEncoder implements Encoder {
 
 		@Override
-		public void encode(Object o, Type type, RequestTemplate requestTemplate) throws EncodeException {
+		public void encode(Object o, Type type, RequestTemplate requestTemplate)
+				throws EncodeException {
 			Map<String, String> form = (Map<String, String>) o;
 			StringBuilder builder = new StringBuilder();
 			form.forEach((key, value) -> {
 				builder.append(key + "=" + value + "&");
 			});
 
-			requestTemplate.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+			requestTemplate.header(HttpHeaders.CONTENT_TYPE,
+					MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 			requestTemplate.body(Request.Body.bodyTemplate(builder.toString(), UTF_8));
 		}
+
 	}
 
 }

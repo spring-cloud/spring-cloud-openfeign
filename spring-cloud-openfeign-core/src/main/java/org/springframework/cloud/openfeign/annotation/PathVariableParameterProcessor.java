@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import feign.MethodMetadata;
+
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.web.bind.annotation.PathVariable;
-
-import feign.MethodMetadata;
 
 import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
@@ -46,10 +46,12 @@ public class PathVariableParameterProcessor implements AnnotatedParameterProcess
 	}
 
 	@Override
-	public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
+	public boolean processArgument(AnnotatedParameterContext context,
+			Annotation annotation, Method method) {
 		String name = ANNOTATION.cast(annotation).value();
 		checkState(emptyToNull(name) != null,
-				"PathVariable annotation was empty on param %s.", context.getParameterIndex());
+				"PathVariable annotation was empty on param %s.",
+				context.getParameterIndex());
 		context.setParameterName(name);
 
 		MethodMetadata data = context.getMethodMetadata();
@@ -74,4 +76,5 @@ public class PathVariableParameterProcessor implements AnnotatedParameterProcess
 		}
 		return false;
 	}
+
 }

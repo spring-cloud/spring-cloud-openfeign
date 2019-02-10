@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,13 +57,17 @@ public class FeignLoadBalancer extends
 		AbstractLoadBalancerAwareClient<FeignLoadBalancer.RibbonRequest, FeignLoadBalancer.RibbonResponse> {
 
 	private final RibbonProperties ribbon;
+
 	protected int connectTimeout;
+
 	protected int readTimeout;
+
 	protected IClientConfig clientConfig;
+
 	protected ServerIntrospector serverIntrospector;
 
 	public FeignLoadBalancer(ILoadBalancer lb, IClientConfig clientConfig,
-							 ServerIntrospector serverIntrospector) {
+			ServerIntrospector serverIntrospector) {
 		super(lb, clientConfig);
 		this.setRetryHandler(RetryHandler.DEFAULT);
 		this.clientConfig = clientConfig;
@@ -80,8 +84,7 @@ public class FeignLoadBalancer extends
 		Request.Options options;
 		if (configOverride != null) {
 			RibbonProperties override = RibbonProperties.from(configOverride);
-			options = new Request.Options(
-					override.connectTimeout(this.connectTimeout),
+			options = new Request.Options(override.connectTimeout(this.connectTimeout),
 					override.readTimeout(this.readTimeout));
 		}
 		else {
@@ -110,13 +113,15 @@ public class FeignLoadBalancer extends
 
 	@Override
 	public URI reconstructURIWithServer(Server server, URI original) {
-		URI uri = updateToSecureConnectionIfNeeded(original, this.clientConfig, this.serverIntrospector, server);
+		URI uri = updateToSecureConnectionIfNeeded(original, this.clientConfig,
+				this.serverIntrospector, server);
 		return super.reconstructURIWithServer(server, uri);
 	}
 
 	protected static class RibbonRequest extends ClientRequest implements Cloneable {
 
 		private final Request request;
+
 		private final Client client;
 
 		protected RibbonRequest(Client client, Request request, URI uri) {
@@ -161,8 +166,9 @@ public class FeignLoadBalancer extends
 				@Override
 				public HttpHeaders getHeaders() {
 					Map<String, List<String>> headers = new HashMap<>();
-					Map<String, Collection<String>> feignHeaders = RibbonRequest.this.toRequest().headers();
-					for(String key : feignHeaders.keySet()) {
+					Map<String, Collection<String>> feignHeaders = RibbonRequest.this
+							.toRequest().headers();
+					for (String key : feignHeaders.keySet()) {
 						headers.put(key, new ArrayList<String>(feignHeaders.get(key)));
 					}
 					HttpHeaders httpHeaders = new HttpHeaders();
@@ -174,22 +180,24 @@ public class FeignLoadBalancer extends
 		}
 
 		public Request getRequest() {
-			return request;
+			return this.request;
 		}
 
 		public Client getClient() {
-			return client;
+			return this.client;
 		}
 
 		@Override
 		public Object clone() {
 			return new RibbonRequest(this.client, this.request, getUri());
 		}
+
 	}
 
 	protected static class RibbonResponse implements IResponse {
 
 		private final URI uri;
+
 		private final Response response;
 
 		protected RibbonResponse(URI uri, Response response) {
