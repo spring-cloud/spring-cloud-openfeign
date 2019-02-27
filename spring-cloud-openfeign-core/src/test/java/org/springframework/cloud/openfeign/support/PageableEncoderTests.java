@@ -31,6 +31,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
  * Tests the pagination encoding and sorting.
@@ -38,8 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Charlie Mordant.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = SpringEncoderTests.Application.class,
-		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, value = {
+@SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = RANDOM_PORT, value = {
 		"spring.application.name=springencodertest", "spring.jmx.enabled=false" })
 @DirtiesContext
 public class PageableEncoderTests {

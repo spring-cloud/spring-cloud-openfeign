@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -48,14 +47,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
  * Tests the pagination encoding.
  *
  * @author Charlie Mordant.
  */
-@SpringBootTest(classes = FeignPageableEncodingTests.Application.class,
-		webEnvironment = WebEnvironment.RANDOM_PORT, value = {
+@SpringBootTest(classes = FeignPageableEncodingTests.Application.class, webEnvironment = RANDOM_PORT, value = {
 		"feign.compression.request.enabled=true",
 		"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
 		"ribbon.OkToRetryOnAllOperations=false" })
