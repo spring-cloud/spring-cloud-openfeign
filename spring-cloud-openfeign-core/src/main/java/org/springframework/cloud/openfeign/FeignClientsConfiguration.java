@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.Module;
 import com.netflix.hystrix.HystrixCommand;
 import feign.Contract;
 import feign.Feign;
@@ -33,8 +34,11 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.support.PageJacksonModule;
+import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
@@ -43,6 +47,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
 
@@ -74,8 +80,16 @@ public class FeignClientsConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
+	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public Encoder feignEncoder() {
 		return new SpringEncoder(this.messageConverters);
+	}
+
+	@Bean
+	@ConditionalOnClass(Pageable.class)
+	@ConditionalOnMissingBean
+	public Encoder feignEncoderPageable() {
+		return new PageableSpringEncoder(new SpringEncoder(this.messageConverters));
 	}
 
 	@Bean
@@ -110,6 +124,12 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean(FeignLoggerFactory.class)
 	public FeignLoggerFactory feignLoggerFactory() {
 		return new DefaultFeignLoggerFactory(this.logger);
+	}
+
+	@Bean
+	@ConditionalOnClass(Page.class)
+	public Module pageJacksonModule() {
+		return new PageJacksonModule();
 	}
 
 	@Configuration

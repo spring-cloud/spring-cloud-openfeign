@@ -38,7 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
-import org.springframework.cloud.openfeign.support.SpringEncoder;
+import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -82,7 +82,7 @@ public class FeignClientOverrideDefaultsTests {
 	@Test
 	public void overrideEncoder() {
 		Encoder.Default.class.cast(this.context.getInstance("foo", Encoder.class));
-		SpringEncoder.class.cast(this.context.getInstance("bar", Encoder.class));
+		PageableSpringEncoder.class.cast(this.context.getInstance("bar", Encoder.class));
 	}
 
 	@Test

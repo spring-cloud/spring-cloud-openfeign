@@ -24,6 +24,7 @@ import java.util.List;
 
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
+import feign.codec.Encoder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
@@ -75,7 +76,7 @@ public class SpringEncoderTests {
 
 	@Test
 	public void testCustomHttpMessageConverter() {
-		SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
+		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
 
@@ -97,8 +98,9 @@ public class SpringEncoderTests {
 
 	@Test
 	public void testBinaryData() {
-		SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
+		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
+
 		RequestTemplate request = new RequestTemplate();
 
 		encoder.encode("hi".getBytes(), null, request);
@@ -110,7 +112,7 @@ public class SpringEncoderTests {
 
 	@Test(expected = EncodeException.class)
 	public void testMultipartFile1() {
-		SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
+		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
 
@@ -124,7 +126,7 @@ public class SpringEncoderTests {
 	// gh-105, gh-107
 	@Test
 	public void testMultipartFile2() {
-		SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
+		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
 		request.header(ACCEPT, MediaType.MULTIPART_FORM_DATA_VALUE);
