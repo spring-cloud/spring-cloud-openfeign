@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -86,7 +87,8 @@ public class FeignPageableEncodingTests {
 	@EnableFeignClients(clients = InvoiceClient.class)
 	@RibbonClient(name = "local", configuration = LocalRibbonClientConfiguration.class)
 	@SpringBootApplication(
-			scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
+		scanBasePackages = "org.springframework.cloud.openfeign.encoding.app", exclude = {
+			RepositoryRestMvcAutoConfiguration.class })
 	@EnableSpringDataWebSupport
 	@Import({ NoSecurityConfiguration.class, FeignClientsConfiguration.class })
 	public static class Application {
