@@ -45,6 +45,7 @@ import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
@@ -129,8 +130,8 @@ public class SpringMvcContract extends Contract.BaseContract
 		// Feign applies the Param.Expander to each element of an Iterable, so in those
 		// cases we need to provide a TypeDescriptor of the element.
 		if (typeDescriptor.isAssignableTo(ITERABLE_TYPE_DESCRIPTOR)) {
-			TypeDescriptor elementTypeDescriptor = typeDescriptor
-					.getElementTypeDescriptor();
+			TypeDescriptor elementTypeDescriptor = getElementTypeDescriptor(
+					typeDescriptor);
 
 			checkState(elementTypeDescriptor != null,
 					"Could not resolve element type of Iterable type %s. Not declared?",
@@ -139,6 +140,22 @@ public class SpringMvcContract extends Contract.BaseContract
 			typeDescriptor = elementTypeDescriptor;
 		}
 		return typeDescriptor;
+	}
+
+	private static TypeDescriptor getElementTypeDescriptor(
+			TypeDescriptor typeDescriptor) {
+		TypeDescriptor elementTypeDescriptor = typeDescriptor.getElementTypeDescriptor();
+		// that means it's not a collection but it is iterable, gh-135
+		if (elementTypeDescriptor == null
+				&& Iterable.class.isAssignableFrom(typeDescriptor.getType())) {
+			ResolvableType type = typeDescriptor.getResolvableType().as(Iterable.class)
+					.getGeneric(0);
+			if (type.resolve() == null) {
+				return null;
+			}
+			return new TypeDescriptor(type, null, typeDescriptor.getAnnotations());
+		}
+		return elementTypeDescriptor;
 	}
 
 	@Override
