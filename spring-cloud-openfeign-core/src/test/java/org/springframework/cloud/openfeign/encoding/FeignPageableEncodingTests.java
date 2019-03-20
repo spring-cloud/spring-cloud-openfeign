@@ -87,8 +87,8 @@ public class FeignPageableEncodingTests {
 	@EnableFeignClients(clients = InvoiceClient.class)
 	@RibbonClient(name = "local", configuration = LocalRibbonClientConfiguration.class)
 	@SpringBootApplication(
-		scanBasePackages = "org.springframework.cloud.openfeign.encoding.app", exclude = {
-			RepositoryRestMvcAutoConfiguration.class })
+			scanBasePackages = "org.springframework.cloud.openfeign.encoding.app",
+			exclude = { RepositoryRestMvcAutoConfiguration.class })
 	@EnableSpringDataWebSupport
 	@Import({ NoSecurityConfiguration.class, FeignClientsConfiguration.class })
 	public static class Application {
