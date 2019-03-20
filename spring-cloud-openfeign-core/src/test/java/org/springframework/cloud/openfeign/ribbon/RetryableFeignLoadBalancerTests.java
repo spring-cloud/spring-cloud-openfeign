@@ -132,11 +132,11 @@ public class RetryableFeignLoadBalancerTests {
 		doReturn(config).when(clientFactory).getClientConfig(eq("default"));
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(
 				clientFactory);
-		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://foo"));
+				client, feignRequest, new URI("https://foo"));
 		Response response = Response.builder().status(200).request(feignRequest)
 				.headers(new HashMap<>()).build();
 		doReturn(response).when(client).execute(any(Request.class),
@@ -150,11 +150,11 @@ public class RetryableFeignLoadBalancerTests {
 
 	@Test
 	public void executeNeverRetry() throws Exception {
-		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://foo"));
+				client, feignRequest, new URI("https://foo"));
 		doThrow(new IOException("boom")).when(client).execute(any(Request.class),
 				any(Request.Options.class));
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(this.lb,
@@ -214,11 +214,11 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://foo"));
+				client, feignRequest, new URI("https://foo"));
 		Response response = Response.builder().status(200).request(feignRequest)
 				.headers(new HashMap<>()).build();
 		doThrow(new IOException("boom")).doReturn(response).when(client)
@@ -259,11 +259,11 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://foo"));
+				client, feignRequest, new URI("https://foo"));
 		Response response = Response.builder().request(feignRequest).status(200)
 				.headers(new HashMap<>()).build();
 		Response fourOFourResponse = Response.builder().request(feignRequest).status(404)
@@ -309,11 +309,11 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://foo"));
+				client, feignRequest, new URI("https://foo"));
 		Response response = Response.builder().request(feignRequest).status(404)
 				.headers(new HashMap<>()).build();
 		Response fourOFourResponse = Response.builder().request(feignRequest).status(404)
@@ -338,11 +338,11 @@ public class RetryableFeignLoadBalancerTests {
 		doReturn(lbContext).when(clientFactory).getLoadBalancerContext(any(String.class));
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(
 				clientFactory);
-		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://foo"));
+				client, feignRequest, new URI("https://foo"));
 		Response response = Response.builder().request(feignRequest).status(200)
 				.headers(new HashMap<>()).build();
 		doReturn(response).when(client).execute(any(Request.class),
@@ -364,11 +364,11 @@ public class RetryableFeignLoadBalancerTests {
 		doReturn(lbContext).when(clientFactory).getLoadBalancerContext(any(String.class));
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(
 				clientFactory);
-		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://foo"));
+				client, feignRequest, new URI("https://foo"));
 		Response response = Response.builder().request(feignRequest).status(200)
 				.headers(new HashMap<>()).build();
 		doReturn(response).when(client).execute(any(Request.class),
@@ -445,11 +445,11 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		Request feignRequest = Request.create(GET, "http://listener", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://listener", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://listener"));
+				client, feignRequest, new URI("https://listener"));
 		Response response = Response.builder().request(feignRequest).status(200)
 				.headers(new HashMap<>()).build();
 		doThrow(new IOException("boom")).doReturn(response).when(client)
@@ -497,11 +497,11 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		Request feignRequest = Request.create(GET, "http://listener", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://listener", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://listener"));
+				client, feignRequest, new URI("https://listener"));
 		RetryableFeignLoadBalancer feignLb = new RetryableFeignLoadBalancer(this.lb,
 				config, this.inspector, loadBalancedRetryFactory);
 		FeignLoadBalancer.RibbonResponse ribbonResponse = feignLb.execute(request, null);
@@ -534,11 +534,11 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		Request feignRequest = Request.create(GET, "http://listener", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://listener", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://listener"));
+				client, feignRequest, new URI("https://listener"));
 		Response response = Response.builder().request(feignRequest).status(200)
 				.headers(new HashMap<>()).build();
 		doThrow(new IOException("boom")).doReturn(response).when(client)
@@ -579,11 +579,11 @@ public class RetryableFeignLoadBalancerTests {
 				return backOffPolicy;
 			}
 		};
-		Request feignRequest = Request.create(GET, "http://foo", new HashMap<>(),
+		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
 				new byte[] {}, UTF_8);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
-				client, feignRequest, new URI("http://foo"));
+				client, feignRequest, new URI("https://foo"));
 		Response fourOFourResponse = Response.builder().request(feignRequest).status(404)
 				.headers(new HashMap<>()).body(new Response.Body() { // set content into
 																		// response
