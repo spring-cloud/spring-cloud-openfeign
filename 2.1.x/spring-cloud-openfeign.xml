@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?asciidoc-toc?>
 <?asciidoc-numbered?>
-<book xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<book xmlns="https://docbook.org/ns/docbook" xmlns:xl="https://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
 <info>
 <title>Spring Cloud OpenFeign</title>
 <date>2019-03-25</date>
@@ -18,7 +18,7 @@ and binding to the Spring Environment and other Spring programming model idioms.
 <section xml:id="netflix-feign-starter">
 <title>How to Include Feign</title>
 <simpara>To include Feign in your project use the starter with group <literal>org.springframework.cloud</literal>
-and artifact id <literal>spring-cloud-starter-openfeign</literal>. See the <link xl:href="http://projects.spring.io/spring-cloud/">Spring Cloud Project page</link>
+and artifact id <literal>spring-cloud-starter-openfeign</literal>. See the <link xl:href="https://projects.spring.io/spring-cloud/">Spring Cloud Project page</link>
 for details on setting up your build system with the current Spring Cloud Release Train.</simpara>
 <simpara>Example spring boot app</simpara>
 <programlisting language="java" linenumbering="unnumbered">@SpringBootApplication
@@ -229,14 +229,14 @@ class FooController {
 				.decoder(decoder)
 				.contract(contract)
 				.requestInterceptor(new BasicAuthRequestInterceptor("user", "user"))
-				.target(FooClient.class, "http://PROD-SVC");
+				.target(FooClient.class, "https://PROD-SVC");
 
 		this.adminClient = Feign.builder().client(client)
 				.encoder(encoder)
 				.decoder(decoder)
 				.contract(contract)
 				.requestInterceptor(new BasicAuthRequestInterceptor("admin", "admin"))
-				.target(FooClient.class, "http://PROD-SVC");
+				.target(FooClient.class, "https://PROD-SVC");
     }
 }</programlisting>
 <note>
