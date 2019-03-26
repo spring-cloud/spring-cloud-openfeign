@@ -49,7 +49,7 @@ public class FeignClientValidationTests {
 
 	@Test
 	public void testNameAndValue() {
-		this.expected.expectMessage("only one is permitted");
+		this.expected.expectMessage("Different @AliasFor mirror values");
 		new AnnotationConfigApplicationContext(NameAndValueConfiguration.class);
 	}
 
