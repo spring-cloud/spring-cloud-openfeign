@@ -33,7 +33,7 @@
 	color: #ffffff;
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
 <script type="text/javascript">
 function addBlockSwitches() {
 	$('.primary').each(function() {
@@ -469,14 +469,14 @@ class FooController {
 				.decoder(decoder)
 				.contract(contract)
 				.requestInterceptor(new BasicAuthRequestInterceptor("user", "user"))
-				.target(FooClient.class, "http://PROD-SVC");
+				.target(FooClient.class, "https://PROD-SVC");
 
 		this.adminClient = Feign.builder().client(client)
 				.encoder(encoder)
 				.decoder(decoder)
 				.contract(contract)
 				.requestInterceptor(new BasicAuthRequestInterceptor("admin", "admin"))
-				.target(FooClient.class, "http://PROD-SVC");
+				.target(FooClient.class, "https://PROD-SVC");
     }
 }</code></pre>
 </div>
