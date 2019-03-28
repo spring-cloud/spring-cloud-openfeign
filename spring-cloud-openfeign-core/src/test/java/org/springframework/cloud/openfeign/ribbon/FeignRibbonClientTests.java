@@ -94,7 +94,7 @@ public class FeignRibbonClientTests {
 		Request request = new RequestTemplate().method("GET").append("http://foo")
 				.request();
 		this.client.execute(request, new Options());
-		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
+		RequestMatcher matcher = new RequestMatcher("https://foo.com:8000/");
 		verify(this.delegate).execute(argThat(matcher),
 				any(Options.class));
 	}
@@ -104,17 +104,17 @@ public class FeignRibbonClientTests {
 		Request request = new RequestTemplate().method("GET").append("http://foo/")
 				.request();
 		this.client.execute(request, new Options());
-		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
+		RequestMatcher matcher = new RequestMatcher("https://foo.com:8000/");
 		verify(this.delegate).execute(argThat(matcher),
 				any(Options.class));
 	}
 
 	@Test
 	public void verifyCleanUrl() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("http://tp/abc/bcd.json")
+		Request request = new RequestTemplate().method("GET").append("https://tp/abc/bcd.json")
 				.request();
 		this.client.execute(request, new Options());
-		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/abc/bcd.json");
+		RequestMatcher matcher = new RequestMatcher("https://foo.com:8000/abc/bcd.json");
 		verify(this.delegate).execute(argThat(matcher),
 				any(Options.class));
 	}
