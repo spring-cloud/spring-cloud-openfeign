@@ -1,7 +1,7 @@
 :github-tag: master
 :github-repo: spring-cloud/spring-cloud-openfeign
-:github-raw: http://raw.github.com/{github-repo}/{github-tag}
-:github-code: http://github.com/{github-repo}/tree/{github-tag}
+:github-raw: https://raw.github.com/{github-repo}/{github-tag}
+:github-code: https://github.com/{github-repo}/tree/{github-tag}
 :all: {asterisk}{asterisk}
 :nofooter:
 :branch: master
@@ -21,7 +21,7 @@ https://github.com/Netflix/feign[Feign] is a declarative web service client.  It
 === How to Include Feign
 
 To include Feign in your project use the starter with group `org.springframework.cloud`
-and artifact id `spring-cloud-starter-openfeign`. See the http://projects.spring.io/spring-cloud/[Spring Cloud Project page]
+and artifact id `spring-cloud-starter-openfeign`. See the https://projects.spring.io/spring-cloud/[Spring Cloud Project page]
 for details on setting up your build system with the current Spring Cloud Release Train.
 
 Example spring boot app
