@@ -136,7 +136,7 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "name", "TestClient");
 
 		// and:
-		assertFactoryBeanField(builder, "url", "https://Url/");
+		assertFactoryBeanField(builder, "url", "http://Url/");
 		assertFactoryBeanField(builder, "path", "/Path");
 		assertFactoryBeanField(builder, "decode404", true);
 		assertFactoryBeanField(builder, "fallback", Object.class);
