@@ -96,7 +96,7 @@ public class FeignLoadBalancerTests {
 
 		this.feignLoadBalancer = new FeignLoadBalancer(this.lb, this.config,
 				this.inspector);
-		Request request = new RequestTemplate().method(GET).target("http://foo/")
+		Request request = new RequestTemplate().method(GET).target("https://foo/")
 				.resolve(new HashMap<>()).request();
 		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate, request,
 				new URI(request.url()));
@@ -108,7 +108,7 @@ public class FeignLoadBalancerTests {
 
 		RibbonResponse resp = this.feignLoadBalancer.execute(ribbonRequest, null);
 
-		assertThat(resp.getRequestedURI()).isEqualTo(new URI("http://foo"));
+		assertThat(resp.getRequestedURI()).isEqualTo(new URI("https://foo"));
 	}
 
 	@Test
@@ -118,7 +118,7 @@ public class FeignLoadBalancerTests {
 				this.inspector);
 		Server server = new Server("foo", 7777);
 		URI uri = this.feignLoadBalancer.reconstructURIWithServer(server,
-				new URI("http://foo/"));
+				new URI("https://foo/"));
 		assertThat(uri).isEqualTo(new URI("https://foo:7777/"));
 	}
 
@@ -140,8 +140,8 @@ public class FeignLoadBalancerTests {
 				});
 		Server server = new Server("foo", 7777);
 		URI uri = this.feignLoadBalancer.reconstructURIWithServer(server,
-				new URI("http://foo/"));
-		assertThat(uri).isEqualTo(new URI("http://foo:7777/"));
+				new URI("https://foo/"));
+		assertThat(uri).isEqualTo(new URI("https://foo:7777/"));
 	}
 
 	@Test
@@ -152,13 +152,13 @@ public class FeignLoadBalancerTests {
 		when(server.getPort()).thenReturn(443);
 		when(server.getHost()).thenReturn("foo");
 		URI uri = this.feignLoadBalancer.reconstructURIWithServer(server,
-				new URI("http://bar/"));
+				new URI("https://bar/"));
 		assertThat(uri).isEqualTo(new URI("https://foo:443/"));
 	}
 
 	@Test
 	public void testRibbonRequestURLEncode() throws Exception {
-		String url = "http://foo/?name=%7bcookie"; // name={cookie
+		String url = "https://foo/?name=%7bcookie"; // name={cookie
 		Request request = Request.create(GET, url, new HashMap<>(), null, null);
 
 		assertThat(request.url()).isEqualTo(url);

@@ -37,7 +37,7 @@ public class FeignClientsRegistrarTests {
 
 	@Test(expected = IllegalStateException.class)
 	public void badNameHttpPrefix() {
-		testGetName("http://bad_hostname");
+		testGetName("https://bad_hostname");
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -63,8 +63,8 @@ public class FeignClientsRegistrarTests {
 
 	@Test
 	public void goodNameHttpPrefix() {
-		String name = testGetName("http://good-name");
-		assertThat(name).as("name was wrong").isEqualTo("http://good-name");
+		String name = testGetName("https://good-name");
+		assertThat(name).as("name was wrong").isEqualTo("https://good-name");
 	}
 
 	@Test
