@@ -56,7 +56,8 @@ public final class FeignUtils {
 
 	static Collection<String> addTemplateParameter(Collection<String> possiblyNull,
 			String paramName) {
-		Collection<String> params = ofNullable(possiblyNull).orElse(new ArrayList<>());
+		Collection<String> params = ofNullable(possiblyNull).map(ArrayList::new)
+				.orElse(new ArrayList<>());
 		params.add(String.format("{%s}", paramName));
 		return params;
 	}

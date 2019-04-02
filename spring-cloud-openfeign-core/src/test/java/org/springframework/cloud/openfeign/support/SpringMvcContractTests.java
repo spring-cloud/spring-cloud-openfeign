@@ -523,6 +523,18 @@ public class SpringMvcContractTests {
 		this.contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 	}
 
+	@Test
+	public void testAddingTemplatedParameterWithTheSameKey()
+			throws NoSuchMethodException {
+		Method method = TestTemplate_Advanced.class.getDeclaredMethod(
+				"testAddingTemplatedParamForExistingKey", String.class);
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().headers().get("Accept")).contains("application/json",
+				"{Accept}");
+	}
+
 	public interface TestTemplate_Simple {
 
 		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -644,6 +656,10 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();
+
+		@GetMapping(produces = "application/json")
+		String testAddingTemplatedParamForExistingKey(
+				@RequestHeader("Accept") String accept);
 
 	}
 
