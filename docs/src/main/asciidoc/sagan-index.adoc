@@ -1,0 +1,26 @@
+This project provides https://github.com/OpenFeign/feign[OpenFeign] integrations for Spring Boot apps through autoconfiguration and binding to the Spring Environment and other Spring programming model idioms.
+
+## Features
+
+* Declarative REST Client: Feign creates a dynamic implementation of an interface decorated with JAX-RS or Spring MVC annotations
+
+## Getting Started
+
+
+```java
+@SpringBootApplication
+@EnableFeignClients
+public class WebApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(WebApplication.class, args);
+	}
+
+	@FeignClient("name")
+	static interface NameService {
+		@RequestMapping("/")
+		public String getName();
+	}
+}
+
+```
