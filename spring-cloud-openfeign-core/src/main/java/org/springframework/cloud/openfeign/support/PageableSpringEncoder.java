@@ -25,6 +25,7 @@ import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -38,6 +39,21 @@ public class PageableSpringEncoder implements Encoder {
 	private final Encoder delegate;
 
 	/**
+	 * Page index parameter name.
+	 */
+	private String pageParameter = "page";
+
+	/**
+	 * Page size parameter name.
+	 */
+	private String sizeParameter = "size";
+
+	/**
+	 * Sort parameter name.
+	 */
+	private String sortParameter = "sort";
+
+	/**
 	 * Creates a new PageableSpringEncoder with the given delegate for fallback. If no
 	 * delegate is provided and this encoder cant handle the request, an EncodeException
 	 * is thrown.
@@ -47,6 +63,23 @@ public class PageableSpringEncoder implements Encoder {
 		this.delegate = delegate;
 	}
 
+	/**
+	 * Creates a new PageableSpringEncoder with the given delegate for fallback. If no
+	 * delegate is provided and this encoder cant handle the request, an EncodeException
+	 * is thrown.
+	 * @param dataWebProperties The optional DataWebProperties.
+	 * @param delegate The optional delegate.
+	 */
+	public PageableSpringEncoder(SpringDataWebProperties dataWebProperties,
+								 Encoder delegate) {
+		this(delegate);
+		if (dataWebProperties != null) {
+			pageParameter = dataWebProperties.getPageable().getPageParameter();
+			sizeParameter = dataWebProperties.getPageable().getSizeParameter();
+			sortParameter = dataWebProperties.getSort().getSortParameter();
+		}
+	}
+
 	@Override
 	public void encode(Object object, Type bodyType, RequestTemplate template)
 			throws EncodeException {
@@ -54,8 +87,8 @@ public class PageableSpringEncoder implements Encoder {
 		if (supports(object)) {
 			if (object instanceof Pageable) {
 				Pageable pageable = (Pageable) object;
-				template.query("page", pageable.getPageNumber() + "");
-				template.query("size", pageable.getPageSize() + "");
+				template.query(pageParameter, pageable.getPageNumber() + "");
+				template.query(sizeParameter, pageable.getPageSize() + "");
 				if (pageable.getSort() != null) {
 					applySort(template, pageable.getSort());
 				}
@@ -82,11 +115,17 @@ public class PageableSpringEncoder implements Encoder {
 		Collection<String> existingSorts = template.queries().get("sort");
 		List<String> sortQueries = existingSorts != null ? new ArrayList<>(existingSorts)
 				: new ArrayList<>();
+		if (!sortParameter.equals("sort")) {
+			existingSorts = template.queries().get(sortParameter);
+			if (existingSorts != null) {
+				sortQueries.addAll(existingSorts);
+			}
+		}
 		for (Sort.Order order : sort) {
 			sortQueries.add(order.getProperty() + "," + order.getDirection());
 		}
 		if (!sortQueries.isEmpty()) {
-			template.query("sort", sortQueries);
+			template.query(sortParameter, sortQueries);
 		}
 	}
 

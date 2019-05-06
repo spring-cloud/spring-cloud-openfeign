@@ -36,6 +36,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
@@ -69,6 +70,9 @@ public class FeignClientsConfiguration {
 	@Autowired(required = false)
 	private Logger logger;
 
+	@Autowired(required = false)
+	private SpringDataWebProperties dataWebProperties;
+
 	@Bean
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder() {
@@ -87,7 +91,7 @@ public class FeignClientsConfiguration {
 	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
 	@ConditionalOnMissingBean
 	public Encoder feignEncoderPageable() {
-		return new PageableSpringEncoder(new SpringEncoder(this.messageConverters));
+		return new PageableSpringEncoder(dataWebProperties, new SpringEncoder(this.messageConverters));
 	}
 
 	@Bean
