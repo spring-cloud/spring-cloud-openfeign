@@ -70,8 +70,7 @@ public class PageableSpringEncoder implements Encoder {
 	 * @param dataWebProperties The optional DataWebProperties.
 	 * @param delegate The optional delegate.
 	 */
-	public PageableSpringEncoder(SpringDataWebProperties dataWebProperties,
-								 Encoder delegate) {
+	public PageableSpringEncoder(SpringDataWebProperties dataWebProperties, Encoder delegate) {
 		this(delegate);
 		if (dataWebProperties != null) {
 			pageParameter = dataWebProperties.getPageable().getPageParameter();
