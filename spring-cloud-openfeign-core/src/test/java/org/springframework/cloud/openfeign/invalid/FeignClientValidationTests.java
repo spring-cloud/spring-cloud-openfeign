@@ -47,17 +47,16 @@ public class FeignClientValidationTests {
 	@Rule
 	public ExpectedException expected = ExpectedException.none();
 
-	 @Test
-	 public void testServiceIdAndValue() {
-	 AnnotationConfigApplicationContext context = new
-	 AnnotationConfigApplicationContext(
-	 LoadBalancerAutoConfiguration.class, RibbonAutoConfiguration.class,
-	 FeignRibbonClientAutoConfiguration.class,
-	 NameAndServiceIdConfiguration.class);
-	 assertThat(context.getBean(NameAndServiceIdConfiguration.Client.class))
-	 .isNotNull();
-	 context.close();
-	 }
+	@Test
+	public void testServiceIdAndValue() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				LoadBalancerAutoConfiguration.class, RibbonAutoConfiguration.class,
+				FeignRibbonClientAutoConfiguration.class,
+				NameAndServiceIdConfiguration.class);
+		assertThat(context.getBean(NameAndServiceIdConfiguration.Client.class))
+				.isNotNull();
+		context.close();
+	}
 
 	@Test
 	public void testDuplicatedClientNames() {
@@ -123,20 +122,20 @@ public class FeignClientValidationTests {
 		}
 	}
 
-	 @Configuration
-	 @Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
-	 @EnableFeignClients(clients = NameAndServiceIdConfiguration.Client.class)
-	 protected static class NameAndServiceIdConfiguration {
+	@Configuration
+	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
+	@EnableFeignClients(clients = NameAndServiceIdConfiguration.Client.class)
+	protected static class NameAndServiceIdConfiguration {
 
-	 @FeignClient(name = "bar", serviceId = "foo")
-	 interface Client {
+		@FeignClient(name = "bar", serviceId = "foo")
+		interface Client {
 
-	 @RequestMapping(method = RequestMethod.GET, value = "/")
-	 String get();
+			@RequestMapping(method = RequestMethod.GET, value = "/")
+			String get();
 
-	 }
+		}
 
-	 }
+	}
 
 	@Configuration
 
