@@ -62,8 +62,9 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
  * @author Olga Maciaszek-Sharma
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=springencodertest", "spring.jmx.enabled=false" })
+@SpringBootTest(classes = SpringEncoderTests.Application.class,
+		webEnvironment = WebEnvironment.RANDOM_PORT, value = {
+				"spring.application.name=springencodertest", "spring.jmx.enabled=false" })
 @DirtiesContext
 public class SpringEncoderTests {
 

@@ -91,7 +91,8 @@ class HttpClientFeignLoadBalancedConfiguration {
 		}
 
 		@Bean
-		@ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "true")
+		@ConditionalOnProperty(value = "feign.compression.response.enabled",
+				havingValue = "true")
 		public CloseableHttpClient customHttpClient(
 				HttpClientConnectionManager httpClientConnectionManager,
 				FeignHttpClientProperties httpClientProperties) {
@@ -103,7 +104,8 @@ class HttpClientFeignLoadBalancedConfiguration {
 		}
 
 		@Bean
-		@ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "false", matchIfMissing = true)
+		@ConditionalOnProperty(value = "feign.compression.response.enabled",
+				havingValue = "false", matchIfMissing = true)
 		public CloseableHttpClient httpClient(ApacheHttpClientFactory httpClientFactory,
 				HttpClientConnectionManager httpClientConnectionManager,
 				FeignHttpClientProperties httpClientProperties) {

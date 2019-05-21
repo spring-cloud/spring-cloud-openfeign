@@ -40,9 +40,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignRibbonOkHttpClientConfigurationTests.FeignRibbonOkHttpClientConfigurationTestsApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-		"debug=true", "feign.httpclient.disableSslValidation=true",
-		"feign.okhttp.enabled=true", "feign.httpclient.enabled=false" })
+@SpringBootTest(
+		classes = FeignRibbonOkHttpClientConfigurationTests.FeignRibbonOkHttpClientConfigurationTestsApplication.class,
+		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+		properties = { "debug=true", "feign.httpclient.disableSslValidation=true",
+				"feign.okhttp.enabled=true", "feign.httpclient.enabled=false" })
 @DirtiesContext
 public class FeignRibbonOkHttpClientConfigurationTests {
 

@@ -525,16 +525,19 @@ public class SpringMvcContractTests {
 
 	public interface TestTemplate_Simple {
 
-		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET,
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
 
-		@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.GET,
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();
 
 		@GetMapping(value = "/test/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getMappingTest(@PathVariable("id") String id);
 
-		@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.POST,
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject postTest(@RequestBody TestObject object);
 
 		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -560,15 +563,16 @@ public class SpringMvcContractTests {
 
 	public interface TestTemplate_Headers {
 
-		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, headers = "X-Foo=bar")
+		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET,
+				headers = "X-Foo=bar")
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
 
 	}
 
 	public interface TestTemplate_HeadersWithoutValues {
 
-		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, headers = {
-				"X-Foo", "!X-Bar", "X-Baz!=fooBar" })
+		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET,
+				headers = { "X-Foo", "!X-Bar", "X-Baz!=fooBar" })
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
 
 	}
@@ -628,21 +632,25 @@ public class SpringMvcContractTests {
 	public interface TestTemplate_Advanced {
 
 		@ExceptionHandler
-		@RequestMapping(path = "/test/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(path = "/test/{id}", method = RequestMethod.PUT,
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTest(@RequestHeader("Authorization") String auth,
 				@PathVariable("id") String id, @RequestParam("amount") Integer amount);
 
-		@RequestMapping(path = "/test2", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(path = "/test2", method = RequestMethod.PUT,
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTest2(
 				@RequestHeader(name = "Authorization") String auth,
 				@RequestParam(name = "amount") Integer amount);
 
 		@ExceptionHandler
-		@RequestMapping(path = "/testfallback/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(path = "/testfallback/{id}", method = RequestMethod.PUT,
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTestFallback(@RequestHeader String Authorization,
 				@PathVariable String id, @RequestParam Integer amount);
 
-		@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.GET,
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();
 
 	}
@@ -652,8 +660,8 @@ public class SpringMvcContractTests {
 		String CUSTOM_PATTERN = "dd-MM-yyyy HH:mm";
 
 		@RequestMapping(method = RequestMethod.GET)
-		String getTest(
-				@RequestParam(name = "localDateTime") @DateTimeFormat(pattern = CUSTOM_PATTERN) LocalDateTime localDateTime);
+		String getTest(@RequestParam(name = "localDateTime") @DateTimeFormat(
+				pattern = CUSTOM_PATTERN) LocalDateTime localDateTime);
 
 	}
 
@@ -662,12 +670,13 @@ public class SpringMvcContractTests {
 		String CUSTOM_PATTERN = "$###,###.###";
 
 		@RequestMapping(method = RequestMethod.GET)
-		String getTest(
-				@RequestParam("amount") @NumberFormat(pattern = CUSTOM_PATTERN) BigDecimal amount);
+		String getTest(@RequestParam("amount") @NumberFormat(
+				pattern = CUSTOM_PATTERN) BigDecimal amount);
 
 	}
 
-	@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+	@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE,
+			setterVisibility = NONE)
 	public class TestObject {
 
 		public String something;

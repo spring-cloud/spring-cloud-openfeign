@@ -50,9 +50,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Spencer Gibb
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignHttpClientUrlTests.TestConfig.class, webEnvironment = DEFINED_PORT, value = {
-		"spring.application.name=feignclienturltest", "feign.hystrix.enabled=false",
-		"feign.okhttp.enabled=false" })
+@SpringBootTest(classes = FeignHttpClientUrlTests.TestConfig.class,
+		webEnvironment = DEFINED_PORT,
+		value = { "spring.application.name=feignclienturltest",
+				"feign.hystrix.enabled=false", "feign.okhttp.enabled=false" })
 @DirtiesContext
 public class FeignHttpClientUrlTests {
 

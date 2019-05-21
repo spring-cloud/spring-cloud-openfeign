@@ -93,11 +93,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Halvdan Hoem Grelland
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=feignclienttest",
-		"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
-		"feign.httpclient.enabled=false", "feign.okhttp.enabled=false",
-		"feign.hystrix.enabled=true" })
+@SpringBootTest(classes = FeignClientTests.Application.class,
+		webEnvironment = WebEnvironment.RANDOM_PORT,
+		value = { "spring.application.name=feignclienttest",
+				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
+				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false",
+				"feign.hystrix.enabled=true" })
 @DirtiesContext
 public class FeignClientTests {
 
@@ -441,7 +442,8 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")
 		Optional<Hello> getOptionalHello();
 
-		@RequestMapping(method = RequestMethod.GET, path = "${feignClient.methodLevelRequestMappingPath}")
+		@RequestMapping(method = RequestMethod.GET,
+				path = "${feignClient.methodLevelRequestMappingPath}")
 		Hello getHelloUsingPropertyPlaceHolder();
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")
@@ -456,15 +458,16 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.GET, path = "/helloheaders")
 		List<String> getHelloHeaders();
 
-		@RequestMapping(method = RequestMethod.GET, path = "/helloheadersplaceholders", headers = "myPlaceholderHeader=${feignClient.myPlaceholderHeader}")
+		@RequestMapping(method = RequestMethod.GET, path = "/helloheadersplaceholders",
+				headers = "myPlaceholderHeader=${feignClient.myPlaceholderHeader}")
 		String getHelloHeadersPlaceholders();
 
 		@RequestMapping(method = RequestMethod.GET, path = "/helloparams")
 		List<String> getParams(@RequestParam("params") List<String> params);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
-		List<LocalDate> getFormattedParams(
-				@RequestParam("params") @DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params);
+		List<LocalDate> getFormattedParams(@RequestParam("params") @DateTimeFormat(
+				pattern = "dd-MM-yyyy") List<LocalDate> params);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
 		HystrixCommand<List<Hello>> getHellosHystrix();
@@ -478,7 +481,10 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")
 		HttpEntity<Hello> getHelloEntity();
 
-		@RequestMapping(method = RequestMethod.POST, consumes = "application/vnd.io.spring.cloud.test.v1+json", produces = "application/vnd.io.spring.cloud.test.v1+json", path = "/complex")
+		@RequestMapping(method = RequestMethod.POST,
+				consumes = "application/vnd.io.spring.cloud.test.v1+json",
+				produces = "application/vnd.io.spring.cloud.test.v1+json",
+				path = "/complex")
 		String moreComplexContentType(String body);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostring")
@@ -539,7 +545,8 @@ public class FeignClientTests {
 
 	}
 
-	@FeignClient(name = "localapp6", fallbackFactory = InvalidTypeHystrixClientFallbackFactory.class)
+	@FeignClient(name = "localapp6",
+			fallbackFactory = InvalidTypeHystrixClientFallbackFactory.class)
 	protected interface InvalidTypeHystrixClientWithFallBackFactory {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/fail")
@@ -547,7 +554,8 @@ public class FeignClientTests {
 
 	}
 
-	@FeignClient(name = "localapp7", fallbackFactory = NullHystrixClientFallbackFactory.class)
+	@FeignClient(name = "localapp7",
+			fallbackFactory = NullHystrixClientFallbackFactory.class)
 	protected interface NullHystrixClientWithFallBackFactory {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/fail")
@@ -555,7 +563,8 @@ public class FeignClientTests {
 
 	}
 
-	@FeignClient(name = "localapp5", configuration = TestHystrixSetterFactoryClientConfig.class)
+	@FeignClient(name = "localapp5",
+			configuration = TestHystrixSetterFactoryClientConfig.class)
 	protected interface HystrixSetterFactoryClient {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
@@ -697,16 +706,25 @@ public class FeignClientTests {
 			DecodingTestClient.class, HystrixClient.class,
 			HystrixClientWithFallBackFactory.class, HystrixSetterFactoryClient.class,
 			InvalidTypeHystrixClientWithFallBackFactory.class,
-			NullHystrixClientWithFallBackFactory.class }, defaultConfiguration = TestDefaultFeignConfig.class)
+			NullHystrixClientWithFallBackFactory.class },
+			defaultConfiguration = TestDefaultFeignConfig.class)
 	@RibbonClients({
-			@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp1", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp2", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp3", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp4", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp5", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp6", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp7", configuration = LocalRibbonClientConfiguration.class) })
+			@RibbonClient(name = "localapp",
+					configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp1",
+					configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp2",
+					configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp3",
+					configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp4",
+					configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp5",
+					configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp6",
+					configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp7",
+					configuration = LocalRibbonClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
@@ -809,8 +827,8 @@ public class FeignClientTests {
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
-		public List<LocalDate> getFormattedParams(
-				@RequestParam("params") @DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params) {
+		public List<LocalDate> getFormattedParams(@RequestParam("params") @DateTimeFormat(
+				pattern = "dd-MM-yyyy") List<LocalDate> params) {
 			return params;
 		}
 
@@ -834,7 +852,10 @@ public class FeignClientTests {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body((String) null);
 		}
 
-		@RequestMapping(method = RequestMethod.POST, consumes = "application/vnd.io.spring.cloud.test.v1+json", produces = "application/vnd.io.spring.cloud.test.v1+json", path = "/complex")
+		@RequestMapping(method = RequestMethod.POST,
+				consumes = "application/vnd.io.spring.cloud.test.v1+json",
+				produces = "application/vnd.io.spring.cloud.test.v1+json",
+				path = "/complex")
 		String complex(@RequestBody String body,
 				@RequestHeader("Content-Length") int contentLength) {
 			if (contentLength <= 0) {

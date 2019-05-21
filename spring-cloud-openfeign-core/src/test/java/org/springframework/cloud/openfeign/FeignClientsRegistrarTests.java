@@ -89,7 +89,8 @@ public class FeignClientsRegistrarTests {
 		new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
 	}
 
-	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)
+	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/",
+			fallback = FallbackClient.class)
 	protected interface FallbackClient {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
@@ -97,7 +98,8 @@ public class FeignClientsRegistrarTests {
 
 	}
 
-	@FeignClient(name = "fallbackFactoryTestClient", url = "http://localhost:8081/", fallbackFactory = FallbackFactoryClient.class)
+	@FeignClient(name = "fallbackFactoryTestClient", url = "http://localhost:8081/",
+			fallbackFactory = FallbackFactoryClient.class)
 	protected interface FallbackFactoryClient {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
@@ -114,8 +116,8 @@ public class FeignClientsRegistrarTests {
 
 	@Configuration
 	@EnableAutoConfiguration
-	@EnableFeignClients(clients = {
-			FeignClientsRegistrarTests.FallbackFactoryClient.class })
+	@EnableFeignClients(
+			clients = { FeignClientsRegistrarTests.FallbackFactoryClient.class })
 	protected static class FallbackFactoryTestConfig {
 
 	}

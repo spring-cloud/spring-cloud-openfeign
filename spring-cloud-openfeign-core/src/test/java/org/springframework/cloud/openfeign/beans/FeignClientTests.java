@@ -49,10 +49,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=feignclienttest",
-		"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
-		"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
+@SpringBootTest(classes = FeignClientTests.Application.class,
+		webEnvironment = WebEnvironment.RANDOM_PORT,
+		value = { "spring.application.name=feignclienttest",
+				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
+				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
 @DirtiesContext
 public class FeignClientTests {
 

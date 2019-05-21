@@ -56,9 +56,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Spencer Gibb
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignHttpClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=feignclienttest", "feign.hystrix.enabled=false",
-		"feign.okhttp.enabled=false" })
+@SpringBootTest(classes = FeignHttpClientTests.Application.class,
+		webEnvironment = WebEnvironment.RANDOM_PORT,
+		value = { "spring.application.name=feignclienttest",
+				"feign.hystrix.enabled=false", "feign.okhttp.enabled=false" })
 @DirtiesContext
 public class FeignHttpClientTests {
 
@@ -113,17 +114,20 @@ public class FeignHttpClientTests {
 
 	protected interface BaseTestClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello", produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.GET, value = "/hello",
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		Hello getHello();
 
-		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop", consumes = "application/json")
+		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop",
+				consumes = "application/json")
 		ResponseEntity<Void> patchHello(Hello hello);
 
 	}
 
 	protected interface UserService {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.GET, value = "/users/{id}",
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		User getUser(@PathVariable("id") long id);
 
 	}
@@ -138,8 +142,10 @@ public class FeignHttpClientTests {
 	@RestController
 	@EnableFeignClients(clients = { TestClient.class, UserClient.class })
 	@RibbonClients({
-			@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp1", configuration = LocalRibbonClientConfiguration.class) })
+			@RibbonClient(name = "localapp",
+					configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp1",
+					configuration = LocalRibbonClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application implements UserService {
 

@@ -49,10 +49,11 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Jakub Narloch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientNotPrimaryTests.Application.class, webEnvironment = RANDOM_PORT, value = {
-		"spring.application.name=feignclientnotprimarytest",
-		"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
-		"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
+@SpringBootTest(classes = FeignClientNotPrimaryTests.Application.class,
+		webEnvironment = RANDOM_PORT,
+		value = { "spring.application.name=feignclientnotprimarytest",
+				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
+				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
 @DirtiesContext
 public class FeignClientNotPrimaryTests {
 
@@ -101,8 +102,8 @@ public class FeignClientNotPrimaryTests {
 	@Configuration
 	@EnableAutoConfiguration
 	@RestController
-	@EnableFeignClients(clients = {
-			TestClient.class }, defaultConfiguration = TestDefaultFeignConfig.class)
+	@EnableFeignClients(clients = { TestClient.class },
+			defaultConfiguration = TestDefaultFeignConfig.class)
 	@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
 	protected static class Application {
 

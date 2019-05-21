@@ -41,9 +41,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Spencer Gibb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = LoadBalancerFeignClientOverrideTests.TestConfiguration.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=loadBalancerFeignClientTests",
-		"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
+@SpringBootTest(classes = LoadBalancerFeignClientOverrideTests.TestConfiguration.class,
+		webEnvironment = WebEnvironment.RANDOM_PORT,
+		value = { "spring.application.name=loadBalancerFeignClientTests",
+				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
 @DirtiesContext
 public class LoadBalancerFeignClientOverrideTests {
 
