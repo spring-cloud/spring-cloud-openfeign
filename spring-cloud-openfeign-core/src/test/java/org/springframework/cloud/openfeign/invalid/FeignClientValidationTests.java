@@ -47,22 +47,17 @@ public class FeignClientValidationTests {
 	@Rule
 	public ExpectedException expected = ExpectedException.none();
 
-	@Test
-	public void testNameAndValue() {
-		this.expected.expectMessage("Different @AliasFor mirror values");
-		new AnnotationConfigApplicationContext(NameAndValueConfiguration.class);
-	}
-
-	@Test
-	public void testServiceIdAndValue() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				LoadBalancerAutoConfiguration.class, RibbonAutoConfiguration.class,
-				FeignRibbonClientAutoConfiguration.class,
-				NameAndServiceIdConfiguration.class);
-		assertThat(context.getBean(NameAndServiceIdConfiguration.Client.class))
-				.isNotNull();
-		context.close();
-	}
+	 @Test
+	 public void testServiceIdAndValue() {
+	 AnnotationConfigApplicationContext context = new
+	 AnnotationConfigApplicationContext(
+	 LoadBalancerAutoConfiguration.class, RibbonAutoConfiguration.class,
+	 FeignRibbonClientAutoConfiguration.class,
+	 NameAndServiceIdConfiguration.class);
+	 assertThat(context.getBean(NameAndServiceIdConfiguration.Client.class))
+	 .isNotNull();
+	 context.close();
+	 }
 
 	@Test
 	public void testDuplicatedClientNames() {
@@ -128,42 +123,27 @@ public class FeignClientValidationTests {
 		}
 	}
 
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = NameAndValueConfiguration.Client.class)
-	protected static class NameAndValueConfiguration {
+	 @Configuration
+	 @Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
+	 @EnableFeignClients(clients = NameAndServiceIdConfiguration.Client.class)
+	 protected static class NameAndServiceIdConfiguration {
 
-		@FeignClient(value = "foo", name = "bar")
-		interface Client {
+	 @FeignClient(name = "bar", serviceId = "foo")
+	 interface Client {
 
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
+	 @RequestMapping(method = RequestMethod.GET, value = "/")
+	 String get();
 
-		}
+	 }
 
-	}
-
-	@Configuration
-	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
-	@EnableFeignClients(clients = NameAndServiceIdConfiguration.Client.class)
-	protected static class NameAndServiceIdConfiguration {
-
-		@FeignClient(name = "bar", serviceId = "foo")
-		interface Client {
-
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-
-		}
-
-	}
+	 }
 
 	@Configuration
 
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
-	@EnableFeignClients(clients = {
-			DuplicatedFeignClientNamesConfiguration.FooClient.class,
-			DuplicatedFeignClientNamesConfiguration.BarClient.class })
+	@EnableFeignClients(
+			clients = { DuplicatedFeignClientNamesConfiguration.FooClient.class,
+					DuplicatedFeignClientNamesConfiguration.BarClient.class })
 	protected static class DuplicatedFeignClientNamesConfiguration {
 
 		@FeignClient(contextId = "foo", name = "bar")
@@ -209,7 +189,8 @@ public class FeignClientValidationTests {
 			return HystrixFeign.builder();
 		}
 
-		@FeignClient(name = "foobar", url = "http://localhost", fallback = ClientFallback.class)
+		@FeignClient(name = "foobar", url = "http://localhost",
+				fallback = ClientFallback.class)
 		interface Client {
 
 			@RequestMapping(method = RequestMethod.GET, value = "/")
@@ -267,7 +248,8 @@ public class FeignClientValidationTests {
 			return HystrixFeign.builder();
 		}
 
-		@FeignClient(name = "foobar", url = "http://localhost", fallbackFactory = ClientFallback.class)
+		@FeignClient(name = "foobar", url = "http://localhost",
+				fallbackFactory = ClientFallback.class)
 		interface Client {
 
 			@RequestMapping(method = RequestMethod.GET, value = "/")
@@ -301,7 +283,8 @@ public class FeignClientValidationTests {
 			return HystrixFeign.builder();
 		}
 
-		@FeignClient(name = "foobar", url = "http://localhost", fallbackFactory = Dummy.class)
+		@FeignClient(name = "foobar", url = "http://localhost",
+				fallbackFactory = Dummy.class)
 		interface Client {
 
 			@RequestMapping(method = RequestMethod.GET, value = "/")
