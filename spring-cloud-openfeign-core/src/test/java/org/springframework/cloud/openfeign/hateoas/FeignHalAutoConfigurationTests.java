@@ -72,7 +72,7 @@ public class FeignHalAutoConfigurationTests {
 		when(halConfiguration.getIfAvailable(any()))
 				.thenReturn(mock(HalConfiguration.class));
 		when(relProvider.getObject()).thenReturn(mock(LinkRelationProvider.class));
-		when(curieProvider.getIfAvailable()).thenReturn(mock(CurieProvider.class));
+		when(curieProvider.getIfAvailable(any())).thenReturn(mock(CurieProvider.class));
 		when(linkRelationMessageSource.getObject())
 				.thenReturn(mock(MessageSourceAccessor.class));
 

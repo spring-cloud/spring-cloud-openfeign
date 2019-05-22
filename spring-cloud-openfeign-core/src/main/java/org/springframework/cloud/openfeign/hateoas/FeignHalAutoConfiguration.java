@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign.hateoas;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.mediatype.hal.CurieProvider;
+import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
 import org.springframework.hateoas.mediatype.hal.HalConfiguration;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.server.LinkRelationProvider;
@@ -64,15 +66,20 @@ public class FeignHalAutoConfiguration {
 			ObjectProvider<LinkRelationProvider> relProvider,
 			ObjectProvider<CurieProvider> curieProvider,
 			ObjectProvider<MessageSourceAccessor> linkRelationMessageSource) {
+
 		ObjectMapper mapper = objectMapper.getIfAvailable(ObjectMapper::new).copy();
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
 		HalConfiguration configuration = halConfiguration
 				.getIfAvailable(HalConfiguration::new);
 
+		CurieProvider curieProviderInstance = curieProvider
+				.getIfAvailable(() -> new DefaultCurieProvider(Collections.emptyMap()));
+
 		Jackson2HalModule.HalHandlerInstantiator halHandlerInstantiator = new Jackson2HalModule.HalHandlerInstantiator(
-				relProvider.getObject(), curieProvider.getIfAvailable(),
+				relProvider.getObject(), curieProviderInstance,
 				linkRelationMessageSource.getObject(), configuration);
+
 		mapper.setHandlerInstantiator(halHandlerInstantiator);
 
 		if (!Jackson2HalModule.isAlreadyRegisteredIn(mapper)) {
