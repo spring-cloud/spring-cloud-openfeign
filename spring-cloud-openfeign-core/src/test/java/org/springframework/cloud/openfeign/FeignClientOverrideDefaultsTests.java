@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
+import feign.QueryMapEncoder;
 import feign.Request;
 import feign.RequestInterceptor;
 import feign.RequestLine;
@@ -30,6 +31,7 @@ import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import feign.hystrix.HystrixFeign;
 import feign.optionals.OptionalDecoder;
+import feign.querymap.BeanQueryMapEncoder;
 import feign.slf4j.Slf4jLogger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -134,6 +136,14 @@ public class FeignClientOverrideDefaultsTests {
 	}
 
 	@Test
+	public void overrideQueryMapEncoder() {
+		QueryMapEncoder.Default.class
+				.cast(this.context.getInstance("foo", QueryMapEncoder.class));
+		BeanQueryMapEncoder.class
+				.cast(this.context.getInstance("bar", QueryMapEncoder.class));
+	}
+
+	@Test
 	public void addRequestInterceptor() {
 		assertThat(this.context.getInstances("foo", RequestInterceptor.class).size())
 				.isEqualTo(1);
@@ -203,6 +213,11 @@ public class FeignClientOverrideDefaultsTests {
 			return HystrixFeign.builder();
 		}
 
+		@Bean
+		public QueryMapEncoder queryMapEncoder() {
+			return new feign.QueryMapEncoder.Default();
+		}
+
 	}
 
 	public static class BarConfiguration {
@@ -230,6 +245,11 @@ public class FeignClientOverrideDefaultsTests {
 		@Bean
 		RequestInterceptor feignRequestInterceptor() {
 			return new BasicAuthRequestInterceptor("user", "pass");
+		}
+
+		@Bean
+		public QueryMapEncoder queryMapEncoder() {
+			return new BeanQueryMapEncoder();
 		}
 
 	}

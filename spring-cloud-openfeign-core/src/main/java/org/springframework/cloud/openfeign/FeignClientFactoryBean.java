@@ -23,6 +23,7 @@ import feign.Client;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
+import feign.QueryMapEncoder;
 import feign.Request;
 import feign.RequestInterceptor;
 import feign.Retryer;
@@ -147,7 +148,10 @@ class FeignClientFactoryBean
 		if (requestInterceptors != null) {
 			builder.requestInterceptors(requestInterceptors.values());
 		}
-
+		QueryMapEncoder queryMapEncoder = getOptional(context, QueryMapEncoder.class);
+		if (queryMapEncoder != null) {
+			builder.queryMapEncoder(queryMapEncoder);
+		}
 		if (this.decode404) {
 			builder.decode404();
 		}

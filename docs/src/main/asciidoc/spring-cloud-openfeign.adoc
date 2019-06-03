@@ -128,6 +128,7 @@ Spring Cloud Netflix _does not_ provide the following beans by default for feign
 * `Request.Options`
 * `Collection<RequestInterceptor>`
 * `SetterFactory`
+* `QueryMapEncoder`
 
 Creating a bean of one of those type and placing it in a `@FeignClient` configuration (such as `FooConfiguration` above) allows you to override each one of the beans described.  Example:
 
@@ -487,3 +488,5 @@ public class DemoTemplate {
     String demoEndpoint(@SpringQueryMap Params params);
 }
 ----
+
+If you need more control over the generated query parameter map, you can implement a custom `QueryMapEncoder` bean.
