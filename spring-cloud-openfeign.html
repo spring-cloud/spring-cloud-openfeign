@@ -314,6 +314,9 @@ You can customize the HTTP client used by providing a bean of either <code>Closa
 <li>
 <p><code>SetterFactory</code></p>
 </li>
+<li>
+<p><code>QueryMapEncoder</code></p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
@@ -789,6 +792,9 @@ public class DemoTemplate {
     String demoEndpoint(@SpringQueryMap Params params);
 }</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>If you need more control over the generated query parameter map, you can implement a custom <code>QueryMapEncoder</code> bean.</p>
 </div>
 </div>
 </div>
