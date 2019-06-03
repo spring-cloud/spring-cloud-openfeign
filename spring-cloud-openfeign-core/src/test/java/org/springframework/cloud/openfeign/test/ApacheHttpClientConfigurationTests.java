@@ -65,8 +65,8 @@ import static org.mockito.Mockito.mockingDetails;
  * @author Ryan Baxter
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(properties = { "feign.okhttp.enabled: false",
-		"ribbon.eureka.enabled = false" })
+@SpringBootTest(
+		properties = { "feign.okhttp.enabled: false", "ribbon.eureka.enabled = false" })
 @DirtiesContext
 public class ApacheHttpClientConfigurationTests {
 
@@ -109,8 +109,8 @@ public class ApacheHttpClientConfigurationTests {
 
 	@SpringBootConfiguration
 	@EnableAutoConfiguration
-	@EnableFeignClients(clients = {
-			ApacheHttpClientConfigurationTestApp.FooClient.class })
+	@EnableFeignClients(
+			clients = { ApacheHttpClientConfigurationTestApp.FooClient.class })
 	static class ApacheHttpClientConfigurationTestApp {
 
 		@FeignClient(name = "foo", serviceId = "foo")

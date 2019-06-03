@@ -59,7 +59,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Eko Kurniawan Khannedy
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class, webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class,
+		webEnvironment = RANDOM_PORT)
 @TestPropertySource("classpath:feign-properties.properties")
 @DirtiesContext
 public class FeignClientUsingPropertiesTests {
@@ -146,7 +147,8 @@ public class FeignClientUsingPropertiesTests {
 
 	protected interface FormClient {
 
-		@RequestMapping(value = "/form", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		@RequestMapping(value = "/form", method = RequestMethod.POST,
+				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		String form(Map<String, String> form);
 
 	}
@@ -174,7 +176,8 @@ public class FeignClientUsingPropertiesTests {
 			return "OK";
 		}
 
-		@RequestMapping(value = "/form", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		@RequestMapping(value = "/form", method = RequestMethod.POST,
+				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		public String form(HttpServletRequest request) {
 			return request.getParameter("form");
 		}

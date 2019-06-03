@@ -52,11 +52,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Spencer Gibb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignRibbonClientRetryTests.Application.class, webEnvironment = RANDOM_PORT, value = {
-		"spring.application.name=feignclientretrytest", "feign.okhttp.enabled=false",
-		"feign.httpclient.enabled=false", "feign.hystrix.enabled=false",
-		"localapp.ribbon.MaxAutoRetries=2",
-		"localapp.ribbon.MaxAutoRetriesNextServer=3" })
+@SpringBootTest(classes = FeignRibbonClientRetryTests.Application.class,
+		webEnvironment = RANDOM_PORT,
+		value = { "spring.application.name=feignclientretrytest",
+				"feign.okhttp.enabled=false", "feign.httpclient.enabled=false",
+				"feign.hystrix.enabled=false", "localapp.ribbon.MaxAutoRetries=2",
+				"localapp.ribbon.MaxAutoRetriesNextServer=3" })
 @DirtiesContext
 public class FeignRibbonClientRetryTests {
 

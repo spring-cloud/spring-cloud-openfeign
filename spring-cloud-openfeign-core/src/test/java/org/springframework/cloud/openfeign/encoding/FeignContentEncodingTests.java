@@ -49,10 +49,11 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  *
  * @author Jakub Narloch
  */
-@SpringBootTest(classes = FeignContentEncodingTests.Application.class, webEnvironment = RANDOM_PORT, value = {
-		"feign.compression.request.enabled=true",
-		"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
-		"ribbon.OkToRetryOnAllOperations=false" })
+@SpringBootTest(classes = FeignContentEncodingTests.Application.class,
+		webEnvironment = RANDOM_PORT,
+		value = { "feign.compression.request.enabled=true",
+				"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
+				"ribbon.OkToRetryOnAllOperations=false" })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FeignContentEncodingTests {
 
@@ -79,7 +80,8 @@ public class FeignContentEncodingTests {
 
 	@EnableFeignClients(clients = InvoiceClient.class)
 	@RibbonClient(name = "local", configuration = LocalRibbonClientConfiguration.class)
-	@SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
+	@SpringBootApplication(
+			scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
 	@Import(NoSecurityConfiguration.class)
 	public static class Application {
 

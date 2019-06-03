@@ -46,11 +46,14 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Venil Noronha
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignRibbonClientPathTests.Application.class, webEnvironment = RANDOM_PORT, value = {
-		"spring.application.name=feignribbonclientpathtest", "feign.okhttp.enabled=false",
-		"feign.httpclient.enabled=false", "feign.hystrix.enabled=false",
-		"test.path.prefix=/base/path" // For pathWithPlaceholder test
-})
+@SpringBootTest(classes = FeignRibbonClientPathTests.Application.class,
+		webEnvironment = RANDOM_PORT,
+		value = { "spring.application.name=feignribbonclientpathtest",
+				"feign.okhttp.enabled=false", "feign.httpclient.enabled=false",
+				"feign.hystrix.enabled=false", "test.path.prefix=/base/path" // For
+																				// pathWithPlaceholder
+																				// test
+		})
 @DirtiesContext
 public class FeignRibbonClientPathTests {
 

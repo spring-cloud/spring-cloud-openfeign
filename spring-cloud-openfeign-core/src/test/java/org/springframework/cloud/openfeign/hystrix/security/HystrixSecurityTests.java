@@ -56,8 +56,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @DirtiesContext
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = {
-		"feign.hystrix.enabled=true" })
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
+		properties = { "feign.hystrix.enabled=true" })
 @ActiveProfiles("proxysecurity")
 public class HystrixSecurityTests {
 

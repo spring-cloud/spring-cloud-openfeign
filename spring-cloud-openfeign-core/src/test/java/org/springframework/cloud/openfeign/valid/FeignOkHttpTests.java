@@ -55,10 +55,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Spencer Gibb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignOkHttpTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=feignclienttest", "feign.hystrix.enabled=false",
-		"feign.httpclient.enabled=false", "feign.okhttp.enabled=true",
-		"spring.cloud.httpclientfactories.ok.enabled=true" })
+@SpringBootTest(classes = FeignOkHttpTests.Application.class,
+		webEnvironment = WebEnvironment.RANDOM_PORT,
+		value = { "spring.application.name=feignclienttest",
+				"feign.hystrix.enabled=false", "feign.httpclient.enabled=false",
+				"feign.okhttp.enabled=true",
+				"spring.cloud.httpclientfactories.ok.enabled=true" })
 @DirtiesContext
 public class FeignOkHttpTests {
 
@@ -116,7 +118,8 @@ public class FeignOkHttpTests {
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		Hello getHello();
 
-		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop", consumes = "application/json")
+		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop",
+				consumes = "application/json")
 		ResponseEntity<Void> patchHello(Hello hello);
 
 	}
@@ -138,8 +141,10 @@ public class FeignOkHttpTests {
 	@RestController
 	@EnableFeignClients(clients = { TestClient.class, UserClient.class })
 	@RibbonClients({
-			@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class),
-			@RibbonClient(name = "localapp1", configuration = LocalRibbonClientConfiguration.class) })
+			@RibbonClient(name = "localapp",
+					configuration = LocalRibbonClientConfiguration.class),
+			@RibbonClient(name = "localapp1",
+					configuration = LocalRibbonClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application implements UserService {
 
