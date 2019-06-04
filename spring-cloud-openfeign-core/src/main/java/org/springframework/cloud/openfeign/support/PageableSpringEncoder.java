@@ -25,7 +25,6 @@ import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -63,20 +62,16 @@ public class PageableSpringEncoder implements Encoder {
 		this.delegate = delegate;
 	}
 
-	/**
-	 * Creates a new PageableSpringEncoder with the given delegate for fallback. If no
-	 * delegate is provided and this encoder cant handle the request, an EncodeException
-	 * is thrown.
-	 * @param dataWebProperties The optional DataWebProperties.
-	 * @param delegate The optional delegate.
-	 */
-	public PageableSpringEncoder(SpringDataWebProperties dataWebProperties, Encoder delegate) {
-		this(delegate);
-		if (dataWebProperties != null) {
-			pageParameter = dataWebProperties.getPageable().getPageParameter();
-			sizeParameter = dataWebProperties.getPageable().getSizeParameter();
-			sortParameter = dataWebProperties.getSort().getSortParameter();
-		}
+	public void setPageParameter(String pageParameter) {
+		this.pageParameter = pageParameter;
+	}
+
+	public void setSizeParameter(String sizeParameter) {
+		this.sizeParameter = sizeParameter;
+	}
+
+	public void setSortParameter(String sortParameter) {
+		this.sortParameter = sortParameter;
 	}
 
 	@Override

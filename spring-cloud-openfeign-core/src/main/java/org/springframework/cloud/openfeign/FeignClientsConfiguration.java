@@ -71,7 +71,7 @@ public class FeignClientsConfiguration {
 	private Logger logger;
 
 	@Autowired(required = false)
-	private SpringDataWebProperties dataWebProperties;
+	private SpringDataWebProperties springDataWebProperties;
 
 	@Bean
 	@ConditionalOnMissingBean
@@ -91,7 +91,13 @@ public class FeignClientsConfiguration {
 	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
 	@ConditionalOnMissingBean
 	public Encoder feignEncoderPageable() {
-		return new PageableSpringEncoder(dataWebProperties, new SpringEncoder(this.messageConverters));
+		PageableSpringEncoder encoder = new PageableSpringEncoder(new SpringEncoder(this.messageConverters));
+		if (springDataWebProperties != null) {
+			encoder.setPageParameter(springDataWebProperties.getPageable().getPageParameter());
+			encoder.setSizeParameter(springDataWebProperties.getPageable().getSizeParameter());
+			encoder.setSortParameter(springDataWebProperties.getSort().getSortParameter());
+		}
+		return encoder;
 	}
 
 	@Bean
