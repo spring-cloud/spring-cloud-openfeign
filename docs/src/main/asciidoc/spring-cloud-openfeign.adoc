@@ -482,7 +482,7 @@ The following feign client uses the `Params` class by using the `@SpringQueryMap
 [source,java,indent=0]
 ----
 @FeignClient("demo")
-public class DemoTemplate {
+public interface DemoTemplate {
 
     @GetMapping(path = "/demo")
     String demoEndpoint(@SpringQueryMap Params params);
@@ -490,3 +490,23 @@ public class DemoTemplate {
 ----
 
 If you need more control over the generated query parameter map, you can implement a custom `QueryMapEncoder` bean.
+
+=== HATEOAS support
+
+Spring provides some APIs to create REST representations that follow the https://en.wikipedia.org/wiki/HATEOAS[HATEOAS] principle, https://spring.io/projects/spring-hateoas[Spring Hateoas] and https://spring.io/projects/spring-data-rest[Spring Data REST].
+
+If your project use the `org.springframework.boot:spring-boot-starter-hateoas` starter
+or the `org.springframework.boot:spring-boot-starter-data-rest` starter, Feign HATEOAS support is enabled by default.
+
+When HATEOAS support is enabled, Feign clients are allowed to serialize
+and deserialize HATEOAS representation models: https://docs.spring.io/spring-hateoas/docs/1.0.0.M1/apidocs/org/springframework/hateoas/EntityModel.html[EntityModel], https://docs.spring.io/spring-hateoas/docs/1.0.0.M1/apidocs/org/springframework/hateoas/CollectionModel.html[CollectionModel] and https://docs.spring.io/spring-hateoas/docs/1.0.0.M1/apidocs/org/springframework/hateoas/PagedModel.html[PagedModel].
+
+[source,java,indent=0]
+----
+@FeignClient("demo")
+public interface DemoTemplate {
+
+    @GetMapping(path = "/stores")
+    CollectionModel<Store> getStores();
+}
+----
