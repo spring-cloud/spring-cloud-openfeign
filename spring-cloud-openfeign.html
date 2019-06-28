@@ -101,6 +101,7 @@ $(addBlockSwitches);
 <li><a href="#_feign_requestresponse_compression">Feign request/response compression</a></li>
 <li><a href="#_feign_logging">Feign logging</a></li>
 <li><a href="#_feign_querymap_support">Feign @QueryMap support</a></li>
+<li><a href="#_hateoas_support">HATEOAS support</a></li>
 </ul>
 </li>
 </ul>
@@ -786,7 +787,7 @@ public class Params {
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient("demo")
-public class DemoTemplate {
+public interface DemoTemplate {
 
     @GetMapping(path = "/demo")
     String demoEndpoint(@SpringQueryMap Params params);
@@ -795,6 +796,30 @@ public class DemoTemplate {
 </div>
 <div class="paragraph">
 <p>If you need more control over the generated query parameter map, you can implement a custom <code>QueryMapEncoder</code> bean.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hateoas_support"><a class="link" href="#_hateoas_support">HATEOAS support</a></h3>
+<div class="paragraph">
+<p>Spring provides some APIs to create REST representations that follow the <a href="https://en.wikipedia.org/wiki/HATEOAS">HATEOAS</a> principle, <a href="https://spring.io/projects/spring-hateoas">Spring Hateoas</a> and <a href="https://spring.io/projects/spring-data-rest">Spring Data REST</a>.</p>
+</div>
+<div class="paragraph">
+<p>If your project use the <code>org.springframework.boot:spring-boot-starter-hateoas</code> starter
+or the <code>org.springframework.boot:spring-boot-starter-data-rest</code> starter, Feign HATEOAS support is enabled by default.</p>
+</div>
+<div class="paragraph">
+<p>When HATEOAS support is enabled, Feign clients are allowed to serialize
+and deserialize HATEOAS representation models: <a href="https://docs.spring.io/spring-hateoas/docs/1.0.0.M1/apidocs/org/springframework/hateoas/EntityModel.html">EntityModel</a>, <a href="https://docs.spring.io/spring-hateoas/docs/1.0.0.M1/apidocs/org/springframework/hateoas/CollectionModel.html">CollectionModel</a> and <a href="https://docs.spring.io/spring-hateoas/docs/1.0.0.M1/apidocs/org/springframework/hateoas/PagedModel.html">PagedModel</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient("demo")
+public interface DemoTemplate {
+
+    @GetMapping(path = "/stores")
+    CollectionModel&lt;Store&gt; getStores();
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
