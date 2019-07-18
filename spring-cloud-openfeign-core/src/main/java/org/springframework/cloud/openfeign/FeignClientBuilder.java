@@ -88,7 +88,7 @@ public class FeignClientBuilder {
 			return this;
 		}
 
-		public Builder fallbackFactory(final FallbackFactory<? extends T> fallbackFactory) {
+		public Builder fallbackFactory(final Class<? extends FallbackFactory<? extends T>> fallbackFactory) {
 			FeignClientsRegistrar.validateFallbackFactory(fallbackFactory);
 			this.feignClientFactoryBean.setFallbackFactory(fallbackFactory);
 			return this;
