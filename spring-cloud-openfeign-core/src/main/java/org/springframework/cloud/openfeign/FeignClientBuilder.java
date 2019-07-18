@@ -59,8 +59,7 @@ public class FeignClientBuilder {
 			this.feignClientFactoryBean.setContextId(FeignClientsRegistrar.getName(name));
 			// preset default values - these values resemble the default values on the
 			// FeignClient annotation
-			this.url("").path("").decode404(false).fallback(void.class)
-					.fallbackFactory(void.class);
+			this.url("").path("").decode404(false);
 		}
 
 		public Builder url(final String url) {
