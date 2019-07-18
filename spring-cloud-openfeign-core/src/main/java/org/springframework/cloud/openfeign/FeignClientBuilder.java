@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign;
 
+import feign.hystrix.FallbackFactory;
+
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -81,13 +83,13 @@ public class FeignClientBuilder {
 			return this;
 		}
 
-		public Builder fallback(final Class<T> fallback) {
+		public Builder fallback(final Class<? extends T> fallback) {
 			FeignClientsRegistrar.validateFallback(fallback);
 			this.feignClientFactoryBean.setFallback(fallback);
 			return this;
 		}
 
-		public Builder fallbackFactory(final Class<T> fallbackFactory) {
+		public Builder fallbackFactory(final FallbackFactory<? extends T> fallbackFactory) {
 			FeignClientsRegistrar.validateFallbackFactory(fallbackFactory);
 			this.feignClientFactoryBean.setFallbackFactory(fallbackFactory);
 			return this;
