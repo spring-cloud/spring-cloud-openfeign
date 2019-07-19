@@ -99,17 +99,6 @@ public class FeignClientBuilderTests {
 				"fallbackFactory", "name", "path", "url");
 	}
 
-    private interface TestFeignClient{}
-
-    private class TestFeignClientFallback implements TestFeignClient{}
-
-    private class TestFeignClientFallbackFactory implements FallbackFactory<TestFeignClient>{
-        @Override
-        public TestFeignClientFallback create(Throwable throwable) {
-            return new TestFeignClientFallback();
-        }
-    }
-
 	@Test
 	public void forType_preinitializedBuilder() {
 		// when:
@@ -173,4 +162,16 @@ public class FeignClientBuilderTests {
 		builder.build();
 	}
 
+	private interface TestFeignClient {
+	}
+
+    private class TestFeignClientFallback implements TestFeignClient {
+	}
+
+	private class TestFeignClientFallbackFactory implements FallbackFactory<TestFeignClient> {
+		@Override
+		public TestFeignClientFallback create(Throwable throwable) {
+			return new TestFeignClientFallback();
+		}
+	}
 }
