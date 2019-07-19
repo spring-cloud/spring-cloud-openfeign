@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 
 import feign.hystrix.FallbackFactory;
-
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -130,7 +129,7 @@ public class FeignClientBuilderTests {
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
 				.forType(TestFeignClient.class, "TestClient").decode404(true)
 				.fallback(TestFeignClientFallback.class)
-                .fallbackFactory(TestFeignClientFallbackFactory.class).path("Path/")
+				.fallbackFactory(TestFeignClientFallbackFactory.class).path("Path/")
 				.url("Url/");
 
 		// then:
@@ -165,7 +164,7 @@ public class FeignClientBuilderTests {
 	private interface TestFeignClient {
 	}
 
-    private class TestFeignClientFallback implements TestFeignClient {
+	private class TestFeignClientFallback implements TestFeignClient {
 	}
 
 	private class TestFeignClientFallbackFactory implements FallbackFactory<TestFeignClient> {
