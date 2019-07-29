@@ -81,8 +81,12 @@ public class PageableSpringEncoder implements Encoder {
 		if (supports(object)) {
 			if (object instanceof Pageable) {
 				Pageable pageable = (Pageable) object;
-				template.query(pageParameter, pageable.getPageNumber() + "");
-				template.query(sizeParameter, pageable.getPageSize() + "");
+
+				if (pageable.isPaged()) {
+					template.query(pageParameter, pageable.getPageNumber() + "");
+					template.query(sizeParameter, pageable.getPageSize() + "");
+				}
+
 				if (pageable.getSort() != null) {
 					applySort(template, pageable.getSort());
 				}
