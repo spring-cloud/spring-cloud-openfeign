@@ -34,8 +34,8 @@ import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConf
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.hateoas.mediatype.hal.CurieProvider;
 import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
 import org.springframework.hateoas.mediatype.hal.HalConfiguration;
@@ -44,7 +44,6 @@ import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
-import static org.springframework.hateoas.MediaTypes.HAL_JSON_UTF8;
 
 /**
  * @author Hector Espert
@@ -63,9 +62,9 @@ public class FeignHalAutoConfiguration {
 	public TypeConstrainedMappingJackson2HttpMessageConverter halJacksonHttpMessageConverter(
 			ObjectProvider<ObjectMapper> objectMapper,
 			ObjectProvider<HalConfiguration> halConfiguration,
-			ObjectProvider<LinkRelationProvider> relProvider,
+			ObjectProvider<MessageResolver> messageResolver,
 			ObjectProvider<CurieProvider> curieProvider,
-			ObjectProvider<MessageSourceAccessor> linkRelationMessageSource) {
+			ObjectProvider<LinkRelationProvider> linkRelationProvider) {
 
 		ObjectMapper mapper = objectMapper.getIfAvailable(ObjectMapper::new).copy();
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -77,8 +76,8 @@ public class FeignHalAutoConfiguration {
 				.getIfAvailable(() -> new DefaultCurieProvider(Collections.emptyMap()));
 
 		Jackson2HalModule.HalHandlerInstantiator halHandlerInstantiator = new Jackson2HalModule.HalHandlerInstantiator(
-				relProvider.getObject(), curieProviderInstance,
-				linkRelationMessageSource.getObject(), configuration);
+				linkRelationProvider.getIfAvailable(), curieProviderInstance,
+				messageResolver.getIfAvailable(), configuration);
 
 		mapper.setHandlerInstantiator(halHandlerInstantiator);
 
@@ -89,7 +88,7 @@ public class FeignHalAutoConfiguration {
 
 		TypeConstrainedMappingJackson2HttpMessageConverter converter = new TypeConstrainedMappingJackson2HttpMessageConverter(
 				RepresentationModel.class);
-		converter.setSupportedMediaTypes(Arrays.asList(HAL_JSON, HAL_JSON_UTF8));
+		converter.setSupportedMediaTypes(Arrays.asList(HAL_JSON));
 		converter.setObjectMapper(mapper);
 		return converter;
 	}

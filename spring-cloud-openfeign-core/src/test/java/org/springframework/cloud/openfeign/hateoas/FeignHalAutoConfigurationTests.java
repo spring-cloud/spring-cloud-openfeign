@@ -26,7 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.hateoas.mediatype.hal.CurieProvider;
 import org.springframework.hateoas.mediatype.hal.HalConfiguration;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
@@ -38,7 +38,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
-import static org.springframework.hateoas.MediaTypes.HAL_JSON_UTF8;
 
 /**
  * @author Hector Espert
@@ -59,7 +58,7 @@ public class FeignHalAutoConfigurationTests {
 	private ObjectProvider<CurieProvider> curieProvider;
 
 	@Mock
-	private ObjectProvider<MessageSourceAccessor> linkRelationMessageSource;
+	private ObjectProvider<MessageResolver> messageResolver;
 
 	@InjectMocks
 	private FeignHalAutoConfiguration feignHalAutoConfiguration;
@@ -71,19 +70,17 @@ public class FeignHalAutoConfigurationTests {
 
 		when(halConfiguration.getIfAvailable(any()))
 				.thenReturn(mock(HalConfiguration.class));
-		when(relProvider.getObject()).thenReturn(mock(LinkRelationProvider.class));
+		when(relProvider.getIfAvailable()).thenReturn(mock(LinkRelationProvider.class));
 		when(curieProvider.getIfAvailable(any())).thenReturn(mock(CurieProvider.class));
-		when(linkRelationMessageSource.getObject())
-				.thenReturn(mock(MessageSourceAccessor.class));
+		when(messageResolver.getIfAvailable()).thenReturn(mock(MessageResolver.class));
 
 		TypeConstrainedMappingJackson2HttpMessageConverter converter = feignHalAutoConfiguration
 				.halJacksonHttpMessageConverter(objectMapper, halConfiguration,
-						relProvider, curieProvider, linkRelationMessageSource);
+						messageResolver, curieProvider, relProvider);
 
 		assertThat(converter).isNotNull();
 		assertThat(converter.getObjectMapper()).isNotNull();
-		assertThat(converter.getSupportedMediaTypes())
-				.isEqualTo(Arrays.asList(HAL_JSON, HAL_JSON_UTF8));
+		assertThat(converter.getSupportedMediaTypes()).isEqualTo(Arrays.asList(HAL_JSON));
 
 		assertThat(Jackson2HalModule.isAlreadyRegisteredIn(converter.getObjectMapper()))
 				.isTrue();
