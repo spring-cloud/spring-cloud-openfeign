@@ -159,13 +159,9 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>com.sun.jersey.contribs</groupId>
-			<artifactId>jersey-apache-client4</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
+			<version>4.1.0</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
