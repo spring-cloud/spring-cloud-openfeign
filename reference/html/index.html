@@ -96,21 +96,22 @@ $(addBlockSwitches);
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#spring-cloud-feign">Declarative REST Client: Feign</a>
+<li><a href="#spring-cloud-feign">1. Declarative REST Client: Feign</a>
 <ul class="sectlevel2">
-<li><a href="#netflix-feign-starter">How to Include Feign</a></li>
-<li><a href="#spring-cloud-feign-overriding-defaults">Overriding Feign Defaults</a></li>
-<li><a href="#_creating_feign_clients_manually">Creating Feign Clients Manually</a></li>
-<li><a href="#spring-cloud-feign-hystrix">Feign Hystrix Support</a></li>
-<li><a href="#spring-cloud-feign-hystrix-fallback">Feign Hystrix Fallbacks</a></li>
-<li><a href="#_feign_and_primary">Feign and <code>@Primary</code></a></li>
-<li><a href="#spring-cloud-feign-inheritance">Feign Inheritance Support</a></li>
-<li><a href="#_feign_requestresponse_compression">Feign request/response compression</a></li>
-<li><a href="#_feign_logging">Feign logging</a></li>
-<li><a href="#_feign_querymap_support">Feign @QueryMap support</a></li>
-<li><a href="#_hateoas_support">HATEOAS support</a></li>
+<li><a href="#netflix-feign-starter">1.1. How to Include Feign</a></li>
+<li><a href="#spring-cloud-feign-overriding-defaults">1.2. Overriding Feign Defaults</a></li>
+<li><a href="#creating-feign-clients-manually">1.3. Creating Feign Clients Manually</a></li>
+<li><a href="#spring-cloud-feign-hystrix">1.4. Feign Hystrix Support</a></li>
+<li><a href="#spring-cloud-feign-hystrix-fallback">1.5. Feign Hystrix Fallbacks</a></li>
+<li><a href="#feign-and-primary">1.6. Feign and <code>@Primary</code></a></li>
+<li><a href="#spring-cloud-feign-inheritance">1.7. Feign Inheritance Support</a></li>
+<li><a href="#feign-requestresponse-compression">1.8. Feign request/response compression</a></li>
+<li><a href="#feign-logging">1.9. Feign logging</a></li>
+<li><a href="#feign-querymap-support">1.10. Feign @QueryMap support</a></li>
+<li><a href="#hateoas-support">1.11. HATEOAS support</a></li>
 </ul>
 </li>
+<li><a href="#configuration-properties">2. Configuration properties</a></li>
 </ul>
 </div>
 </div>
@@ -127,13 +128,13 @@ and binding to the Spring Environment and other Spring programming model idioms.
 </div>
 </div>
 <div class="sect1">
-<h2 id="spring-cloud-feign"><a class="link" href="#spring-cloud-feign">Declarative REST Client: Feign</a></h2>
+<h2 id="spring-cloud-feign"><a class="anchor" href="#spring-cloud-feign"></a><a class="link" href="#spring-cloud-feign">1. Declarative REST Client: Feign</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><a href="https://github.com/Netflix/feign">Feign</a> is a declarative web service client.  It makes writing web service clients easier.  To use Feign create an interface and annotate it.  It has pluggable annotation support including Feign annotations and JAX-RS annotations. Feign also supports pluggable encoders and decoders.  Spring Cloud adds support for Spring MVC annotations and for using the same <code>HttpMessageConverters</code> used by default in Spring Web.  Spring Cloud integrates Ribbon and Eureka to provide a load balanced http client when using Feign.</p>
 </div>
 <div class="sect2">
-<h3 id="netflix-feign-starter"><a class="link" href="#netflix-feign-starter">How to Include Feign</a></h3>
+<h3 id="netflix-feign-starter"><a class="anchor" href="#netflix-feign-starter"></a><a class="link" href="#netflix-feign-starter">1.1. How to Include Feign</a></h3>
 <div class="paragraph">
 <p>To include Feign in your project use the starter with group <code>org.springframework.cloud</code>
 and artifact id <code>spring-cloud-starter-openfeign</code>. See the <a href="https://projects.spring.io/spring-cloud/">Spring Cloud Project page</a>
@@ -188,7 +189,7 @@ in your external configuration (see
 </div>
 </div>
 <div class="sect2">
-<h3 id="spring-cloud-feign-overriding-defaults"><a class="link" href="#spring-cloud-feign-overriding-defaults">Overriding Feign Defaults</a></h3>
+<h3 id="spring-cloud-feign-overriding-defaults"><a class="anchor" href="#spring-cloud-feign-overriding-defaults"></a><a class="link" href="#spring-cloud-feign-overriding-defaults">1.2. Overriding Feign Defaults</a></h3>
 <div class="paragraph">
 <p>A central concept in Spring Cloud&#8217;s Feign support is that of the named client. Each feign client is part of an ensemble of components that work together to contact a remote server on demand, and the ensemble has a name that you give it as an application developer using the <code>@FeignClient</code> annotation. Spring Cloud creates a new ensemble as an
 <code>ApplicationContext</code> on demand for each named client using <code>FeignClientsConfiguration</code>. This contains (amongst other things) an <code>feign.Decoder</code>, a <code>feign.Encoder</code>, and a <code>feign.Contract</code>.
@@ -456,7 +457,7 @@ public interface BarClient {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_creating_feign_clients_manually"><a class="link" href="#_creating_feign_clients_manually">Creating Feign Clients Manually</a></h3>
+<h3 id="creating-feign-clients-manually"><a class="anchor" href="#creating-feign-clients-manually"></a><a class="link" href="#creating-feign-clients-manually">1.3. Creating Feign Clients Manually</a></h3>
 <div class="paragraph">
 <p>In some cases it might be necessary to customize your Feign Clients in a way that is not
 possible using the methods above.  In this case you can create Clients using the
@@ -469,25 +470,25 @@ a separate request interceptor.</p>
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Import(FeignClientsConfiguration.class)
 class FooController {
 
-	private FooClient fooClient;
+    private FooClient fooClient;
 
-	private FooClient adminClient;
+    private FooClient adminClient;
 
-    	@Autowired
-	public FooController(Decoder decoder, Encoder encoder, Client client, Contract contract) {
-		this.fooClient = Feign.builder().client(client)
-				.encoder(encoder)
-				.decoder(decoder)
-				.contract(contract)
-				.requestInterceptor(new BasicAuthRequestInterceptor("user", "user"))
-				.target(FooClient.class, "https://PROD-SVC");
+        @Autowired
+    public FooController(Decoder decoder, Encoder encoder, Client client, Contract contract) {
+        this.fooClient = Feign.builder().client(client)
+                .encoder(encoder)
+                .decoder(decoder)
+                .contract(contract)
+                .requestInterceptor(new BasicAuthRequestInterceptor("user", "user"))
+                .target(FooClient.class, "https://PROD-SVC");
 
-		this.adminClient = Feign.builder().client(client)
-				.encoder(encoder)
-				.decoder(decoder)
-				.contract(contract)
-				.requestInterceptor(new BasicAuthRequestInterceptor("admin", "admin"))
-				.target(FooClient.class, "https://PROD-SVC");
+        this.adminClient = Feign.builder().client(client)
+                .encoder(encoder)
+                .decoder(decoder)
+                .contract(contract)
+                .requestInterceptor(new BasicAuthRequestInterceptor("admin", "admin"))
+                .target(FooClient.class, "https://PROD-SVC");
     }
 }</code></pre>
 </div>
@@ -533,7 +534,7 @@ the default Feign native annotations.
 </div>
 </div>
 <div class="sect2">
-<h3 id="spring-cloud-feign-hystrix"><a class="link" href="#spring-cloud-feign-hystrix">Feign Hystrix Support</a></h3>
+<h3 id="spring-cloud-feign-hystrix"><a class="anchor" href="#spring-cloud-feign-hystrix"></a><a class="link" href="#spring-cloud-feign-hystrix">1.4. Feign Hystrix Support</a></h3>
 <div class="paragraph">
 <p>If Hystrix is on the classpath and <code>feign.hystrix.enabled=true</code>, Feign will wrap all methods with a circuit breaker. Returning a <code>com.netflix.hystrix.HystrixCommand</code> is also available. This lets you use reactive patterns (with a call to <code>.toObservable()</code> or <code>.observe()</code> or asynchronous use (with a call to <code>.queue()</code>).</p>
 </div>
@@ -544,11 +545,11 @@ the default Feign native annotations.
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Configuration
 public class FooConfiguration {
-    	@Bean
-	@Scope("prototype")
-	public Feign.Builder feignBuilder() {
-		return Feign.builder();
-	}
+        @Bean
+    @Scope("prototype")
+    public Feign.Builder feignBuilder() {
+        return Feign.builder();
+    }
 }</code></pre>
 </div>
 </div>
@@ -568,7 +569,7 @@ favor for an opt-in approach.
 </div>
 </div>
 <div class="sect2">
-<h3 id="spring-cloud-feign-hystrix-fallback"><a class="link" href="#spring-cloud-feign-hystrix-fallback">Feign Hystrix Fallbacks</a></h3>
+<h3 id="spring-cloud-feign-hystrix-fallback"><a class="anchor" href="#spring-cloud-feign-hystrix-fallback"></a><a class="link" href="#spring-cloud-feign-hystrix-fallback">1.5. Feign Hystrix Fallbacks</a></h3>
 <div class="paragraph">
 <p>Hystrix supports the notion of a fallback: a default code path that is executed when they circuit is open or there is an error. To enable fallbacks for a given <code>@FeignClient</code> set the <code>fallback</code> attribute to the class name that implements the fallback. You also need to declare your implementation as a Spring bean.</p>
 </div>
@@ -595,21 +596,21 @@ static class HystrixClientFallback implements HystrixClient {
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient(name = "hello", fallbackFactory = HystrixClientFallbackFactory.class)
 protected interface HystrixClient {
-	@RequestMapping(method = RequestMethod.GET, value = "/hello")
-	Hello iFailSometimes();
+    @RequestMapping(method = RequestMethod.GET, value = "/hello")
+    Hello iFailSometimes();
 }
 
 @Component
 static class HystrixClientFallbackFactory implements FallbackFactory&lt;HystrixClient&gt; {
-	@Override
-	public HystrixClient create(Throwable cause) {
-		return new HystrixClient() {
-			@Override
-			public Hello iFailSometimes() {
-				return new Hello("fallback; reason was: " + cause.getMessage());
-			}
-		};
-	}
+    @Override
+    public HystrixClient create(Throwable cause) {
+        return new HystrixClient() {
+            @Override
+            public Hello iFailSometimes() {
+                return new Hello("fallback; reason was: " + cause.getMessage());
+            }
+        };
+    }
 }</code></pre>
 </div>
 </div>
@@ -627,7 +628,7 @@ There is a limitation with the implementation of fallbacks in Feign and how Hyst
 </div>
 </div>
 <div class="sect2">
-<h3 id="_feign_and_primary"><a class="link" href="#_feign_and_primary">Feign and <code>@Primary</code></a></h3>
+<h3 id="feign-and-primary"><a class="anchor" href="#feign-and-primary"></a><a class="link" href="#feign-and-primary">1.6. Feign and <code>@Primary</code></a></h3>
 <div class="paragraph">
 <p>When using Feign with Hystrix fallbacks, there are multiple beans in the <code>ApplicationContext</code> of the same type. This will cause <code>@Autowired</code> to not work because there isn&#8217;t exactly one bean, or one marked as primary. To work around this, Spring Cloud Netflix marks all Feign instances as <code>@Primary</code>, so Spring Framework will know which bean to inject. In some cases, this may not be desirable. To turn off this behavior set the <code>primary</code> attribute of <code>@FeignClient</code> to false.</p>
 </div>
@@ -635,13 +636,13 @@ There is a limitation with the implementation of fallbacks in Feign and how Hyst
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient(name = "hello", primary = false)
 public interface HelloClient {
-	// methods here
+    // methods here
 }</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="spring-cloud-feign-inheritance"><a class="link" href="#spring-cloud-feign-inheritance">Feign Inheritance Support</a></h3>
+<h3 id="spring-cloud-feign-inheritance"><a class="anchor" href="#spring-cloud-feign-inheritance"></a><a class="link" href="#spring-cloud-feign-inheritance">1.7. Feign Inheritance Support</a></h3>
 <div class="paragraph">
 <p>Feign supports boilerplate apis via single-inheritance interfaces.
 This allows grouping common operations into convenient base interfaces.</p>
@@ -693,7 +694,7 @@ mapping is not inherited).
 </div>
 </div>
 <div class="sect2">
-<h3 id="_feign_requestresponse_compression"><a class="link" href="#_feign_requestresponse_compression">Feign request/response compression</a></h3>
+<h3 id="feign-requestresponse-compression"><a class="anchor" href="#feign-requestresponse-compression"></a><a class="link" href="#feign-requestresponse-compression">1.8. Feign request/response compression</a></h3>
 <div class="paragraph">
 <p>You may consider enabling the request or response GZIP compression for your
 Feign requests. You can do this by enabling one of the properties:</p>
@@ -719,7 +720,7 @@ feign.compression.request.min-request-size=2048</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_feign_logging"><a class="link" href="#_feign_logging">Feign logging</a></h3>
+<h3 id="feign-logging"><a class="anchor" href="#feign-logging"></a><a class="link" href="#feign-logging">1.9. Feign logging</a></h3>
 <div class="paragraph">
 <p>A logger is created for each Feign client created. By default the name of the logger is the full class name of the interface used to create the Feign client. Feign logging only responds to the <code>DEBUG</code> level.</p>
 </div>
@@ -764,7 +765,7 @@ public class FooConfiguration {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_feign_querymap_support"><a class="link" href="#_feign_querymap_support">Feign @QueryMap support</a></h3>
+<h3 id="feign-querymap-support"><a class="anchor" href="#feign-querymap-support"></a><a class="link" href="#feign-querymap-support">1.10. Feign @QueryMap support</a></h3>
 <div class="paragraph">
 <p>The OpenFeign <code>@QueryMap</code> annotation provides support for POJOs to be used as
 GET parameter maps. Unfortunately, the default OpenFeign QueryMap annotation is
@@ -806,7 +807,7 @@ public interface DemoTemplate {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hateoas_support"><a class="link" href="#_hateoas_support">HATEOAS support</a></h3>
+<h3 id="hateoas-support"><a class="anchor" href="#hateoas-support"></a><a class="link" href="#hateoas-support">1.11. HATEOAS support</a></h3>
 <div class="paragraph">
 <p>Spring provides some APIs to create REST representations that follow the <a href="https://en.wikipedia.org/wiki/HATEOAS">HATEOAS</a> principle, <a href="https://spring.io/projects/spring-hateoas">Spring Hateoas</a> and <a href="https://spring.io/projects/spring-data-rest">Spring Data REST</a>.</p>
 </div>
@@ -828,6 +829,14 @@ public interface DemoTemplate {
 }</code></pre>
 </div>
 </div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="configuration-properties"><a class="anchor" href="#configuration-properties"></a><a class="link" href="#configuration-properties">2. Configuration properties</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To see the list of all Sleuth related configuration properties please check <a href="appendix.html">the Appendix page</a>.</p>
 </div>
 </div>
 </div>
