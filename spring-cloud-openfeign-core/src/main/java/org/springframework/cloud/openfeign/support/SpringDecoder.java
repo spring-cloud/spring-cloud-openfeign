@@ -59,7 +59,8 @@ public class SpringDecoder implements Decoder {
 			return extractor.extractData(new FeignResponseAdapter(response));
 		}
 		throw new DecodeException(response.status(),
-				"type is not an instance of Class or ParameterizedType: " + type);
+				"type is not an instance of Class or ParameterizedType: " + type,
+				response.request());
 	}
 
 	private final class FeignResponseAdapter implements ClientHttpResponse {
