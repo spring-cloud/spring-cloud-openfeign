@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign;
 
+import feign.hystrix.FallbackFactory;
+
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -57,8 +59,7 @@ public class FeignClientBuilder {
 			this.feignClientFactoryBean.setContextId(FeignClientsRegistrar.getName(name));
 			// preset default values - these values resemble the default values on the
 			// FeignClient annotation
-			this.url("").path("").decode404(false).fallback(void.class)
-					.fallbackFactory(void.class);
+			this.url("").path("").decode404(false);
 		}
 
 		public Builder<T> url(final String url) {
@@ -81,13 +82,14 @@ public class FeignClientBuilder {
 			return this;
 		}
 
-		public Builder<T> fallback(final Class<?> fallback) {
+		public Builder<T> fallback(final Class<? extends T> fallback) {
 			FeignClientsRegistrar.validateFallback(fallback);
 			this.feignClientFactoryBean.setFallback(fallback);
 			return this;
 		}
 
-		public Builder<T> fallbackFactory(final Class<?> fallbackFactory) {
+		public Builder<T> fallbackFactory(
+				final Class<? extends FallbackFactory<? extends T>> fallbackFactory) {
 			FeignClientsRegistrar.validateFallbackFactory(fallbackFactory);
 			this.feignClientFactoryBean.setFallbackFactory(fallbackFactory);
 			return this;
