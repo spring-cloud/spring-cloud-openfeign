@@ -142,7 +142,8 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "path", "/Path");
 		assertFactoryBeanField(builder, "decode404", true);
 		assertFactoryBeanField(builder, "fallback", TestFeignClientFallback.class);
-		assertFactoryBeanField(builder, "fallbackFactory", TestFeignClientFallbackFactory.class);
+		assertFactoryBeanField(builder, "fallbackFactory",
+				TestFeignClientFallbackFactory.class);
 	}
 
 	@Test
@@ -162,15 +163,21 @@ public class FeignClientBuilderTests {
 	}
 
 	private interface TestFeignClient {
+
 	}
 
 	private class TestFeignClientFallback implements TestFeignClient {
+
 	}
 
-	private class TestFeignClientFallbackFactory implements FallbackFactory<TestFeignClient> {
+	private class TestFeignClientFallbackFactory
+			implements FallbackFactory<TestFeignClient> {
+
 		@Override
 		public TestFeignClientFallback create(Throwable throwable) {
 			return new TestFeignClientFallback();
 		}
+
 	}
+
 }
