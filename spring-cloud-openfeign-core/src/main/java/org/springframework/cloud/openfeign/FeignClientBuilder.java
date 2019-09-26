@@ -62,33 +62,33 @@ public class FeignClientBuilder {
 			this.url("").path("").decode404(false);
 		}
 
-		public Builder url(final String url) {
+		public Builder<T> url(final String url) {
 			this.feignClientFactoryBean.setUrl(FeignClientsRegistrar.getUrl(url));
 			return this;
 		}
 
-		public Builder contextId(final String contextId) {
+		public Builder<T> contextId(final String contextId) {
 			this.feignClientFactoryBean.setContextId(contextId);
 			return this;
 		}
 
-		public Builder path(final String path) {
+		public Builder<T> path(final String path) {
 			this.feignClientFactoryBean.setPath(FeignClientsRegistrar.getPath(path));
 			return this;
 		}
 
-		public Builder decode404(final boolean decode404) {
+		public Builder<T> decode404(final boolean decode404) {
 			this.feignClientFactoryBean.setDecode404(decode404);
 			return this;
 		}
 
-		public Builder fallback(final Class<? extends T> fallback) {
+		public Builder<T> fallback(final Class<? extends T> fallback) {
 			FeignClientsRegistrar.validateFallback(fallback);
 			this.feignClientFactoryBean.setFallback(fallback);
 			return this;
 		}
 
-		public Builder fallbackFactory(
+		public Builder<T> fallbackFactory(
 				final Class<? extends FallbackFactory<? extends T>> fallbackFactory) {
 			FeignClientsRegistrar.validateFallbackFactory(fallbackFactory);
 			this.feignClientFactoryBean.setFallbackFactory(fallbackFactory);
@@ -96,10 +96,9 @@ public class FeignClientBuilder {
 		}
 
 		/**
-		 * @param <T> the target type of the Feign client to be created
 		 * @return the created Feign client
 		 */
-		public <T> T build() {
+		public T build() {
 			return this.feignClientFactoryBean.getTarget();
 		}
 
