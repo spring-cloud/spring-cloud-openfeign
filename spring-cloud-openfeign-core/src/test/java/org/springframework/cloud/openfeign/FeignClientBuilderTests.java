@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import feign.hystrix.FallbackFactory;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -101,11 +102,11 @@ public class FeignClientBuilderTests {
 	public void forType_preinitializedBuilder() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
-				.forType(FeignClientBuilderTests.class, "TestClient");
+				.forType(TestFeignClient.class, "TestClient");
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
-		assertFactoryBeanField(builder, "type", FeignClientBuilderTests.class);
+		assertFactoryBeanField(builder, "type", TestFeignClient.class);
 		assertFactoryBeanField(builder, "name", "TestClient");
 		assertFactoryBeanField(builder, "contextId", "TestClient");
 
@@ -126,21 +127,22 @@ public class FeignClientBuilderTests {
 	public void forType_allFieldsSetOnBuilder() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
-				.forType(FeignClientBuilderTests.class, "TestClient").decode404(true)
-				.fallback(Object.class).fallbackFactory(Object.class).path("Path/")
+				.forType(TestFeignClient.class, "TestClient").decode404(true)
+				.fallback(TestFeignClientFallback.class)
+				.fallbackFactory(TestFeignClientFallbackFactory.class).path("Path/")
 				.url("Url/");
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
-		assertFactoryBeanField(builder, "type", FeignClientBuilderTests.class);
+		assertFactoryBeanField(builder, "type", TestFeignClient.class);
 		assertFactoryBeanField(builder, "name", "TestClient");
 
 		// and:
 		assertFactoryBeanField(builder, "url", "http://Url/");
 		assertFactoryBeanField(builder, "path", "/Path");
 		assertFactoryBeanField(builder, "decode404", true);
-		assertFactoryBeanField(builder, "fallback", Object.class);
-		assertFactoryBeanField(builder, "fallbackFactory", Object.class);
+		assertFactoryBeanField(builder, "fallback", TestFeignClientFallback.class);
+		assertFactoryBeanField(builder, "fallbackFactory", TestFeignClientFallbackFactory.class);
 	}
 
 	@Test
@@ -159,4 +161,16 @@ public class FeignClientBuilderTests {
 		builder.build();
 	}
 
+	private interface TestFeignClient {
+	}
+
+	private class TestFeignClientFallback implements TestFeignClient {
+	}
+
+	private class TestFeignClientFallbackFactory implements FallbackFactory<TestFeignClient> {
+		@Override
+		public TestFeignClientFallback create(Throwable throwable) {
+			return new TestFeignClientFallback();
+		}
+	}
 }
