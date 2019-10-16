@@ -16,19 +16,25 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
+import java.util.Collection;
+import java.util.zip.GZIPInputStream;
 
 import feign.FeignException;
 import feign.Response;
+import feign.Util;
 import feign.codec.DecodeException;
 import feign.codec.Decoder;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
@@ -56,11 +62,40 @@ public class SpringDecoder implements Decoder {
 			HttpMessageConverterExtractor<?> extractor = new HttpMessageConverterExtractor(
 					type, this.messageConverters.getObject().getConverters());
 
+			Collection<String> encoding = response.headers()
+					.containsKey(HttpEncoding.CONTENT_ENCODING_HEADER)
+							? response.headers().get(HttpEncoding.CONTENT_ENCODING_HEADER)
+							: null;
+
+			if (encoding != null) {
+				if (encoding.contains(HttpEncoding.GZIP_ENCODING)) {
+					Response build = response.toBuilder()
+							.body(this.decompress(response).getBytes()).build();
+					return extractor.extractData(new FeignResponseAdapter(build));
+				}
+			}
 			return extractor.extractData(new FeignResponseAdapter(response));
 		}
 		throw new DecodeException(response.status(),
 				"type is not an instance of Class or ParameterizedType: " + type,
 				response.request());
+	}
+
+	private String decompress(Response response) throws IOException {
+		if (response.body() == null) {
+			return null;
+		}
+		GZIPInputStream gzipInputStream = new GZIPInputStream(
+				response.body().asInputStream());
+		BufferedReader reader = new BufferedReader(
+				new InputStreamReader(gzipInputStream, Util.ISO_8859_1));
+		String outputString = "";
+		String line;
+		while ((line = reader.readLine()) != null) {
+			outputString += line;
+		}
+
+		return outputString;
 	}
 
 	private final class FeignResponseAdapter implements ClientHttpResponse {
