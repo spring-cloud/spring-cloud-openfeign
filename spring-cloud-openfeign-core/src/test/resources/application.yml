@@ -2,7 +2,7 @@ server:
   port: 9999
   compression:
     enabled: true
-    min-response-size: 1024
+    min-response-size: 1
     mime-types: application/xml,application/json
 spring:
   application:
