@@ -41,12 +41,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jaesik Kim
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = SpringDecoderCompressionTests.Application.class,
+@SpringBootTest(classes = DefaultGzipDecoderTests.Application.class,
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		value = { "spring.application.name=springdecodercompressiontest",
-				"feign.compression.response.enabled=true" })
+		value = { "spring.application.name=defaultGzipDecoderTests",
+				"feign.compression.response.enabled=true",
+				"feign.compression.response.useGzipDecoder=true",
+				"feign.client.config.default.loggerLevel=full" })
 @DirtiesContext
-public class SpringDecoderCompressionTests extends FeignClientFactoryBean {
+public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
 
 	@Autowired
 	FeignContext context;
@@ -54,7 +56,7 @@ public class SpringDecoderCompressionTests extends FeignClientFactoryBean {
 	@Value("${local.server.port}")
 	private int port = 0;
 
-	public SpringDecoderCompressionTests() {
+	public DefaultGzipDecoderTests() {
 		setName("tests");
 		setContextId("test");
 	}
@@ -65,7 +67,7 @@ public class SpringDecoderCompressionTests extends FeignClientFactoryBean {
 	}
 
 	@Test
-	public void testDecompress() {
+	public void testBodyDecompress() {
 		ResponseEntity<Hello> response = testClient().getGzipResponse();
 		assertThat(response).as("response was null").isNotNull();
 		assertThat(response.getStatusCode()).as("wrong status code")
@@ -76,14 +78,25 @@ public class SpringDecoderCompressionTests extends FeignClientFactoryBean {
 				.isEqualTo(new Hello("hello world via response"));
 	}
 
-	public static class Hello {
+	@Test
+	public void testNullBodyDecompress() {
+		ResponseEntity<Hello> response = testClient().getNullResponse();
+		assertThat(response).as("response was null").isNotNull();
+		assertThat(response.getStatusCode()).as("wrong status code")
+				.isEqualTo(HttpStatus.OK);
+		Hello hello = response.getBody();
+		assertThat(hello).as("hello was not null").isNull();
+		assertThat(hello).as("null hello didn't match").isEqualTo(null);
+	}
+
+	private static class Hello {
 
 		private String message;
 
-		public Hello() {
+		Hello() {
 		}
 
-		public Hello(String message) {
+		Hello(String message) {
 			this.message = message;
 		}
 
@@ -119,6 +132,9 @@ public class SpringDecoderCompressionTests extends FeignClientFactoryBean {
 		@GetMapping("/helloGzipResponse")
 		ResponseEntity<Hello> getGzipResponse();
 
+		@GetMapping("/nullGzipResponse")
+		ResponseEntity<Hello> getNullResponse();
+
 	}
 
 	@Configuration
@@ -130,6 +146,11 @@ public class SpringDecoderCompressionTests extends FeignClientFactoryBean {
 		@Override
 		public ResponseEntity<Hello> getGzipResponse() {
 			return ResponseEntity.ok(new Hello("hello world via response"));
+		}
+
+		@Override
+		public ResponseEntity<Hello> getNullResponse() {
+			return ResponseEntity.ok(null);
 		}
 
 	}

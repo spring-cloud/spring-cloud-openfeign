@@ -27,6 +27,12 @@
 			"defaultValue": "false"
 		},
 		{
+			"name": "feign.compression.response.useGzipDecoder",
+			"type": "java.lang.Boolean",
+			"description": "Enables the default gzip decoder to be used.",
+			"defaultValue": "false"
+		},
+		{
 			"name": "feign.compression.request.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the request sent by Feign to be compressed.",

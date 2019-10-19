@@ -14,43 +14,45 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.encoding;
+package org.springframework.cloud.openfeign.support;
 
-import feign.Client;
-import feign.Feign;
+import feign.codec.Decoder;
+import feign.optionals.OptionalDecoder;
 
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configures the Feign request compression.
- *
- * @author Jakub Narloch
- * @see FeignContentGzipEncodingInterceptor
+ * @author Jaesik Kim
  */
 @Configuration
-@EnableConfigurationProperties(FeignClientEncodingProperties.class)
-@ConditionalOnClass(Feign.class)
-@ConditionalOnBean(Client.class)
-// The OK HTTP client uses "transparent" compression.
-// If the content-encoding header is present it disable transparent compression
-@ConditionalOnMissingBean(type = "okhttp3.OkHttpClient")
-@ConditionalOnProperty(value = "feign.compression.request.enabled", havingValue = "true",
+@ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "true",
 		matchIfMissing = false)
+// The OK HTTP client uses "transparent" compression.
+// If the accept-encoding header is present it disable transparent compression
+@ConditionalOnMissingBean(type = "okhttp3.OkHttpClient")
 @AutoConfigureAfter(FeignAutoConfiguration.class)
-public class FeignContentGzipEncodingAutoConfiguration {
+public class DefaultGzipDecoderConfiguration {
+
+	private ObjectFactory<HttpMessageConverters> messageConverters;
+
+	public DefaultGzipDecoderConfiguration(
+			ObjectFactory<HttpMessageConverters> messageConverters) {
+		this.messageConverters = messageConverters;
+	}
 
 	@Bean
-	public FeignContentGzipEncodingInterceptor feignContentGzipEncodingInterceptor(
-			FeignClientEncodingProperties properties) {
-		return new FeignContentGzipEncodingInterceptor(properties);
+	@ConditionalOnProperty(value = "feign.compression.response.useGzipDecoder",
+			havingValue = "true")
+	Decoder defaultGzipDecoder() {
+		return new OptionalDecoder(new ResponseEntityDecoder(
+				new DefaultGzipDecoder(new SpringDecoder(messageConverters))));
 	}
 
 }
