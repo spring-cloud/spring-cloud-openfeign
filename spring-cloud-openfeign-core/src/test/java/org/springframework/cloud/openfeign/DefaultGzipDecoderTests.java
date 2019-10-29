@@ -46,7 +46,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 		value = { "spring.application.name=defaultGzipDecoderTests",
 				"feign.compression.response.enabled=true",
 				"feign.compression.response.useGzipDecoder=true",
-				"feign.client.config.default.loggerLevel=full" })
+				"feign.client.config.default.loggerLevel=full",
+				"logging.level.org.springframework.cloud.openfeign=DEBUG" })
 @DirtiesContext
 public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
 

@@ -56,9 +56,9 @@ public class DefaultGzipDecoder implements Decoder {
 			if (encoding.contains(HttpEncoding.GZIP_ENCODING)) {
 				String decompressedBody = decompress(response);
 				if (decompressedBody != null) {
-					Response build = response.toBuilder()
+					Response decompressedResponse = response.toBuilder()
 							.body(decompressedBody.getBytes()).build();
-					return decoder.decode(build, type);
+					return decoder.decode(decompressedResponse, type);
 				}
 			}
 		}
@@ -69,16 +69,17 @@ public class DefaultGzipDecoder implements Decoder {
 		if (response.body() == null) {
 			return null;
 		}
-		GZIPInputStream gzipInputStream = new GZIPInputStream(
+		try (GZIPInputStream gzipInputStream = new GZIPInputStream(
 				response.body().asInputStream());
-		BufferedReader reader = new BufferedReader(
-				new InputStreamReader(gzipInputStream, Util.ISO_8859_1));
-		String outputString = "";
-		String line;
-		while ((line = reader.readLine()) != null) {
-			outputString += line;
+				BufferedReader reader = new BufferedReader(
+						new InputStreamReader(gzipInputStream, Util.ISO_8859_1))) {
+			String outputString = "";
+			String line;
+			while ((line = reader.readLine()) != null) {
+				outputString += line;
+			}
+			return outputString;
 		}
-		return outputString;
 	}
 
 }

@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Jaesik Kim
  */
 @Configuration
-@ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "true",
+@ConditionalOnProperty(value = "feign.compression.response.enabled",
 		matchIfMissing = false)
 // The OK HTTP client uses "transparent" compression.
 // If the accept-encoding header is present it disable transparent compression
@@ -49,7 +49,7 @@ public class DefaultGzipDecoderConfiguration {
 
 	@Bean
 	@ConditionalOnProperty(value = "feign.compression.response.useGzipDecoder",
-			havingValue = "true")
+			matchIfMissing = false)
 	Decoder defaultGzipDecoder() {
 		return new OptionalDecoder(new ResponseEntityDecoder(
 				new DefaultGzipDecoder(new SpringDecoder(messageConverters))));
