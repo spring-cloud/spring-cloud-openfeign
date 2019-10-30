@@ -29,13 +29,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Configures Default Gzip Decoder.
+ *
  * @author Jaesik Kim
  */
 @Configuration
-@ConditionalOnProperty(value = "feign.compression.response.enabled",
-		matchIfMissing = false)
+@ConditionalOnProperty("feign.compression.response.enabled")
 // The OK HTTP client uses "transparent" compression.
-// If the accept-encoding header is present it disable transparent compression
+// If the accept-encoding header is present, it disables transparent compression
 @ConditionalOnMissingBean(type = "okhttp3.OkHttpClient")
 @AutoConfigureAfter(FeignAutoConfiguration.class)
 public class DefaultGzipDecoderConfiguration {
@@ -48,9 +49,9 @@ public class DefaultGzipDecoderConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnProperty(value = "feign.compression.response.useGzipDecoder",
-			matchIfMissing = false)
-	Decoder defaultGzipDecoder() {
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty("feign.compression.response.useGzipDecoder")
+	public Decoder defaultGzipDecoder() {
 		return new OptionalDecoder(new ResponseEntityDecoder(
 				new DefaultGzipDecoder(new SpringDecoder(messageConverters))));
 	}

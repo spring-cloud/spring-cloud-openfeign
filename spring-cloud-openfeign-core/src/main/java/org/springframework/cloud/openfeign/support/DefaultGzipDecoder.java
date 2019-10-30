@@ -31,8 +31,8 @@ import feign.codec.Decoder;
 import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 
 /**
- * When response is compressed as gzip, this decompresses and uses SpringDecoder to
- * decode.
+ * When response is compressed as gzip, this decompresses and uses {@link SpringDecoder}
+ * to decode.
  *
  * @author Jaesik Kim
  */

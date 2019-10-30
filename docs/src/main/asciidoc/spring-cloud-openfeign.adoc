@@ -418,7 +418,7 @@ feign.compression.request.min-request-size=2048
 
 These properties allow you to be selective about the compressed media types and minimum request threshold length.
 
-For http clients except OkHttpClient, default gzip decoder can be used to decode gzip response in ISO-8859-1 encoding:
+For http clients except OkHttpClient, default gzip decoder can be enabled to decode gzip response in ISO-8859-1 encoding:
 
 [source,java]
 ---
