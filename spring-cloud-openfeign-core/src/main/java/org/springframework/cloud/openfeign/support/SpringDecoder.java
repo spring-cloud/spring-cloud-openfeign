@@ -24,6 +24,7 @@ import java.lang.reflect.WildcardType;
 
 import feign.FeignException;
 import feign.Response;
+import feign.Util;
 import feign.codec.DecodeException;
 import feign.codec.Decoder;
 
@@ -50,6 +51,9 @@ public class SpringDecoder implements Decoder {
 	@Override
 	public Object decode(final Response response, Type type)
 			throws IOException, FeignException {
+		if (response.status() == 404) {
+			return Util.emptyValueOf(type);
+		}
 		if (type instanceof Class || type instanceof ParameterizedType
 				|| type instanceof WildcardType) {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
