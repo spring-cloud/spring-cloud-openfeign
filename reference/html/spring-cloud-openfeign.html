@@ -718,6 +718,17 @@ feign.compression.request.min-request-size=2048</code></pre>
 <div class="paragraph">
 <p>These properties allow you to be selective about the compressed media types and minimum request threshold length.</p>
 </div>
+<div class="paragraph">
+<p>For http clients except OkHttpClient, default gzip decoder can be enabled to decode gzip response in ISO-8859-1 encoding:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">---
+feign.compression.response.enabled=true
+feign.compression.response.useGzipDecoder=true
+---</code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="feign-logging"><a class="anchor" href="#feign-logging"></a><a class="link" href="#feign-logging">1.9. Feign logging</a></h3>
