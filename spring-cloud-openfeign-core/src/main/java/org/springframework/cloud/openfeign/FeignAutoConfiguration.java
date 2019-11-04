@@ -46,9 +46,11 @@ import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionMa
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
+import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author Spencer Gibb
@@ -58,6 +60,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass(Feign.class)
 @EnableConfigurationProperties({ FeignClientProperties.class,
 		FeignHttpClientProperties.class })
+@Import(DefaultGzipDecoderConfiguration.class)
 public class FeignAutoConfiguration {
 
 	@Autowired(required = false)

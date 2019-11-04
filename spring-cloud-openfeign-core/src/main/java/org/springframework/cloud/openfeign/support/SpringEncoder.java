@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -68,7 +69,8 @@ public class SpringEncoder implements Encoder {
 		// template.body(conversionService.convert(object, String.class));
 		if (requestBody != null) {
 			Class<?> requestType = requestBody.getClass();
-			Collection<String> contentTypes = request.headers().get("Content-Type");
+			Collection<String> contentTypes = request.headers()
+					.get(HttpEncoding.CONTENT_TYPE);
 
 			MediaType requestContentType = null;
 			if (contentTypes != null && !contentTypes.isEmpty()) {
