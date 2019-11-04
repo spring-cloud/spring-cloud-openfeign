@@ -24,6 +24,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
@@ -41,6 +42,8 @@ import org.springframework.context.annotation.Primary;
  * @author Dave Syer
  */
 @ConditionalOnClass({ ILoadBalancer.class, Feign.class })
+@ConditionalOnProperty(value = "spring.cloud.loadbalancer.ribbon.enabled",
+		matchIfMissing = true)
 @Configuration
 @AutoConfigureBefore(FeignAutoConfiguration.class)
 @EnableConfigurationProperties({ FeignHttpClientProperties.class })

@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.ribbon;
+package org.springframework.cloud.openfeign.loadbalancer;
 
 import feign.Client;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
+import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
 @Configuration
-public class DefaultFeignLoadBalancedConfiguration {
+class DefaultFeignLoadBalancerConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
-			SpringClientFactory clientFactory) {
-		return new LoadBalancerFeignClient(new Client.Default(null, null), cachingFactory,
-				clientFactory);
+	public Client feignClient(BlockingLoadBalancerClient loadBalancerClient) {
+		return new FeignBlockingLoadBalancerClient(new Client.Default(null, null),
+				loadBalancerClient);
 	}
 
 }

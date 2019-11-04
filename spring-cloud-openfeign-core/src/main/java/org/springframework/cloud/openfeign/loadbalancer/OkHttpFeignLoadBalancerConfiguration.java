@@ -14,36 +14,37 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.ribbon;
+package org.springframework.cloud.openfeign.loadbalancer;
 
 import feign.Client;
-import feign.httpclient.ApacheHttpClient;
-import org.apache.http.client.HttpClient;
+import feign.okhttp.OkHttpClient;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-import org.springframework.cloud.openfeign.clientconfig.HttpClientFeignConfiguration;
+import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
+import org.springframework.cloud.openfeign.clientconfig.OkHttpFeignConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
 @Configuration
-@ConditionalOnClass(ApacheHttpClient.class)
-@ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
-@Import(HttpClientFeignConfiguration.class)
-class HttpClientFeignLoadBalancedConfiguration {
+@ConditionalOnClass(OkHttpClient.class)
+@ConditionalOnProperty("feign.okhttp.enabled")
+@ConditionalOnBean(BlockingLoadBalancerClient.class)
+@Import(OkHttpFeignConfiguration.class)
+class OkHttpFeignLoadBalancerConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean(Client.class)
-	public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
-			SpringClientFactory clientFactory, HttpClient httpClient) {
-		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
-		return new LoadBalancerFeignClient(delegate, cachingFactory, clientFactory);
+	@ConditionalOnMissingBean
+	public Client feignClient(okhttp3.OkHttpClient okHttpClient,
+			BlockingLoadBalancerClient loadBalancerClient) {
+		OkHttpClient delegate = new OkHttpClient(okHttpClient);
+		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient);
 	}
 
 }
