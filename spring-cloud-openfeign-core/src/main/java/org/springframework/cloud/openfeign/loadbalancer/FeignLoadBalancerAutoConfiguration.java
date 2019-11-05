@@ -25,7 +25,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
-import org.springframework.cloud.openfeign.ribbon.DefaultFeignLoadBalancedConfiguration;
+import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnClass(Feign.class)
 @ConditionalOnBean(BlockingLoadBalancerClient.class)
 @AutoConfigureBefore(FeignAutoConfiguration.class)
-@AutoConfigureAfter(DefaultFeignLoadBalancedConfiguration.class)
+@AutoConfigureAfter(FeignRibbonClientAutoConfiguration.class)
 @EnableConfigurationProperties(FeignHttpClientProperties.class)
 @Configuration
 // Order is important here, last should be the default, first should be optional

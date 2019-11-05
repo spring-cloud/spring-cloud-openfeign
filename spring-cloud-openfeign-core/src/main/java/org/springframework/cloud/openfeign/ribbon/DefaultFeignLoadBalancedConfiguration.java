@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Spencer Gibb
  */
 @Configuration
-public class DefaultFeignLoadBalancedConfiguration {
+class DefaultFeignLoadBalancedConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
