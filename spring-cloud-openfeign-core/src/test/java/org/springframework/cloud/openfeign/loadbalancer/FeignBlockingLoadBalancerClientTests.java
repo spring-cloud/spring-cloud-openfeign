@@ -61,10 +61,10 @@ class FeignBlockingLoadBalancerClientTests {
 	private Client delegate = mock(Client.class);
 
 	private BlockingLoadBalancerClient loadBalancerClient = mock(
-		BlockingLoadBalancerClient.class);
+			BlockingLoadBalancerClient.class);
 
 	private FeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new FeignBlockingLoadBalancerClient(
-		delegate, loadBalancerClient);
+			delegate, loadBalancerClient);
 
 	@Test
 	void shouldExtractServiceIdFromRequestUrl() throws IOException {
@@ -79,21 +79,23 @@ class FeignBlockingLoadBalancerClientTests {
 	void shouldThrowExceptionIfNoServiceId() {
 		Request request = testRequest("");
 
-		assertThatIllegalStateException().isThrownBy(() -> feignBlockingLoadBalancerClient
-			.execute(request, new Request.Options()))
-			.withMessage("Request URI does not contain a valid hostname: http:///path");
+		assertThatIllegalStateException()
+				.isThrownBy(() -> feignBlockingLoadBalancerClient.execute(request,
+						new Request.Options()))
+				.withMessage(
+						"Request URI does not contain a valid hostname: http:///path");
 	}
 
 	@Test
 	void shouldRespondWithServiceUnavailableIfInstanceNotFound() throws IOException {
 		Request request = testRequest();
 
-		Response response = feignBlockingLoadBalancerClient
-			.execute(request, new Request.Options());
+		Response response = feignBlockingLoadBalancerClient.execute(request,
+				new Request.Options());
 
 		assertThat(response.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE.value());
-		assertThat(response.body().toString())
-			.isEqualTo("Load balancer does not contain an instance for the service test");
+		assertThat(response.body().toString()).isEqualTo(
+				"Load balancer does not contain an instance for the service test");
 	}
 
 	@Test
@@ -101,12 +103,11 @@ class FeignBlockingLoadBalancerClientTests {
 		Request request = testRequest();
 		Request.Options options = new Request.Options();
 		String url = "http://127.0.0.1/path";
-		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test", "test-host", 8888, false);
-		when(loadBalancerClient.choose("test"))
-			.thenReturn(serviceInstance);
-		when(loadBalancerClient
-			.reconstructURI(serviceInstance, URI.create("http://test/path")))
-			.thenReturn(URI.create(url));
+		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test",
+				"test-host", 8888, false);
+		when(loadBalancerClient.choose("test")).thenReturn(serviceInstance);
+		when(loadBalancerClient.reconstructURI(serviceInstance,
+				URI.create("http://test/path"))).thenReturn(URI.create(url));
 
 		feignBlockingLoadBalancerClient.execute(request, options);
 
@@ -117,10 +118,9 @@ class FeignBlockingLoadBalancerClientTests {
 		assertThat(actualRequest.url()).isEqualTo(url);
 		assertThat(actualRequest.headers()).hasSize(1);
 		assertThat(actualRequest.headers()).containsEntry(HttpHeaders.CONTENT_TYPE,
-			Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
+				Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
 		assertThat(actualRequest.requestBody().asString()).isEqualTo("hello");
 	}
-
 
 	private Request testRequest() {
 		return testRequest("test");
@@ -128,14 +128,14 @@ class FeignBlockingLoadBalancerClientTests {
 
 	private Request testRequest(String host) {
 		return Request.create(Request.HttpMethod.GET, "http://" + host + "/path",
-			testHeaders(),
-			Request.Body.encoded("hello".getBytes(), StandardCharsets.UTF_8));
+				testHeaders(),
+				Request.Body.encoded("hello".getBytes(), StandardCharsets.UTF_8));
 	}
 
 	private Map<String, Collection<String>> testHeaders() {
 		Map<String, Collection<String>> feignHeaders = new HashMap<>();
 		feignHeaders.put(HttpHeaders.CONTENT_TYPE,
-			Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
+				Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
 		return feignHeaders;
 
 	}

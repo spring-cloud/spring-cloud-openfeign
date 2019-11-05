@@ -63,7 +63,7 @@ class FeignBlockingLoadBalancerClient implements Client {
 				LOG.warn(message);
 			}
 			return Response.builder().request(request)
-				.status(HttpStatus.SERVICE_UNAVAILABLE.value())
+					.status(HttpStatus.SERVICE_UNAVAILABLE.value())
 					.body(message, StandardCharsets.UTF_8).build();
 		}
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri)
@@ -78,4 +78,5 @@ class FeignBlockingLoadBalancerClient implements Client {
 	Client getDelegate() {
 		return delegate;
 	}
+
 }
