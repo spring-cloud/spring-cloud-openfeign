@@ -231,10 +231,10 @@
 			<version>0.10.0</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- TODO:		Use just optional dependency instead of starter?-->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-loadbalancer</artifactId>
+			<artifactId>spring-cloud-loadbalancer</artifactId>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 	<profiles>
