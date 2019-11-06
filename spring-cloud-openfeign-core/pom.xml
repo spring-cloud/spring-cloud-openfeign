@@ -231,6 +231,11 @@
 			<version>0.10.0</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-loadbalancer</artifactId>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 	<profiles>
 		<profile>

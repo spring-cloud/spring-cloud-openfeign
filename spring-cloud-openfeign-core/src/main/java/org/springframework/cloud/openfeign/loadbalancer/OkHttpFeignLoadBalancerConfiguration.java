@@ -14,36 +14,41 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.ribbon;
+package org.springframework.cloud.openfeign.loadbalancer;
 
 import feign.Client;
 import feign.okhttp.OkHttpClient;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
+import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.clientconfig.OkHttpFeignConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * @author Spencer Gibb
+ * Configuration instantiating a {@link BlockingLoadBalancerClient}-based {@link Client}
+ * object that uses {@link OkHttpClient} under the hood.
+ *
  * @author Olga Maciaszek-Sharma
+ * @since 2.2.0
  */
 @Configuration
 @ConditionalOnClass(OkHttpClient.class)
 @ConditionalOnProperty("feign.okhttp.enabled")
+@ConditionalOnBean(BlockingLoadBalancerClient.class)
 @Import(OkHttpFeignConfiguration.class)
-class OkHttpFeignLoadBalancedConfiguration {
+class OkHttpFeignLoadBalancerConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean(Client.class)
-	public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
-			SpringClientFactory clientFactory, okhttp3.OkHttpClient okHttpClient) {
+	@ConditionalOnMissingBean
+	public Client feignClient(okhttp3.OkHttpClient okHttpClient,
+			BlockingLoadBalancerClient loadBalancerClient) {
 		OkHttpClient delegate = new OkHttpClient(okHttpClient);
-		return new LoadBalancerFeignClient(delegate, cachingFactory, clientFactory);
+		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient);
 	}
 
 }

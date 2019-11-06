@@ -14,36 +14,42 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.ribbon;
+package org.springframework.cloud.openfeign.loadbalancer;
 
 import feign.Client;
-import feign.okhttp.OkHttpClient;
+import feign.httpclient.ApacheHttpClient;
+import org.apache.http.client.HttpClient;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-import org.springframework.cloud.openfeign.clientconfig.OkHttpFeignConfiguration;
+import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
+import org.springframework.cloud.openfeign.clientconfig.HttpClientFeignConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * @author Spencer Gibb
+ * Configuration instantiating a {@link BlockingLoadBalancerClient}-based {@link Client}
+ * object that uses {@link ApacheHttpClient} under the hood.
+ *
  * @author Olga Maciaszek-Sharma
+ * @since 2.2.0
  */
 @Configuration
-@ConditionalOnClass(OkHttpClient.class)
-@ConditionalOnProperty("feign.okhttp.enabled")
-@Import(OkHttpFeignConfiguration.class)
-class OkHttpFeignLoadBalancedConfiguration {
+@ConditionalOnClass(ApacheHttpClient.class)
+@ConditionalOnBean(BlockingLoadBalancerClient.class)
+@ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
+@Import(HttpClientFeignConfiguration.class)
+class HttpClientFeignLoadBalancerConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean(Client.class)
-	public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
-			SpringClientFactory clientFactory, okhttp3.OkHttpClient okHttpClient) {
-		OkHttpClient delegate = new OkHttpClient(okHttpClient);
-		return new LoadBalancerFeignClient(delegate, cachingFactory, clientFactory);
+	@ConditionalOnMissingBean
+	public Client feignClient(BlockingLoadBalancerClient loadBalancerClient,
+			HttpClient httpClient) {
+		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
+		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient);
 	}
 
 }
