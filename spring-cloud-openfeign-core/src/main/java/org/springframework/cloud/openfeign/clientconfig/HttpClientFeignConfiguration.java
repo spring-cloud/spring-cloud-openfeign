@@ -40,7 +40,7 @@ import org.springframework.context.annotation.Configuration;
  * Default configuration for {@link CloseableHttpClient}.
  *
  * @author Ryan Baxter
- * @author Marcing Grzejszczak
+ * @author Marcin Grzejszczak
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  */
