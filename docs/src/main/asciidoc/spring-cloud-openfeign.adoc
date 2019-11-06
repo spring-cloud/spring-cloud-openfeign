@@ -9,7 +9,13 @@ include::intro.adoc[]
 [[spring-cloud-feign]]
 == Declarative REST Client: Feign
 
-https://github.com/Netflix/feign[Feign] is a declarative web service client.  It makes writing web service clients easier.  To use Feign create an interface and annotate it.  It has pluggable annotation support including Feign annotations and JAX-RS annotations. Feign also supports pluggable encoders and decoders.  Spring Cloud adds support for Spring MVC annotations and for using the same `HttpMessageConverters` used by default in Spring Web.  Spring Cloud integrates Ribbon and Eureka to provide a load balanced http client when using Feign.
+https://github.com/OpenFeign/feign[Feign] is a declarative web service client.
+It makes writing web service clients easier.
+To use Feign create an interface and annotate it.
+It has pluggable annotation support including Feign annotations and JAX-RS annotations.
+Feign also supports pluggable encoders and decoders.
+Spring Cloud adds support for Spring MVC annotations and for using the same `HttpMessageConverters` used by default in Spring Web.
+Spring Cloud integrates Ribbon and Eureka, as well as Spring Cloud LoadBalancer to provide a load-balanced http client when using Feign.
 
 [[netflix-feign-starter]]
 === How to Include Feign
@@ -46,21 +52,23 @@ public interface StoreClient {
 }
 ----
 
-In the `@FeignClient` annotation the String value ("stores" above) is
-an arbitrary client name, which is used to create a Ribbon load
-balancer (see <<spring-cloud-ribbon,below for details of Ribbon
-support>>). You can also specify a URL using the `url` attribute
+In the `@FeignClient` annotation the String value ("stores" above) is an arbitrary client name, which is used to create either a https://github.com/Netflix/ribbon[Ribbon] load-balancer (see <<spring-cloud-ribbon,below for details of Ribbon support>>) or https://github.com/spring-cloud/spring-cloud-commons/blob/master/spring-cloud-commons/src/main/java/org/springframework/cloud/client/loadbalancer/reactive/ReactiveLoadBalancer.java[Spring Cloud LoadBalancer].
+You can also specify a URL using the `url` attribute
 (absolute value or just a hostname). The name of the bean in the
 application context is the fully qualified name of the interface.
 To specify your own alias value you can use the `qualifier` value
 of the `@FeignClient` annotation.
 
-The Ribbon client above will want to discover the physical addresses
+The load-balancer client above will want to discover the physical addresses
 for the "stores" service. If your application is a Eureka client then
 it will resolve the service in the Eureka service registry. If you
 don't want to use Eureka, you can simply configure a list of servers
 in your external configuration (see
 <<spring-cloud-ribbon-without-eureka,above for example>>).
+
+WARNING: In order to maintain backward compatibility, is used as the default load-balancer implementation.
+However, Spring Cloud Netflix Ribbon is now in maintenance mode, so we recommend using Spring Cloud LoadBalancer instead.
+To do this, set the value of `spring.cloud.loadbalancer.ribbon.enabled` to `false`.
 
 [[spring-cloud-feign-overriding-defaults]]
 === Overriding Feign Defaults
@@ -109,7 +117,7 @@ Spring Cloud Netflix provides the following beans by default for feign (`BeanTyp
 * `Logger` feignLogger: `Slf4jLogger`
 * `Contract` feignContract: `SpringMvcContract`
 * `Feign.Builder` feignBuilder: `HystrixFeign.Builder`
-* `Client` feignClient: if Ribbon is enabled it is a `LoadBalancerFeignClient`, otherwise the default feign client is used.
+* `Client` feignClient: if Ribbon is enabled it is a `LoadBalancerFeignClient`, otherwise a Spring Cloud LoadBalancer is used.
 
 The OkHttpClient and ApacheHttpClient feign clients can be used by setting `feign.okhttp.enabled` or `feign.httpclient.enabled` to `true`, respectively, and having them on the classpath.
 You can customize the HTTP client used by providing a bean of either `org.apache.http.impl.client.CloseableHttpClient` when using Apache or `okhttp3.OkHttpClient` when using OK HTTP.

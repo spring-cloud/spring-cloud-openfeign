@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Import;
 
 /**
  * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
 @Configuration
 @ConditionalOnClass(OkHttpClient.class)

@@ -30,7 +30,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
+ * Configuration instantiating a {@link BlockingLoadBalancerClient}-based {@link Client}
+ * object that uses {@link OkHttpClient} under the hood.
+ *
  * @author Olga Maciaszek-Sharma
+ * @since 2.2.0
  */
 @Configuration
 @ConditionalOnClass(OkHttpClient.class)

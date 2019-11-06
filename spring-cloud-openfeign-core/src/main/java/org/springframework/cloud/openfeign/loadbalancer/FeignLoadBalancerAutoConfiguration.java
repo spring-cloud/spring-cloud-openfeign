@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign.loadbalancer;
 
+import feign.Client;
 import feign.Feign;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -31,7 +32,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
+ * An autoconfiguration that instantiates {@link BlockingLoadBalancerClient}-based
+ * implementations of {@link Client}. In order to use this load-balancing mechanism, the
+ * Ribbon-based implementation has to be disabled by setting
+ * <code>spring.cloud.loadbalancer.ribbon.enabled</code> to <code>true</code>.
+ *
  * @author Olga Maciaszek-Sharma
+ * @since 2.2.0
  */
 @ConditionalOnClass(Feign.class)
 @ConditionalOnBean(BlockingLoadBalancerClient.class)

@@ -24,7 +24,6 @@ import feign.okhttp.OkHttpClient;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
@@ -43,18 +42,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FeignLoadBalancerAutoConfigurationTests {
 
 	@Test
-	void shouldInstantiateDefaultFeignBlockingLoadBalancerClient() {
-		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.loadbalancer.ribbon.enabled=false",
-						"feign.httpclient.enabled=false")
-				.sources(HttpClientConfiguration.class,
-						LoadBalancerAutoConfiguration.class,
-						BlockingLoadBalancerClientAutoConfiguration.class,
-						FeignRibbonClientAutoConfiguration.class,
-						FeignLoadBalancerAutoConfiguration.class,
-						WebClientAutoConfiguration.class)
-				.run();
+	void shouldInstantiateDefaultFeignBlockingLoadBalancerClientWhenHttpClientDisabled() {
+		ConfigurableApplicationContext context = initContext(
+				"spring.cloud.loadbalancer.ribbon.enabled=false",
+				"feign.httpclient.enabled=false");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalanced(context, Client.Default.class);
 		assertThatBeanNotPresent(context, LoadBalancerFeignClient.class);
@@ -62,16 +53,8 @@ class FeignLoadBalancerAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateHttpFeignClientWhenEnabled() {
-		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.loadbalancer.ribbon.enabled=false")
-				.sources(HttpClientConfiguration.class,
-						LoadBalancerAutoConfiguration.class,
-						BlockingLoadBalancerClientAutoConfiguration.class,
-						FeignRibbonClientAutoConfiguration.class,
-						FeignLoadBalancerAutoConfiguration.class,
-						WebClientAutoConfiguration.class)
-				.run();
+		ConfigurableApplicationContext context = initContext(
+				"spring.cloud.loadbalancer.ribbon.enabled=false");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalanced(context, ApacheHttpClient.class);
 		assertThatBeanNotPresent(context, LoadBalancerFeignClient.class);
@@ -79,17 +62,9 @@ class FeignLoadBalancerAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateOkHttpFeignClientWhenEnabled() {
-		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.loadbalancer.ribbon.enabled=false",
-						"feign.httpclient.enabled=false", "feign.okhttp.enabled=true")
-				.sources(HttpClientConfiguration.class,
-						LoadBalancerAutoConfiguration.class,
-						BlockingLoadBalancerClientAutoConfiguration.class,
-						FeignRibbonClientAutoConfiguration.class,
-						FeignLoadBalancerAutoConfiguration.class,
-						WebClientAutoConfiguration.class)
-				.run();
+		ConfigurableApplicationContext context = initContext(
+				"spring.cloud.loadbalancer.ribbon.enabled=false",
+				"feign.httpclient.enabled=false", "feign.okhttp.enabled=true");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalanced(context, OkHttpClient.class);
 		assertThatBeanNotPresent(context, LoadBalancerFeignClient.class);
@@ -97,24 +72,27 @@ class FeignLoadBalancerAutoConfigurationTests {
 
 	@Test
 	void shouldNotProcessLoadBalancerConfigurationWhenRibbonEnabled() {
-		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.loadbalancer.ribbon.enabled=true")
-				.sources(HttpClientConfiguration.class, RibbonAutoConfiguration.class,
-						LoadBalancerAutoConfiguration.class,
-						BlockingLoadBalancerClientAutoConfiguration.class,
-						FeignRibbonClientAutoConfiguration.class,
-						FeignLoadBalancerAutoConfiguration.class,
-						WebClientAutoConfiguration.class)
-				.run();
+		ConfigurableApplicationContext context = initContext(
+				"spring.cloud.loadbalancer.ribbon.enabled=true");
 		assertThatOneBeanPresent(context, LoadBalancerFeignClient.class);
 		assertThatBeanNotPresent(context, BlockingLoadBalancerClient.class);
 		assertThatBeanNotPresent(context, FeignBlockingLoadBalancerClient.class);
 	}
 
+	private ConfigurableApplicationContext initContext(String... properties) {
+		return new SpringApplicationBuilder().web(WebApplicationType.NONE)
+				.properties(properties)
+				.sources(HttpClientConfiguration.class, RibbonAutoConfiguration.class,
+						LoadBalancerAutoConfiguration.class,
+						BlockingLoadBalancerClientAutoConfiguration.class,
+						FeignRibbonClientAutoConfiguration.class,
+						FeignLoadBalancerAutoConfiguration.class)
+				.run();
+	}
+
 	private void assertThatOneBeanPresent(ConfigurableApplicationContext context,
-			Class beanClass) {
-		Map<String, Object> beans = context.getBeansOfType(beanClass);
+			Class<?> beanClass) {
+		Map<String, ?> beans = context.getBeansOfType(beanClass);
 		assertThat(beans).hasSize(1);
 	}
 
@@ -127,8 +105,8 @@ class FeignLoadBalancerAutoConfigurationTests {
 	}
 
 	private void assertThatBeanNotPresent(ConfigurableApplicationContext context,
-			Class beanClass) {
-		Map<String, Object> beans = context.getBeansOfType(beanClass);
+			Class<?> beanClass) {
+		Map<String, ?> beans = context.getBeansOfType(beanClass);
 		assertThat(beans).isEmpty();
 	}
 

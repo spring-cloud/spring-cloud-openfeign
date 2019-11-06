@@ -24,7 +24,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Configuration instantiating a {@link BlockingLoadBalancerClient}-based {@link Client}
+ * object that uses {@link Client.Default} under the hood.
+ *
  * @author Olga Maciaszek-Sharma
+ * @since 2.2.0
  */
 @Configuration
 class DefaultFeignLoadBalancerConfiguration {

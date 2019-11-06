@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
 
 import okhttp3.ConnectionPool;
+import okhttp3.OkHttpClient;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
@@ -30,6 +31,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Defualt configuration for {@link OkHttpClient}.
+ *
  * @author Ryan Baxter
  * @author Marcin Grzejszczak
  * @author Spencer Gibb

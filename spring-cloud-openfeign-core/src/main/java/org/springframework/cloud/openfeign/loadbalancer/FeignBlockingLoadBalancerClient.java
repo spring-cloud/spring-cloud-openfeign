@@ -32,7 +32,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 
 /**
+ * A {@link Client} implementation that uses {@link BlockingLoadBalancerClient} to select
+ * a {@link ServiceInstance} to use while resolving the request host.
+ *
  * @author Olga Maciaszek-Sharma
+ * @since 2.2.0
  */
 class FeignBlockingLoadBalancerClient implements Client {
 

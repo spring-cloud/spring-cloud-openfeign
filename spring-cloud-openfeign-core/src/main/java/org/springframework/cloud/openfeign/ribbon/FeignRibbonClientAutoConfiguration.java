@@ -40,6 +40,7 @@ import org.springframework.context.annotation.Primary;
  * load balancer.
  *
  * @author Dave Syer
+ * @author Olga Maciaszek-Sharma
  */
 @ConditionalOnClass({ ILoadBalancer.class, Feign.class })
 @ConditionalOnProperty(value = "spring.cloud.loadbalancer.ribbon.enabled",

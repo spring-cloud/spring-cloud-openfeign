@@ -37,6 +37,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Default configuration for {@link CloseableHttpClient}.
+ *
  * @author Ryan Baxter
  * @author Marcing Grzejszczak
  * @author Spencer Gibb
