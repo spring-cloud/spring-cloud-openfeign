@@ -17,9 +17,11 @@
 package org.springframework.cloud.openfeign.support;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import feign.RequestTemplate;
@@ -35,15 +37,14 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.openfeign.FeignContext;
+import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.AbstractGenericHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.http.converter.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -75,6 +76,10 @@ public class SpringEncoderTests {
 	@Qualifier("myHttpMessageConverter")
 	private HttpMessageConverter<?> myConverter;
 
+	@Autowired
+	@Qualifier("myGenericHttpMessageConverter")
+	private GenericHttpMessageConverter<?> myGenericConverter;
+
 	@Test
 	public void testCustomHttpMessageConverter() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
@@ -91,6 +96,33 @@ public class SpringEncoderTests {
 		String header = contentTypeHeader.iterator().next();
 		assertThat(header).as("content type header is wrong")
 				.isEqualTo("application/mytype");
+
+		assertThat(request.requestCharset()).as("request charset is null").isNotNull();
+		assertThat(request.requestCharset()).as("request charset is wrong")
+				.isEqualTo(Charset.forName("UTF-8"));
+	}
+
+	// gh-225
+	@Test
+	public void testCustomGenericHttpMessageConverter() {
+		Encoder encoder = this.context.getInstance("foo", Encoder.class);
+		assertThat(encoder).isNotNull();
+		RequestTemplate request = new RequestTemplate();
+
+		ParameterizedTypeReference<List<String>> stringListType =
+				new ParameterizedTypeReference<List<String>>() {};
+
+		request.header(HttpEncoding.CONTENT_TYPE, "application/mygenerictype");
+		encoder.encode(Collections.singletonList("hi"), stringListType.getType(), request);
+
+		Collection<String> contentTypeHeader = request.headers().get("Content-Type");
+		assertThat(contentTypeHeader).as("missing content type header").isNotNull();
+		assertThat(contentTypeHeader.isEmpty()).as("missing content type header")
+				.isFalse();
+
+		String header = contentTypeHeader.iterator().next();
+		assertThat(header).as("content type header is wrong")
+				.isEqualTo("application/mygenerictype");
 
 		assertThat(request.requestCharset()).as("request charset is null").isNotNull();
 		assertThat(request.requestCharset()).as("request charset is wrong")
@@ -179,6 +211,11 @@ public class SpringEncoderTests {
 			return new MyHttpMessageConverter();
 		}
 
+		@Bean
+		GenericHttpMessageConverter<?> myGenericHttpMessageConverter() {
+			return new MyGenericHttpMessageConverter();
+		}
+
 		private static class MyHttpMessageConverter
 				extends AbstractGenericHttpMessageConverter<Object> {
 
@@ -216,6 +253,61 @@ public class SpringEncoderTests {
 
 			@Override
 			public Object read(Type type, Class<?> contextClass,
+					HttpInputMessage inputMessage)
+					throws IOException, HttpMessageNotReadableException {
+				return null;
+			}
+
+		}
+
+		private static class MyGenericHttpMessageConverter
+			extends AbstractGenericHttpMessageConverter<Object> {
+
+			MyGenericHttpMessageConverter() {
+				super(new MediaType("application", "mygenerictype"));
+			}
+
+			private boolean isStringList(Type type) {
+				if (type instanceof ParameterizedType) {
+					ParameterizedType parameterizedType = (ParameterizedType) type;
+					return parameterizedType.getRawType() == List.class &&
+						parameterizedType.getActualTypeArguments()[0] == String.class;
+				} else {
+					return false;
+				}
+			}
+
+			@Override
+			protected boolean supports(Class<?> clazz) {
+				return clazz == List.class;
+			}
+
+			@Override
+			public boolean canWrite(Type type, Class<?> clazz, MediaType mediaType) {
+				return canWrite(mediaType) && isStringList(type);
+			}
+
+			@Override
+			public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
+				return canRead(mediaType) && isStringList(type);
+			}
+
+			@Override
+			protected void writeInternal(Object o, Type type,
+					HttpOutputMessage outputMessage)
+					throws IOException, HttpMessageNotWritableException {
+
+			}
+
+			@Override
+			public Object read(Type type, Class<?> contextClass,
+					HttpInputMessage inputMessage)
+					throws IOException, HttpMessageNotReadableException {
+				return null;
+			}
+
+			@Override
+			protected Object readInternal(Class<?> clazz,
 					HttpInputMessage inputMessage)
 					throws IOException, HttpMessageNotReadableException {
 				return null;
