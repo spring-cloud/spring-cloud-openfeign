@@ -40,6 +40,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.GenericHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 import org.springframework.web.multipart.MultipartFile;
@@ -91,9 +92,15 @@ public class SpringEncoder implements Encoder {
 				}
 			}
 
-			for (HttpMessageConverter<?> messageConverter : this.messageConverters
+			for (HttpMessageConverter messageConverter : this.messageConverters
 					.getObject().getConverters()) {
-				if (messageConverter.canWrite(requestType, requestContentType)) {
+				GenericHttpMessageConverter genericConverter = messageConverter instanceof GenericHttpMessageConverter
+						? (GenericHttpMessageConverter) messageConverter : null;
+				// noinspection unchecked
+				if (genericConverter != null
+						? genericConverter.canWrite(bodyType, requestType,
+								requestContentType)
+						: messageConverter.canWrite(requestType, requestContentType)) {
 					if (log.isDebugEnabled()) {
 						if (requestContentType != null) {
 							log.debug("Writing [" + requestBody + "] as \""
@@ -109,9 +116,16 @@ public class SpringEncoder implements Encoder {
 
 					FeignOutputMessage outputMessage = new FeignOutputMessage(request);
 					try {
-						@SuppressWarnings("unchecked")
-						HttpMessageConverter<Object> copy = (HttpMessageConverter<Object>) messageConverter;
-						copy.write(requestBody, requestContentType, outputMessage);
+						if (genericConverter != null) {
+							// noinspection unchecked
+							genericConverter.write(requestBody, bodyType,
+									requestContentType, outputMessage);
+						}
+						else {
+							// noinspection unchecked
+							messageConverter.write(requestBody, requestContentType,
+									outputMessage);
+						}
 					}
 					catch (IOException ex) {
 						throw new EncodeException("Error converting request body", ex);
