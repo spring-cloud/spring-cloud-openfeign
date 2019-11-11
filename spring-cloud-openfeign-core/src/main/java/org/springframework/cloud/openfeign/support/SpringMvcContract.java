@@ -172,11 +172,12 @@ public class SpringMvcContract extends Contract.BaseContract
 				// Prepend path from class annotation if specified
 				if (classAnnotation.value().length > 0) {
 					String pathValue = emptyToNull(classAnnotation.value()[0]);
-					pathValue = resolve(pathValue);
-					if (!pathValue.startsWith("/")) {
-						pathValue = "/" + pathValue;
+					if (pathValue != null) {
+						pathValue = resolve(pathValue);
+						if (!pathValue.equals("/")) {
+							data.template().uri(pathValue);
+						}
 					}
-					data.template().uri(pathValue);
 				}
 			}
 		}
@@ -230,11 +231,10 @@ public class SpringMvcContract extends Contract.BaseContract
 			String pathValue = emptyToNull(methodMapping.value()[0]);
 			if (pathValue != null) {
 				pathValue = resolve(pathValue);
-				// Append path from @RequestMapping if value is present on method
-				if (!pathValue.startsWith("/") && !data.template().path().endsWith("/")) {
-					pathValue = "/" + pathValue;
+				if (!pathValue.equals("/")) {
+					// Automatic add '/' if it did not present in pathValue
+					data.template().uri(pathValue, true);
 				}
-				data.template().uri(pathValue, true);
 			}
 		}
 
