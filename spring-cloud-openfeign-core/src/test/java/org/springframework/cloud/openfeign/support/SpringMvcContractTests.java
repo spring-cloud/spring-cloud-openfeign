@@ -536,40 +536,41 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
-	public void testDoubleRequestMapping()
-		throws NoSuchMethodException {
-		Class[] classes = new Class[]{TestTemplate_RequestMapping_Empty_Class.class, TestTemplate_RequestMapping_Empty_Method.class};
+	public void testDoubleRequestMapping() throws NoSuchMethodException {
+		Class[] classes = new Class[] { TestTemplate_RequestMapping_Empty_Class.class,
+				TestTemplate_RequestMapping_Empty_Method.class };
 		for (Class<?> clazz : classes) {
 			Method methodRoot = clazz.getDeclaredMethod("root");
 			MethodMetadata dataRoot = contract
-				.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
+					.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
 
 			assertThat(dataRoot.template().url()).isEqualTo("/");
 
 			Method methodSub = clazz.getDeclaredMethod("sub");
 			MethodMetadata dataSub = contract
-				.parseAndValidateMetadata(methodSub.getDeclaringClass(), methodSub);
+					.parseAndValidateMetadata(methodSub.getDeclaringClass(), methodSub);
 
 			assertThat(dataSub.template().url()).isEqualTo("/sub");
 
 			Method methodSubEmpty = clazz.getDeclaredMethod("subEmpty");
-			MethodMetadata dataSubEmpty = contract
-				.parseAndValidateMetadata(methodSubEmpty.getDeclaringClass(), methodSubEmpty);
+			MethodMetadata dataSubEmpty = contract.parseAndValidateMetadata(
+					methodSubEmpty.getDeclaringClass(), methodSubEmpty);
 
 			assertThat(dataSubEmpty.template().url()).isEqualTo("/subEmpty");
 		}
 
-		Class[] classesDouble = new Class[]{TestTemplate_RequestMapping_Empty_Double.class, TestTemplate_RequestMapping_Fill_Double.class};
+		Class[] classesDouble = new Class[] {
+				TestTemplate_RequestMapping_Empty_Double.class,
+				TestTemplate_RequestMapping_Fill_Double.class };
 		for (Class<?> clazz : classesDouble) {
 			Method methodRoot = clazz.getDeclaredMethod("root");
 			MethodMetadata dataRoot = contract
-				.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
+					.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
 
 			assertThat(dataRoot.template().url()).isEqualTo("/");
 		}
 
 	}
-
 
 	public interface TestTemplate_Simple {
 
@@ -730,13 +731,13 @@ public class SpringMvcContractTests {
 	@RequestMapping("")
 	public interface TestTemplate_RequestMapping_Empty_Class {
 
-		@RequestMapping(value = "/")
+		@RequestMapping("/")
 		String root();
 
-		@RequestMapping(value = "/sub")
+		@RequestMapping("/sub")
 		String sub();
 
-		@RequestMapping(value = "subEmpty")
+		@RequestMapping("subEmpty")
 		String subEmpty();
 
 	}
@@ -744,13 +745,13 @@ public class SpringMvcContractTests {
 	@RequestMapping("/")
 	public interface TestTemplate_RequestMapping_Empty_Method {
 
-		@RequestMapping(value = "")
+		@RequestMapping("")
 		String root();
 
-		@RequestMapping(value = "/sub")
+		@RequestMapping("/sub")
 		String sub();
 
-		@RequestMapping(value = "subEmpty")
+		@RequestMapping("subEmpty")
 		String subEmpty();
 
 	}
@@ -758,7 +759,7 @@ public class SpringMvcContractTests {
 	@RequestMapping("")
 	public interface TestTemplate_RequestMapping_Empty_Double {
 
-		@RequestMapping(value = "")
+		@RequestMapping("")
 		String root();
 
 	}
@@ -766,7 +767,7 @@ public class SpringMvcContractTests {
 	@RequestMapping("/")
 	public interface TestTemplate_RequestMapping_Fill_Double {
 
-		@RequestMapping(value = "/")
+		@RequestMapping("/")
 		String root();
 
 	}
