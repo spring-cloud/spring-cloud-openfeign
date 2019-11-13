@@ -22,6 +22,8 @@ import feign.hystrix.FallbackFactory;
 import feign.hystrix.HystrixFeign;
 import feign.hystrix.SetterFactory;
 
+import org.springframework.util.StringUtils;
+
 /**
  * @author Spencer Gibb
  * @author Erik Kringen
@@ -36,19 +38,19 @@ class HystrixTargeter implements Targeter {
 			return feign.target(target);
 		}
 		feign.hystrix.HystrixFeign.Builder builder = (feign.hystrix.HystrixFeign.Builder) feign;
-		SetterFactory setterFactory = getOptional(factory.getName(), context,
-				SetterFactory.class);
+		String name = StringUtils.isEmpty(factory.getContextId()) ? factory.getName()
+				: factory.getContextId();
+		SetterFactory setterFactory = getOptional(name, context, SetterFactory.class);
 		if (setterFactory != null) {
 			builder.setterFactory(setterFactory);
 		}
 		Class<?> fallback = factory.getFallback();
 		if (fallback != void.class) {
-			return targetWithFallback(factory.getName(), context, target, builder,
-					fallback);
+			return targetWithFallback(name, context, target, builder, fallback);
 		}
 		Class<?> fallbackFactory = factory.getFallbackFactory();
 		if (fallbackFactory != void.class) {
-			return targetWithFallbackFactory(factory.getName(), context, target, builder,
+			return targetWithFallbackFactory(name, context, target, builder,
 					fallbackFactory);
 		}
 
