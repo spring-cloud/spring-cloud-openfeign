@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Import;
 /**
  * @author Daniel Lavoie
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableAutoConfiguration
 @EnableFeignClients(clients = UsernameClient.class)
 @Import(NoSecurityConfiguration.class)

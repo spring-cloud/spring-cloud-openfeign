@@ -87,7 +87,7 @@ public class EnableFeignClientsTests {
 		Feign.Builder.class.cast(this.context.getBeansOfType(Feign.Builder.class).get(0));
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({ ArchaiusAutoConfiguration.class, FeignAutoConfiguration.class })
 	protected static class PlainConfiguration {
 

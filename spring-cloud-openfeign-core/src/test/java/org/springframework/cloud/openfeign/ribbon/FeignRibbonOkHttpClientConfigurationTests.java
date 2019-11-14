@@ -67,7 +67,7 @@ public class FeignRibbonOkHttpClientConfigurationTests {
 		return value;
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	static class FeignRibbonOkHttpClientConfigurationTestsApplication {
 

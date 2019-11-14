@@ -169,7 +169,7 @@ public class SpringEncoderTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	protected static class Application implements TestClient {

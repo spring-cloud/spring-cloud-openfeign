@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Jakub Narloch
  * @see FeignContentGzipEncodingInterceptor
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(FeignClientEncodingProperties.class)
 @ConditionalOnClass(Feign.class)
 @ConditionalOnBean(Client.class)

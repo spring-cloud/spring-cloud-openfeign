@@ -55,7 +55,7 @@ import org.springframework.format.support.FormattingConversionService;
  * @author Dave Syer
  * @author Venil Noronha
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
 
 	@Autowired
@@ -144,7 +144,7 @@ public class FeignClientsConfiguration {
 		return new PageJacksonModule();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass({ HystrixCommand.class, HystrixFeign.class })
 	protected static class HystrixFeignConfiguration {
 

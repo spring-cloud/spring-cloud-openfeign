@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Import;
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(OkHttpClient.class)
 @ConditionalOnProperty("feign.okhttp.enabled")
 @Import(OkHttpFeignConfiguration.class)

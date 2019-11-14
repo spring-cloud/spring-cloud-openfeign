@@ -96,7 +96,7 @@ public class FeignClientScanningTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients // NO clients attribute. That's what this class is testing!
@@ -112,7 +112,7 @@ public class FeignClientScanningTests {
 	}
 
 	// Load balancer with fixed server list for "local" pointing to localhost
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	public static class LocalRibbonClientConfiguration {
 
 		@Value("${local.server.port}")

@@ -122,7 +122,7 @@ public class FeignClientValidationTests {
 		}
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
 	@EnableFeignClients(clients = NameAndServiceIdConfiguration.Client.class)
 	protected static class NameAndServiceIdConfiguration {
@@ -137,8 +137,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
-
+	@Configuration(proxyBeanMethods = false)
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
 	@EnableFeignClients(
 			clients = { DuplicatedFeignClientNamesConfiguration.FooClient.class,
@@ -163,7 +162,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import(FeignAutoConfiguration.class)
 	@EnableFeignClients(clients = BadHostnameConfiguration.Client.class)
 	protected static class BadHostnameConfiguration {
@@ -178,7 +177,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import(FeignAutoConfiguration.class)
 	@EnableFeignClients(clients = MissingFallbackConfiguration.Client.class)
 	protected static class MissingFallbackConfiguration {
@@ -208,7 +207,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import(FeignAutoConfiguration.class)
 	@EnableFeignClients(clients = WrongFallbackTypeConfiguration.Client.class)
 	protected static class WrongFallbackTypeConfiguration {
@@ -237,7 +236,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import(FeignAutoConfiguration.class)
 	@EnableFeignClients(clients = MissingFallbackFactoryConfiguration.Client.class)
 	protected static class MissingFallbackFactoryConfiguration {
@@ -267,7 +266,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import(FeignAutoConfiguration.class)
 	@EnableFeignClients(clients = WrongFallbackFactoryTypeConfiguration.Client.class)
 	protected static class WrongFallbackFactoryTypeConfiguration {

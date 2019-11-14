@@ -160,7 +160,7 @@ public class ApacheHttpClientConfigurationTests {
 
 		}
 
-		@Configuration
+		@Configuration(proxyBeanMethods = false)
 		static class MyConfig {
 
 			@Bean

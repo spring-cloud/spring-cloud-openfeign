@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class DefaultFeignLoadBalancerConfiguration {
 
 	@Bean

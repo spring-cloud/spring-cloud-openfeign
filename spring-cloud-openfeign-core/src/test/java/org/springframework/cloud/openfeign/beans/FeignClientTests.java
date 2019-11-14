@@ -112,7 +112,7 @@ public class FeignClientTests {
 		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients
@@ -170,7 +170,7 @@ public class FeignClientTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	public static class TestDefaultFeignConfig {
 
 	}

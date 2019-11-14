@@ -48,7 +48,7 @@ import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 /**
  * @author Hector Espert
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnWebApplication
 @ConditionalOnClass(RepresentationModel.class)
 @AutoConfigureAfter({ JacksonAutoConfiguration.class,

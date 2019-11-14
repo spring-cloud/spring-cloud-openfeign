@@ -108,7 +108,7 @@ public class LoadBalancerFeignClientOverrideTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableFeignClients(clients = { FooClient.class, BarClient.class, BazClient.class })
 	@EnableAutoConfiguration
 	protected static class TestConfiguration {

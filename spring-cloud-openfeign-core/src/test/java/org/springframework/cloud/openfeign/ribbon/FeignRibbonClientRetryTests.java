@@ -95,7 +95,7 @@ public class FeignRibbonClientRetryTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = TestClient.class)
@@ -142,7 +142,7 @@ public class FeignRibbonClientRetryTests {
 
 // Load balancer with fixed server list for "local" pointing to localhost
 // some bogus servers are thrown in to test retry
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class LocalRibbonClientConfiguration {
 
 	@Value("${local.server.port}")

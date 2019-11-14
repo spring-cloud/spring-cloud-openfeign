@@ -139,7 +139,7 @@ public class FeignRibbonClientPathTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@RequestMapping("/base/path")
@@ -177,7 +177,7 @@ public class FeignRibbonClientPathTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	public static class LocalRibbonClientConfiguration {
 
 		@Value("${local.server.port}")

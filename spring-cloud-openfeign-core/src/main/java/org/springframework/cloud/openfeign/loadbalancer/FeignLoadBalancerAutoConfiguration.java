@@ -45,7 +45,7 @@ import org.springframework.context.annotation.Import;
 @AutoConfigureBefore(FeignAutoConfiguration.class)
 @AutoConfigureAfter(FeignRibbonClientAutoConfiguration.class)
 @EnableConfigurationProperties(FeignHttpClientProperties.class)
-@Configuration
+@Configuration(proxyBeanMethods = false)
 // Order is important here, last should be the default, first should be optional
 // see
 // https://github.com/spring-cloud/spring-cloud-netflix/issues/2086#issuecomment-316281653

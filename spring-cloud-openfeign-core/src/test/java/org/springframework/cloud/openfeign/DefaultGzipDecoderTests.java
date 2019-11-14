@@ -138,7 +138,7 @@ public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@Import(NoSecurityConfiguration.class)

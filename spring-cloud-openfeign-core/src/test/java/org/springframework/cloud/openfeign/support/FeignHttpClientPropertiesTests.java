@@ -91,7 +91,7 @@ public class FeignHttpClientPropertiesTests {
 		return this.context.getBean(FeignHttpClientProperties.class);
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableConfigurationProperties
 	protected static class TestConfiguration {
 

@@ -137,7 +137,7 @@ public class FeignHttpClientTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = { TestClient.class, UserClient.class })
@@ -252,7 +252,7 @@ public class FeignHttpClientTests {
 	}
 
 	// Load balancer with fixed server list for "local" pointing to localhost
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	static class LocalRibbonClientConfiguration {
 
 		@LocalServerPort

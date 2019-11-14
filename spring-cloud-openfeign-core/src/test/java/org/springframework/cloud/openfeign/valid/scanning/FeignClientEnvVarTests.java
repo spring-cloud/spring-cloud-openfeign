@@ -64,7 +64,7 @@ public class FeignClientEnvVarTests {
 		assertThat(hello).as("first hello didn't match").isEqualTo("hello world 1");
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(basePackages = { "${basepackage}" })
@@ -80,7 +80,7 @@ public class FeignClientEnvVarTests {
 	}
 
 	// Load balancer with fixed server list for "local" pointing to localhost
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	public static class LocalRibbonClientConfiguration {
 
 		@Value("${local.server.port}")

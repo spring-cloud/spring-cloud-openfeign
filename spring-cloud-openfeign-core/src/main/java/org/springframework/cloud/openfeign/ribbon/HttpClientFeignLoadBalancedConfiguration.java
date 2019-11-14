@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Import;
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(ApacheHttpClient.class)
 @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
 @Import(HttpClientFeignConfiguration.class)

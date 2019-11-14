@@ -83,7 +83,7 @@ public class FeignAcceptEncodingTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	static class LocalRibbonClientConfiguration {
 
 		@Value("${local.server.port}")

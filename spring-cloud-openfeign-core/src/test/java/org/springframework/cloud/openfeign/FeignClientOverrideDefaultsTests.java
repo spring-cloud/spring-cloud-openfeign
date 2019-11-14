@@ -169,7 +169,7 @@ public class FeignClientOverrideDefaultsTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableFeignClients(clients = { FooClient.class, BarClient.class })
 	@Import({ PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
 			FeignAutoConfiguration.class })

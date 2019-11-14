@@ -95,7 +95,7 @@ public class FeignPageableEncodingTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	static class LocalRibbonClientConfiguration {
 
 		@Value("${local.server.port}")

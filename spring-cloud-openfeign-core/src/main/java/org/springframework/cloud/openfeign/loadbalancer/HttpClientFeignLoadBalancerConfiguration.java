@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Import;
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(ApacheHttpClient.class)
 @ConditionalOnBean(BlockingLoadBalancerClient.class)
 @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)

@@ -71,7 +71,7 @@ public class FeignCompressionTests {
 				});
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	protected static class PlainConfig {
 
 		@Autowired

@@ -56,7 +56,7 @@ import org.springframework.context.annotation.Import;
  * @author Spencer Gibb
  * @author Julien Roy
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
 @EnableConfigurationProperties({ FeignClientProperties.class,
 		FeignHttpClientProperties.class })
@@ -78,7 +78,7 @@ public class FeignAutoConfiguration {
 		return context;
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(name = "feign.hystrix.HystrixFeign")
 	protected static class HystrixFeignTargeterConfiguration {
 
@@ -90,7 +90,7 @@ public class FeignAutoConfiguration {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnMissingClass("feign.hystrix.HystrixFeign")
 	protected static class DefaultFeignTargeterConfiguration {
 
@@ -106,7 +106,7 @@ public class FeignAutoConfiguration {
 	// ribbon is not on the class path.
 	// see corresponding configurations in FeignRibbonClientAutoConfiguration
 	// for load balanced ribbon clients.
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttpClient.class)
 	@ConditionalOnMissingClass("com.netflix.loadbalancer.ILoadBalancer")
 	@ConditionalOnMissingBean(CloseableHttpClient.class)
@@ -172,7 +172,7 @@ public class FeignAutoConfiguration {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(OkHttpClient.class)
 	@ConditionalOnMissingClass("com.netflix.loadbalancer.ILoadBalancer")
 	@ConditionalOnMissingBean(okhttp3.OkHttpClient.class)

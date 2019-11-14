@@ -75,7 +75,7 @@ public class IterableParameterTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = TestClient.class)

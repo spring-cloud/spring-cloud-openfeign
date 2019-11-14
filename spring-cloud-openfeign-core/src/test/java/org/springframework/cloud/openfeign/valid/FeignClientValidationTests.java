@@ -64,7 +64,7 @@ public class FeignClientValidationTests {
 		context.close();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
 	@EnableFeignClients(clients = GoodUrlConfiguration.Client.class)
 	protected static class GoodUrlConfiguration {
@@ -80,7 +80,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
 	@EnableFeignClients(clients = PlaceholderUrlConfiguration.Client.class)
 	protected static class PlaceholderUrlConfiguration {
@@ -96,7 +96,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
 	@EnableFeignClients(clients = GoodServiceIdConfiguration.Client.class)
 	protected static class GoodServiceIdConfiguration {

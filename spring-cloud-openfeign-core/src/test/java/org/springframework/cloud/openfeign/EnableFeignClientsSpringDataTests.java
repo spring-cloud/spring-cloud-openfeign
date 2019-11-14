@@ -48,7 +48,7 @@ public class EnableFeignClientsSpringDataTests {
 				.cast(this.feignContext.getInstance("foo", Encoder.class));
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({ PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
 			FeignAutoConfiguration.class })
 	protected static class PlainConfiguration {

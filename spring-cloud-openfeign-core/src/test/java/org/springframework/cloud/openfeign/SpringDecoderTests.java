@@ -215,7 +215,7 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@Import(NoSecurityConfiguration.class)

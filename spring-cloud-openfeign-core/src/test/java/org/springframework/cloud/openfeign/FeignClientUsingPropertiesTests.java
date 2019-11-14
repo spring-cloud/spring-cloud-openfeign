@@ -153,7 +153,7 @@ public class FeignClientUsingPropertiesTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@Import(NoSecurityConfiguration.class)
