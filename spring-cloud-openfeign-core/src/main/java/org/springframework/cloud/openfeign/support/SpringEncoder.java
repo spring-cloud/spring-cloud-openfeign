@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -68,8 +69,8 @@ public class SpringEncoder implements Encoder {
 			throws EncodeException {
 		// template.body(conversionService.convert(object, String.class));
 		if (requestBody != null) {
-			Class<?> requestType = requestBody.getClass();
-			Collection<String> contentTypes = request.headers().get("Content-Type");
+			Collection<String> contentTypes = request.headers()
+					.get(HttpEncoding.CONTENT_TYPE);
 
 			MediaType requestContentType = null;
 			if (contentTypes != null && !contentTypes.isEmpty()) {
@@ -92,42 +93,22 @@ public class SpringEncoder implements Encoder {
 
 			for (HttpMessageConverter messageConverter : this.messageConverters
 					.getObject().getConverters()) {
-				GenericHttpMessageConverter genericConverter = messageConverter instanceof GenericHttpMessageConverter
-						? (GenericHttpMessageConverter) messageConverter : null;
-				// noinspection unchecked
-				if (genericConverter != null
-						? genericConverter.canWrite(bodyType, requestType,
-								requestContentType)
-						: messageConverter.canWrite(requestType, requestContentType)) {
-					if (log.isDebugEnabled()) {
-						if (requestContentType != null) {
-							log.debug("Writing [" + requestBody + "] as \""
-									+ requestContentType + "\" using [" + messageConverter
-									+ "]");
-						}
-						else {
-							log.debug("Writing [" + requestBody + "] using ["
-									+ messageConverter + "]");
-						}
-
+				FeignOutputMessage outputMessage;
+				try {
+					if (messageConverter instanceof GenericHttpMessageConverter) {
+						outputMessage = checkAndWrite(requestBody, bodyType,
+								requestContentType,
+								(GenericHttpMessageConverter) messageConverter, request);
 					}
-
-					FeignOutputMessage outputMessage = new FeignOutputMessage(request);
-					try {
-						if (genericConverter != null) {
-							// noinspection unchecked
-							genericConverter.write(requestBody, bodyType,
-									requestContentType, outputMessage);
-						}
-						else {
-							// noinspection unchecked
-							messageConverter.write(requestBody, requestContentType,
-									outputMessage);
-						}
+					else {
+						outputMessage = checkAndWrite(requestBody, requestContentType,
+								messageConverter, request);
 					}
-					catch (IOException ex) {
-						throw new EncodeException("Error converting request body", ex);
-					}
+				}
+				catch (IOException ex) {
+					throw new EncodeException("Error converting request body", ex);
+				}
+				if (outputMessage != null) {
 					// clear headers
 					request.headers(null);
 					// converters can modify headers, so update the request
@@ -153,11 +134,54 @@ public class SpringEncoder implements Encoder {
 				}
 			}
 			String message = "Could not write request: no suitable HttpMessageConverter "
-					+ "found for request type [" + requestType.getName() + "]";
+					+ "found for request type [" + requestBody.getClass().getName() + "]";
 			if (requestContentType != null) {
 				message += " and content type [" + requestContentType + "]";
 			}
 			throw new EncodeException(message);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private FeignOutputMessage checkAndWrite(Object body, MediaType contentType,
+			HttpMessageConverter converter, RequestTemplate request) throws IOException {
+		if (converter.canWrite(body.getClass(), contentType)) {
+			logBeforeWrite(body, contentType, converter);
+			FeignOutputMessage outputMessage = new FeignOutputMessage(request);
+			converter.write(body, contentType, outputMessage);
+			return outputMessage;
+		}
+		else {
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private FeignOutputMessage checkAndWrite(Object body, Type genericType,
+			MediaType contentType, GenericHttpMessageConverter converter,
+			RequestTemplate request) throws IOException {
+		if (converter.canWrite(genericType, body.getClass(), contentType)) {
+			logBeforeWrite(body, contentType, converter);
+			FeignOutputMessage outputMessage = new FeignOutputMessage(request);
+			converter.write(body, genericType, contentType, outputMessage);
+			return outputMessage;
+		}
+		else {
+			return null;
+		}
+	}
+
+	private void logBeforeWrite(Object requestBody, MediaType requestContentType,
+			HttpMessageConverter messageConverter) {
+		if (log.isDebugEnabled()) {
+			if (requestContentType != null) {
+				log.debug("Writing [" + requestBody + "] as \"" + requestContentType
+						+ "\" using [" + messageConverter + "]");
+			}
+			else {
+				log.debug(
+						"Writing [" + requestBody + "] using [" + messageConverter + "]");
+			}
 		}
 	}
 
