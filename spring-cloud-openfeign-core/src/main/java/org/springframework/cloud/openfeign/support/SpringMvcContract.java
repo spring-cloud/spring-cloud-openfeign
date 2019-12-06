@@ -41,6 +41,7 @@ import org.springframework.cloud.openfeign.annotation.PathVariableParameterProce
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestParamParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.RequestPartParameterProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.DefaultParameterNameDiscoverer;
@@ -69,6 +70,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Halvdan Hoem Grelland
  * @author Aram Peres
  * @author Olga Maciaszek-Sharma
+ * @author Aaron Whiteside
  */
 public class SpringMvcContract extends Contract.BaseContract
 		implements ResourceLoaderAware {
@@ -357,6 +359,7 @@ public class SpringMvcContract extends Contract.BaseContract
 		annotatedArgumentResolvers.add(new RequestParamParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestHeaderParameterProcessor());
 		annotatedArgumentResolvers.add(new QueryMapParameterProcessor());
+		annotatedArgumentResolvers.add(new RequestPartParameterProcessor());
 
 		return annotatedArgumentResolvers;
 	}

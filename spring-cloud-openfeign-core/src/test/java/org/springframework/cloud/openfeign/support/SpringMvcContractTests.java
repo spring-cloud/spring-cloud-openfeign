@@ -54,6 +54,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
@@ -66,6 +68,7 @@ import static org.springframework.web.util.UriUtils.encode;
  * @author chadjaros
  * @author Halvdan Hoem Grelland
  * @author Aram Peres
+ * @author Aaron Whiteside
  */
 public class SpringMvcContractTests {
 
@@ -566,6 +569,16 @@ public class SpringMvcContractTests {
 				"{Accept}");
 	}
 
+	@Test
+	public void testMultipleRequestPartAnnotations() throws NoSuchMethodException {
+		Method method = TestTemplate_RequestPart.class.getDeclaredMethod(
+				"requestWithMultipleParts", MultipartFile.class, String.class);
+
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		assertThat(data.formParams()).contains("file", "id");
+	}
+
 	public interface TestTemplate_Simple {
 
 		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET,
@@ -667,6 +680,15 @@ public class SpringMvcContractTests {
 		@RequestMapping(path = "/queryMapObject")
 		String queryMapObject(@SpringQueryMap TestObject queryMap,
 				@RequestParam(name = "aParam") String aParam);
+
+	}
+
+	public interface TestTemplate_RequestPart {
+
+		@RequestMapping(path = "/requestPart", method = RequestMethod.POST,
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+		void requestWithMultipleParts(@RequestPart("file") MultipartFile file,
+				@RequestPart("id") String identifier);
 
 	}
 
