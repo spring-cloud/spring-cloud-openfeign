@@ -58,6 +58,7 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
+import static org.springframework.cloud.openfeign.support.SpringEncoder.OPTIONAL_REQUEST_BODY;
 import static org.springframework.web.util.UriUtils.encode;
 
 /**
@@ -524,6 +525,26 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
+	public void testRequestBody_optional() throws Exception {
+		Method method = TestTemplate_RequestBody.class.getDeclaredMethod("requestBody",
+				TestObject.class);
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().bodyTemplate()).isEqualTo(OPTIONAL_REQUEST_BODY);
+	}
+
+	@Test
+	public void testRequestBody_required() throws Exception {
+		Method method = TestTemplate_RequestBody.class
+				.getDeclaredMethod("requestBodyRequired", TestObject.class);
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().bodyTemplate()).isNotEqualTo(OPTIONAL_REQUEST_BODY);
+	}
+
+	@Test
 	public void testAddingTemplatedParameterWithTheSameKey()
 			throws NoSuchMethodException {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod(
@@ -636,6 +657,16 @@ public class SpringMvcContractTests {
 		@RequestMapping(path = "/queryMapObject")
 		String queryMapObject(@SpringQueryMap TestObject queryMap,
 				@RequestParam(name = "aParam") String aParam);
+
+	}
+
+	public interface TestTemplate_RequestBody {
+
+		@RequestMapping(path = "/requestBody")
+		String requestBody(@RequestBody(required = false) TestObject body);
+
+		@RequestMapping(path = "/requestBody_required")
+		String requestBodyRequired(@RequestBody TestObject body);
 
 	}
 

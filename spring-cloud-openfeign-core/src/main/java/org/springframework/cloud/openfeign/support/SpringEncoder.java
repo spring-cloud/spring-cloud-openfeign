@@ -53,6 +53,9 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
  */
 public class SpringEncoder implements Encoder {
 
+	/** Constant to identify request body as optional. */
+	public static final String OPTIONAL_REQUEST_BODY = "OPTIONAL_REQUEST_BODY";
+
 	private static final Log log = LogFactory.getLog(SpringEncoder.class);
 
 	private final SpringFormEncoder springFormEncoder = new SpringFormEncoder();
@@ -146,6 +149,16 @@ public class SpringEncoder implements Encoder {
 				message += " and content type [" + requestContentType + "]";
 			}
 			throw new EncodeException(message);
+		}
+		else {
+			if (OPTIONAL_REQUEST_BODY.equals(request.bodyTemplate())) {
+
+				if (log.isDebugEnabled()) {
+					log.debug("Optional body is null: Setting empty body");
+				}
+
+				request.body(Request.Body.empty());
+			}
 		}
 	}
 

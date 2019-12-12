@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
 
+import feign.Request;
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
@@ -51,6 +52,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.cloud.openfeign.support.SpringEncoder.OPTIONAL_REQUEST_BODY;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -149,6 +151,20 @@ public class SpringEncoderTests {
 				.as("Request Content-Length is not equal to 186").isEqualTo("186");
 		assertThat(new String(request.requestBody().asBytes()))
 				.as("Body content cannot be decoded").contains("hi");
+	}
+
+	@Test
+	public void testOptionalBody() {
+		Encoder encoder = this.context.getInstance("foo", Encoder.class);
+		assertThat(encoder).isNotNull();
+
+		RequestTemplate request = new RequestTemplate();
+		request.body(Request.Body.bodyTemplate(OPTIONAL_REQUEST_BODY, (Charset) null));
+
+		encoder.encode(null, Object.class, request);
+
+		assertThat(request.requestBody())
+				.isEqualToComparingFieldByField(Request.Body.empty());
 	}
 
 	protected interface TestClient {

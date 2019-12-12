@@ -38,6 +38,7 @@ import feign.Request;
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.RequestBodyParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestParamParameterProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -356,6 +357,7 @@ public class SpringMvcContract extends Contract.BaseContract
 		List<AnnotatedParameterProcessor> annotatedArgumentResolvers = new ArrayList<>();
 
 		annotatedArgumentResolvers.add(new PathVariableParameterProcessor());
+		annotatedArgumentResolvers.add(new RequestBodyParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestParamParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestHeaderParameterProcessor());
 		annotatedArgumentResolvers.add(new QueryMapParameterProcessor());
