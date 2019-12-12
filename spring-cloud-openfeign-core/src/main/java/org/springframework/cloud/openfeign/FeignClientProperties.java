@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import feign.Contract;
+import feign.ExceptionPropagationPolicy;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.Retryer;
@@ -111,6 +112,8 @@ public class FeignClientProperties {
 
 		private Class<Contract> contract;
 
+		private ExceptionPropagationPolicy exceptionPropagationPolicy;
+
 		public Logger.Level getLoggerLevel() {
 			return this.loggerLevel;
 		}
@@ -192,6 +195,15 @@ public class FeignClientProperties {
 			this.contract = contract;
 		}
 
+		public ExceptionPropagationPolicy getExceptionPropagationPolicy() {
+			return exceptionPropagationPolicy;
+		}
+
+		public void setExceptionPropagationPolicy(
+				ExceptionPropagationPolicy exceptionPropagationPolicy) {
+			this.exceptionPropagationPolicy = exceptionPropagationPolicy;
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -210,14 +222,17 @@ public class FeignClientProperties {
 					&& Objects.equals(this.decode404, that.decode404)
 					&& Objects.equals(this.encoder, that.encoder)
 					&& Objects.equals(this.decoder, that.decoder)
-					&& Objects.equals(this.contract, that.contract);
+					&& Objects.equals(this.contract, that.contract)
+					&& Objects.equals(this.exceptionPropagationPolicy,
+							that.exceptionPropagationPolicy);
 		}
 
 		@Override
 		public int hashCode() {
 			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout,
 					this.retryer, this.errorDecoder, this.requestInterceptors,
-					this.decode404, this.encoder, this.decoder, this.contract);
+					this.decode404, this.encoder, this.decoder, this.contract,
+					this.exceptionPropagationPolicy);
 		}
 
 	}
