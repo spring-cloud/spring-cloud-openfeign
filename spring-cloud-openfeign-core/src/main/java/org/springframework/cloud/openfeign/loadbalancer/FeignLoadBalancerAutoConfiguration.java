@@ -52,6 +52,6 @@ import org.springframework.context.annotation.Import;
 @Import({ HttpClientFeignLoadBalancerConfiguration.class,
 		OkHttpFeignLoadBalancerConfiguration.class,
 		DefaultFeignLoadBalancerConfiguration.class })
-class FeignLoadBalancerAutoConfiguration {
+public class FeignLoadBalancerAutoConfiguration {
 
 }

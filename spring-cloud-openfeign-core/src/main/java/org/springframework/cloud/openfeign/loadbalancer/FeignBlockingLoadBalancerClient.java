@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
  */
-class FeignBlockingLoadBalancerClient implements Client {
+public class FeignBlockingLoadBalancerClient implements Client {
 
 	private static final Log LOG = LogFactory
 			.getLog(FeignBlockingLoadBalancerClient.class);
@@ -78,8 +78,7 @@ class FeignBlockingLoadBalancerClient implements Client {
 		return delegate.execute(newRequest, options);
 	}
 
-	// Visible for tests
-	Client getDelegate() {
+	public Client getDelegate() {
 		return delegate;
 	}
 
