@@ -159,9 +159,6 @@ class FeignClientFactoryBean
 				builder.decode404();
 			}
 		}
-		else if (this.decode404) {
-			builder.decode404();
-		}
 	}
 
 	protected void configureUsingProperties(
