@@ -145,12 +145,12 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 		testClient().getNotFound();
 	}
 
-//	@Test
-//	public void testDecodes404() {
-//		final ResponseEntity<String> response = testClient(true).getNotFound();
-//		assertThat(response).as("response was null").isNotNull();
-//		assertThat(response.getBody()).as("response body was not null").isNull();
-//	}
+	@Test
+	public void testDecodes404() {
+		final ResponseEntity<String> response = testClient(true).getNotFound();
+		assertThat(response).as("response was null").isNotNull();
+		assertThat(response.getBody()).as("response body was not null").isNull();
+	}
 
 	protected interface TestClient {
 
