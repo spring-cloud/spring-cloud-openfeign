@@ -38,6 +38,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
+import org.springframework.cloud.openfeign.support.Decode404;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
@@ -152,7 +153,13 @@ class FeignClientFactoryBean
 		if (queryMapEncoder != null) {
 			builder.queryMapEncoder(queryMapEncoder);
 		}
-		if (this.decode404) {
+		Decode404 decode404 = getOptional(context, Decode404.class);
+		if (decode404 != null) {
+			if (decode404.get() || this.decode404) {
+				builder.decode404();
+			}
+		}
+		else if (this.decode404) {
 			builder.decode404();
 		}
 	}

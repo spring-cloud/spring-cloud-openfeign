@@ -38,6 +38,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.support.Decode404;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
@@ -117,6 +118,12 @@ public class FeignClientsConfiguration {
 			feignFormatterRegistrar.registerFormatters(conversionService);
 		}
 		return conversionService;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public Decode404 feignDecode404() {
+		return () -> false;
 	}
 
 	@Bean
