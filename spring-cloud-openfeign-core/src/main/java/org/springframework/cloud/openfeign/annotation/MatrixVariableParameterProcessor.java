@@ -30,10 +30,10 @@ import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
 
 /**
- * {@link MatrixVariable} annotation processor
+ * {@link MatrixVariable} annotation processor.
  *
- * Can expand maps or single object. Values are assigned from the objects toString()
- * method
+ * Can expand maps or single objects. Values are assigned from the objects {@code toString()}
+ * method.
  *
  * @author Matt King
  * @see AnnotatedParameterProcessor
