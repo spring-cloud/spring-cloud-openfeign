@@ -55,8 +55,7 @@ public class RequestBodyParameterProcessor implements AnnotatedParameterProcesso
 		data.bodyIndex(parameterIndex);
 
 		if (!required) {
-			data.template().body(
-					Request.Body.bodyTemplate(OPTIONAL_REQUEST_BODY, null));
+			data.template().body(Request.Body.bodyTemplate(OPTIONAL_REQUEST_BODY, null));
 		}
 
 		return true;
