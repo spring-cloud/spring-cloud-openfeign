@@ -152,11 +152,6 @@ public class SpringEncoder implements Encoder {
 		}
 		else {
 			if (OPTIONAL_REQUEST_BODY.equals(request.bodyTemplate())) {
-
-				if (log.isDebugEnabled()) {
-					log.debug("Optional body is null: Setting empty body");
-				}
-
 				request.body(Request.Body.empty());
 			}
 		}

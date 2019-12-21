@@ -51,13 +51,13 @@ public class RequestBodyParameterProcessor implements AnnotatedParameterProcesso
 		MethodMetadata data = context.getMethodMetadata();
 		boolean required = ANNOTATION.cast(annotation).required();
 
-		checkState(data.bodyIndex() == null, "Only one request body is allowed");
+		checkState(data.bodyIndex() == null, "Only one request body is allowed.");
 
 		data.bodyIndex(parameterIndex);
 
 		if (!required) {
 			data.template().body(
-					Request.Body.bodyTemplate(OPTIONAL_REQUEST_BODY, (Charset) null));
+					Request.Body.bodyTemplate(OPTIONAL_REQUEST_BODY, null));
 		}
 
 		return true;
