@@ -21,13 +21,6 @@ import java.util.function.Supplier;
 /**
  * Bean to supply decode404 from configuration classes.
  *
- * <code>
- * @Bean
- * public Decode404 decode404() {
- * 		return () -> true;
- * }
- * </code>
- *
  * @author Matt King
  */
 public interface Decode404 extends Supplier<Boolean> {
