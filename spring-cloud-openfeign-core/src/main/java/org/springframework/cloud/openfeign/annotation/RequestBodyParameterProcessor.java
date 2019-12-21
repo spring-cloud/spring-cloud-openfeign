@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
 
 import feign.MethodMetadata;
 import feign.Request;
