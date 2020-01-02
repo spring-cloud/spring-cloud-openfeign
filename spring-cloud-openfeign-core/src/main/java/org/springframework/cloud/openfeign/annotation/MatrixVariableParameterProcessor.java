@@ -32,8 +32,8 @@ import static feign.Util.emptyToNull;
 /**
  * {@link MatrixVariable} annotation processor.
  *
- * Can expand maps or single objects. Values are assigned from the objects {@code toString()}
- * method.
+ * Can expand maps or single objects. Values are assigned from the objects
+ * {@code toString()} method.
  *
  * @author Matt King
  * @see AnnotatedParameterProcessor
