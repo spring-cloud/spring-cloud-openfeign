@@ -130,8 +130,7 @@ class FeignBlockingLoadBalancerClientTests {
 
 	private Request testRequest(String host) {
 		return Request.create(Request.HttpMethod.GET, "http://" + host + "/path",
-				testHeaders(),
-				Request.Body.encoded("hello".getBytes(), StandardCharsets.UTF_8));
+				testHeaders(), "hello".getBytes(), StandardCharsets.UTF_8);
 	}
 
 	private Map<String, Collection<String>> testHeaders() {

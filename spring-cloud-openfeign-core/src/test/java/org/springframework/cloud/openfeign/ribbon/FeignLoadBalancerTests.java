@@ -159,7 +159,7 @@ public class FeignLoadBalancerTests {
 	@Test
 	public void testRibbonRequestURLEncode() throws Exception {
 		String url = "https://foo/?name=%7bcookie"; // name={cookie
-		Request request = Request.create(GET, url, new HashMap<>(), null, null);
+		Request request = Request.create(GET, url, new HashMap<>(), null, null, null);
 
 		assertThat(request.url()).isEqualTo(url);
 

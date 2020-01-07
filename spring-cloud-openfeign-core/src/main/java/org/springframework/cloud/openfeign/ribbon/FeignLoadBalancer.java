@@ -134,7 +134,7 @@ public class FeignLoadBalancer extends
 			Map<String, Collection<String>> headers = new LinkedHashMap<>(
 					request.headers());
 			return Request.create(request.httpMethod(), getUri().toASCIIString(), headers,
-					request.requestBody());
+					request.requestBody().asBytes(), request.charset());
 		}
 
 		Request toRequest() {
