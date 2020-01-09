@@ -65,6 +65,7 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 /**
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
+ * @author Ahmad Mozafarnia
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {

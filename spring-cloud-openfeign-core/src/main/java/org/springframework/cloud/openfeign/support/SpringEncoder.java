@@ -51,6 +51,7 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
 /**
  * @author Spencer Gibb
  * @author Scien Jus
+ * @author Ahmad Mozafarnia
  */
 public class SpringEncoder implements Encoder {
 
