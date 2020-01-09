@@ -16,10 +16,9 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +28,6 @@ import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -104,7 +102,7 @@ public class SpringEncoderTests {
 
 		assertThat(request.requestCharset()).as("request charset is null").isNotNull();
 		assertThat(request.requestCharset()).as("request charset is wrong")
-				.isEqualTo(Charset.forName("UTF-8"));
+				.isEqualTo(StandardCharsets.UTF_8);
 	}
 
 	// gh-225
@@ -132,7 +130,7 @@ public class SpringEncoderTests {
 
 		assertThat(request.requestCharset()).as("request charset is null").isNotNull();
 		assertThat(request.requestCharset()).as("request charset is wrong")
-				.isEqualTo(Charset.forName("UTF-8"));
+				.isEqualTo(StandardCharsets.UTF_8);
 	}
 
 	@Test
@@ -247,20 +245,20 @@ public class SpringEncoderTests {
 			@Override
 			protected void writeInternal(Object o, Type type,
 					HttpOutputMessage outputMessage)
-					throws IOException, HttpMessageNotWritableException {
+					throws HttpMessageNotWritableException {
 
 			}
 
 			@Override
 			protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage)
-					throws IOException, HttpMessageNotReadableException {
+					throws HttpMessageNotReadableException {
 				return null;
 			}
 
 			@Override
 			public Object read(Type type, Class<?> contextClass,
 					HttpInputMessage inputMessage)
-					throws IOException, HttpMessageNotReadableException {
+					throws HttpMessageNotReadableException {
 				return null;
 			}
 
@@ -304,46 +302,23 @@ public class SpringEncoderTests {
 			@Override
 			protected void writeInternal(Object o, Type type,
 					HttpOutputMessage outputMessage)
-					throws IOException, HttpMessageNotWritableException {
+					throws HttpMessageNotWritableException {
 
 			}
 
 			@Override
 			public Object read(Type type, Class<?> contextClass,
 					HttpInputMessage inputMessage)
-					throws IOException, HttpMessageNotReadableException {
+					throws HttpMessageNotReadableException {
 				return null;
 			}
 
 			@Override
 			protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage)
-					throws IOException, HttpMessageNotReadableException {
+					throws HttpMessageNotReadableException {
 				return null;
 			}
 
-		}
-
-	}
-
-	class MediaTypeMatcher implements ArgumentMatcher<MediaType> {
-
-		private MediaType mediaType;
-
-		MediaTypeMatcher(String type, String subtype) {
-			this.mediaType = new MediaType(type, subtype);
-		}
-
-		@Override
-		public boolean matches(MediaType argument) {
-			return this.mediaType.equals(argument);
-		}
-
-		@Override
-		public String toString() {
-			final StringBuffer sb = new StringBuffer("MediaTypeMatcher{");
-			sb.append("mediaType=").append(this.mediaType);
-			sb.append('}');
-			return sb.toString();
 		}
 
 	}
