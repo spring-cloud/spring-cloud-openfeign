@@ -111,13 +111,9 @@ public class SpringMvcContract extends Contract.BaseContract
 				"Parameter processors can not be null.");
 		Assert.notNull(conversionService, "ConversionService can not be null.");
 
-		List<AnnotatedParameterProcessor> processors;
-		if (!annotatedParameterProcessors.isEmpty()) {
-			processors = new ArrayList<>(annotatedParameterProcessors);
-		}
-		else {
-			processors = getDefaultAnnotatedArgumentsProcessors();
-		}
+		List<AnnotatedParameterProcessor> processors = getDefaultAnnotatedArgumentsProcessors();
+		processors.addAll(annotatedParameterProcessors);
+
 		this.annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
 		this.conversionService = conversionService;
 		this.convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
