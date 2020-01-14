@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import feign.Client;
 import feign.Contract;
+import feign.ExceptionPropagationPolicy;
 import feign.Feign;
 import feign.Logger;
 import feign.QueryMapEncoder;
@@ -156,6 +157,11 @@ class FeignClientFactoryBean
 		if (this.decode404) {
 			builder.decode404();
 		}
+		ExceptionPropagationPolicy exceptionPropagationPolicy = getOptional(context,
+				ExceptionPropagationPolicy.class);
+		if (exceptionPropagationPolicy != null) {
+			builder.exceptionPropagationPolicy(exceptionPropagationPolicy);
+		}
 	}
 
 	protected void configureUsingProperties(
@@ -209,6 +215,10 @@ class FeignClientFactoryBean
 
 		if (Objects.nonNull(config.getContract())) {
 			builder.contract(getOrInstantiate(config.getContract()));
+		}
+
+		if (Objects.nonNull(config.getExceptionPropagationPolicy())) {
+			builder.exceptionPropagationPolicy(config.getExceptionPropagationPolicy());
 		}
 	}
 

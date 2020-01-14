@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.SocketTimeoutException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -78,6 +80,8 @@ public class FeignClientUsingPropertiesTests {
 
 	private FeignClientFactoryBean barFactoryBean;
 
+	private FeignClientFactoryBean unwrapFactoryBean;
+
 	private FeignClientFactoryBean formFactoryBean;
 
 	public FeignClientUsingPropertiesTests() {
@@ -88,6 +92,10 @@ public class FeignClientUsingPropertiesTests {
 		this.barFactoryBean = new FeignClientFactoryBean();
 		this.barFactoryBean.setContextId("bar");
 		this.barFactoryBean.setType(FeignClientFactoryBean.class);
+
+		this.unwrapFactoryBean = new FeignClientFactoryBean();
+		this.unwrapFactoryBean.setContextId("unwrap");
+		this.unwrapFactoryBean.setType(FeignClientFactoryBean.class);
 
 		this.formFactoryBean = new FeignClientFactoryBean();
 		this.formFactoryBean.setContextId("form");
@@ -103,6 +111,12 @@ public class FeignClientUsingPropertiesTests {
 	public BarClient barClient() {
 		this.barFactoryBean.setApplicationContext(this.applicationContext);
 		return this.barFactoryBean.feign(this.context).target(BarClient.class,
+				"http://localhost:" + this.port);
+	}
+
+	public UnwrapClient unwrapClient() {
+		this.unwrapFactoryBean.setApplicationContext(this.applicationContext);
+		return this.unwrapFactoryBean.feign(this.context).target(UnwrapClient.class,
 				"http://localhost:" + this.port);
 	}
 
@@ -124,6 +138,12 @@ public class FeignClientUsingPropertiesTests {
 		fail("it should timeout");
 	}
 
+	@Test(expected = SocketTimeoutException.class)
+	public void testUnwrap() throws Exception {
+		unwrapClient().unwrap();
+		fail("it should timeout");
+	}
+
 	@Test
 	public void testForm() {
 		Map<String, String> request = Collections.singletonMap("form", "Data");
@@ -142,6 +162,13 @@ public class FeignClientUsingPropertiesTests {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/bar")
 		String bar();
+
+	}
+
+	protected interface UnwrapClient {
+
+		@RequestMapping(method = RequestMethod.GET, value = "/bar") // intentionally /bar
+		String unwrap() throws IOException;
 
 	}
 

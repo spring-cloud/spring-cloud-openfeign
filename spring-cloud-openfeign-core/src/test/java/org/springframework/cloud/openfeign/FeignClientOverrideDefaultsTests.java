@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import feign.Contract;
+import feign.ExceptionPropagationPolicy;
 import feign.Feign;
 import feign.Logger;
 import feign.QueryMapEncoder;
@@ -151,6 +152,14 @@ public class FeignClientOverrideDefaultsTests {
 				.isEqualTo(2);
 	}
 
+	@Test
+	public void exceptionPropagationPolicy() {
+		assertThat(this.context.getInstances("foo", ExceptionPropagationPolicy.class))
+				.isNull();
+		assertThat(this.context.getInstances("bar", ExceptionPropagationPolicy.class))
+				.containsValues(ExceptionPropagationPolicy.UNWRAP);
+	}
+
 	@FeignClient(name = "foo", url = "https://foo",
 			configuration = FooConfiguration.class)
 	interface FooClient {
@@ -250,6 +259,11 @@ public class FeignClientOverrideDefaultsTests {
 		@Bean
 		public QueryMapEncoder queryMapEncoder() {
 			return new BeanQueryMapEncoder();
+		}
+
+		@Bean
+		public ExceptionPropagationPolicy exceptionPropagationPolicy() {
+			return ExceptionPropagationPolicy.UNWRAP;
 		}
 
 	}
