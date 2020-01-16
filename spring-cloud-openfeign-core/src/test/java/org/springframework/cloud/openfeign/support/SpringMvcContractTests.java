@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,6 +46,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.MatrixVariable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -545,6 +547,35 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
+	public void testMatrixVariable_MapParam() throws Exception {
+		Method method = TestTemplate_MatrixVariable.class
+				.getDeclaredMethod("matrixVariable", Map.class);
+		MethodMetadata data = this.contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		Map<String, String> testMap = new HashMap<>();
+		testMap.put("param", "value");
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
+		assertThat(";param=value")
+				.isEqualTo(data.indexToExpander().get(0).expand(testMap));
+	}
+
+	@Test
+	public void testMatrixVariable_ObjectParam() throws Exception {
+		Method method = TestTemplate_MatrixVariable.class
+				.getDeclaredMethod("matrixVariableObject", Object.class);
+		MethodMetadata data = this.contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().url()).isEqualTo("/matrixVariableObject/{param}");
+		assertThat(";param=value")
+				.isEqualTo(data.indexToExpander().get(0).expand("value"));
+	}
+
+	@Test
 	public void testAddingTemplatedParameterWithTheSameKey()
 			throws NoSuchMethodException {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod(
@@ -657,6 +688,16 @@ public class SpringMvcContractTests {
 		@RequestMapping(path = "/queryMapObject")
 		String queryMapObject(@SpringQueryMap TestObject queryMap,
 				@RequestParam(name = "aParam") String aParam);
+
+	}
+
+	public interface TestTemplate_MatrixVariable {
+
+		@RequestMapping(path = "/matrixVariable/{params}")
+		String matrixVariable(@MatrixVariable("params") Map<String, Object> params);
+
+		@RequestMapping(path = "/matrixVariableObject/{param}")
+		String matrixVariableObject(@MatrixVariable("param") Object object);
 
 	}
 

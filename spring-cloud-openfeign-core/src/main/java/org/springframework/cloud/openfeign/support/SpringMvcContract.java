@@ -36,6 +36,7 @@ import feign.Param;
 import feign.Request;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.MatrixVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestBodyParameterProcessor;
@@ -111,13 +112,9 @@ public class SpringMvcContract extends Contract.BaseContract
 				"Parameter processors can not be null.");
 		Assert.notNull(conversionService, "ConversionService can not be null.");
 
-		List<AnnotatedParameterProcessor> processors;
-		if (!annotatedParameterProcessors.isEmpty()) {
-			processors = new ArrayList<>(annotatedParameterProcessors);
-		}
-		else {
-			processors = getDefaultAnnotatedArgumentsProcessors();
-		}
+		List<AnnotatedParameterProcessor> processors = getDefaultAnnotatedArgumentsProcessors();
+		processors.addAll(annotatedParameterProcessors);
+
 		this.annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
 		this.conversionService = conversionService;
 		this.convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
@@ -356,6 +353,7 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		List<AnnotatedParameterProcessor> annotatedArgumentResolvers = new ArrayList<>();
 
+		annotatedArgumentResolvers.add(new MatrixVariableParameterProcessor());
 		annotatedArgumentResolvers.add(new PathVariableParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestBodyParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestParamParameterProcessor());

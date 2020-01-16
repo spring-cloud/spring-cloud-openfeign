@@ -44,13 +44,12 @@ public class RibbonResponseStatusCodeExceptionTest {
 
 	@Test
 	public void getResponse() throws Exception {
-		Map<String, Collection<String>> headers = new HashMap<String, Collection<String>>();
-		List<String> fooValues = new ArrayList<String>();
+		Map<String, Collection<String>> headers = new HashMap<>();
+		List<String> fooValues = new ArrayList<>();
 		fooValues.add("bar");
 		headers.put("foo", fooValues);
-		Request request = Request.create(GET, "https://service.com",
-				new HashMap<String, Collection<String>>(), new byte[] {},
-				Charset.defaultCharset());
+		Request request = Request.create(GET, "https://service.com", new HashMap<>(),
+				new byte[] {}, Charset.defaultCharset());
 		byte[] body = "foo".getBytes();
 		ByteArrayInputStream is = new ByteArrayInputStream(body);
 		Response response = Response.builder().status(200).reason("Success")

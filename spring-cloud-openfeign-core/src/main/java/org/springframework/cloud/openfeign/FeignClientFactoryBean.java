@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import feign.Client;
 import feign.Contract;
+import feign.ExceptionPropagationPolicy;
 import feign.Feign;
 import feign.Logger;
 import feign.QueryMapEncoder;
@@ -37,6 +38,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -155,6 +157,11 @@ class FeignClientFactoryBean
 		if (this.decode404) {
 			builder.decode404();
 		}
+		ExceptionPropagationPolicy exceptionPropagationPolicy = getOptional(context,
+				ExceptionPropagationPolicy.class);
+		if (exceptionPropagationPolicy != null) {
+			builder.exceptionPropagationPolicy(exceptionPropagationPolicy);
+		}
 	}
 
 	protected void configureUsingProperties(
@@ -208,6 +215,10 @@ class FeignClientFactoryBean
 
 		if (Objects.nonNull(config.getContract())) {
 			builder.contract(getOrInstantiate(config.getContract()));
+		}
+
+		if (Objects.nonNull(config.getExceptionPropagationPolicy())) {
+			builder.exceptionPropagationPolicy(config.getExceptionPropagationPolicy());
 		}
 	}
 
@@ -281,6 +292,11 @@ class FeignClientFactoryBean
 				// not load balancing because we have a url,
 				// but ribbon is on the classpath, so unwrap
 				client = ((LoadBalancerFeignClient) client).getDelegate();
+			}
+			if (client instanceof FeignBlockingLoadBalancerClient) {
+				// not load balancing because we have a url,
+				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
+				client = ((FeignBlockingLoadBalancerClient) client).getDelegate();
 			}
 			builder.client(client);
 		}
