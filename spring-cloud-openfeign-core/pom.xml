@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-openfeign</artifactId>
-		<version>2.2.2.BUILD-SNAPSHOT</version>
+		<version>3.0.0.BUILD-SNAPSHOT</version>
 		<relativePath>..</relativePath> <!-- lookup parent from repository -->
 	</parent>
 	<artifactId>spring-cloud-openfeign-core</artifactId>
@@ -20,10 +20,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-netflix-ribbon</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -90,11 +86,6 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>com.netflix.ribbon</groupId>
-			<artifactId>ribbon-loadbalancer</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
 			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-core</artifactId>
 			<optional>true</optional>
@@ -115,42 +106,7 @@
 		</dependency>
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
-			<artifactId>feign-hystrix</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-okhttp</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.hystrix</groupId>
-			<artifactId>hystrix-core</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.hystrix</groupId>
-			<artifactId>hystrix-serialization</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.hystrix</groupId>
-			<artifactId>hystrix-metrics-event-stream</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.hystrix</groupId>
-			<artifactId>hystrix-javanica</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.ribbon</groupId>
-			<artifactId>ribbon-core</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.ribbon</groupId>
-			<artifactId>ribbon-httpclient</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -191,16 +147,6 @@
 		<dependency>
 			<groupId>io.projectreactor</groupId>
 			<artifactId>reactor-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.ribbon</groupId>
-			<artifactId>ribbon</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
