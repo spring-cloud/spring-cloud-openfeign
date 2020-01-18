@@ -79,19 +79,6 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(name = "feign.hystrix.HystrixFeign")
-	protected static class HystrixFeignTargeterConfiguration {
-
-		@Bean
-		@ConditionalOnMissingBean
-		public Targeter feignTargeter() {
-			return new HystrixTargeter();
-		}
-
-	}
-
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnMissingClass("feign.hystrix.HystrixFeign")
 	protected static class DefaultFeignTargeterConfiguration {
 
 		@Bean

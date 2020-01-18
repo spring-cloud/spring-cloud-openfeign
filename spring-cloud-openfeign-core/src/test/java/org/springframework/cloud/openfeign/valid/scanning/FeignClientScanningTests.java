@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.openfeign.valid.scanning;
 
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerList;
 import feign.Client;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,12 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.ribbon.RibbonClients;
-import org.springframework.cloud.netflix.ribbon.StaticServerList;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
@@ -100,7 +95,7 @@ public class FeignClientScanningTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients // NO clients attribute. That's what this class is testing!
-	@RibbonClients(defaultConfiguration = LocalRibbonClientConfiguration.class)
+	// @RibbonClients(defaultConfiguration = LocalRibbonClientConfiguration.class)
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
@@ -118,10 +113,10 @@ public class FeignClientScanningTests {
 		@Value("${local.server.port}")
 		private int port = 0;
 
-		@Bean
-		public ServerList<Server> ribbonServerList() {
-			return new StaticServerList<>(new Server("localhost", this.port));
-		}
+		/*
+		 * @Bean public ServerList<Server> ribbonServerList() { return new
+		 * StaticServerList<>(new Server("localhost", this.port)); }
+		 */
 
 	}
 

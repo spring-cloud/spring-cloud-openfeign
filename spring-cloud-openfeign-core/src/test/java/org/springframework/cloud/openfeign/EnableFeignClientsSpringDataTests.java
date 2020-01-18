@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -49,8 +48,7 @@ public class EnableFeignClientsSpringDataTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
-			FeignAutoConfiguration.class })
+	@Import({ PropertyPlaceholderAutoConfiguration.class, FeignAutoConfiguration.class })
 	protected static class PlainConfiguration {
 
 	}
