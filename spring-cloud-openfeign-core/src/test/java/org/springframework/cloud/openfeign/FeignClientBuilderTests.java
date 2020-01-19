@@ -148,6 +148,31 @@ public class FeignClientBuilderTests {
 	}
 
 	@Test
+	public void forType_clientFactoryBeanProvided() {
+		// when:
+		final FeignClientBuilder.Builder builder = this.feignClientBuilder
+				.forType(TestFeignClient.class, new FeignClientFactoryBean(),
+						"TestClient")
+				.decode404(true).fallback(TestFeignClientFallback.class)
+				.fallbackFactory(TestFeignClientFallbackFactory.class).path("Path/")
+				.url("Url/").contextId("TestContext");
+
+		// then:
+		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
+		assertFactoryBeanField(builder, "type", TestFeignClient.class);
+		assertFactoryBeanField(builder, "name", "TestClient");
+		assertFactoryBeanField(builder, "contextId", "TestContext");
+
+		// and:
+		assertFactoryBeanField(builder, "url", "http://Url/");
+		assertFactoryBeanField(builder, "path", "/Path");
+		assertFactoryBeanField(builder, "decode404", true);
+		assertFactoryBeanField(builder, "fallback", TestFeignClientFallback.class);
+		assertFactoryBeanField(builder, "fallbackFactory",
+				TestFeignClientFallbackFactory.class);
+	}
+
+	@Test
 	public void forType_build() {
 		// given:
 		Mockito.when(this.applicationContext.getBean(FeignContext.class))
