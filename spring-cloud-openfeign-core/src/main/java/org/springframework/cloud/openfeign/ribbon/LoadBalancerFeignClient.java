@@ -37,7 +37,7 @@ public class LoadBalancerFeignClient implements Client {
 
 	static final Request.Options DEFAULT_OPTIONS = new Request.Options();
 
-	private Client delegate;
+	private final Client delegate;
 
 	private CachingSpringLoadBalancerFactory lbClientFactory;
 
@@ -114,11 +114,6 @@ public class LoadBalancerFeignClient implements Client {
 
 	public Client getDelegate() {
 		return this.delegate;
-	}
-
-	// Visible for Sleuth instrumentation
-	public void setDelegate(Client delegate) {
-		this.delegate = delegate;
 	}
 
 	private FeignLoadBalancer lbClient(String clientName) {

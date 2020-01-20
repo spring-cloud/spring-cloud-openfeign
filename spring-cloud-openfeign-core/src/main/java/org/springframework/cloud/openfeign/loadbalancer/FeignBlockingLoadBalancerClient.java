@@ -41,14 +41,14 @@ import org.springframework.util.Assert;
 public class FeignBlockingLoadBalancerClient implements Client {
 
 	private static final Log LOG = LogFactory
-			.getLog(FeignBlockingLoadBalancerClient.class);
+		.getLog(FeignBlockingLoadBalancerClient.class);
+
+	private final Client delegate;
 
 	private final BlockingLoadBalancerClient loadBalancerClient;
 
-	private Client delegate;
-
 	public FeignBlockingLoadBalancerClient(Client delegate,
-			BlockingLoadBalancerClient loadBalancerClient) {
+		BlockingLoadBalancerClient loadBalancerClient) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
 	}
@@ -58,7 +58,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		final URI originalUri = URI.create(request.url());
 		String serviceId = originalUri.getHost();
 		Assert.state(serviceId != null,
-				"Request URI does not contain a valid hostname: " + originalUri);
+			"Request URI does not contain a valid hostname: " + originalUri);
 		ServiceInstance instance = loadBalancerClient.choose(serviceId);
 		if (instance == null) {
 			String message = "Load balancer does not contain an instance for the service "
@@ -78,14 +78,8 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		return delegate.execute(newRequest, options);
 	}
 
-	// Visible for Sleuth instrumentation
 	public Client getDelegate() {
 		return delegate;
-	}
-
-	// Visible for Sleuth instrumentation
-	public void setDelegate(Client delegate) {
-		this.delegate = delegate;
 	}
 
 }
