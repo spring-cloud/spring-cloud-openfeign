@@ -47,7 +47,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 
 	private final BlockingLoadBalancerClient loadBalancerClient;
 
-	FeignBlockingLoadBalancerClient(Client delegate,
+	public FeignBlockingLoadBalancerClient(Client delegate,
 			BlockingLoadBalancerClient loadBalancerClient) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
