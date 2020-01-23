@@ -23,16 +23,26 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
 import feign.Client;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import feign.codec.EncodeException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +70,9 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -68,9 +80,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 
 /**
  * @author Spencer Gibb
@@ -96,6 +111,9 @@ public class FeignClientTests {
 
 	public static final String MYHEADER2 = "myheader2";
 
+	@Rule
+	public ExpectedException expected = ExpectedException.none();
+
 	@Value("${local.server.port}")
 	private int port = 0;
 
@@ -114,6 +132,9 @@ public class FeignClientTests {
 
 	@Autowired
 	private Client feignClient;
+
+	@Autowired
+	private MultipartClient multipartClient;
 
 	private static ArrayList<Hello> getHelloList() {
 		ArrayList<Hello> hellos = new ArrayList<>();
@@ -280,6 +301,75 @@ public class FeignClientTests {
 		assertThat(this.namedFeignClient).as("namedFeignClient was null").isNotNull();
 	}
 
+	@Test
+	public void testSingleRequestPart() {
+		String response = this.multipartClient.singlePart("abc");
+		assertThat(response).isEqualTo("abc");
+	}
+
+	@Test
+	public void testMultipleRequestParts() {
+		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
+			"hello".getBytes());
+		String response = this.multipartClient.multipart("abc", "123", file);
+		assertThat(response).isEqualTo("abc123hello.bin");
+	}
+
+	@Test
+	public void testRequestPartWithListOfMultipartFiles() {
+		List<MultipartFile> multipartFiles = Arrays.asList(
+			new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes()),
+			new MockMultipartFile("file2", "hello2.bin", null, "hello".getBytes()));
+		String partNames = this.multipartClient
+			.requestPartListOfMultipartFilesReturnsPartNames(multipartFiles);
+		assertThat(partNames).isEqualTo("files,files");
+		String fileNames = this.multipartClient
+			.requestPartListOfMultipartFilesReturnsFileNames(multipartFiles);
+		assertThat(fileNames).contains("hello1.bin", "hello2.bin");
+	}
+
+	@Test
+	public void testRequestBodyWithSingleMultipartFile() {
+		String partName = UUID.randomUUID().toString();
+		MockMultipartFile file1 = new MockMultipartFile(partName, "hello1.bin", null,
+			"hello".getBytes());
+		String response = this.multipartClient.requestBodySingleMultipartFile(file1);
+		assertThat(response).isEqualTo(partName);
+	}
+
+	@Test
+	public void testRequestBodyWithListOfMultipartFiles() {
+		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
+			"hello".getBytes());
+		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null,
+			"hello".getBytes());
+		String response = this.multipartClient
+			.requestBodyListOfMultipartFiles(Arrays.asList(file1, file2));
+		assertThat(response).contains("file1", "file2");
+	}
+
+	@Test
+	public void testRequestBodyWithMap() {
+		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
+			"hello".getBytes());
+		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null,
+			"hello".getBytes());
+		Map<String, Object> form = new HashMap<>();
+		form.put("file1", file1);
+		form.put("file2", file2);
+		form.put("hello", "world");
+		String response = this.multipartClient.requestBodyMap(form);
+		assertThat(response).contains("file1", "file2", "hello");
+	}
+
+	@Test
+	public void testInvalidMultipartFile() {
+		MockMultipartFile file = new MockMultipartFile("file1", "hello1.bin", null,
+			"hello".getBytes());
+		expected.expect(instanceOf(EncodeException.class));
+		this.multipartClient.invalid(file);
+	}
+
 	protected enum Arg {
 
 		A, B;
@@ -288,6 +378,55 @@ public class FeignClientTests {
 		public String toString() {
 			return name().toLowerCase(Locale.ENGLISH);
 		}
+
+	}
+
+	@FeignClient(name = "localapp8")
+	protected interface MultipartClient {
+
+		@RequestMapping(method = RequestMethod.POST, path = "/singlePart",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String singlePart(@RequestPart("hello") String hello);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipart(@RequestPart("hello") String hello,
+			@RequestPart("world") String world,
+			@RequestPart("file") MultipartFile file);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfMultipartFilesReturnsPartNames(
+			@RequestPart("files") List<MultipartFile> files);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartFilenames",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfMultipartFilesReturnsFileNames(
+			@RequestPart("files") List<MultipartFile> files);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestBodyListOfMultipartFiles(@RequestBody List<MultipartFile> files);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestBodySingleMultipartFile(@RequestBody MultipartFile file);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestBodyMap(@RequestBody Map<String, ?> form);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/invalid",
+			consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String invalid(@RequestBody MultipartFile file);
 
 	}
 
@@ -413,7 +552,7 @@ public class FeignClientTests {
 	@RestController
 	@EnableFeignClients(
 			clients = { TestClientServiceId.class, TestClient.class,
-					DecodingTestClient.class },
+					DecodingTestClient.class, MultipartClient.class },
 			defaultConfiguration = TestDefaultFeignConfig.class)
 	@LoadBalancerClients({
 
@@ -424,7 +563,9 @@ public class FeignClientTests {
 					configuration = LocalLoadBalancerClientConfiguration.class),
 
 			@LoadBalancerClient(name = "localapp2",
-					configuration = LocalLoadBalancerClientConfiguration.class) })
+					configuration = LocalLoadBalancerClientConfiguration.class),
+		@LoadBalancerClient(name = "localapp8",
+			configuration = LocalLoadBalancerClientConfiguration.class)})
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
@@ -561,6 +702,38 @@ public class FeignClientTests {
 				result.add(arg.value);
 			}
 			return result;
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/singlePart",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipart(@RequestPart("hello") String hello) {
+			return hello;
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipart(@RequestPart("hello") String hello,
+			@RequestPart("world") String world,
+			@RequestPart("file") MultipartFile file) {
+			return hello + world + file.getOriginalFilename();
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipartNames(HttpServletRequest request) throws Exception {
+			return request.getParts().stream().map(Part::getName)
+				.collect(Collectors.joining(","));
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartFilenames",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipartFilenames(HttpServletRequest request) throws Exception {
+			return request.getParts().stream().map(Part::getSubmittedFileName)
+				.collect(Collectors.joining(","));
 		}
 
 	}
