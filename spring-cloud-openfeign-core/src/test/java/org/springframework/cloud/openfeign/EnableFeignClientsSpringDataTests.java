@@ -17,16 +17,14 @@
 package org.springframework.cloud.openfeign;
 
 import feign.codec.Encoder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -42,7 +40,6 @@ public class EnableFeignClientsSpringDataTests {
 	private FeignContext feignContext;
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void encoderDefaultCorrect() {
 
 		PageableSpringEncoder.class
@@ -50,7 +47,7 @@ public class EnableFeignClientsSpringDataTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ PropertyPlaceholderAutoConfiguration.class, FeignAutoConfiguration.class })
+	@EnableAutoConfiguration
 	protected static class PlainConfiguration {
 
 	}

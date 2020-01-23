@@ -26,7 +26,6 @@ import java.util.List;
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -85,7 +84,6 @@ public class SpringEncoderTests {
 	private GenericHttpMessageConverter<?> myGenericConverter;
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testCustomHttpMessageConverter() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
@@ -109,7 +107,6 @@ public class SpringEncoderTests {
 
 	// gh-225
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testCustomGenericHttpMessageConverter() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
@@ -137,7 +134,6 @@ public class SpringEncoderTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testBinaryData() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
@@ -152,7 +148,6 @@ public class SpringEncoderTests {
 	}
 
 	@Test(expected = EncodeException.class)
-	@Ignore // FIXME 3.0.0
 	public void testMultipartFile1() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
@@ -165,7 +160,6 @@ public class SpringEncoderTests {
 
 	// gh-105, gh-107
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testMultipartFile2() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();

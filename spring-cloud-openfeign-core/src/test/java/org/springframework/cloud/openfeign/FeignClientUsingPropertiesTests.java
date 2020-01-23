@@ -32,7 +32,6 @@ import feign.Retryer;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -128,28 +127,24 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testFoo() {
 		String response = fooClient().foo();
 		assertThat(response).isEqualTo("OK");
 	}
 
 	@Test(expected = RetryableException.class)
-	@Ignore // FIXME: 3.0.0
 	public void testBar() {
 		barClient().bar();
 		fail("it should timeout");
 	}
 
 	@Test(expected = SocketTimeoutException.class)
-	@Ignore // FIXME: 3.0.0
 	public void testUnwrap() throws Exception {
 		unwrapClient().unwrap();
 		fail("it should timeout");
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testForm() {
 		Map<String, String> request = Collections.singletonMap("form", "Data");
 		String response = formClient().form(request);

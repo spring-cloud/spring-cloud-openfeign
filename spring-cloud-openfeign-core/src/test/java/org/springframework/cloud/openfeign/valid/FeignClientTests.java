@@ -32,24 +32,29 @@ import feign.Client;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import rx.Single;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClients;
+import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignFormatterRegistrar;
+import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.format.Formatter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -104,6 +109,10 @@ public class FeignClientTests {
 	private DecodingTestClient decodingTestClient;
 
 	@Autowired
+	@Qualifier("localapp2FeignClient")
+	private DecodingTestClient namedFeignClient;
+
+	@Autowired
 	private Client feignClient;
 
 	private static ArrayList<Hello> getHelloList() {
@@ -114,7 +123,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testClient() {
 		assertThat(this.testClient).as("testClient was null").isNotNull();
 		assertThat(Proxy.isProxyClass(this.testClient.getClass()))
@@ -124,7 +132,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testRequestMappingClassLevelPropertyReplacement() {
 		Hello hello = this.testClient.getHelloUsingPropertyPlaceHolder();
 		assertThat(hello).as("hello was null").isNotNull();
@@ -132,7 +139,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testSimpleType() {
 		Hello hello = this.testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
@@ -141,14 +147,12 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testOptional() {
 		Optional<Hello> hello = this.testClient.getOptionalHello();
 		assertThat(hello).isNotNull().isPresent().contains(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testGenericType() {
 		List<Hello> hellos = this.testClient.getHellos();
 		assertThat(hellos).as("hellos was null").isNotNull();
@@ -156,7 +160,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testRequestInterceptors() {
 		List<String> headers = this.testClient.getHelloHeaders();
 		assertThat(headers).as("headers was null").isNotNull();
@@ -167,7 +170,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testHeaderPlaceholders() {
 		String header = this.testClient.getHelloHeadersPlaceholders();
 		assertThat(header).as("header was null").isNotNull();
@@ -175,16 +177,14 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testFeignClientType() throws IllegalAccessException {
-		// assertThat(this.feignClient).isInstanceOf(LoadBalancerFeignClient.class);
-		// LoadBalancerFeignClient client = (LoadBalancerFeignClient) this.feignClient;
-		// Client delegate = client.getDelegate();
-		// assertThat(delegate).isInstanceOf(Client.Default.class);
+		assertThat(this.feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
+		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) this.feignClient;
+		Client delegate = client.getDelegate();
+		assertThat(delegate).isInstanceOf(Client.Default.class);
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testServiceId() {
 		assertThat(this.testClientServiceId).as("testClientServiceId was null")
 				.isNotNull();
@@ -195,7 +195,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testParams() {
 		List<String> list = Arrays.asList("a", "1", "test");
 		List<String> params = this.testClient.getParams(list);
@@ -204,7 +203,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testFormattedParams() {
 		List<LocalDate> list = Arrays.asList(LocalDate.of(2001, 1, 1),
 				LocalDate.of(2018, 6, 10));
@@ -214,18 +212,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
-	public void testSingle() {
-		Single<Hello> single = this.testClient.getHelloSingle();
-		assertThat(single).as("single was null").isNotNull();
-		Hello hello = single.toBlocking().value();
-		assertThat(hello).as("hello was null").isNotNull();
-		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello(HELLO_WORLD_1));
-	}
-
-	@Test
-	@Ignore // FIXME 3.0.0
 	public void testNoContentResponse() {
 		ResponseEntity<Void> response = this.testClient.noContent();
 		assertThat(response).as("response was null").isNotNull();
@@ -234,7 +220,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testHeadResponse() {
 		ResponseEntity<Void> response = this.testClient.head();
 		assertThat(response).as("response was null").isNotNull();
@@ -243,7 +228,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testHttpEntity() {
 		HttpEntity<Hello> entity = this.testClient.getHelloEntity();
 		assertThat(entity).as("entity was null").isNotNull();
@@ -254,7 +238,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testMoreComplexHeader() {
 		String response = this.testClient.moreComplexContentType("{\"value\":\"OK\"}");
 		assertThat(response).as("response was null").isNotNull();
@@ -263,7 +246,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testDecodeNotFound() {
 		ResponseEntity<String> response = this.decodingTestClient.notFound();
 		assertThat(response).as("response was null").isNotNull();
@@ -273,14 +255,12 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testOptionalNotFound() {
 		Optional<String> s = this.decodingTestClient.optional();
 		assertThat(s).isNotPresent();
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testConvertingExpander() {
 		assertThat(this.testClient.getToString(Arg.A)).isEqualTo(Arg.A.toString());
 		assertThat(this.testClient.getToString(Arg.B)).isEqualTo(Arg.B.toString());
@@ -296,11 +276,8 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void namedFeignClientWorks() {
-		// FIXME: 3.0.0
-		// assertThat(this.namedHystrixClient).as("namedHystrixClient was
-		// null").isNotNull();
+		assertThat(this.namedFeignClient).as("namedFeignClient was null").isNotNull();
 	}
 
 	protected enum Arg {
@@ -326,9 +303,6 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.GET,
 				path = "${feignClient.methodLevelRequestMappingPath}")
 		Hello getHelloUsingPropertyPlaceHolder();
-
-		@RequestMapping(method = RequestMethod.GET, path = "/hello")
-		Single<Hello> getHelloSingle();
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
 		List<Hello> getHellos();
@@ -441,33 +415,16 @@ public class FeignClientTests {
 			clients = { TestClientServiceId.class, TestClient.class,
 					DecodingTestClient.class },
 			defaultConfiguration = TestDefaultFeignConfig.class)
-	/*
-	 * @RibbonClients({
-	 *
-	 * @RibbonClient(name = "localapp", configuration =
-	 * LocalRibbonClientConfiguration.class),
-	 *
-	 * @RibbonClient(name = "localapp1", configuration =
-	 * LocalRibbonClientConfiguration.class),
-	 *
-	 * @RibbonClient(name = "localapp2", configuration =
-	 * LocalRibbonClientConfiguration.class),
-	 *
-	 * @RibbonClient(name = "localapp3", configuration =
-	 * LocalRibbonClientConfiguration.class),
-	 *
-	 * @RibbonClient(name = "localapp4", configuration =
-	 * LocalRibbonClientConfiguration.class),
-	 *
-	 * @RibbonClient(name = "localapp5", configuration =
-	 * LocalRibbonClientConfiguration.class),
-	 *
-	 * @RibbonClient(name = "localapp6", configuration =
-	 * LocalRibbonClientConfiguration.class),
-	 *
-	 * @RibbonClient(name = "localapp7", configuration =
-	 * LocalRibbonClientConfiguration.class) })
-	 */
+	@LoadBalancerClients({
+
+			@LoadBalancerClient(name = "localapp",
+					configuration = LocalLoadBalancerClientConfiguration.class),
+
+			@LoadBalancerClient(name = "localapp1",
+					configuration = LocalLoadBalancerClientConfiguration.class),
+
+			@LoadBalancerClient(name = "localapp2",
+					configuration = LocalLoadBalancerClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
@@ -658,15 +615,16 @@ public class FeignClientTests {
 
 	// Load balancer with fixed server list for "local" pointing to localhost
 	@Configuration(proxyBeanMethods = false)
-	public static class LocalRibbonClientConfiguration {
+	public static class LocalLoadBalancerClientConfiguration {
 
-		@Value("${local.server.port}")
+		@LocalServerPort
 		private int port = 0;
 
-		/*
-		 * @Bean public ServerList<Server> ribbonServerList() { return new
-		 * StaticServerList<>(new Server("localhost", this.port)); }
-		 */
+		@Bean
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
+				Environment env) {
+			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
+		}
 
 	}
 

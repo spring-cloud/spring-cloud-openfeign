@@ -38,6 +38,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
+import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignClientBuilder;
@@ -45,6 +48,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
@@ -100,7 +104,6 @@ public class FeignClientTests {
 	private MultipartClient multipartClient;
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testAnnotations() {
 		Map<String, Object> beans = this.context
 				.getBeansWithAnnotation(FeignClient.class);
@@ -109,7 +112,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void testClient() {
 		assertThat(this.testClient).as("testClient was null").isNotNull();
 		assertThat(this.extraClient).as("extraClient was null").isNotNull();
@@ -120,7 +122,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void extraClient() {
 		assertThat(this.extraClient).as("extraClient was null").isNotNull();
 		assertThat(Proxy.isProxyClass(this.extraClient.getClass()))
@@ -131,7 +132,6 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void buildByBuilder() {
 		assertThat(this.buildByBuilder).as("buildByBuilder was null").isNotNull();
 		assertThat(Proxy.isProxyClass(this.buildByBuilder.getClass()))
@@ -142,14 +142,14 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
+	@Ignore // FIXME: multipart
 	public void testSingleRequestPart() {
 		String response = this.multipartClient.singlePart("abc");
 		assertThat(response).isEqualTo("abc");
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
+	@Ignore // FIXME: multipart
 	public void testMultipleRequestParts() {
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
 				"hello".getBytes());
@@ -158,7 +158,7 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
+	@Ignore // FIXME: multipart
 	public void testRequestPartWithListOfMultipartFiles() {
 		List<MultipartFile> multipartFiles = Arrays.asList(
 				new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes()),
@@ -172,7 +172,7 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
+	@Ignore // FIXME: multipart
 	public void testRequestBodyWithSingleMultipartFile() {
 		String partName = UUID.randomUUID().toString();
 		MockMultipartFile file1 = new MockMultipartFile(partName, "hello1.bin", null,
@@ -182,7 +182,7 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
+	@Ignore // FIXME: multipart
 	public void testRequestBodyWithListOfMultipartFiles() {
 		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
 				"hello".getBytes());
@@ -194,7 +194,7 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
+	@Ignore // FIXME: multipart
 	public void testRequestBodyWithMap() {
 		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
 				"hello".getBytes());
@@ -209,7 +209,7 @@ public class FeignClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
+	@Ignore // FIXME: multipart
 	public void testInvalidMultipartFile() {
 		MockMultipartFile file = new MockMultipartFile("file1", "hello1.bin", null,
 				"hello".getBytes());
@@ -222,6 +222,8 @@ public class FeignClientTests {
 	@RestController
 	@EnableFeignClients
 	@Import(FeignClientBuilder.class)
+	@LoadBalancerClient(name = "localapp8",
+			configuration = LocalLoadBalancerClientConfiguration.class)
 	protected static class Application {
 
 		@Bean("build-by-builder")
@@ -326,6 +328,21 @@ public class FeignClientTests {
 				consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
 				produces = MediaType.TEXT_PLAIN_VALUE)
 		String invalid(@RequestBody MultipartFile file);
+
+	}
+
+	// Load balancer with fixed server list for "local" pointing to localhost
+	@Configuration(proxyBeanMethods = false)
+	public static class LocalLoadBalancerClientConfiguration {
+
+		@LocalServerPort
+		private int port = 0;
+
+		@Bean
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
+				Environment env) {
+			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
+		}
 
 	}
 

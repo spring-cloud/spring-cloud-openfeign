@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -124,12 +123,11 @@ public class FeignClientBuilderTests {
 	}
 
 	@Test
-	@Ignore // FIXME: 3.0.0
 	public void forType_allFieldsSetOnBuilder() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
 				.forType(TestFeignClient.class, "TestClient").decode404(true).url("Url/")
-				.contextId("TestContext");
+				.path("/Path").contextId("TestContext");
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);

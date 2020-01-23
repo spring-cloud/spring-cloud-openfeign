@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Collections;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -81,13 +80,11 @@ public class FeignClientsRegistrarTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	@Ignore // FIXME: 3.0.0
 	public void testFallback() {
 		new AnnotationConfigApplicationContext(FallbackTestConfig.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	@Ignore // FIXME: 3.0.0
 	public void testFallbackFactory() {
 		new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
 	}

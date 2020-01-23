@@ -16,14 +16,14 @@
 
 package org.springframework.cloud.openfeign.test;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 
+import feign.Client;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockingDetails;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
@@ -34,13 +34,15 @@ import org.springframework.cloud.commons.httpclient.DefaultOkHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.ReflectionUtils;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockingDetails;
 
 /**
  * @author Ryan Baxter
@@ -60,12 +62,10 @@ public class OkHttpClientConfigurationTests {
 	@Autowired
 	OkHttpClientConnectionPoolFactory connectionPoolFactory;
 
-	/*
-	 * @Autowired LoadBalancerFeignClient feignClient;
-	 */
+	@Autowired
+	FeignBlockingLoadBalancerClient feignClient;
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testFactories() {
 		assertThat(this.connectionPoolFactory)
 				.isInstanceOf(OkHttpClientConnectionPoolFactory.class);
@@ -77,24 +77,21 @@ public class OkHttpClientConfigurationTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testHttpClientWithFeign() {
-		// Client delegate = this.feignClient.getDelegate();
-		// assertThat(feign.okhttp.OkHttpClient.class.isInstance(delegate)).isTrue();
-		// feign.okhttp.OkHttpClient okHttpClient = (feign.okhttp.OkHttpClient) delegate;
-		// OkHttpClient httpClient = getField(okHttpClient, "delegate"); MockingDetails
-		// httpClientDetails = mockingDetails(httpClient);
-		// assertThat(httpClientDetails.isMock()).isTrue();
+		Client delegate = this.feignClient.getDelegate();
+		assertThat(feign.okhttp.OkHttpClient.class.isInstance(delegate)).isTrue();
+		feign.okhttp.OkHttpClient okHttpClient = (feign.okhttp.OkHttpClient) delegate;
+		OkHttpClient httpClient = getField(okHttpClient, "delegate");
+		MockingDetails httpClientDetails = mockingDetails(httpClient);
+		assertThat(httpClientDetails.isMock()).isTrue();
 	}
 
 	protected <T> T getField(Object target, String name) {
-		Field field = ReflectionUtils.findField(target.getClass(), name);
-		ReflectionUtils.makeAccessible(field);
-		Object value = ReflectionUtils.getField(field, target);
+		Object value = ReflectionTestUtils.getField(target, target.getClass(), name);
 		return (T) value;
 	}
 
-	@FeignClient(name = "foo", serviceId = "foo")
+	@FeignClient(name = "foo")
 	interface FooClient {
 
 	}

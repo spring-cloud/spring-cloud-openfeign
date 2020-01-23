@@ -19,7 +19,6 @@ package org.springframework.cloud.openfeign.valid;
 import java.util.Objects;
 
 import feign.Client;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,11 +27,17 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClients;
+import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -70,7 +75,6 @@ public class FeignHttpClientTests {
 	private UserClient userClient;
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testSimpleType() {
 		Hello hello = this.testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
@@ -79,7 +83,6 @@ public class FeignHttpClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testPatch() {
 		ResponseEntity<Void> response = this.testClient.patchHello(new Hello("foo"));
 		assertThat(response).isNotNull();
@@ -88,16 +91,14 @@ public class FeignHttpClientTests {
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testFeignClientType() throws IllegalAccessException {
-		// assertThat(this.feignClient).isInstanceOf(LoadBalancerFeignClient.class);
-		// LoadBalancerFeignClient client = (LoadBalancerFeignClient) this.feignClient;
-		// Client delegate = client.getDelegate();
-		// assertThat(delegate).isInstanceOf(feign.httpclient.ApacheHttpClient.class);
+		assertThat(this.feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
+		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) this.feignClient;
+		Client delegate = client.getDelegate();
+		assertThat(delegate).isInstanceOf(feign.httpclient.ApacheHttpClient.class);
 	}
 
 	@Test
-	@Ignore // FIXME 3.0.0
 	public void testFeignInheritanceSupport() {
 		assertThat(this.userClient).as("UserClient was null").isNotNull();
 		final User user = this.userClient.getUser(1);
@@ -139,15 +140,11 @@ public class FeignHttpClientTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = { TestClient.class, UserClient.class })
-	/*
-	 * @RibbonClients({
-	 *
-	 * @RibbonClient(name = "localapp", configuration =
-	 * LocalRibbonClientConfiguration.class),
-	 *
-	 * @RibbonClient(name = "localapp1", configuration =
-	 * LocalRibbonClientConfiguration.class) })
-	 */
+	@LoadBalancerClients({
+			@LoadBalancerClient(name = "localapp",
+					configuration = LocalClientConfiguration.class),
+			@LoadBalancerClient(name = "localapp1",
+					configuration = LocalClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application implements UserService {
 
@@ -255,15 +252,16 @@ public class FeignHttpClientTests {
 
 	// Load balancer with fixed server list for "local" pointing to localhost
 	@Configuration(proxyBeanMethods = false)
-	static class LocalRibbonClientConfiguration {
+	static class LocalClientConfiguration {
 
 		@LocalServerPort
 		private int port = 0;
 
-		/*
-		 * @Bean public ServerList<Server> ribbonServerList() { return new
-		 * StaticServerList<>(new Server("localhost", this.port)); }
-		 */
+		@Bean
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
+				Environment env) {
+			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
+		}
 
 	}
 
