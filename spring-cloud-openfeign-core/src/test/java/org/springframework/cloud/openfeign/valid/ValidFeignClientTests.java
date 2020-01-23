@@ -94,14 +94,14 @@ import static org.hamcrest.Matchers.instanceOf;
  * @author Halvdan Hoem Grelland
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientTests.Application.class,
+@SpringBootTest(classes = ValidFeignClientTests.Application.class,
 		webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest",
 				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
 				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false",
 				"feign.hystrix.enabled=true" })
 @DirtiesContext
-public class FeignClientTests {
+public class ValidFeignClientTests {
 
 	public static final String HELLO_WORLD_1 = "hello world 1";
 
