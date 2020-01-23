@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.cloud.test.ClassPathExclusions;
@@ -88,7 +87,7 @@ public class EnableFeignClientsTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ ArchaiusAutoConfiguration.class, FeignAutoConfiguration.class })
+	@Import({ FeignAutoConfiguration.class })
 	protected static class PlainConfiguration {
 
 	}

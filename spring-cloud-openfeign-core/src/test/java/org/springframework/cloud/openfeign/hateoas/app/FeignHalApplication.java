@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign.hateoas.app;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
-import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Import;
@@ -29,7 +28,6 @@ import org.springframework.context.annotation.Import;
  * @author Hector Espert
  */
 @EnableFeignClients(clients = FeignHalClient.class)
-@RibbonClient(name = "local", configuration = FeignHalRibbonConfiguration.class)
 @SpringBootApplication(
 		scanBasePackages = "org.springframework.cloud.openfeign.hateoas.app",
 		exclude = RepositoryRestMvcAutoConfiguration.class)
