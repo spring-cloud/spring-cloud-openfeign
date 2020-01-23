@@ -41,6 +41,7 @@ import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.GenericHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,6 +53,7 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
  * @author Spencer Gibb
  * @author Scien Jus
  * @author Ahmad Mozafarnia
+ * @author Aaron Whiteside
  */
 public class SpringEncoder implements Encoder {
 
@@ -59,7 +61,7 @@ public class SpringEncoder implements Encoder {
 
 	private final SpringFormEncoder springFormEncoder = new SpringFormEncoder();
 
-	private ObjectFactory<HttpMessageConverters> messageConverters;
+	private final ObjectFactory<HttpMessageConverters> messageConverters;
 
 	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
 		this.messageConverters = messageConverters;
@@ -79,16 +81,15 @@ public class SpringEncoder implements Encoder {
 				requestContentType = MediaType.valueOf(type);
 			}
 
-			if (bodyType != null && bodyType.equals(MultipartFile.class)) {
-				if (Objects.equals(requestContentType, MediaType.MULTIPART_FORM_DATA)) {
-					this.springFormEncoder.encode(requestBody, bodyType, request);
-					return;
-				}
-				else {
-					String message = "Content-Type \"" + MediaType.MULTIPART_FORM_DATA
-							+ "\" not set for request body of type "
-							+ requestBody.getClass().getSimpleName();
-					throw new EncodeException(message);
+			if (Objects.equals(requestContentType, MediaType.MULTIPART_FORM_DATA)) {
+				this.springFormEncoder.encode(requestBody, bodyType, request);
+				return;
+			}
+			else {
+				if (bodyType == MultipartFile.class) {
+					log.warn(
+							"For MultipartFile to be handled correctly, the 'consumes' parameter of @RequestMapping "
+									+ "should be specified as MediaType.MULTIPART_FORM_DATA_VALUE");
 				}
 			}
 
@@ -106,7 +107,7 @@ public class SpringEncoder implements Encoder {
 								messageConverter, request);
 					}
 				}
-				catch (IOException ex) {
+				catch (IOException | HttpMessageConversionException ex) {
 					throw new EncodeException("Error converting request body", ex);
 				}
 				if (outputMessage != null) {

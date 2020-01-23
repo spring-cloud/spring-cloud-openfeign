@@ -78,6 +78,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		return delegate.execute(newRequest, options);
 	}
 
+	// Visible for Sleuth instrumentation
 	public Client getDelegate() {
 		return delegate;
 	}
