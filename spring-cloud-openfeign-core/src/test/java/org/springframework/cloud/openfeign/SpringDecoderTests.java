@@ -25,10 +25,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -56,7 +56,7 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 	@Autowired
 	FeignContext context;
 
-	@Value("${local.server.port}")
+	@LocalServerPort
 	private int port = 0;
 
 	public SpringDecoderTests() {
@@ -215,7 +215,7 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@Import(NoSecurityConfiguration.class)

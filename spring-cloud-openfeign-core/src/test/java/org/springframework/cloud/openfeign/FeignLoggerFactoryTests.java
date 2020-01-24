@@ -69,13 +69,13 @@ public class FeignLoggerFactoryTests {
 		context.close();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import(FeignClientsConfiguration.class)
 	protected static class SampleConfiguration1 {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import(FeignClientsConfiguration.class)
 	protected static class SampleConfiguration2 {
 
@@ -95,7 +95,7 @@ public class FeignLoggerFactoryTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import(FeignClientsConfiguration.class)
 	protected static class SampleConfiguration3 {
 

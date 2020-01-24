@@ -20,12 +20,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.zip.GZIPInputStream;
 
 import feign.FeignException;
 import feign.Response;
-import feign.Util;
 import feign.codec.Decoder;
 
 import org.springframework.cloud.openfeign.encoding.HttpEncoding;
@@ -72,7 +72,7 @@ public class DefaultGzipDecoder implements Decoder {
 		try (GZIPInputStream gzipInputStream = new GZIPInputStream(
 				response.body().asInputStream());
 				BufferedReader reader = new BufferedReader(
-						new InputStreamReader(gzipInputStream, Util.ISO_8859_1))) {
+						new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8))) {
 			String outputString = "";
 			String line;
 			while ((line = reader.readLine()) != null) {

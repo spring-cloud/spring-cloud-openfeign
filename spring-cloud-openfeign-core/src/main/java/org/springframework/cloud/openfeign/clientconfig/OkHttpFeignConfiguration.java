@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(okhttp3.OkHttpClient.class)
 public class OkHttpFeignConfiguration {
 

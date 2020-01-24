@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Import;
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(OkHttpClient.class)
 @ConditionalOnProperty("feign.okhttp.enabled")
 @ConditionalOnBean(BlockingLoadBalancerClient.class)

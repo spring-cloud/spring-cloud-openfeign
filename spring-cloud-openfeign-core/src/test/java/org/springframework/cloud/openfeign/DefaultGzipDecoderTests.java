@@ -90,6 +90,18 @@ public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
 		assertThat(hello).as("null hello didn't match").isEqualTo(null);
 	}
 
+	@Test
+	public void testCharsetDecompress() {
+		ResponseEntity<Hello> response = testClient().getUtf8Response();
+		assertThat(response).as("response was null").isNotNull();
+		assertThat(response.getStatusCode()).as("wrong status code")
+				.isEqualTo(HttpStatus.OK);
+		Hello hello = response.getBody();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("utf8 hello didn't match")
+				.isEqualTo(new Hello("안녕하세요 means Hello in Korean"));
+	}
+
 	private static class Hello {
 
 		private String message;
@@ -136,9 +148,12 @@ public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
 		@GetMapping("/nullGzipResponse")
 		ResponseEntity<Hello> getNullResponse();
 
+		@GetMapping("/utf8Response")
+		ResponseEntity<Hello> getUtf8Response();
+
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@Import(NoSecurityConfiguration.class)
@@ -152,6 +167,11 @@ public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
 		@Override
 		public ResponseEntity<Hello> getNullResponse() {
 			return ResponseEntity.ok(null);
+		}
+
+		@Override
+		public ResponseEntity<Hello> getUtf8Response() {
+			return ResponseEntity.ok(new Hello("안녕하세요 means Hello in Korean"));
 		}
 
 	}

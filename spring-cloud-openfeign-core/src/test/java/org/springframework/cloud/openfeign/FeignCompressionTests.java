@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
-import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
 import org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingAutoConfiguration;
 import org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingInterceptor;
 import org.springframework.cloud.openfeign.encoding.FeignContentGzipEncodingAutoConfiguration;
@@ -54,8 +53,7 @@ public class FeignCompressionTests {
 				.withPropertyValues("feign.compression.response.enabled=true",
 						"feign.compression.request.enabled=true",
 						"feign.okhttp.enabled=false")
-				.withConfiguration(AutoConfigurations.of(ArchaiusAutoConfiguration.class,
-						FeignAutoConfiguration.class,
+				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
 						FeignContentGzipEncodingAutoConfiguration.class,
 						FeignAcceptGzipEncodingAutoConfiguration.class,
 						HttpClientConfiguration.class, PlainConfig.class))
@@ -71,7 +69,7 @@ public class FeignCompressionTests {
 				});
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	protected static class PlainConfig {
 
 		@Autowired

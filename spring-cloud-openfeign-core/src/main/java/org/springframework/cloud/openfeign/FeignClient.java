@@ -28,7 +28,7 @@ import org.springframework.core.annotation.AliasFor;
  * Annotation for interfaces declaring that a REST client with that interface should be
  * created (e.g. for autowiring into another component). If ribbon is available it will be
  * used to load balance the backend requests, and the load balancer can be configured
- * using a <code>@RibbonClient</code> with the same name (i.e. value) as the feign client.
+ * using the same name (i.e. value) as the feign client.
  *
  * @author Spencer Gibb
  * @author Venil Noronha
@@ -85,7 +85,7 @@ public @interface FeignClient {
 	boolean decode404() default false;
 
 	/**
-	 * A custom <code>@Configuration</code> for the feign client. Can contain override
+	 * A custom configuration class for the feign client. Can contain override
 	 * <code>@Bean</code> definition for the pieces that make up the client, for instance
 	 * {@link feign.codec.Decoder}, {@link feign.codec.Encoder}, {@link feign.Contract}.
 	 *
@@ -112,8 +112,7 @@ public @interface FeignClient {
 	Class<?> fallbackFactory() default void.class;
 
 	/**
-	 * @return path prefix to be used by all method-level mappings. Can be used with or
-	 * without <code>@RibbonClient</code>.
+	 * @return path prefix to be used by all method-level mappings.
 	 */
 	String path() default "";
 
