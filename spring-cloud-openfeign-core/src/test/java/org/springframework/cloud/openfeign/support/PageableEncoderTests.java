@@ -68,13 +68,8 @@ public class PageableEncoderTests {
 		// Request page shall contain page
 		assertThat(request.queries().get("page")).contains(String.valueOf(PAGE));
 		// Request size shall contain size
-		assertThat(request.queries().get("size")).contains(String.valueOf(SIZE)); // Request
-																					// sort
-																					// size
-																					// shall
-																					// contain
-																					// sort
-																					// entries
+		assertThat(request.queries().get("size")).contains(String.valueOf(SIZE));
+		// Request sort size shall contain sort entries
 		assertThat(request.queries().get("sort")).hasSize(2);
 	}
 
@@ -92,13 +87,8 @@ public class PageableEncoderTests {
 		// Request page shall contain page
 		assertThat(request.queries().get("page")).contains(String.valueOf(PAGE));
 		// Request size shall contain size
-		assertThat(request.queries().get("size")).contains(String.valueOf(SIZE)); // Request
-																					// sort
-																					// size
-																					// shall
-																					// contain
-																					// sort
-																					// entries
+		assertThat(request.queries().get("size")).contains(String.valueOf(SIZE));
+		// Request sort size shall contain sort entries
 		assertThat(request.queries()).doesNotContainKey("sort");
 	}
 

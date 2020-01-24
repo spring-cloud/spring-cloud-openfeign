@@ -20,11 +20,10 @@ import org.junit.Test;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
-import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
+import org.springframework.cloud.openfeign.loadbalancer.FeignLoadBalancerAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -57,14 +56,15 @@ public class FeignClientValidationTests {
 	@Test
 	public void validLoadBalanced() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				LoadBalancerAutoConfiguration.class, RibbonAutoConfiguration.class,
-				FeignRibbonClientAutoConfiguration.class,
+				LoadBalancerAutoConfiguration.class,
+				org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration.class,
+				FeignLoadBalancerAutoConfiguration.class,
 				GoodServiceIdConfiguration.class);
 		assertThat(context.getBean(GoodServiceIdConfiguration.Client.class)).isNotNull();
 		context.close();
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
 	@EnableFeignClients(clients = GoodUrlConfiguration.Client.class)
 	protected static class GoodUrlConfiguration {
@@ -80,7 +80,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
 	@EnableFeignClients(clients = PlaceholderUrlConfiguration.Client.class)
 	protected static class PlaceholderUrlConfiguration {
@@ -96,7 +96,7 @@ public class FeignClientValidationTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
 	@EnableFeignClients(clients = GoodServiceIdConfiguration.Client.class)
 	protected static class GoodServiceIdConfiguration {

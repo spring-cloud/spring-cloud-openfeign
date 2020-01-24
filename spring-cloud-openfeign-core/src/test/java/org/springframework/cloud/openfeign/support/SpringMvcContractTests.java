@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,6 +46,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.MatrixVariable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,6 +54,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
@@ -64,6 +68,8 @@ import static org.springframework.web.util.UriUtils.encode;
  * @author chadjaros
  * @author Halvdan Hoem Grelland
  * @author Aram Peres
+ * @author Aaron Whiteside
+ * @author nekkiy
  */
 public class SpringMvcContractTests {
 
@@ -524,6 +530,35 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
+	public void testMatrixVariable_MapParam() throws Exception {
+		Method method = TestTemplate_MatrixVariable.class
+				.getDeclaredMethod("matrixVariable", Map.class);
+		MethodMetadata data = this.contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		Map<String, String> testMap = new HashMap<>();
+		testMap.put("param", "value");
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
+		assertThat(";param=value")
+				.isEqualTo(data.indexToExpander().get(0).expand(testMap));
+	}
+
+	@Test
+	public void testMatrixVariable_ObjectParam() throws Exception {
+		Method method = TestTemplate_MatrixVariable.class
+				.getDeclaredMethod("matrixVariableObject", Object.class);
+		MethodMetadata data = this.contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().url()).isEqualTo("/matrixVariableObject/{param}");
+		assertThat(";param=value")
+				.isEqualTo(data.indexToExpander().get(0).expand("value"));
+	}
+
+	@Test
 	public void testAddingTemplatedParameterWithTheSameKey()
 			throws NoSuchMethodException {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod(
@@ -538,38 +573,48 @@ public class SpringMvcContractTests {
 	@Test
 	public void testDoubleRequestMapping() throws NoSuchMethodException {
 		Class[] classes = new Class[] { TestTemplate_RequestMapping_Empty_Class.class,
-				TestTemplate_RequestMapping_Empty_Method.class };
+			TestTemplate_RequestMapping_Empty_Method.class };
 		for (Class<?> clazz : classes) {
 			Method methodRoot = clazz.getDeclaredMethod("root");
 			MethodMetadata dataRoot = contract
-					.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
+				.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
 
 			assertThat(dataRoot.template().url()).isEqualTo("/");
 
 			Method methodSub = clazz.getDeclaredMethod("sub");
 			MethodMetadata dataSub = contract
-					.parseAndValidateMetadata(methodSub.getDeclaringClass(), methodSub);
+				.parseAndValidateMetadata(methodSub.getDeclaringClass(), methodSub);
 
 			assertThat(dataSub.template().url()).isEqualTo("/sub");
 
 			Method methodSubEmpty = clazz.getDeclaredMethod("subEmpty");
 			MethodMetadata dataSubEmpty = contract.parseAndValidateMetadata(
-					methodSubEmpty.getDeclaringClass(), methodSubEmpty);
+				methodSubEmpty.getDeclaringClass(), methodSubEmpty);
 
 			assertThat(dataSubEmpty.template().url()).isEqualTo("/subEmpty");
 		}
 
 		Class[] classesDouble = new Class[] {
-				TestTemplate_RequestMapping_Empty_Double.class,
-				TestTemplate_RequestMapping_Fill_Double.class };
+			TestTemplate_RequestMapping_Empty_Double.class,
+			TestTemplate_RequestMapping_Fill_Double.class };
 		for (Class<?> clazz : classesDouble) {
 			Method methodRoot = clazz.getDeclaredMethod("root");
 			MethodMetadata dataRoot = contract
-					.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
+				.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
 
 			assertThat(dataRoot.template().url()).isEqualTo("/");
 		}
 
+	}
+
+	@Test
+	public void testMultipleRequestPartAnnotations() throws NoSuchMethodException {
+		Method method = TestTemplate_RequestPart.class.getDeclaredMethod(
+			"requestWithMultipleParts", MultipartFile.class, String.class);
+
+		MethodMetadata data = contract
+			.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		assertThat(data.formParams()).contains("file", "id");
 	}
 
 	public interface TestTemplate_Simple {
@@ -673,6 +718,25 @@ public class SpringMvcContractTests {
 		@RequestMapping(path = "/queryMapObject")
 		String queryMapObject(@SpringQueryMap TestObject queryMap,
 				@RequestParam(name = "aParam") String aParam);
+
+	}
+
+	public interface TestTemplate_RequestPart {
+
+		@RequestMapping(path = "/requestPart", method = RequestMethod.POST,
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+		void requestWithMultipleParts(@RequestPart("file") MultipartFile file,
+				@RequestPart("id") String identifier);
+
+	}
+
+	public interface TestTemplate_MatrixVariable {
+
+		@RequestMapping(path = "/matrixVariable/{params}")
+		String matrixVariable(@MatrixVariable("params") Map<String, Object> params);
+
+		@RequestMapping(path = "/matrixVariableObject/{param}")
+		String matrixVariableObject(@MatrixVariable("param") Object object);
 
 	}
 

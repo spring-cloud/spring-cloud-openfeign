@@ -129,7 +129,7 @@ public class FeignHttpClientUrlTests {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = { UrlClient.class, BeanUrlClient.class,

@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
  */
-class FeignBlockingLoadBalancerClient implements Client {
+public class FeignBlockingLoadBalancerClient implements Client {
 
 	private static final Log LOG = LogFactory
 			.getLog(FeignBlockingLoadBalancerClient.class);
@@ -47,7 +47,7 @@ class FeignBlockingLoadBalancerClient implements Client {
 
 	private final BlockingLoadBalancerClient loadBalancerClient;
 
-	FeignBlockingLoadBalancerClient(Client delegate,
+	public FeignBlockingLoadBalancerClient(Client delegate,
 			BlockingLoadBalancerClient loadBalancerClient) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
@@ -73,13 +73,13 @@ class FeignBlockingLoadBalancerClient implements Client {
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri)
 				.toString();
 		Request newRequest = Request.create(request.httpMethod(), reconstructedUrl,
-				request.headers(), request.requestBody());
+				request.headers(), request.requestBody().asBytes(), request.charset());
 
 		return delegate.execute(newRequest, options);
 	}
 
-	// Visible for tests
-	Client getDelegate() {
+	// Visible for Sleuth instrumentation
+	public Client getDelegate() {
 		return delegate;
 	}
 

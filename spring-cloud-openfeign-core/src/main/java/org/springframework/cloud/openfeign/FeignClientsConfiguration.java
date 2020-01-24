@@ -20,14 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.Module;
-import com.netflix.hystrix.HystrixCommand;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
 import feign.Retryer;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
-import feign.hystrix.HystrixFeign;
 import feign.optionals.OptionalDecoder;
 
 import org.springframework.beans.factory.ObjectFactory;
@@ -35,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
@@ -55,7 +52,7 @@ import org.springframework.format.support.FormattingConversionService;
  * @author Dave Syer
  * @author Venil Noronha
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
 
 	@Autowired
@@ -142,20 +139,6 @@ public class FeignClientsConfiguration {
 	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
 	public Module pageJacksonModule() {
 		return new PageJacksonModule();
-	}
-
-	@Configuration
-	@ConditionalOnClass({ HystrixCommand.class, HystrixFeign.class })
-	protected static class HystrixFeignConfiguration {
-
-		@Bean
-		@Scope("prototype")
-		@ConditionalOnMissingBean
-		@ConditionalOnProperty(name = "feign.hystrix.enabled")
-		public Feign.Builder feignHystrixBuilder() {
-			return HystrixFeign.builder();
-		}
-
 	}
 
 }

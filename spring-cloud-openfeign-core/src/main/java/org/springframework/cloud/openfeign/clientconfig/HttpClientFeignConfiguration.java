@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(CloseableHttpClient.class)
 public class HttpClientFeignConfiguration {
 
