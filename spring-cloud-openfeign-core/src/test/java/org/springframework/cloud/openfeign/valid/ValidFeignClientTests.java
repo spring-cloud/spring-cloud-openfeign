@@ -310,7 +310,7 @@ public class ValidFeignClientTests {
 	@Test
 	public void testMultipleRequestParts() {
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
-			"hello".getBytes());
+				"hello".getBytes());
 		String response = this.multipartClient.multipart("abc", "123", file);
 		assertThat(response).isEqualTo("abc123hello.bin");
 	}
@@ -318,13 +318,13 @@ public class ValidFeignClientTests {
 	@Test
 	public void testRequestPartWithListOfMultipartFiles() {
 		List<MultipartFile> multipartFiles = Arrays.asList(
-			new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes()),
-			new MockMultipartFile("file2", "hello2.bin", null, "hello".getBytes()));
+				new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes()),
+				new MockMultipartFile("file2", "hello2.bin", null, "hello".getBytes()));
 		String partNames = this.multipartClient
-			.requestPartListOfMultipartFilesReturnsPartNames(multipartFiles);
+				.requestPartListOfMultipartFilesReturnsPartNames(multipartFiles);
 		assertThat(partNames).isEqualTo("files,files");
 		String fileNames = this.multipartClient
-			.requestPartListOfMultipartFilesReturnsFileNames(multipartFiles);
+				.requestPartListOfMultipartFilesReturnsFileNames(multipartFiles);
 		assertThat(fileNames).contains("hello1.bin", "hello2.bin");
 	}
 
@@ -332,7 +332,7 @@ public class ValidFeignClientTests {
 	public void testRequestBodyWithSingleMultipartFile() {
 		String partName = UUID.randomUUID().toString();
 		MockMultipartFile file1 = new MockMultipartFile(partName, "hello1.bin", null,
-			"hello".getBytes());
+				"hello".getBytes());
 		String response = this.multipartClient.requestBodySingleMultipartFile(file1);
 		assertThat(response).isEqualTo(partName);
 	}
@@ -340,20 +340,20 @@ public class ValidFeignClientTests {
 	@Test
 	public void testRequestBodyWithListOfMultipartFiles() {
 		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
-			"hello".getBytes());
+				"hello".getBytes());
 		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null,
-			"hello".getBytes());
+				"hello".getBytes());
 		String response = this.multipartClient
-			.requestBodyListOfMultipartFiles(Arrays.asList(file1, file2));
+				.requestBodyListOfMultipartFiles(Arrays.asList(file1, file2));
 		assertThat(response).contains("file1", "file2");
 	}
 
 	@Test
 	public void testRequestBodyWithMap() {
 		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
-			"hello".getBytes());
+				"hello".getBytes());
 		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null,
-			"hello".getBytes());
+				"hello".getBytes());
 		Map<String, Object> form = new HashMap<>();
 		form.put("file1", file1);
 		form.put("file2", file2);
@@ -365,7 +365,7 @@ public class ValidFeignClientTests {
 	@Test
 	public void testInvalidMultipartFile() {
 		MockMultipartFile file = new MockMultipartFile("file1", "hello1.bin", null,
-			"hello".getBytes());
+				"hello".getBytes());
 		expected.expect(instanceOf(EncodeException.class));
 		this.multipartClient.invalid(file);
 	}
@@ -385,47 +385,47 @@ public class ValidFeignClientTests {
 	protected interface MultipartClient {
 
 		@RequestMapping(method = RequestMethod.POST, path = "/singlePart",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String singlePart(@RequestPart("hello") String hello);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String multipart(@RequestPart("hello") String hello,
-			@RequestPart("world") String world,
-			@RequestPart("file") MultipartFile file);
+				@RequestPart("world") String world,
+				@RequestPart("file") MultipartFile file);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestPartListOfMultipartFilesReturnsPartNames(
-			@RequestPart("files") List<MultipartFile> files);
+				@RequestPart("files") List<MultipartFile> files);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartFilenames",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestPartListOfMultipartFilesReturnsFileNames(
-			@RequestPart("files") List<MultipartFile> files);
+				@RequestPart("files") List<MultipartFile> files);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestBodyListOfMultipartFiles(@RequestBody List<MultipartFile> files);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestBodySingleMultipartFile(@RequestBody MultipartFile file);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestBodyMap(@RequestBody Map<String, ?> form);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/invalid",
-			consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String invalid(@RequestBody MultipartFile file);
 
 	}
@@ -564,8 +564,8 @@ public class ValidFeignClientTests {
 
 			@LoadBalancerClient(name = "localapp2",
 					configuration = LocalLoadBalancerClientConfiguration.class),
-		@LoadBalancerClient(name = "localapp8",
-			configuration = LocalLoadBalancerClientConfiguration.class)})
+			@LoadBalancerClient(name = "localapp8",
+					configuration = LocalLoadBalancerClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
@@ -705,35 +705,35 @@ public class ValidFeignClientTests {
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/singlePart",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String multipart(@RequestPart("hello") String hello) {
 			return hello;
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String multipart(@RequestPart("hello") String hello,
-			@RequestPart("world") String world,
-			@RequestPart("file") MultipartFile file) {
+				@RequestPart("world") String world,
+				@RequestPart("file") MultipartFile file) {
 			return hello + world + file.getOriginalFilename();
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String multipartNames(HttpServletRequest request) throws Exception {
 			return request.getParts().stream().map(Part::getName)
-				.collect(Collectors.joining(","));
+					.collect(Collectors.joining(","));
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartFilenames",
-			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-			produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
 		String multipartFilenames(HttpServletRequest request) throws Exception {
 			return request.getParts().stream().map(Part::getSubmittedFileName)
-				.collect(Collectors.joining(","));
+					.collect(Collectors.joining(","));
 		}
 
 	}

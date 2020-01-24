@@ -79,7 +79,6 @@ public class BeansFeignClientTests {
 	@Autowired
 	private TestClient buildByBuilder;
 
-
 	@Test
 	public void testAnnotations() {
 		Map<String, Object> beans = this.context
