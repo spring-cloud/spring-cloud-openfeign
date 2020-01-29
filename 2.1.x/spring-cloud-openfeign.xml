@@ -425,5 +425,15 @@ public class DemoTemplate {
     String demoEndpoint(@SpringQueryMap Params params);
 }</programlisting>
 </section>
+<section xml:id="_troubleshooting">
+<title>Troubleshooting</title>
+<section xml:id="_early_initialization_errors">
+<title>Early Initialization Errors</title>
+<simpara>Depending on how you are using your Feign clients you may see initialization errors when starting your application.
+To work around this problem you can use an <literal>ObjectProvider</literal> when autowiring your client.</simpara>
+<programlisting language="java" linenumbering="unnumbered">@Autowired
+ObjectProvider&lt;TestFeginClient&gt; testFeginClient;</programlisting>
+</section>
+</section>
 </chapter>
 </book>
