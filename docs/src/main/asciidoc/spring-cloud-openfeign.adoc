@@ -524,6 +524,19 @@ public interface DemoTemplate {
 }
 ----
 
+=== Troubleshooting
+
+==== Early Initialization Errors
+
+Depending on how you are using your Feign clients you may see initialization errors when starting your application.
+To work around this problem you can use an `ObjectProvider` when autowiring your client.
+
+[source,java,indent=0]
+----
+@Autowired
+ObjectProvider<TestFeginClient> testFeginClient;
+----
+
 == Configuration properties
 
 To see the list of all Sleuth related configuration properties please check link:appendix.html[the Appendix page].
