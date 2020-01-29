@@ -487,3 +487,16 @@ public class DemoTemplate {
     String demoEndpoint(@SpringQueryMap Params params);
 }
 ----
+
+=== Troubleshooting
+
+==== Early Initialization Errors
+
+Depending on how you are using your Feign clients you may see initialization errors when starting your application.
+To work around this problem you can use an `ObjectProvider` when autowiring your client.
+
+[source,java,indent=0]
+----
+@Autowired
+ObjectProvider<TestFeginClient> testFeginClient;
+----
