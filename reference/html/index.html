@@ -109,6 +109,11 @@ $(addBlockSwitches);
 <li><a href="#feign-logging">1.9. Feign logging</a></li>
 <li><a href="#feign-querymap-support">1.10. Feign @QueryMap support</a></li>
 <li><a href="#hateoas-support">1.11. HATEOAS support</a></li>
+<li><a href="#troubleshooting">1.12. Troubleshooting</a>
+<ul class="sectlevel3">
+<li><a href="#early-initialization-errors">1.12.1. Early Initialization Errors</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#configuration-properties">2. Configuration properties</a></li>
@@ -867,6 +872,22 @@ public interface DemoTemplate {
     @GetMapping(path = "/stores")
     CollectionModel&lt;Store&gt; getStores();
 }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="troubleshooting"><a class="anchor" href="#troubleshooting"></a><a class="link" href="#troubleshooting">1.12. Troubleshooting</a></h3>
+<div class="sect3">
+<h4 id="early-initialization-errors"><a class="anchor" href="#early-initialization-errors"></a><a class="link" href="#early-initialization-errors">1.12.1. Early Initialization Errors</a></h4>
+<div class="paragraph">
+<p>Depending on how you are using your Feign clients you may see initialization errors when starting your application.
+To work around this problem you can use an <code>ObjectProvider</code> when autowiring your client.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Autowired
+ObjectProvider&lt;TestFeginClient&gt; testFeginClient;</code></pre>
+</div>
 </div>
 </div>
 </div>
