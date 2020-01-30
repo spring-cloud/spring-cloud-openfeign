@@ -139,6 +139,13 @@ public class FeignClientsConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(FeignBuilderCustomizer.class)
+	public FeignBuilderCustomizer feignBuilderCustomizer() {
+		return (builder) -> {
+		};
+	}
+
+	@Bean
 	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
 	public Module pageJacksonModule() {
 		return new PageJacksonModule();

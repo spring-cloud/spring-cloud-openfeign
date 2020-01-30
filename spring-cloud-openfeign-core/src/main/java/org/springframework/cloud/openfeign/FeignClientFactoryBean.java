@@ -84,6 +84,7 @@ class FeignClientFactoryBean
 	}
 
 	protected Feign.Builder feign(FeignContext context) {
+		FeignBuilderCustomizer customizer = get(context, FeignBuilderCustomizer.class);
 		FeignLoggerFactory loggerFactory = get(context, FeignLoggerFactory.class);
 		Logger logger = loggerFactory.create(this.type);
 
@@ -97,6 +98,7 @@ class FeignClientFactoryBean
 		// @formatter:on
 
 		configureFeign(context, builder);
+		customizer.customize(builder);
 
 		return builder;
 	}
