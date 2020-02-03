@@ -26,6 +26,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.Order;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,6 +75,32 @@ public class FeignBuilderCustomizerTests {
 				.isEqualTo(expectedValue);
 	}
 
+	@Test
+	public void testBuildCustomizerOrdered() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				FeignBuilderCustomizerTests.SampleConfiguration3.class);
+
+		FeignClientFactoryBean clientFactoryBean = context
+				.getBean(FeignClientFactoryBean.class);
+		FeignContext feignContext = context.getBean(FeignContext.class);
+
+		Feign.Builder builder = clientFactoryBean.feign(feignContext);
+		assertFeignBuilderField(builder, "logLevel", Logger.Level.FULL);
+		assertFeignBuilderField(builder, "decode404", true);
+
+		context.close();
+	}
+
+	private static FeignClientFactoryBean defaultFeignClientFactoryBean() {
+		FeignClientFactoryBean feignClientFactoryBean = new FeignClientFactoryBean();
+		feignClientFactoryBean.setContextId("test");
+		feignClientFactoryBean.setName("test");
+		feignClientFactoryBean.setType(FeignClientFactoryTests.TestType.class);
+		feignClientFactoryBean.setPath("");
+		feignClientFactoryBean.setUrl("http://some.absolute.url");
+		return feignClientFactoryBean;
+	}
+
 	@Configuration(proxyBeanMethods = false)
 	@Import(FeignClientsConfiguration.class)
 	protected static class SampleConfiguration1 {
@@ -96,21 +123,55 @@ public class FeignBuilderCustomizerTests {
 
 		@Bean
 		FeignBuilderCustomizer feignBuilderCustomizer() {
-			return builder -> {
-				builder.logLevel(Logger.Level.HEADERS);
-				builder.decode404();
-			};
+			return builder -> builder.logLevel(Logger.Level.HEADERS);
+		}
+
+		@Bean
+		FeignBuilderCustomizer feignBuilderCustomizer2() {
+			return Feign.Builder::decode404;
 		}
 
 		@Bean
 		FeignClientFactoryBean feignClientFactoryBean() {
-			FeignClientFactoryBean feignClientFactoryBean = new FeignClientFactoryBean();
-			feignClientFactoryBean.setContextId("test");
-			feignClientFactoryBean.setName("test");
-			feignClientFactoryBean.setType(FeignClientFactoryTests.TestType.class);
-			feignClientFactoryBean.setPath("");
-			feignClientFactoryBean.setUrl("http://some.absolute.url");
-			return feignClientFactoryBean;
+			return defaultFeignClientFactoryBean();
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@Import(FeignClientsConfiguration.class)
+	protected static class SampleConfiguration3 {
+
+		@Bean
+		FeignContext feignContext() {
+			return new FeignContext();
+		}
+
+		@Bean
+		FeignClientProperties feignClientProperties() {
+			return new FeignClientProperties();
+		}
+
+		@Bean
+		@Order(1)
+		FeignBuilderCustomizer feignBuilderCustomizer() {
+			return builder -> builder.logLevel(Logger.Level.HEADERS);
+		}
+
+		@Bean
+		@Order(2)
+		FeignBuilderCustomizer feignBuilderCustomizer1() {
+			return builder -> builder.logLevel(Logger.Level.FULL);
+		}
+
+		@Bean
+		FeignBuilderCustomizer feignBuilderCustomizer2() {
+			return Feign.Builder::decode404;
+		}
+
+		@Bean
+		FeignClientFactoryBean feignClientFactoryBean() {
+			return defaultFeignClientFactoryBean();
 		}
 
 	}

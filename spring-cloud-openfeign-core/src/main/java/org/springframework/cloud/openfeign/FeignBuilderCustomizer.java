@@ -18,13 +18,14 @@ package org.springframework.cloud.openfeign;
 
 import feign.Feign;
 
-import org.springframework.security.config.Customizer;
-
 /**
  * Allows application to customize the Feign builder.
  *
  * @author Matt King
  */
-public interface FeignBuilderCustomizer extends Customizer<Feign.Builder> {
+@FunctionalInterface
+public interface FeignBuilderCustomizer {
+
+	void customize(Feign.Builder builder);
 
 }
