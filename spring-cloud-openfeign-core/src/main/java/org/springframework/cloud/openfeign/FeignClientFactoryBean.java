@@ -16,11 +16,8 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import feign.Client;
 import feign.Contract;
@@ -41,18 +38,12 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.core.type.MethodMetadata;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.util.Assert;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 /**
@@ -110,41 +101,11 @@ class FeignClientFactoryBean
 		// @formatter:on
 
 		configureFeign(context, builder);
-		getOrderedCustomizers(context).forEach(
-				feignBuilderCustomizer -> feignBuilderCustomizer.customize(builder));
+		customizerMap.values().stream().sorted(AnnotationAwareOrderComparator.INSTANCE)
+				.forEach(feignBuilderCustomizer -> feignBuilderCustomizer
+						.customize(builder));
 
 		return builder;
-	}
-
-	private List<FeignBuilderCustomizer> getOrderedCustomizers(FeignContext context) {
-		Map<String, FeignBuilderCustomizer> customizerMap = context
-				.getInstances(contextId, FeignBuilderCustomizer.class);
-		BeanDefinitionRegistry registry = (BeanDefinitionRegistry) applicationContext
-				.getAutowireCapableBeanFactory();
-
-		List<FeignBuilderCustomizer> customizers = customizerMap.keySet().stream()
-				.sorted(Comparator.comparing(o -> getOrderedValue(o, registry)))
-				.map(customizerMap::get).collect(Collectors.toList());
-
-		return customizers;
-	}
-
-	private Integer getOrderedValue(String beanName, BeanDefinitionRegistry registry) {
-		BeanDefinition definition = registry.getBeanDefinition(beanName);
-		String annotation = Order.class.getName();
-
-		if (definition instanceof AnnotatedBeanDefinition
-				&& definition.getSource() instanceof MethodMetadata) {
-			MethodMetadata beanMethod = (MethodMetadata) definition.getSource();
-
-			if (beanMethod.isAnnotated(annotation)) {
-				MultiValueMap<String, Object> annotationData = beanMethod
-						.getAllAnnotationAttributes(annotation);
-				return (Integer) annotationData.getFirst("value");
-			}
-		}
-
-		return Ordered.LOWEST_PRECEDENCE;
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
