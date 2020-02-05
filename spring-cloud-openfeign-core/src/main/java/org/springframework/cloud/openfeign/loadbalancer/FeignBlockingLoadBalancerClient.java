@@ -73,8 +73,8 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri)
 				.toString();
 		Request newRequest = Request.create(request.httpMethod(), reconstructedUrl,
-				request.headers(), request.requestBody().asBytes(), request.charset());
-
+				request.headers(), request.body(), request.charset(),
+				request.requestTemplate());
 		return delegate.execute(newRequest, options);
 	}
 
