@@ -49,7 +49,7 @@ public class RibbonResponseStatusCodeExceptionTest {
 		fooValues.add("bar");
 		headers.put("foo", fooValues);
 		Request request = Request.create(GET, "https://service.com", new HashMap<>(),
-				new byte[] {}, Charset.defaultCharset());
+				new byte[] {}, Charset.defaultCharset(), null);
 		byte[] body = "foo".getBytes();
 		ByteArrayInputStream is = new ByteArrayInputStream(body);
 		Response response = Response.builder().status(200).reason("Success")

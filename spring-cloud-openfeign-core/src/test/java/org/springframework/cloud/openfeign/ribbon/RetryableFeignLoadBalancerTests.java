@@ -133,7 +133,7 @@ public class RetryableFeignLoadBalancerTests {
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(
 				clientFactory);
 		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://foo"));
@@ -151,7 +151,7 @@ public class RetryableFeignLoadBalancerTests {
 	@Test
 	public void executeNeverRetry() throws Exception {
 		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://foo"));
@@ -215,7 +215,7 @@ public class RetryableFeignLoadBalancerTests {
 			}
 		};
 		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://foo"));
@@ -260,7 +260,7 @@ public class RetryableFeignLoadBalancerTests {
 			}
 		};
 		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://foo"));
@@ -310,7 +310,7 @@ public class RetryableFeignLoadBalancerTests {
 			}
 		};
 		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://foo"));
@@ -339,7 +339,7 @@ public class RetryableFeignLoadBalancerTests {
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(
 				clientFactory);
 		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://foo"));
@@ -365,7 +365,7 @@ public class RetryableFeignLoadBalancerTests {
 		RibbonLoadBalancedRetryFactory loadBalancedRetryFactory = new RibbonLoadBalancedRetryFactory(
 				clientFactory);
 		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://foo"));
@@ -446,7 +446,7 @@ public class RetryableFeignLoadBalancerTests {
 			}
 		};
 		Request feignRequest = Request.create(GET, "https://listener", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://listener"));
@@ -498,7 +498,7 @@ public class RetryableFeignLoadBalancerTests {
 			}
 		};
 		Request feignRequest = Request.create(GET, "https://listener", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://listener"));
@@ -535,7 +535,7 @@ public class RetryableFeignLoadBalancerTests {
 			}
 		};
 		Request feignRequest = Request.create(GET, "https://listener", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://listener"));
@@ -580,7 +580,7 @@ public class RetryableFeignLoadBalancerTests {
 			}
 		};
 		Request feignRequest = Request.create(GET, "https://foo", new HashMap<>(),
-				new byte[] {}, UTF_8);
+				new byte[] {}, UTF_8, null);
 		Client client = mock(Client.class);
 		FeignLoadBalancer.RibbonRequest request = new FeignLoadBalancer.RibbonRequest(
 				client, feignRequest, new URI("https://foo"));
