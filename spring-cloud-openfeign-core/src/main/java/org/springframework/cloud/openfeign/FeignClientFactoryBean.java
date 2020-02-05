@@ -86,8 +86,6 @@ class FeignClientFactoryBean
 	}
 
 	protected Feign.Builder feign(FeignContext context) {
-		Map<String, FeignBuilderCustomizer> customizerMap = context
-				.getInstances(contextId, FeignBuilderCustomizer.class);
 		FeignLoggerFactory loggerFactory = get(context, FeignLoggerFactory.class);
 		Logger logger = loggerFactory.create(this.type);
 
@@ -101,7 +99,8 @@ class FeignClientFactoryBean
 		// @formatter:on
 
 		configureFeign(context, builder);
-		customizerMap.values().stream().sorted(AnnotationAwareOrderComparator.INSTANCE)
+		context.getInstances(contextId, FeignBuilderCustomizer.class).values().stream()
+				.sorted(AnnotationAwareOrderComparator.INSTANCE)
 				.forEach(feignBuilderCustomizer -> feignBuilderCustomizer
 						.customize(builder));
 
