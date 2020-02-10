@@ -57,6 +57,7 @@ import org.springframework.util.StringUtils;
  * @author Jakub Narloch
  * @author Venil Noronha
  * @author Gang Li
+ * @author Matt King
  */
 class FeignClientsRegistrar
 		implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
@@ -236,6 +237,8 @@ class FeignClientsRegistrar
 		definition.addPropertyValue("contextId", contextId);
 		definition.addPropertyValue("type", className);
 		definition.addPropertyValue("decode404", attributes.get("decode404"));
+		definition.addPropertyValue("inheritParentContext",
+				attributes.get("inheritParentContext"));
 		definition.addPropertyValue("fallback", attributes.get("fallback"));
 		definition.addPropertyValue("fallbackFactory", attributes.get("fallbackFactory"));
 		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);

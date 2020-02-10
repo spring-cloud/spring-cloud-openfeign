@@ -40,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Sven Döring
+ * @author Matt King
  */
 public class FeignClientBuilderTests {
 
@@ -95,7 +96,7 @@ public class FeignClientBuilderTests {
 		// (2) Or a new field was added and the builder class has to be extended with this
 		// new field.
 		assertThat(methodNames).containsExactly("contextId", "decode404", "fallback",
-				"fallbackFactory", "name", "path", "url");
+				"fallbackFactory", "inheritParentContext", "name", "path", "url");
 	}
 
 	@Test
@@ -117,6 +118,8 @@ public class FeignClientBuilderTests {
 				getDefaultValueFromFeignClientAnnotation("path"));
 		assertFactoryBeanField(builder, "decode404",
 				getDefaultValueFromFeignClientAnnotation("decode404"));
+		assertFactoryBeanField(builder, "inheritParentContext",
+				getDefaultValueFromFeignClientAnnotation("inheritParentContext"));
 		assertFactoryBeanField(builder, "fallback",
 				getDefaultValueFromFeignClientAnnotation("fallback"));
 		assertFactoryBeanField(builder, "fallbackFactory",
@@ -128,7 +131,7 @@ public class FeignClientBuilderTests {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
 				.forType(TestFeignClient.class, "TestClient").decode404(true)
-				.fallback(TestFeignClientFallback.class)
+				.inheritParentContext(true).fallback(TestFeignClientFallback.class)
 				.fallbackFactory(TestFeignClientFallbackFactory.class).path("Path/")
 				.url("Url/").contextId("TestContext");
 
@@ -142,6 +145,7 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "url", "http://Url/");
 		assertFactoryBeanField(builder, "path", "/Path");
 		assertFactoryBeanField(builder, "decode404", true);
+		assertFactoryBeanField(builder, "inheritParentContext", true);
 		assertFactoryBeanField(builder, "fallback", TestFeignClientFallback.class);
 		assertFactoryBeanField(builder, "fallbackFactory",
 				TestFeignClientFallbackFactory.class);

@@ -16,7 +16,12 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.Map;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.cloud.context.named.NamedContextFactory;
+import org.springframework.lang.Nullable;
 
 /**
  * A factory that creates instances of feign classes. It creates a Spring
@@ -24,11 +29,32 @@ import org.springframework.cloud.context.named.NamedContextFactory;
  *
  * @author Spencer Gibb
  * @author Dave Syer
+ * @author Matt King
  */
 public class FeignContext extends NamedContextFactory<FeignClientSpecification> {
 
 	public FeignContext() {
 		super(FeignClientsConfiguration.class, "feign", "feign.client.name");
+	}
+
+	@Nullable
+	public <T> T getInstanceWithoutAncestors(String name, Class<T> type) {
+		try {
+			return BeanFactoryUtils.beanOfType(getContext(name), type);
+		}
+		catch (BeansException ex) {
+			return null;
+		}
+	}
+
+	@Nullable
+	public <T> Map<String, T> getInstancesWithoutAncestors(String name, Class<T> type) {
+		try {
+			return getContext(name).getBeansOfType(type);
+		}
+		catch (BeansException ex) {
+			return null;
+		}
 	}
 
 }
