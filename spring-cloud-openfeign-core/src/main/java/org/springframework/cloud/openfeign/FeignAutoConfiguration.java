@@ -38,7 +38,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.actuator.HasFeatures;
@@ -79,19 +78,6 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(name = "feign.hystrix.HystrixFeign")
-	protected static class HystrixFeignTargeterConfiguration {
-
-		@Bean
-		@ConditionalOnMissingBean
-		public Targeter feignTargeter() {
-			return new HystrixTargeter();
-		}
-
-	}
-
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnMissingClass("feign.hystrix.HystrixFeign")
 	protected static class DefaultFeignTargeterConfiguration {
 
 		@Bean
@@ -108,7 +94,6 @@ public class FeignAutoConfiguration {
 	// for load balanced ribbon clients.
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttpClient.class)
-	@ConditionalOnMissingClass("com.netflix.loadbalancer.ILoadBalancer")
 	@ConditionalOnMissingBean(CloseableHttpClient.class)
 	@ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
 	protected static class HttpClientFeignConfiguration {
@@ -174,7 +159,6 @@ public class FeignAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(OkHttpClient.class)
-	@ConditionalOnMissingClass("com.netflix.loadbalancer.ILoadBalancer")
 	@ConditionalOnMissingBean(okhttp3.OkHttpClient.class)
 	@ConditionalOnProperty("feign.okhttp.enabled")
 	protected static class OkHttpFeignConfiguration {

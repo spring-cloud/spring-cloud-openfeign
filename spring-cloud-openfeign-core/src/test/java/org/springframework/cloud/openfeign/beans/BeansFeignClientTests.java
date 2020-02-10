@@ -47,15 +47,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
+ * @author Spencer Gibb
+ * @author Jakub Narloch
+ * @author Erik Kringen
+ * @author Halvdan Hoem Grelland
+ * @author Aaron Whiteside
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientTests.Application.class,
+@SpringBootTest(classes = BeansFeignClientTests.Application.class,
 		webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest",
 				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
 				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
 @DirtiesContext
-public class FeignClientTests {
+public class BeansFeignClientTests {
 
 	@Value("${local.server.port}")
 	private int port = 0;

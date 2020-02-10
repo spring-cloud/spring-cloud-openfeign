@@ -54,18 +54,19 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
-import static org.springframework.web.util.UriUtils.encode;
 
 /**
  * @author chadjaros
  * @author Halvdan Hoem Grelland
  * @author Aram Peres
+ * @author Aaron Whiteside
  */
 public class SpringMvcContractTests {
 
@@ -246,7 +247,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/advanced/test/{id}?amount=" + encode("{amount}", UTF_8));
+				.isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -270,7 +271,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/advanced/test/{id}?amount=" + encode("{amount}", UTF_8));
+				.isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -295,7 +296,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/advanced/test2?amount=" + encode("{amount}", UTF_8));
+				.isEqualTo("/advanced/test2?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -382,7 +383,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/test?id=" + encode("{id}", UTF_8));
+		assertThat(data.template().url()).isEqualTo("/test?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().queries().get("id").toString()).isEqualTo("[{id}]");
 		assertThat(data.indexToExpander().get(0)).isNotNull();
@@ -395,7 +396,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/test?id=" + encode("{id}", UTF_8));
+		assertThat(data.template().url()).isEqualTo("/test?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().queries().get("id").toString()).isEqualTo("[{id}]");
 		assertThat(data.indexToExpander().get(0)).isNotNull();
@@ -450,8 +451,8 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo(
-				"/advanced/testfallback/{id}?amount=" + encode("{amount}", UTF_8));
+		assertThat(data.template().url())
+				.isEqualTo("/advanced/testfallback/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -495,8 +496,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-				.isEqualTo("/queryMap?aParam=" + encode("{aParam}", UTF_8));
+		assertThat(data.template().url()).isEqualTo("/queryMap?aParam=" + "{aParam}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.queryMapIndex().intValue()).isEqualTo(0);
 		Map<String, Collection<String>> params = data.template().queries();
@@ -511,7 +511,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/queryMapObject?aParam=" + encode("{aParam}", UTF_8));
+				.isEqualTo("/queryMapObject?aParam=" + "{aParam}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.queryMapIndex().intValue()).isEqualTo(0);
 		Map<String, Collection<String>> params = data.template().queries();
@@ -564,6 +564,16 @@ public class SpringMvcContractTests {
 
 		assertThat(data.template().headers().get("Accept")).contains("application/json",
 				"{Accept}");
+	}
+
+	@Test
+	public void testMultipleRequestPartAnnotations() throws NoSuchMethodException {
+		Method method = TestTemplate_RequestPart.class.getDeclaredMethod(
+				"requestWithMultipleParts", MultipartFile.class, String.class);
+
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		assertThat(data.formParams()).contains("file", "id");
 	}
 
 	public interface TestTemplate_Simple {
@@ -667,6 +677,15 @@ public class SpringMvcContractTests {
 		@RequestMapping(path = "/queryMapObject")
 		String queryMapObject(@SpringQueryMap TestObject queryMap,
 				@RequestParam(name = "aParam") String aParam);
+
+	}
+
+	public interface TestTemplate_RequestPart {
+
+		@RequestMapping(path = "/requestPart", method = RequestMethod.POST,
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+		void requestWithMultipleParts(@RequestPart("file") MultipartFile file,
+				@RequestPart("id") String identifier);
 
 	}
 

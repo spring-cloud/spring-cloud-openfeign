@@ -16,20 +16,16 @@
 
 package org.springframework.cloud.openfeign.encoding;
 
-import java.util.Collections;
-
-import com.netflix.loadbalancer.BaseLoadBalancer;
-import com.netflix.loadbalancer.ILoadBalancer;
-import com.netflix.loadbalancer.Server;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
+import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.cloud.openfeign.encoding.app.client.InvoiceClient;
@@ -38,6 +34,7 @@ import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -85,7 +82,7 @@ public class FeignPageableEncodingTests {
 	}
 
 	@EnableFeignClients(clients = InvoiceClient.class)
-	@RibbonClient(name = "local", configuration = LocalRibbonClientConfiguration.class)
+	@LoadBalancerClient(name = "local", configuration = LocalClientConfiguration.class)
 	@SpringBootApplication(
 			scanBasePackages = "org.springframework.cloud.openfeign.encoding.app",
 			exclude = { RepositoryRestMvcAutoConfiguration.class })
@@ -96,17 +93,15 @@ public class FeignPageableEncodingTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	static class LocalRibbonClientConfiguration {
+	static class LocalClientConfiguration {
 
-		@Value("${local.server.port}")
+		@LocalServerPort
 		private int port = 0;
 
 		@Bean
-		public ILoadBalancer ribbonLoadBalancer() {
-			BaseLoadBalancer balancer = new BaseLoadBalancer();
-			balancer.setServersList(
-					Collections.singletonList(new Server("localhost", this.port)));
-			return balancer;
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
+				Environment env) {
+			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 		}
 
 	}

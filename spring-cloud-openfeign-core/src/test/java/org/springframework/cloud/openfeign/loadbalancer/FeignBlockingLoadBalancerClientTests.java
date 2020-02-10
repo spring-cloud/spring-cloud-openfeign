@@ -121,7 +121,7 @@ class FeignBlockingLoadBalancerClientTests {
 		assertThat(actualRequest.headers()).hasSize(1);
 		assertThat(actualRequest.headers()).containsEntry(HttpHeaders.CONTENT_TYPE,
 				Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
-		assertThat(actualRequest.requestBody().asString()).isEqualTo("hello");
+		assertThat(new String(actualRequest.body())).isEqualTo("hello");
 	}
 
 	private Request testRequest() {
@@ -130,7 +130,7 @@ class FeignBlockingLoadBalancerClientTests {
 
 	private Request testRequest(String host) {
 		return Request.create(Request.HttpMethod.GET, "http://" + host + "/path",
-				testHeaders(), "hello".getBytes(), StandardCharsets.UTF_8);
+				testHeaders(), "hello".getBytes(), StandardCharsets.UTF_8, null);
 	}
 
 	private Map<String, Collection<String>> testHeaders() {

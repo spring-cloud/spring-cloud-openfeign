@@ -39,7 +39,6 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
-import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
@@ -313,11 +312,6 @@ class FeignClientFactoryBean
 		String url = this.url + cleanPath();
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
-			if (client instanceof LoadBalancerFeignClient) {
-				// not load balancing because we have a url,
-				// but ribbon is on the classpath, so unwrap
-				client = ((LoadBalancerFeignClient) client).getDelegate();
-			}
 			if (client instanceof FeignBlockingLoadBalancerClient) {
 				// not load balancing because we have a url,
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap

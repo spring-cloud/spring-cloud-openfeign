@@ -156,8 +156,6 @@ public class SpringEncoderTests {
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file",
 				"hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
-
-		assertThat(request.requestCharset()).as("request charset is not null").isNull();
 	}
 
 	// gh-105, gh-107
