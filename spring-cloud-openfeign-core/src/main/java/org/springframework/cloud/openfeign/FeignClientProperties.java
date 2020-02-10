@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +115,10 @@ public class FeignClientProperties {
 
 		private ExceptionPropagationPolicy exceptionPropagationPolicy;
 
+		private Map<String, Collection<String>> defaultRequestHeaders;
+
+		private Map<String, Collection<String>> defaultRequestParameters;
+
 		public Logger.Level getLoggerLevel() {
 			return this.loggerLevel;
 		}
@@ -204,6 +209,33 @@ public class FeignClientProperties {
 			this.exceptionPropagationPolicy = exceptionPropagationPolicy;
 		}
 
+		public Map<String, Collection<String>> getDefaultRequestHeaders() {
+			return defaultRequestHeaders;
+		}
+
+		public void setDefaultRequestHeaders(
+				Map<String, Collection<String>> defaultRequestHeaders) {
+			this.defaultRequestHeaders = defaultRequestHeaders;
+		}
+
+		public Map<String, Collection<String>> getDefaultRequestParameters() {
+			return defaultRequestParameters;
+		}
+
+		public void setDefaultRequestParameters(
+				Map<String, Collection<String>> defaultRequestParameters) {
+			this.defaultRequestParameters = defaultRequestParameters;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout,
+					this.retryer, this.errorDecoder, this.requestInterceptors,
+					this.decode404, this.encoder, this.decoder, this.contract,
+					this.exceptionPropagationPolicy, this.defaultRequestParameters,
+					this.defaultRequestHeaders);
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -224,15 +256,11 @@ public class FeignClientProperties {
 					&& Objects.equals(this.decoder, that.decoder)
 					&& Objects.equals(this.contract, that.contract)
 					&& Objects.equals(this.exceptionPropagationPolicy,
-							that.exceptionPropagationPolicy);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout,
-					this.retryer, this.errorDecoder, this.requestInterceptors,
-					this.decode404, this.encoder, this.decoder, this.contract,
-					this.exceptionPropagationPolicy);
+							that.exceptionPropagationPolicy)
+					&& Objects.equals(this.defaultRequestHeaders,
+							that.defaultRequestHeaders)
+					&& Objects.equals(this.defaultRequestParameters,
+							that.defaultRequestParameters);
 		}
 
 	}

@@ -19,8 +19,14 @@ package org.springframework.cloud.openfeign;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,8 +53,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,6 +86,8 @@ public class FeignClientUsingPropertiesTests {
 
 	private FeignClientFactoryBean barFactoryBean;
 
+	private FeignClientFactoryBean eggsClientFactoryBean;
+
 	private FeignClientFactoryBean unwrapFactoryBean;
 
 	private FeignClientFactoryBean formFactoryBean;
@@ -90,6 +100,10 @@ public class FeignClientUsingPropertiesTests {
 		this.barFactoryBean = new FeignClientFactoryBean();
 		this.barFactoryBean.setContextId("bar");
 		this.barFactoryBean.setType(FeignClientFactoryBean.class);
+
+		this.eggsClientFactoryBean = new FeignClientFactoryBean();
+		this.eggsClientFactoryBean.setContextId("eggs");
+		this.eggsClientFactoryBean.setType(FeignClientFactoryBean.class);
 
 		this.unwrapFactoryBean = new FeignClientFactoryBean();
 		this.unwrapFactoryBean.setContextId("unwrap");
@@ -112,6 +126,12 @@ public class FeignClientUsingPropertiesTests {
 				"http://localhost:" + this.port);
 	}
 
+	public EggsClient eggsClient() {
+		this.eggsClientFactoryBean.setApplicationContext(this.applicationContext);
+		return this.eggsClientFactoryBean.feign(this.context).target(EggsClient.class,
+				"http://localhost:" + this.port);
+	}
+
 	public UnwrapClient unwrapClient() {
 		this.unwrapFactoryBean.setApplicationContext(this.applicationContext);
 		return this.unwrapFactoryBean.feign(this.context).target(UnwrapClient.class,
@@ -128,6 +148,12 @@ public class FeignClientUsingPropertiesTests {
 	public void testFoo() {
 		String response = fooClient().foo();
 		assertThat(response).isEqualTo("OK");
+	}
+
+	@Test
+	public void testEggs() {
+		List<String> response = eggsClient().eggs();
+		assertThat(response).isEqualTo(Arrays.asList("header", "parameter"));
 	}
 
 	@Test(expected = RetryableException.class)
@@ -160,6 +186,13 @@ public class FeignClientUsingPropertiesTests {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/bar")
 		String bar();
+
+	}
+
+	protected interface EggsClient {
+
+		@RequestMapping(method = RequestMethod.GET, path = "/eggs")
+		List<String> eggs();
 
 	}
 
@@ -199,6 +232,13 @@ public class FeignClientUsingPropertiesTests {
 		public String bar() throws InterruptedException {
 			Thread.sleep(2000L);
 			return "OK";
+		}
+
+		@RequestMapping(method = RequestMethod.GET, path = "/eggs")
+		public List<String> eggs(@RequestHeader List<String> eggsHeaders,
+				@RequestParam List<String> eggsParameters) {
+			return Stream.of(eggsHeaders, eggsParameters).map(Collection::stream)
+					.flatMap(Function.identity()).collect(Collectors.toList());
 		}
 
 		@RequestMapping(value = "/form", method = RequestMethod.POST,

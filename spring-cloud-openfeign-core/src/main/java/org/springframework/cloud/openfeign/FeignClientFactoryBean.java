@@ -219,6 +219,16 @@ class FeignClientFactoryBean
 		if (Objects.nonNull(config.getExceptionPropagationPolicy())) {
 			builder.exceptionPropagationPolicy(config.getExceptionPropagationPolicy());
 		}
+
+		if (Objects.nonNull(config.getDefaultRequestHeaders())) {
+			builder.requestInterceptor(requestTemplate -> requestTemplate
+					.headers(config.getDefaultRequestHeaders()));
+		}
+
+		if (Objects.nonNull(config.getDefaultRequestParameters())) {
+			builder.requestInterceptor(requestTemplate -> requestTemplate
+					.queries(config.getDefaultRequestParameters()));
+		}
 	}
 
 	private <T> T getOrInstantiate(Class<T> tClass) {
