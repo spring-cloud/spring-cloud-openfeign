@@ -126,8 +126,8 @@ public @interface FeignClient {
 	/**
 	 * FALSE will only apply configurations from classes listed in
 	 * <code>configuration()</code>. Will still use parent instance of
-	 * {@link feign.codec.Decoder}, {@link feign.codec.Encoder}, {@link feign.Contract},
-	 * and {@link feign.Contract} if none are provided.
+	 * {@link feign.codec.Decoder}, {@link feign.codec.Encoder}, and {@link feign.Contract}
+	 * if none are provided.
 	 * @return weather to inherit parent context for client configuration.
 	 */
 	boolean inheritParentContext() default true;
