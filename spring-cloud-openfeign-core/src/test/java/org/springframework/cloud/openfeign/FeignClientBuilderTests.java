@@ -130,10 +130,8 @@ public class FeignClientBuilderTests {
 	public void forType_allFieldsSetOnBuilder() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
-				.forType(TestFeignClient.class, "TestClient").decode404(true)
-				.inheritParentContext(true).fallback(TestFeignClientFallback.class)
-				.fallbackFactory(TestFeignClientFallbackFactory.class).path("Path/")
-				.url("Url/").contextId("TestContext");
+				.forType(TestFeignClient.class, "TestClient").inheritParentContext(true)
+				.decode404(true).url("Url/").path("/Path").contextId("TestContext");
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);

@@ -49,12 +49,7 @@ public class FeignContext extends NamedContextFactory<FeignClientSpecification> 
 
 	@Nullable
 	public <T> Map<String, T> getInstancesWithoutAncestors(String name, Class<T> type) {
-		try {
-			return getContext(name).getBeansOfType(type);
-		}
-		catch (BeansException ex) {
-			return null;
-		}
+		return getContext(name).getBeansOfType(type);
 	}
 
 }
