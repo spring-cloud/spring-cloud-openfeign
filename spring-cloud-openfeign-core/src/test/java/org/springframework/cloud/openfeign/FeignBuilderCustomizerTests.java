@@ -37,19 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FeignBuilderCustomizerTests {
 
 	@Test
-	public void testDefaultCustomizer() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				FeignBuilderCustomizerTests.SampleConfiguration1.class);
-
-		FeignBuilderCustomizer customizer = context.getBean(FeignBuilderCustomizer.class);
-		assertThat(customizer).as("Null Customizer").isNotNull();
-		assertThat(customizer).as("Not customizer instance")
-				.isInstanceOf(FeignBuilderCustomizer.class);
-
-		context.close();
-	}
-
-	@Test
 	public void testBuilderCustomizer() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				FeignBuilderCustomizerTests.SampleConfiguration2.class);
@@ -99,12 +86,6 @@ public class FeignBuilderCustomizerTests {
 		feignClientFactoryBean.setPath("");
 		feignClientFactoryBean.setUrl("http://some.absolute.url");
 		return feignClientFactoryBean;
-	}
-
-	@Configuration(proxyBeanMethods = false)
-	@Import(FeignClientsConfiguration.class)
-	protected static class SampleConfiguration1 {
-
 	}
 
 	@Configuration(proxyBeanMethods = false)
