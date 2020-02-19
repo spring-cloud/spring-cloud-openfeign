@@ -77,7 +77,7 @@ class FeignClientFactoryBean
 	private Class<?> fallbackFactory = void.class;
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		Assert.hasText(this.contextId, "Context id must be set");
 		Assert.hasText(this.name, "Name must be set");
 	}
@@ -253,7 +253,7 @@ class FeignClientFactoryBean
 		}
 
 		throw new IllegalStateException(
-				"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-netflix-ribbon?");
+				"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-loadbalancer?");
 	}
 
 	@Override
