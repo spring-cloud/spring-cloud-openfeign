@@ -31,9 +31,7 @@ import org.springframework.context.annotation.Import;
 
 /**
  * An autoconfiguration that instantiates {@link LoadBalancerClient}-based implementations
- * of {@link Client}. In order to use this load-balancing mechanism, the Ribbon-based
- * implementation has to be disabled by setting
- * <code>spring.cloud.loadbalancer.ribbon.enabled</code> to <code>true</code>.
+ * of {@link Client}.
  *
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
