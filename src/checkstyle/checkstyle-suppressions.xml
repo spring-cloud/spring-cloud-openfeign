@@ -5,8 +5,6 @@
 <suppressions>
 	<suppress files=".*FeignClientTests.*" checks="LineLengthCheck" />
 	<suppress files=".*FeignClientsRegistrarTests.*" checks="LineLengthCheck" />
-	<suppress files=".*FeignRibbonHttpClientConfigurationTests.*" checks="LineLengthCheck" />
-	<suppress files=".*FeignRibbonOkHttpClientConfigurationTests.*" checks="LineLengthCheck" />
 	<suppress files=".*InvoiceClient.*" checks="LineLengthCheck" />
 	<suppress files=".*InvoiceResource.*" checks="LineLengthCheck" />
 	<suppress files=".*IterableParameterTests.*" checks="LineLengthCheck" />

@@ -89,9 +89,9 @@ public class FeignAutoConfiguration {
 	}
 
 	// the following configuration is for alternate feign clients if
-	// ribbon is not on the class path.
+	// SC loadbalancer is not on the class path.
 	// see corresponding configurations in FeignRibbonClientAutoConfiguration
-	// for load balanced ribbon clients.
+	// for load-balanced clients.
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttpClient.class)
 	@ConditionalOnMissingBean(CloseableHttpClient.class)
