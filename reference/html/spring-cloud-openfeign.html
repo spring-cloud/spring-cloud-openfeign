@@ -142,7 +142,7 @@ To use Feign create an interface and annotate it.
 It has pluggable annotation support including Feign annotations and JAX-RS annotations.
 Feign also supports pluggable encoders and decoders.
 Spring Cloud adds support for Spring MVC annotations and for using the same <code>HttpMessageConverters</code> used by default in Spring Web.
-Spring Cloud integrates Ribbon and Eureka, as well as Spring Cloud LoadBalancer to provide a load-balanced http client when using Feign.</p>
+Spring Cloud integrates Eureka, as well as Spring Cloud LoadBalancer to provide a load-balanced http client when using Feign.</p>
 </div>
 <div class="sect2">
 <h3 id="netflix-feign-starter"><a class="anchor" href="#netflix-feign-starter"></a><a class="link" href="#netflix-feign-starter">1.1. How to Include Feign</a></h3>
@@ -181,7 +181,7 @@ public interface StoreClient {
 </div>
 </div>
 <div class="paragraph">
-<p>In the <code>@FeignClient</code> annotation the String value ("stores" above) is an arbitrary client name, which is used to create either a <a href="https://github.com/Netflix/ribbon">Ribbon</a> load-balancer (see <a href="#spring-cloud-ribbon">below for details of Ribbon support</a>) or <a href="https://github.com/spring-cloud/spring-cloud-commons/blob/master/spring-cloud-commons/src/main/java/org/springframework/cloud/client/loadbalancer/reactive/ReactiveLoadBalancer.java">Spring Cloud LoadBalancer</a>.
+<p>In the <code>@FeignClient</code> annotation the String value ("stores" above) is an arbitrary client name, which is used to create a <a href="https://github.com/spring-cloud/spring-cloud-commons/blob/master/spring-cloud-loadbalancer/src/main/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClient.java">Spring Cloud LoadBalancer client</a>.
 You can also specify a URL using the <code>url</code> attribute
 (absolute value or just a hostname). The name of the bean in the
 application context is the fully qualified name of the interface.
@@ -193,22 +193,7 @@ of the <code>@FeignClient</code> annotation.</p>
 for the "stores" service. If your application is a Eureka client then
 it will resolve the service in the Eureka service registry. If you
 don&#8217;t want to use Eureka, you can simply configure a list of servers
-in your external configuration (see
-<a href="#spring-cloud-ribbon-without-eureka">above for example</a>).</p>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-In order to maintain backward compatibility, is used as the default load-balancer implementation.
-However, Spring Cloud Netflix Ribbon is now in maintenance mode, so we recommend using Spring Cloud LoadBalancer instead.
-To do this, set the value of <code>spring.cloud.loadbalancer.ribbon.enabled</code> to <code>false</code>.
-</td>
-</tr>
-</table>
+in your external configuration.</p>
 </div>
 </div>
 <div class="sect2">
@@ -295,7 +280,7 @@ public interface StoreClient {
 </div>
 </div>
 <div class="paragraph">
-<p>Spring Cloud Netflix provides the following beans by default for feign (<code>BeanType</code> beanName: <code>ClassName</code>):</p>
+<p>Spring Cloud OpenFeign provides the following beans by default for feign (<code>BeanType</code> beanName: <code>ClassName</code>):</p>
 </div>
 <div class="ulist">
 <ul>
@@ -315,22 +300,10 @@ public interface StoreClient {
 <p><code>Feign.Builder</code> feignBuilder: <code>HystrixFeign.Builder</code></p>
 </li>
 <li>
-<p><code>Client</code> feignClient: if Ribbon is in the classpath and is enabled it is a <code>LoadBalancerFeignClient</code>, otherwise if Spring Cloud LoadBalancer is in the classpath, <code>FeignBlockingLoadBalancerClient</code> is used.
+<p><code>Client</code> feignClient: if Spring Cloud LoadBalancer is in the classpath, <code>FeignBlockingLoadBalancerClient</code> is used.
 If none of them is in the classpath, the default feign client is used.</p>
 </li>
 </ul>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<code>spring-cloud-starter-openfeign</code> contains both <code>spring-cloud-starter-netflix-ribbon</code> and <code>spring-cloud-starter-loadbalancer</code>.
-</td>
-</tr>
-</table>
 </div>
 <div class="paragraph">
 <p>The OkHttpClient and ApacheHttpClient feign clients can be used by setting <code>feign.okhttp.enabled</code> or <code>feign.httpclient.enabled</code> to <code>true</code>, respectively, and having them on the classpath.
