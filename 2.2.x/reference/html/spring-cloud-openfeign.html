@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.8">
+<title>Spring Cloud OpenFeign</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.hidden {
+	display: none;
+}
+
+.switch {
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+	display: inline-block;
+}
+
+.switch--item {
+	padding: 10px;
+	background-color: #ffffff;
+	color: #7a2518;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+	border-width: 0 0 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+}
+
+.switch--item.selected {
+	background-color: #7a2519;
+	color: #ffffff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+	$('.primary').each(function() {
+		primary = $(this);
+		createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+		primary.children('.title').remove();
+	});
+	$('.secondary').each(function(idx, node) {
+		secondary = $(node);
+		primary = findPrimary(secondary);
+		switchItem = createSwitchItem(secondary, primary.children('.switch'));
+		switchItem.content.addClass('hidden');
+		findPrimary(secondary).append(switchItem.content);
+		secondary.remove();
+	});
+}
+
+function createBlockSwitch(primary) {
+	blockSwitch = $('<div class="switch"></div>');
+	primary.prepend(blockSwitch);
+	return blockSwitch;
+}
+
+function findPrimary(secondary) {
+	candidate = secondary.prev();
+	while (!candidate.is('.primary')) {
+		candidate = candidate.prev();
+	}
+	return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+	blockName = block.children('.title').text();
+	content = block.children('.content').first().append(block.next('.colist'));
+	item = $('<div class="switch--item">' + blockName + '</div>');
+	item.on('click', '', content, function(e) {
+		$(this).addClass('selected');
+		$(this).siblings().removeClass('selected');
+		e.data.siblings('.content').addClass('hidden');
+		e.data.removeClass('hidden');
+	});
+	blockSwitch.append(item);
+	return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>Spring Cloud OpenFeign</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#spring-cloud-feign">1. Declarative REST Client: Feign</a>
+<ul class="sectlevel2">
+<li><a href="#netflix-feign-starter">1.1. How to Include Feign</a></li>
+<li><a href="#spring-cloud-feign-overriding-defaults">1.2. Overriding Feign Defaults</a></li>
+<li><a href="#creating-feign-clients-manually">1.3. Creating Feign Clients Manually</a></li>
+<li><a href="#spring-cloud-feign-hystrix">1.4. Feign Hystrix Support</a></li>
+<li><a href="#spring-cloud-feign-hystrix-fallback">1.5. Feign Hystrix Fallbacks</a></li>
+<li><a href="#feign-and-primary">1.6. Feign and <code>@Primary</code></a></li>
+<li><a href="#spring-cloud-feign-inheritance">1.7. Feign Inheritance Support</a></li>
+<li><a href="#feign-requestresponse-compression">1.8. Feign request/response compression</a></li>
+<li><a href="#feign-logging">1.9. Feign logging</a></li>
+<li><a href="#feign-querymap-support">1.10. Feign @QueryMap support</a></li>
+<li><a href="#hateoas-support">1.11. HATEOAS support</a></li>
+<li><a href="#troubleshooting">1.12. Troubleshooting</a>
+<ul class="sectlevel3">
+<li><a href="#early-initialization-errors">1.12.1. Early Initialization Errors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#configuration-properties">2. Configuration properties</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>2.2.3.BUILD-SNAPSHOT</strong></p>
+</div>
+<div class="paragraph">
+<p>This project provides OpenFeign integrations for Spring Boot apps through autoconfiguration
+and binding to the Spring Environment and other Spring programming model idioms.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="spring-cloud-feign"><a class="anchor" href="#spring-cloud-feign"></a><a class="link" href="#spring-cloud-feign">1. Declarative REST Client: Feign</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://github.com/OpenFeign/feign">Feign</a> is a declarative web service client.
+It makes writing web service clients easier.
+To use Feign create an interface and annotate it.
+It has pluggable annotation support including Feign annotations and JAX-RS annotations.
+Feign also supports pluggable encoders and decoders.
+Spring Cloud adds support for Spring MVC annotations and for using the same <code>HttpMessageConverters</code> used by default in Spring Web.
+Spring Cloud integrates Ribbon and Eureka, as well as Spring Cloud LoadBalancer to provide a load-balanced http client when using Feign.</p>
+</div>
+<div class="sect2">
+<h3 id="netflix-feign-starter"><a class="anchor" href="#netflix-feign-starter"></a><a class="link" href="#netflix-feign-starter">1.1. How to Include Feign</a></h3>
+<div class="paragraph">
+<p>To include Feign in your project use the starter with group <code>org.springframework.cloud</code>
+and artifact id <code>spring-cloud-starter-openfeign</code>. See the <a href="https://projects.spring.io/spring-cloud/">Spring Cloud Project page</a>
+for details on setting up your build system with the current Spring Cloud Release Train.</p>
+</div>
+<div class="paragraph">
+<p>Example spring boot app</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@SpringBootApplication
+@EnableFeignClients
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">StoreClient.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient("stores")
+public interface StoreClient {
+    @RequestMapping(method = RequestMethod.GET, value = "/stores")
+    List&lt;Store&gt; getStores();
+
+    @RequestMapping(method = RequestMethod.POST, value = "/stores/{storeId}", consumes = "application/json")
+    Store update(@PathVariable("storeId") Long storeId, Store store);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the <code>@FeignClient</code> annotation the String value ("stores" above) is an arbitrary client name, which is used to create either a <a href="https://github.com/Netflix/ribbon">Ribbon</a> load-balancer (see <a href="#spring-cloud-ribbon">below for details of Ribbon support</a>) or <a href="https://github.com/spring-cloud/spring-cloud-commons/blob/master/spring-cloud-commons/src/main/java/org/springframework/cloud/client/loadbalancer/reactive/ReactiveLoadBalancer.java">Spring Cloud LoadBalancer</a>.
+You can also specify a URL using the <code>url</code> attribute
+(absolute value or just a hostname). The name of the bean in the
+application context is the fully qualified name of the interface.
+To specify your own alias value you can use the <code>qualifier</code> value
+of the <code>@FeignClient</code> annotation.</p>
+</div>
+<div class="paragraph">
+<p>The load-balancer client above will want to discover the physical addresses
+for the "stores" service. If your application is a Eureka client then
+it will resolve the service in the Eureka service registry. If you
+don&#8217;t want to use Eureka, you can simply configure a list of servers
+in your external configuration (see
+<a href="#spring-cloud-ribbon-without-eureka">above for example</a>).</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+In order to maintain backward compatibility, is used as the default load-balancer implementation.
+However, Spring Cloud Netflix Ribbon is now in maintenance mode, so we recommend using Spring Cloud LoadBalancer instead.
+To do this, set the value of <code>spring.cloud.loadbalancer.ribbon.enabled</code> to <code>false</code>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="spring-cloud-feign-overriding-defaults"><a class="anchor" href="#spring-cloud-feign-overriding-defaults"></a><a class="link" href="#spring-cloud-feign-overriding-defaults">1.2. Overriding Feign Defaults</a></h3>
+<div class="paragraph">
+<p>A central concept in Spring Cloud&#8217;s Feign support is that of the named client. Each feign client is part of an ensemble of components that work together to contact a remote server on demand, and the ensemble has a name that you give it as an application developer using the <code>@FeignClient</code> annotation. Spring Cloud creates a new ensemble as an
+<code>ApplicationContext</code> on demand for each named client using <code>FeignClientsConfiguration</code>. This contains (amongst other things) an <code>feign.Decoder</code>, a <code>feign.Encoder</code>, and a <code>feign.Contract</code>.
+It is possible to override the name of that ensemble by using the <code>contextId</code>
+attribute of the <code>@FeignClient</code> annotation.</p>
+</div>
+<div class="paragraph">
+<p>Spring Cloud lets you take full control of the feign client by declaring additional configuration (on top of the <code>FeignClientsConfiguration</code>) using <code>@FeignClient</code>. Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient(name = "stores", configuration = FooConfiguration.class)
+public interface StoreClient {
+    //..
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this case the client is composed from the components already in <code>FeignClientsConfiguration</code> together with any in <code>FooConfiguration</code> (where the latter will override the former).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<code>FooConfiguration</code> does not need to be annotated with <code>@Configuration</code>. However, if it is, then take care to exclude it from any <code>@ComponentScan</code> that would otherwise include this configuration as it will become the default source for <code>feign.Decoder</code>, <code>feign.Encoder</code>, <code>feign.Contract</code>, etc., when specified. This can be avoided by putting it in a separate, non-overlapping package from any <code>@ComponentScan</code> or <code>@SpringBootApplication</code>, or it can be explicitly excluded in <code>@ComponentScan</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The <code>serviceId</code> attribute is now deprecated in favor of the <code>name</code> attribute.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Using <code>contextId</code> attribute of the <code>@FeignClient</code> annotation in addition to changing the name of
+the <code>ApplicationContext</code> ensemble, it will override the alias of the client name
+and it will be used as part of the name of the configuration bean created for that client.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Previously, using the <code>url</code> attribute, did not require the <code>name</code> attribute. Using <code>name</code> is now required.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Placeholders are supported in the <code>name</code> and <code>url</code> attributes.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient(name = "${feign.name}", url = "${feign.url}")
+public interface StoreClient {
+    //..
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Spring Cloud Netflix provides the following beans by default for feign (<code>BeanType</code> beanName: <code>ClassName</code>):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Decoder</code> feignDecoder: <code>ResponseEntityDecoder</code> (which wraps a <code>SpringDecoder</code>)</p>
+</li>
+<li>
+<p><code>Encoder</code> feignEncoder: <code>SpringEncoder</code></p>
+</li>
+<li>
+<p><code>Logger</code> feignLogger: <code>Slf4jLogger</code></p>
+</li>
+<li>
+<p><code>Contract</code> feignContract: <code>SpringMvcContract</code></p>
+</li>
+<li>
+<p><code>Feign.Builder</code> feignBuilder: <code>HystrixFeign.Builder</code></p>
+</li>
+<li>
+<p><code>Client</code> feignClient: if Ribbon is in the classpath and is enabled it is a <code>LoadBalancerFeignClient</code>, otherwise if Spring Cloud LoadBalancer is in the classpath, <code>FeignBlockingLoadBalancerClient</code> is used.
+If none of them is in the classpath, the default feign client is used.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<code>spring-cloud-starter-openfeign</code> contains both <code>spring-cloud-starter-netflix-ribbon</code> and <code>spring-cloud-starter-loadbalancer</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The OkHttpClient and ApacheHttpClient feign clients can be used by setting <code>feign.okhttp.enabled</code> or <code>feign.httpclient.enabled</code> to <code>true</code>, respectively, and having them on the classpath.
+You can customize the HTTP client used by providing a bean of either <code>org.apache.http.impl.client.CloseableHttpClient</code> when using Apache or <code>okhttp3.OkHttpClient</code> when using OK HTTP.</p>
+</div>
+<div class="paragraph">
+<p>Spring Cloud Netflix <em>does not</em> provide the following beans by default for feign, but still looks up beans of these types from the application context to create the feign client:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Logger.Level</code></p>
+</li>
+<li>
+<p><code>Retryer</code></p>
+</li>
+<li>
+<p><code>ErrorDecoder</code></p>
+</li>
+<li>
+<p><code>Request.Options</code></p>
+</li>
+<li>
+<p><code>Collection&lt;RequestInterceptor&gt;</code></p>
+</li>
+<li>
+<p><code>SetterFactory</code></p>
+</li>
+<li>
+<p><code>QueryMapEncoder</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Creating a bean of one of those type and placing it in a <code>@FeignClient</code> configuration (such as <code>FooConfiguration</code> above) allows you to override each one of the beans described.  Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Configuration
+public class FooConfiguration {
+    @Bean
+    public Contract feignContract() {
+        return new feign.Contract.Default();
+    }
+
+    @Bean
+    public BasicAuthRequestInterceptor basicAuthRequestInterceptor() {
+        return new BasicAuthRequestInterceptor("user", "password");
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This replaces the <code>SpringMvcContract</code> with <code>feign.Contract.Default</code> and adds a <code>RequestInterceptor</code> to the collection of <code>RequestInterceptor</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>@FeignClient</code> also can be configured using configuration properties.</p>
+</div>
+<div class="paragraph">
+<p>application.yml</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">feign:
+  client:
+    config:
+      feignName:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: full
+        errorDecoder: com.example.SimpleErrorDecoder
+        retryer: com.example.SimpleRetryer
+        requestInterceptors:
+          - com.example.FooRequestInterceptor
+          - com.example.BarRequestInterceptor
+        decode404: false
+        encoder: com.example.SimpleEncoder
+        decoder: com.example.SimpleDecoder
+        contract: com.example.SimpleContract</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Default configurations can be specified in the <code>@EnableFeignClients</code> attribute <code>defaultConfiguration</code> in a similar manner as described above. The difference is that this configuration will apply to <em>all</em> feign clients.</p>
+</div>
+<div class="paragraph">
+<p>If you prefer using configuration properties to configured all <code>@FeignClient</code>, you can create configuration properties with <code>default</code> feign name.</p>
+</div>
+<div class="paragraph">
+<p>application.yml</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If we create both <code>@Configuration</code> bean and configuration properties, configuration properties will win.
+It will override <code>@Configuration</code> values. But if you want to change the priority to <code>@Configuration</code>,
+you can change <code>feign.client.default-to-properties</code> to <code>false</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you need to use <code>ThreadLocal</code> bound variables in your <code>RequestInterceptor`s you will need to either set the
+thread isolation strategy for Hystrix to `SEMAPHORE</code> or disable Hystrix in Feign.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>application.yml</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># To disable Hystrix in Feign
+feign:
+  hystrix:
+    enabled: false
+
+# To set thread isolation to SEMAPHORE
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: SEMAPHORE</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If we want to create multiple feign clients with the same name or url
+so that they would point to the same server but each with a different custom configuration then
+we have to use <code>contextId</code> attribute of the <code>@FeignClient</code> in order to avoid name
+collision of these configuration beans.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient(contextId = "fooClient", name = "stores", configuration = FooConfiguration.class)
+public interface FooClient {
+    //..
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient(contextId = "barClient", name = "stores", configuration = BarConfiguration.class)
+public interface BarClient {
+    //..
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="creating-feign-clients-manually"><a class="anchor" href="#creating-feign-clients-manually"></a><a class="link" href="#creating-feign-clients-manually">1.3. Creating Feign Clients Manually</a></h3>
+<div class="paragraph">
+<p>In some cases it might be necessary to customize your Feign Clients in a way that is not
+possible using the methods above.  In this case you can create Clients using the
+<a href="https://github.com/OpenFeign/feign/#basics">Feign Builder API</a>. Below is an example
+which creates two Feign Clients with the same interface but configures each one with
+a separate request interceptor.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Import(FeignClientsConfiguration.class)
+class FooController {
+
+    private FooClient fooClient;
+
+    private FooClient adminClient;
+
+        @Autowired
+    public FooController(Decoder decoder, Encoder encoder, Client client, Contract contract) {
+        this.fooClient = Feign.builder().client(client)
+                .encoder(encoder)
+                .decoder(decoder)
+                .contract(contract)
+                .requestInterceptor(new BasicAuthRequestInterceptor("user", "user"))
+                .target(FooClient.class, "https://PROD-SVC");
+
+        this.adminClient = Feign.builder().client(client)
+                .encoder(encoder)
+                .decoder(decoder)
+                .contract(contract)
+                .requestInterceptor(new BasicAuthRequestInterceptor("admin", "admin"))
+                .target(FooClient.class, "https://PROD-SVC");
+    }
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In the above example <code>FeignClientsConfiguration.class</code> is the default configuration
+provided by Spring Cloud Netflix.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<code>PROD-SVC</code> is the name of the service the Clients will be making requests to.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The Feign <code>Contract</code> object defines what annotations and values are valid on interfaces. The
+autowired <code>Contract</code> bean provides supports for SpringMVC annotations, instead of
+the default Feign native annotations.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="spring-cloud-feign-hystrix"><a class="anchor" href="#spring-cloud-feign-hystrix"></a><a class="link" href="#spring-cloud-feign-hystrix">1.4. Feign Hystrix Support</a></h3>
+<div class="paragraph">
+<p>If Hystrix is on the classpath and <code>feign.hystrix.enabled=true</code>, Feign will wrap all methods with a circuit breaker. Returning a <code>com.netflix.hystrix.HystrixCommand</code> is also available. This lets you use reactive patterns (with a call to <code>.toObservable()</code> or <code>.observe()</code> or asynchronous use (with a call to <code>.queue()</code>).</p>
+</div>
+<div class="paragraph">
+<p>To disable Hystrix support on a per-client basis create a vanilla <code>Feign.Builder</code> with the "prototype" scope, e.g.:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Configuration
+public class FooConfiguration {
+        @Bean
+    @Scope("prototype")
+    public Feign.Builder feignBuilder() {
+        return Feign.builder();
+    }
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Prior to the Spring Cloud Dalston release, if Hystrix was on the classpath Feign would have wrapped
+all methods in a circuit breaker by default.  This default behavior was changed in Spring Cloud Dalston in
+favor for an opt-in approach.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="spring-cloud-feign-hystrix-fallback"><a class="anchor" href="#spring-cloud-feign-hystrix-fallback"></a><a class="link" href="#spring-cloud-feign-hystrix-fallback">1.5. Feign Hystrix Fallbacks</a></h3>
+<div class="paragraph">
+<p>Hystrix supports the notion of a fallback: a default code path that is executed when they circuit is open or there is an error. To enable fallbacks for a given <code>@FeignClient</code> set the <code>fallback</code> attribute to the class name that implements the fallback. You also need to declare your implementation as a Spring bean.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient(name = "hello", fallback = HystrixClientFallback.class)
+protected interface HystrixClient {
+    @RequestMapping(method = RequestMethod.GET, value = "/hello")
+    Hello iFailSometimes();
+}
+
+static class HystrixClientFallback implements HystrixClient {
+    @Override
+    public Hello iFailSometimes() {
+        return new Hello("fallback");
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If one needs access to the cause that made the fallback trigger, one can use the <code>fallbackFactory</code> attribute inside <code>@FeignClient</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient(name = "hello", fallbackFactory = HystrixClientFallbackFactory.class)
+protected interface HystrixClient {
+    @RequestMapping(method = RequestMethod.GET, value = "/hello")
+    Hello iFailSometimes();
+}
+
+@Component
+static class HystrixClientFallbackFactory implements FallbackFactory&lt;HystrixClient&gt; {
+    @Override
+    public HystrixClient create(Throwable cause) {
+        return new HystrixClient() {
+            @Override
+            public Hello iFailSometimes() {
+                return new Hello("fallback; reason was: " + cause.getMessage());
+            }
+        };
+    }
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+There is a limitation with the implementation of fallbacks in Feign and how Hystrix fallbacks work. Fallbacks are currently not supported for methods that return <code>com.netflix.hystrix.HystrixCommand</code> and <code>rx.Observable</code>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="feign-and-primary"><a class="anchor" href="#feign-and-primary"></a><a class="link" href="#feign-and-primary">1.6. Feign and <code>@Primary</code></a></h3>
+<div class="paragraph">
+<p>When using Feign with Hystrix fallbacks, there are multiple beans in the <code>ApplicationContext</code> of the same type. This will cause <code>@Autowired</code> to not work because there isn&#8217;t exactly one bean, or one marked as primary. To work around this, Spring Cloud Netflix marks all Feign instances as <code>@Primary</code>, so Spring Framework will know which bean to inject. In some cases, this may not be desirable. To turn off this behavior set the <code>primary</code> attribute of <code>@FeignClient</code> to false.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient(name = "hello", primary = false)
+public interface HelloClient {
+    // methods here
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="spring-cloud-feign-inheritance"><a class="anchor" href="#spring-cloud-feign-inheritance"></a><a class="link" href="#spring-cloud-feign-inheritance">1.7. Feign Inheritance Support</a></h3>
+<div class="paragraph">
+<p>Feign supports boilerplate apis via single-inheritance interfaces.
+This allows grouping common operations into convenient base interfaces.</p>
+</div>
+<div class="listingblock">
+<div class="title">UserService.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public interface UserService {
+
+    @RequestMapping(method = RequestMethod.GET, value ="/users/{id}")
+    User getUser(@PathVariable("id") long id);
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">UserResource.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@RestController
+public class UserResource implements UserService {
+
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">UserClient.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">package project.user;
+
+@FeignClient("users")
+public interface UserClient extends UserService {
+
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+It is generally not advisable to share an interface between a
+server and a client. It introduces tight coupling, and also actually
+doesn&#8217;t work with Spring MVC in its current form (method parameter
+mapping is not inherited).
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="feign-requestresponse-compression"><a class="anchor" href="#feign-requestresponse-compression"></a><a class="link" href="#feign-requestresponse-compression">1.8. Feign request/response compression</a></h3>
+<div class="paragraph">
+<p>You may consider enabling the request or response GZIP compression for your
+Feign requests. You can do this by enabling one of the properties:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">feign.compression.request.enabled=true
+feign.compression.response.enabled=true</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Feign request compression gives you settings similar to what you may set for your web server:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">feign.compression.request.enabled=true
+feign.compression.request.mime-types=text/xml,application/xml,application/json
+feign.compression.request.min-request-size=2048</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These properties allow you to be selective about the compressed media types and minimum request threshold length.</p>
+</div>
+<div class="paragraph">
+<p>For http clients except OkHttpClient, default gzip decoder can be enabled to decode gzip response in UTF-8 encoding:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">feign.compression.response.enabled=true
+feign.compression.response.useGzipDecoder=true</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="feign-logging"><a class="anchor" href="#feign-logging"></a><a class="link" href="#feign-logging">1.9. Feign logging</a></h3>
+<div class="paragraph">
+<p>A logger is created for each Feign client created. By default the name of the logger is the full class name of the interface used to create the Feign client. Feign logging only responds to the <code>DEBUG</code> level.</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">logging.level.project.user.UserClient: DEBUG</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>Logger.Level</code> object that you may configure per client, tells Feign how much to log. Choices are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>NONE</code>, No logging (<strong>DEFAULT</strong>).</p>
+</li>
+<li>
+<p><code>BASIC</code>, Log only the request method and URL and the response status code and execution time.</p>
+</li>
+<li>
+<p><code>HEADERS</code>, Log the basic information along with request and response headers.</p>
+</li>
+<li>
+<p><code>FULL</code>, Log the headers, body, and metadata for both requests and responses.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For example, the following would set the <code>Logger.Level</code> to <code>FULL</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Configuration
+public class FooConfiguration {
+    @Bean
+    Logger.Level feignLoggerLevel() {
+        return Logger.Level.FULL;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="feign-querymap-support"><a class="anchor" href="#feign-querymap-support"></a><a class="link" href="#feign-querymap-support">1.10. Feign @QueryMap support</a></h3>
+<div class="paragraph">
+<p>The OpenFeign <code>@QueryMap</code> annotation provides support for POJOs to be used as
+GET parameter maps. Unfortunately, the default OpenFeign QueryMap annotation is
+incompatible with Spring because it lacks a <code>value</code> property.</p>
+</div>
+<div class="paragraph">
+<p>Spring Cloud OpenFeign provides an equivalent <code>@SpringQueryMap</code> annotation, which
+is used to annotate a POJO or Map parameter as a query parameter map.</p>
+</div>
+<div class="paragraph">
+<p>For example, the <code>Params</code> class defines parameters <code>param1</code> and <code>param2</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">// Params.java
+public class Params {
+    private String param1;
+    private String param2;
+
+    // [Getters and setters omitted for brevity]
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The following feign client uses the <code>Params</code> class by using the <code>@SpringQueryMap</code> annotation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient("demo")
+public interface DemoTemplate {
+
+    @GetMapping(path = "/demo")
+    String demoEndpoint(@SpringQueryMap Params params);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you need more control over the generated query parameter map, you can implement a custom <code>QueryMapEncoder</code> bean.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="hateoas-support"><a class="anchor" href="#hateoas-support"></a><a class="link" href="#hateoas-support">1.11. HATEOAS support</a></h3>
+<div class="paragraph">
+<p>Spring provides some APIs to create REST representations that follow the <a href="https://en.wikipedia.org/wiki/HATEOAS">HATEOAS</a> principle, <a href="https://spring.io/projects/spring-hateoas">Spring Hateoas</a> and <a href="https://spring.io/projects/spring-data-rest">Spring Data REST</a>.</p>
+</div>
+<div class="paragraph">
+<p>If your project use the <code>org.springframework.boot:spring-boot-starter-hateoas</code> starter
+or the <code>org.springframework.boot:spring-boot-starter-data-rest</code> starter, Feign HATEOAS support is enabled by default.</p>
+</div>
+<div class="paragraph">
+<p>When HATEOAS support is enabled, Feign clients are allowed to serialize
+and deserialize HATEOAS representation models: <a href="https://docs.spring.io/spring-hateoas/docs/1.0.0.M1/apidocs/org/springframework/hateoas/EntityModel.html">EntityModel</a>, <a href="https://docs.spring.io/spring-hateoas/docs/1.0.0.M1/apidocs/org/springframework/hateoas/CollectionModel.html">CollectionModel</a> and <a href="https://docs.spring.io/spring-hateoas/docs/1.0.0.M1/apidocs/org/springframework/hateoas/PagedModel.html">PagedModel</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient("demo")
+public interface DemoTemplate {
+
+    @GetMapping(path = "/stores")
+    CollectionModel&lt;Store&gt; getStores();
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="troubleshooting"><a class="anchor" href="#troubleshooting"></a><a class="link" href="#troubleshooting">1.12. Troubleshooting</a></h3>
+<div class="sect3">
+<h4 id="early-initialization-errors"><a class="anchor" href="#early-initialization-errors"></a><a class="link" href="#early-initialization-errors">1.12.1. Early Initialization Errors</a></h4>
+<div class="paragraph">
+<p>Depending on how you are using your Feign clients you may see initialization errors when starting your application.
+To work around this problem you can use an <code>ObjectProvider</code> when autowiring your client.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Autowired
+ObjectProvider&lt;TestFeginClient&gt; testFeginClient;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="configuration-properties"><a class="anchor" href="#configuration-properties"></a><a class="link" href="#configuration-properties">2. Configuration properties</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To see the list of all Sleuth related configuration properties please check <a href="appendix.html">the Appendix page</a>.</p>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
+<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>
