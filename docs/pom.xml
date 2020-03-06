@@ -15,7 +15,7 @@
 	<properties>
 		<docs.main>spring-cloud-openfeign</docs.main>
 		<main.basedir>${basedir}/..</main.basedir>
-		<docs.whitelisted.branches>2.0.x,2.1.x</docs.whitelisted.branches>
+		<docs.whitelisted.branches>2.1.x,2.2.x</docs.whitelisted.branches>
 		<configprops.inclusionPattern>feign.*</configprops.inclusionPattern>
 	</properties>
 	<dependencies>
