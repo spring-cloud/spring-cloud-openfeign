@@ -105,7 +105,7 @@ class FeignClientsRegistrar
 	}
 
 	static String getUrl(String url) {
-		if (StringUtils.hasText(url) && !(url.startsWith("#{") && url.contains("}"))) {
+		if (StringUtils.hasText(url) && !(url.startsWith("${") && url.contains("}"))) {
 			if (!url.contains("://")) {
 				url = "http://" + url;
 			}
