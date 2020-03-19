@@ -59,10 +59,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
-import static org.springframework.web.util.UriUtils.encode;
 
 /**
  * @author chadjaros
@@ -250,7 +248,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/advanced/test/{id}?amount=" + encode("{amount}", UTF_8));
+				.isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -274,7 +272,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/advanced/test/{id}?amount=" + encode("{amount}", UTF_8));
+				.isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -299,7 +297,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/advanced/test2?amount=" + encode("{amount}", UTF_8));
+				.isEqualTo("/advanced/test2?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -386,7 +384,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/test?id=" + encode("{id}", UTF_8));
+		assertThat(data.template().url()).isEqualTo("/test?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().queries().get("id").toString()).isEqualTo("[{id}]");
 		assertThat(data.indexToExpander().get(0)).isNotNull();
@@ -399,7 +397,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/test?id=" + encode("{id}", UTF_8));
+		assertThat(data.template().url()).isEqualTo("/test?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().queries().get("id").toString()).isEqualTo("[{id}]");
 		assertThat(data.indexToExpander().get(0)).isNotNull();
@@ -454,8 +452,8 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo(
-				"/advanced/testfallback/{id}?amount=" + encode("{amount}", UTF_8));
+		assertThat(data.template().url())
+				.isEqualTo("/advanced/testfallback/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -499,8 +497,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-				.isEqualTo("/queryMap?aParam=" + encode("{aParam}", UTF_8));
+		assertThat(data.template().url()).isEqualTo("/queryMap?aParam=" + "{aParam}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.queryMapIndex().intValue()).isEqualTo(0);
 		Map<String, Collection<String>> params = data.template().queries();
@@ -515,7 +512,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/queryMapObject?aParam=" + encode("{aParam}", UTF_8));
+				.isEqualTo("/queryMapObject?aParam=" + "{aParam}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.queryMapIndex().intValue()).isEqualTo(0);
 		Map<String, Collection<String>> params = data.template().queries();
