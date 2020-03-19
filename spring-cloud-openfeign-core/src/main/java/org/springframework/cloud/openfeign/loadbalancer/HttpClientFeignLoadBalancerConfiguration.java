@@ -24,29 +24,29 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.openfeign.clientconfig.HttpClientFeignConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * Configuration instantiating a {@link BlockingLoadBalancerClient}-based {@link Client}
- * object that uses {@link ApacheHttpClient} under the hood.
+ * Configuration instantiating a {@link LoadBalancerClient}-based {@link Client} object
+ * that uses {@link ApacheHttpClient} under the hood.
  *
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(ApacheHttpClient.class)
-@ConditionalOnBean(BlockingLoadBalancerClient.class)
+@ConditionalOnBean(LoadBalancerClient.class)
 @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
 @Import(HttpClientFeignConfiguration.class)
 class HttpClientFeignLoadBalancerConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Client feignClient(BlockingLoadBalancerClient loadBalancerClient,
+	public Client feignClient(LoadBalancerClient loadBalancerClient,
 			HttpClient httpClient) {
 		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
 		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient);
