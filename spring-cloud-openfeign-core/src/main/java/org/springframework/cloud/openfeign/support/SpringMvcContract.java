@@ -229,7 +229,6 @@ public class SpringMvcContract extends Contract.BaseContract
 			if (pathValue != null) {
 				pathValue = resolve(pathValue);
 				if (!pathValue.equals("/")) {
-					// Automatic add '/' if it did not present in pathValue
 					data.template().uri(pathValue, true);
 				}
 			}

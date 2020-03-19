@@ -69,7 +69,7 @@ import static org.springframework.web.util.UriUtils.encode;
  * @author Halvdan Hoem Grelland
  * @author Aram Peres
  * @author Aaron Whiteside
- * @author nekkiy
+ * @author Artyom Romanenko
  */
 public class SpringMvcContractTests {
 
@@ -573,36 +573,31 @@ public class SpringMvcContractTests {
 	@Test
 	public void testDoubleRequestMapping() throws NoSuchMethodException {
 		Class[] classes = new Class[] { TestTemplate_RequestMapping_Empty_Class.class,
-			TestTemplate_RequestMapping_Empty_Method.class };
+				TestTemplate_RequestMapping_Empty_Method.class };
 		for (Class<?> clazz : classes) {
 			Method methodRoot = clazz.getDeclaredMethod("root");
 			MethodMetadata dataRoot = contract
-				.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
+					.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
 
 			assertThat(dataRoot.template().url()).isEqualTo("/");
 
+			Method methodRootReverse = clazz.getDeclaredMethod("rootReverse");
+			MethodMetadata dataRootReverse = contract.parseAndValidateMetadata(
+					methodRoot.getDeclaringClass(), methodRootReverse);
+
+			assertThat(dataRootReverse.template().url()).isEqualTo("/");
+
 			Method methodSub = clazz.getDeclaredMethod("sub");
 			MethodMetadata dataSub = contract
-				.parseAndValidateMetadata(methodSub.getDeclaringClass(), methodSub);
+					.parseAndValidateMetadata(methodSub.getDeclaringClass(), methodSub);
 
 			assertThat(dataSub.template().url()).isEqualTo("/sub");
 
 			Method methodSubEmpty = clazz.getDeclaredMethod("subEmpty");
 			MethodMetadata dataSubEmpty = contract.parseAndValidateMetadata(
-				methodSubEmpty.getDeclaringClass(), methodSubEmpty);
+					methodSubEmpty.getDeclaringClass(), methodSubEmpty);
 
 			assertThat(dataSubEmpty.template().url()).isEqualTo("/subEmpty");
-		}
-
-		Class[] classesDouble = new Class[] {
-			TestTemplate_RequestMapping_Empty_Double.class,
-			TestTemplate_RequestMapping_Fill_Double.class };
-		for (Class<?> clazz : classesDouble) {
-			Method methodRoot = clazz.getDeclaredMethod("root");
-			MethodMetadata dataRoot = contract
-				.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
-
-			assertThat(dataRoot.template().url()).isEqualTo("/");
 		}
 
 	}
@@ -610,10 +605,10 @@ public class SpringMvcContractTests {
 	@Test
 	public void testMultipleRequestPartAnnotations() throws NoSuchMethodException {
 		Method method = TestTemplate_RequestPart.class.getDeclaredMethod(
-			"requestWithMultipleParts", MultipartFile.class, String.class);
+				"requestWithMultipleParts", MultipartFile.class, String.class);
 
 		MethodMetadata data = contract
-			.parseAndValidateMetadata(method.getDeclaringClass(), method);
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 		assertThat(data.formParams()).contains("file", "id");
 	}
 
@@ -798,6 +793,9 @@ public class SpringMvcContractTests {
 		@RequestMapping("/")
 		String root();
 
+		@RequestMapping("")
+		String rootReverse();
+
 		@RequestMapping("/sub")
 		String sub();
 
@@ -812,27 +810,14 @@ public class SpringMvcContractTests {
 		@RequestMapping("")
 		String root();
 
+		@RequestMapping("/")
+		String rootReverse();
+
 		@RequestMapping("/sub")
 		String sub();
 
 		@RequestMapping("subEmpty")
 		String subEmpty();
-
-	}
-
-	@RequestMapping("")
-	public interface TestTemplate_RequestMapping_Empty_Double {
-
-		@RequestMapping("")
-		String root();
-
-	}
-
-	@RequestMapping("/")
-	public interface TestTemplate_RequestMapping_Fill_Double {
-
-		@RequestMapping("/")
-		String root();
 
 	}
 
