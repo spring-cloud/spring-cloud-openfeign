@@ -109,9 +109,10 @@ $(addBlockSwitches);
 <li><a href="#feign-logging">1.9. Feign logging</a></li>
 <li><a href="#feign-querymap-support">1.10. Feign @QueryMap support</a></li>
 <li><a href="#hateoas-support">1.11. HATEOAS support</a></li>
-<li><a href="#troubleshooting">1.12. Troubleshooting</a>
+<li><a href="#spring-matrixvariable-support">1.12. Spring @MatrixVariable Support</a></li>
+<li><a href="#troubleshooting">1.13. Troubleshooting</a>
 <ul class="sectlevel3">
-<li><a href="#early-initialization-errors">1.12.1. Early Initialization Errors</a></li>
+<li><a href="#early-initialization-errors">1.13.1. Early Initialization Errors</a></li>
 </ul>
 </li>
 </ul>
@@ -849,9 +850,52 @@ public interface DemoTemplate {
 </div>
 </div>
 <div class="sect2">
-<h3 id="troubleshooting"><a class="anchor" href="#troubleshooting"></a><a class="link" href="#troubleshooting">1.12. Troubleshooting</a></h3>
+<h3 id="spring-matrixvariable-support"><a class="anchor" href="#spring-matrixvariable-support"></a><a class="link" href="#spring-matrixvariable-support">1.12. Spring @MatrixVariable Support</a></h3>
+<div class="paragraph">
+<p>Spring Cloud OpenFeign provides support for the Spring <code>@MatrixVariable</code> annotation.</p>
+</div>
+<div class="paragraph">
+<p>If a map is passed as the method argument, the <code>@MatrixVariable</code> path segment is created by joining key-value pairs from the map with a <code>=</code>.</p>
+</div>
+<div class="paragraph">
+<p>If a different object is passed, either the <code>name</code> provided in the <code>@MatrixVariable</code> annotation (if defined) or the annotated variable name is
+joined with the provided method argument using <code>=</code>.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">IMPORTANT</dt>
+<dd>
+<p>Even though, on the server side, Spring does not require the users to name the path segment placeholder same as the matrix variable name, since it would be too ambiguous on the client side, Sprig Cloud OpenFeign requires that you add a path segment placeholder with a name matching either the <code>name</code> provided in the <code>@MatrixVariable</code> annotation (if defined) or the annotated variable name.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@GetMapping("/objects/links/{matrixVars}")
+Map&lt;String, List&lt;String&gt;&gt; getObjects(@MatrixVariable Map&lt;String, List&lt;String&gt;&gt; matrixVars);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that both variable name and the path segment placeholder are called <code>matrixVars</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@FeignClient("demo")
+public interface DemoTemplate {
+
+    @GetMapping(path = "/stores")
+    CollectionModel&lt;Store&gt; getStores();
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="troubleshooting"><a class="anchor" href="#troubleshooting"></a><a class="link" href="#troubleshooting">1.13. Troubleshooting</a></h3>
 <div class="sect3">
-<h4 id="early-initialization-errors"><a class="anchor" href="#early-initialization-errors"></a><a class="link" href="#early-initialization-errors">1.12.1. Early Initialization Errors</a></h4>
+<h4 id="early-initialization-errors"><a class="anchor" href="#early-initialization-errors"></a><a class="link" href="#early-initialization-errors">1.13.1. Early Initialization Errors</a></h4>
 <div class="paragraph">
 <p>Depending on how you are using your Feign clients you may see initialization errors when starting your application.
 To work around this problem you can use an <code>ObjectProvider</code> when autowiring your client.</p>
