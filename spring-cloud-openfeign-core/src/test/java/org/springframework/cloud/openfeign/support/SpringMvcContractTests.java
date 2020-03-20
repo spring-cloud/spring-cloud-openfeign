@@ -555,6 +555,22 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
+	public void testMatrixVariableWithNoName() throws NoSuchMethodException {
+		Method method = TestTemplate_MatrixVariable.class
+				.getDeclaredMethod("matrixVariableNotNamed", Map.class);
+		MethodMetadata data = this.contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Map<String, String> testMap = new HashMap<>();
+
+		testMap.put("param", "value");
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
+		assertThat(";param=value")
+				.isEqualTo(data.indexToExpander().get(0).expand(testMap));
+	}
+
+	@Test
 	public void testAddingTemplatedParameterWithTheSameKey()
 			throws NoSuchMethodException {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod(
@@ -696,6 +712,9 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(path = "/matrixVariableObject/{param}")
 		String matrixVariableObject(@MatrixVariable("param") Object object);
+
+		@RequestMapping(path = "/matrixVariable/{params}")
+		String matrixVariableNotNamed(@MatrixVariable Map<String, Object> params);
 
 	}
 

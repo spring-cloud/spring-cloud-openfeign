@@ -524,6 +524,37 @@ public interface DemoTemplate {
 }
 ----
 
+=== Spring MatrixVariable Support
+
+Spring Cloud OpenFeign provides support for the Spring `@MatrixVariable` annotation.
+
+If a map is passed as the method argument, the `@MatrixVariable` path segment is created by joining key-value pairs from the map with a `=`.
+
+If a different object is passed, either the `name` provided in the `@MatrixVariable` annotation (if defined) or the annotated variable name is
+joined with the provided method argument using `=`.
+
+IMPORTANT:: Even though, on the server side, Spring does not require the users to name the path segment placeholder same as the matrix variable name, since it would be too ambiguous on the client side, Sprig Cloud OpenFeign requires that you add a path segment placeholder with a name matching either the `name` provided in the `@MatrixVariable` annotation (if defined) or the annotated variable name.
+
+For example:
+
+[source,java,indent=0]
+----
+@GetMapping("/objects/links/{matrixVars}")
+Map<String, List<String>> getObjects(@MatrixVariable Map<String, List<String>> matrixVars);
+----
+Note that both variable name and the path segment placeholder are called `matrixVars`.
+
+[source,java,indent=0]
+----
+@FeignClient("demo")
+public interface DemoTemplate {
+
+    @GetMapping(path = "/stores")
+    CollectionModel<Store> getStores();
+}
+----
+
+
 === Troubleshooting
 
 ==== Early Initialization Errors
