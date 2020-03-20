@@ -517,7 +517,7 @@ public interface DemoTemplate {
 }
 ----
 
-=== Spring MatrixVariable Support
+=== Spring @MatrixVariable Support
 
 Spring Cloud OpenFeign provides support for the Spring `@MatrixVariable` annotation.
 
