@@ -31,8 +31,11 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import feign.MethodMetadata;
 import feign.Param;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.convert.ConversionService;
@@ -69,6 +72,7 @@ import static org.junit.Assume.assumeTrue;
  * @author Aaron Whiteside
  * @author Artyom Romanenko
  */
+@RunWith(JUnitParamsRunner.class)
 public class SpringMvcContractTests {
 
 	private static final Class<?> EXECUTABLE_TYPE;
@@ -567,36 +571,51 @@ public class SpringMvcContractTests {
 				"{Accept}");
 	}
 
-	@Test
-	public void testDoubleRequestMapping() throws NoSuchMethodException {
-		Class[] classes = new Class[] { TestTemplate_RequestMapping_Empty_Class.class,
+	private Class[] doubleMappingClassesProvider() {
+		return new Class[] { TestTemplate_RequestMapping_Empty_Class.class,
 				TestTemplate_RequestMapping_Empty_Method.class };
-		for (Class<?> clazz : classes) {
-			Method methodRoot = clazz.getDeclaredMethod("root");
-			MethodMetadata dataRoot = contract
-					.parseAndValidateMetadata(methodRoot.getDeclaringClass(), methodRoot);
+	}
 
-			assertThat(dataRoot.template().url()).isEqualTo("/");
+	@Test
+	@Parameters(method = "doubleMappingClassesProvider")
+	public void testDoubleRequestMapping_root(Class clazz) throws NoSuchMethodException {
+		Method method = clazz.getDeclaredMethod("root");
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-			Method methodRootReverse = clazz.getDeclaredMethod("rootReverse");
-			MethodMetadata dataRootReverse = contract.parseAndValidateMetadata(
-					methodRoot.getDeclaringClass(), methodRootReverse);
+		assertThat(data.template().url()).isEqualTo("/");
+	}
 
-			assertThat(dataRootReverse.template().url()).isEqualTo("/");
+	@Test
+	@Parameters(method = "doubleMappingClassesProvider")
+	public void testDoubleRequestMapping_rootReverse(Class clazz)
+			throws NoSuchMethodException {
+		Method method = clazz.getDeclaredMethod("rootReverse");
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-			Method methodSub = clazz.getDeclaredMethod("sub");
-			MethodMetadata dataSub = contract
-					.parseAndValidateMetadata(methodSub.getDeclaringClass(), methodSub);
+		assertThat(data.template().url()).isEqualTo("/");
+	}
 
-			assertThat(dataSub.template().url()).isEqualTo("/sub");
+	@Test
+	@Parameters(method = "doubleMappingClassesProvider")
+	public void testDoubleRequestMapping_sub(Class clazz) throws NoSuchMethodException {
+		Method method = clazz.getDeclaredMethod("sub");
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-			Method methodSubEmpty = clazz.getDeclaredMethod("subEmpty");
-			MethodMetadata dataSubEmpty = contract.parseAndValidateMetadata(
-					methodSubEmpty.getDeclaringClass(), methodSubEmpty);
+		assertThat(data.template().url()).isEqualTo("/sub");
+	}
 
-			assertThat(dataSubEmpty.template().url()).isEqualTo("/subEmpty");
-		}
+	@Test
+	@Parameters(method = "doubleMappingClassesProvider")
+	public void testDoubleRequestMapping_subEmpty(Class clazz)
+			throws NoSuchMethodException {
+		Method method = clazz.getDeclaredMethod("subEmpty");
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
+		assertThat(data.template().url()).isEqualTo("/subEmpty");
 	}
 
 	@Test
