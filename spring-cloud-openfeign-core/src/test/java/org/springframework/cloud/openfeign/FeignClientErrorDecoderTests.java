@@ -61,8 +61,10 @@ public class FeignClientErrorDecoderTests {
 
 	@Test
 	public void overrideErrorDecoder() {
-		assertThat(this.context.getInstance("foo", ErrorDecoder.class)).isInstanceOf(ErrorDecoder.Default.class);
-		assertThat(this.context.getInstance("bar", ErrorDecoder.class)).isInstanceOf(ErrorDecoderImpl.class);
+		assertThat(this.context.getInstance("foo", ErrorDecoder.class))
+				.isInstanceOf(ErrorDecoder.Default.class);
+		assertThat(this.context.getInstance("bar", ErrorDecoder.class))
+				.isNull();
 	}
 
 	@Configuration(proxyBeanMethods = false)
