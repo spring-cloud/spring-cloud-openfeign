@@ -265,7 +265,7 @@ class FeignClientFactoryBean
 	}
 
 	@Override
-	public Object getObject() throws Exception {
+	public Object getObject() {
 		return getTarget();
 	}
 
