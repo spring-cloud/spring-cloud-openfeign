@@ -55,6 +55,22 @@ public class FeignErrorDecoderFactoryTests {
 		context.close();
 	}
 
+	@Test
+	public void testCustomErrorDecoderFactoryNotOverwritingErrorDecoder() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				SampleConfiguration3.class);
+		FeignErrorDecoderFactory errorDecoderFactory = context
+				.getBean(FeignErrorDecoderFactory.class);
+		assertThat(errorDecoderFactory).isNotNull();
+		ErrorDecoder errorDecoderFromFactory = errorDecoderFactory.create(Object.class);
+		assertThat(errorDecoderFromFactory).isNotNull();
+		assertThat(errorDecoderFromFactory instanceof ErrorDecoderImpl).isTrue();
+		ErrorDecoder errorDecoder = context.getBean(ErrorDecoder.class);
+		assertThat(errorDecoder).isNotNull();
+		assertThat(errorDecoder instanceof ErrorDecoder.Default).isTrue();
+		context.close();
+	}
+
 	@Configuration
 	@Import(FeignClientsConfiguration.class)
 	protected static class SampleConfiguration1 {
@@ -68,6 +84,22 @@ public class FeignErrorDecoderFactoryTests {
 		@Bean
 		public FeignErrorDecoderFactory errorDecoderFactory() {
 			return new ErrorDecoderFactoryImpl();
+		}
+
+	}
+
+	@Configuration
+	@Import(FeignClientsConfiguration.class)
+	protected static class SampleConfiguration3 {
+
+		@Bean
+		public FeignErrorDecoderFactory errorDecoderFactory() {
+			return new ErrorDecoderFactoryImpl();
+		}
+
+		@Bean
+		public ErrorDecoder errorDecoder() {
+			return new ErrorDecoder.Default();
 		}
 
 	}
