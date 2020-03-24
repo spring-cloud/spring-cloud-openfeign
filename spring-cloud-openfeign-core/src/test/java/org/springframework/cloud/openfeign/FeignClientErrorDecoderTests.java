@@ -16,7 +16,12 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Map;
+
 import feign.Contract;
+import feign.InvocationHandlerFactory;
 import feign.RequestLine;
 import feign.Response;
 import feign.codec.ErrorDecoder;
@@ -31,6 +36,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -60,10 +66,31 @@ public class FeignClientErrorDecoderTests {
 	}
 
 	@Test
-	public void overrideErrorDecoder() {
+	public void errorDecoderInConfiguration() {
 		assertThat(this.context.getInstance("foo", ErrorDecoder.class))
 				.isInstanceOf(ErrorDecoder.Default.class);
 		assertThat(this.context.getInstance("bar", ErrorDecoder.class)).isNull();
+	}
+
+	@Test
+	public void useConfiguredErrorDecoderWhenAlsoErrorDecoderFactoryIsAvailable() {
+		Object errorDecoder = getErrorDecoderFromClient(this.foo);
+		assertThat(errorDecoder).isInstanceOf(ErrorDecoder.Default.class);
+	}
+
+	@Test
+	public void useErrorDecoderFromErrorDecoderFactory() {
+		Object errorDecoder = getErrorDecoderFromClient(this.bar);
+		assertThat(errorDecoder).isInstanceOf(ErrorDecoderImpl.class);
+	}
+
+	@SuppressWarnings({ "unchecked", "ConstantConditions" })
+	private Object getErrorDecoderFromClient(final Object client) {
+		Object invocationHandler = ReflectionTestUtils.getField(client, "h");
+		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
+				.getField(invocationHandler, "dispatch");
+		Method key = new ArrayList<>(dispatch.keySet()).get(0);
+		return ReflectionTestUtils.getField(dispatch.get(key), "errorDecoder");
 	}
 
 	@Configuration(proxyBeanMethods = false)
