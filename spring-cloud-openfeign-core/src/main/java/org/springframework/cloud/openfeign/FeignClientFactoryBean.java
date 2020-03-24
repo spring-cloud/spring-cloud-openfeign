@@ -141,6 +141,14 @@ class FeignClientFactoryBean
 		if (errorDecoder != null) {
 			builder.errorDecoder(errorDecoder);
 		}
+		else {
+			FeignErrorDecoderFactory errorDecoderFactory = getOptional(context,
+					FeignErrorDecoderFactory.class);
+			if (errorDecoderFactory != null) {
+				ErrorDecoder factoryErrorDecoder = errorDecoderFactory.create(this.type);
+				builder.errorDecoder(factoryErrorDecoder);
+			}
+		}
 		Request.Options options = getOptional(context, Request.Options.class);
 		if (options != null) {
 			builder.options(options);
