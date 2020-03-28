@@ -467,7 +467,7 @@ public class FeignClientTests {
 		Pojo pojo1 = new FeignClientTests.Pojo("hello", "world", 1);
 		Pojo pojo2 = new FeignClientTests.Pojo("hello", "world", 2);
 		String response = this.multipartClient.multipartPojo(pojo1, pojo2, file);
-		assertThat(response).isEqualTo("abc123hello.bin");
+		assertThat(response).isEqualTo("helloworld1helloworld2hello.bin");
 	}
 
 	@Test
@@ -1064,6 +1064,15 @@ public class FeignClientTests {
 				@RequestPart("world") String world,
 				@RequestPart("file") MultipartFile file) {
 			return hello + world + file.getOriginalFilename();
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipartPojo(@RequestPart("pojo1") Pojo pojo1,
+							 @RequestPart("pojo2") Pojo pojo2,
+							 @RequestPart("file") MultipartFile file) {
+			return pojo1.getValue1() + pojo1.getValue2() + pojo1.getValue3() + pojo2.getValue1() + pojo2.getValue2() + pojo2.getValue3() + file.getOriginalFilename();
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
