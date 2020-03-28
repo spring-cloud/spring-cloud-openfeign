@@ -57,6 +57,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.springframework.cloud.openfeign.support.PojoJsonSerializationWriter;
+import org.springframework.cloud.openfeign.support.PojoSerializationWriter;
 import rx.Observable;
 import rx.Single;
 
@@ -939,6 +941,11 @@ public class FeignClientTests {
 					});
 				}
 			};
+		}
+
+		@Bean
+		public PojoSerializationWriter pojoSerializationWriter() {
+			return new PojoJsonSerializationWriter();
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")

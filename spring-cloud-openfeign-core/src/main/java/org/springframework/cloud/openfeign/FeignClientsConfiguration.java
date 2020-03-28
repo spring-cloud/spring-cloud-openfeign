@@ -89,9 +89,9 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public Encoder feignEncoder() {
 		if (this.pojoSerializationWriter != null) {
-			return new SpringEncoder(this.messageConverters);
-		} else {
 			return new SpringEncoder(this.pojoSerializationWriter, this.messageConverters);
+		} else {
+			return new SpringEncoder(this.messageConverters);
 		}
 	}
 
@@ -103,10 +103,10 @@ public class FeignClientsConfiguration {
 
 		if (this.pojoSerializationWriter != null) {
 			encoder = new PageableSpringEncoder(
-				new SpringEncoder(this.messageConverters));
+				new SpringEncoder(this.pojoSerializationWriter, this.messageConverters));
 		} else {
 			encoder = new PageableSpringEncoder(
-				new SpringEncoder(this.pojoSerializationWriter, this.messageConverters));
+				new SpringEncoder(this.messageConverters));
 		}
 
 		if (springDataWebProperties != null) {
