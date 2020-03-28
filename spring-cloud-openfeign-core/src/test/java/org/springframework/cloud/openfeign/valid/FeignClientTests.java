@@ -464,8 +464,8 @@ public class FeignClientTests {
 	public void testMultiplePojoRequestParts() {
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
 			"hello".getBytes());
-		Pojo pojo1 = new FeignClientTests.Pojo("hello", "world", 1);
-		Pojo pojo2 = new FeignClientTests.Pojo("hello", "world", 2);
+		Pojo pojo1 = new FeignClientTests.Pojo("hello");
+		Pojo pojo2 = new FeignClientTests.Pojo("hello");
 		String response = this.multipartClient.multipartPojo(pojo1, pojo2, file);
 		assertThat(response).isEqualTo("helloworld1helloworld2hello.bin");
 	}
@@ -1072,7 +1072,7 @@ public class FeignClientTests {
 		String multipartPojo(@RequestPart("pojo1") Pojo pojo1,
 							 @RequestPart("pojo2") Pojo pojo2,
 							 @RequestPart("file") MultipartFile file) {
-			return pojo1.getValue1() + pojo1.getValue2() + pojo1.getValue3() + pojo2.getValue1() + pojo2.getValue2() + pojo2.getValue3() + file.getOriginalFilename();
+			return pojo1.getValue1() + pojo2.getValue1() + file.getOriginalFilename();
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
@@ -1157,15 +1157,11 @@ public class FeignClientTests {
 
 	private static class Pojo {
 		private String value1;
-		private String value2;
-		private Integer value3;
 
 		public Pojo() {};
 
-		public Pojo(String value1, String value2, Integer value3) {
+		public Pojo(String value1) {
 			this.value1 = value1;
-			this.value2 = value2;
-			this.value3 = value3;
 		}
 
 		public String getValue1() {
@@ -1174,22 +1170,6 @@ public class FeignClientTests {
 
 		public void setValue1(String value1) {
 			this.value1 = value1;
-		}
-
-		public String getValue2() {
-			return value2;
-		}
-
-		public void setValue2(String value2) {
-			this.value2 = value2;
-		}
-
-		public Integer getValue3() {
-			return value3;
-		}
-
-		public void setValue3(Integer value3) {
-			this.value3 = value3;
 		}
 	}
 }
