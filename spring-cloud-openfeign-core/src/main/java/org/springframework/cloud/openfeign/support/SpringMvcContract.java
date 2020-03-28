@@ -20,14 +20,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import feign.Contract;
 import feign.Feign;
@@ -42,6 +35,7 @@ import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor
 import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestParamParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestPartParameterProcessor;
+import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.DefaultParameterNameDiscoverer;
@@ -54,6 +48,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -272,6 +267,15 @@ public class SpringMvcContract extends Contract.BaseContract
 	@Override
 	protected boolean processAnnotationsOnParameter(MethodMetadata data,
 			Annotation[] annotations, int paramIndex) {
+		boolean isMultipartFormData = false;
+
+		Collection<String> contentTypes = data.template().headers().get(HttpEncoding.CONTENT_TYPE);
+
+		if (contentTypes != null && !contentTypes.isEmpty()) {
+			String type = contentTypes.iterator().next();
+			isMultipartFormData = Objects.equals(MediaType.valueOf(type), MediaType.MULTIPART_FORM_DATA);
+		}
+
 		boolean isHttpAnnotation = false;
 
 		AnnotatedParameterProcessor.AnnotatedParameterContext context = new SimpleAnnotatedParameterContext(
@@ -291,7 +295,7 @@ public class SpringMvcContract extends Contract.BaseContract
 			}
 		}
 
-		if (isHttpAnnotation && data.indexToExpander().get(paramIndex) == null) {
+		if (!isMultipartFormData && isHttpAnnotation && data.indexToExpander().get(paramIndex) == null) {
 			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
 			if (this.conversionService.canConvert(typeDescriptor,
 					STRING_TYPE_DESCRIPTOR)) {
