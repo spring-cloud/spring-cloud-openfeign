@@ -40,6 +40,7 @@ import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
+import org.springframework.cloud.openfeign.support.PojoSerializationWriter;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
@@ -73,6 +74,9 @@ public class FeignClientsConfiguration {
 	@Autowired(required = false)
 	private SpringDataWebProperties springDataWebProperties;
 
+	@Autowired(required = false)
+	private PojoSerializationWriter pojoSerializationWriter;
+
 	@Bean
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder() {
@@ -84,15 +88,27 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public Encoder feignEncoder() {
-		return new SpringEncoder(this.messageConverters);
+		if (this.pojoSerializationWriter != null) {
+			return new SpringEncoder(this.messageConverters);
+		} else {
+			return new SpringEncoder(this.pojoSerializationWriter, this.messageConverters);
+		}
 	}
 
 	@Bean
 	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
 	@ConditionalOnMissingBean
 	public Encoder feignEncoderPageable() {
-		PageableSpringEncoder encoder = new PageableSpringEncoder(
+		PageableSpringEncoder encoder;
+
+		if (this.pojoSerializationWriter != null) {
+			encoder = new PageableSpringEncoder(
 				new SpringEncoder(this.messageConverters));
+		} else {
+			encoder = new PageableSpringEncoder(
+				new SpringEncoder(this.pojoSerializationWriter, this.messageConverters));
+		}
+
 		if (springDataWebProperties != null) {
 			encoder.setPageParameter(
 					springDataWebProperties.getPageable().getPageParameter());

@@ -59,11 +59,17 @@ public class SpringEncoder implements Encoder {
 
 	private static final Log log = LogFactory.getLog(SpringEncoder.class);
 
-	private final SpringFormEncoder springFormEncoder = new SpringFormEncoder();
+	private SpringFormEncoder springFormEncoder;
 
 	private final ObjectFactory<HttpMessageConverters> messageConverters;
 
 	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
+		this.springFormEncoder = new SpringFormEncoder();
+		this.messageConverters = messageConverters;
+	}
+
+	public SpringEncoder(PojoSerializationWriter writer, ObjectFactory<HttpMessageConverters> messageConverters) {
+		this.springFormEncoder = new SpringPojoFormEncoder(writer);
 		this.messageConverters = messageConverters;
 	}
 
