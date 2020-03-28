@@ -464,8 +464,8 @@ public class FeignClientTests {
 	public void testMultiplePojoRequestParts() {
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
 			"hello".getBytes());
-		Pojo pojo1 = new FeignClientTests.Pojo("hello");
-		Pojo pojo2 = new FeignClientTests.Pojo("hello");
+		Hello pojo1 = new Hello("hello");
+		Hello pojo2 = new Hello("hello");
 		String response = this.multipartClient.multipartPojo(pojo1, pojo2, file);
 		assertThat(response).isEqualTo("helloworld1helloworld2hello.bin");
 	}
@@ -693,8 +693,8 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
 			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 			produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipartPojo(@RequestPart("pojo1") Pojo pojo1,
-						 @RequestPart("pojo2") Pojo pojo2,
+		String multipartPojo(@RequestPart("pojo1") Hello pojo1,
+						 @RequestPart("pojo2") Hello pojo2,
 						 @RequestPart("file") MultipartFile file);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
@@ -1069,10 +1069,10 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
 			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 			produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipartPojo(@RequestPart("pojo1") Pojo pojo1,
-							 @RequestPart("pojo2") Pojo pojo2,
+		String multipartHello(@RequestPart("pojo1") Hello pojo1,
+							 @RequestPart("pojo2") Hello pojo2,
 							 @RequestPart("file") MultipartFile file) {
-			return pojo1.getValue1() + pojo2.getValue1() + file.getOriginalFilename();
+			return pojo1.getMessage() + pojo2.getMessage() + file.getOriginalFilename();
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
@@ -1153,23 +1153,5 @@ public class FeignClientTests {
 			return new StaticServerList<>(new Server("localhost", this.port));
 		}
 
-	}
-
-	private static class Pojo {
-		private String value1;
-
-		public Pojo() {};
-
-		public Pojo(String value1) {
-			this.value1 = value1;
-		}
-
-		public String getValue1() {
-			return value1;
-		}
-
-		public void setValue1(String value1) {
-			this.value1 = value1;
-		}
 	}
 }
