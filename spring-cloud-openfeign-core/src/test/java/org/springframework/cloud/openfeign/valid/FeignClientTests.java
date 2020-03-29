@@ -472,8 +472,8 @@ public class FeignClientTests {
 		Hello pojo2 = new Hello(OI_TERRA_2);
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
 			"hello".getBytes());
-		String response = this.multipartClient.multipartPojo(pojo1, pojo2, file);
-		assertThat(response).isEqualTo("hello world 1oi terra 2hello.bin");
+		String response = this.multipartClient.multipartPojo("abc", "123", pojo1, pojo2, file);
+		assertThat(response).isEqualTo("abc123hello world 1oi terra 2hello.bin");
 	}
 
 	@Test
@@ -704,7 +704,9 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
 			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 			produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipartPojo(@RequestPart("pojo1") Hello pojo1,
+		String multipartPojo(@RequestPart("hello") String hello,
+						 @RequestPart("world") String world,
+						 @RequestPart("pojo1") Hello pojo1,
 						 @RequestPart("pojo2") Hello pojo2,
 						 @RequestPart("file") MultipartFile file);
 
@@ -1087,10 +1089,12 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
 			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 			produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipartPojo(@RequestPart("pojo1") Hello pojo1,
+		String multipartPojo(@RequestPart("hello") String hello,
+							 @RequestPart("world") String world,
+							 @RequestPart("pojo1") Hello pojo1,
 							 @RequestPart("pojo2") Hello pojo2,
 							 @RequestPart("file") MultipartFile file) {
-			return pojo1.getMessage() + pojo2.getMessage() + file.getOriginalFilename();
+			return hello + world + pojo1.getMessage() + pojo2.getMessage() + file.getOriginalFilename();
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
