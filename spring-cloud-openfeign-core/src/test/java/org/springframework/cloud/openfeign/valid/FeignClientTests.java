@@ -1069,7 +1069,7 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
 			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 			produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipartHello(@RequestPart("pojo1") Hello pojo1,
+		String multipartPojo(@RequestPart("pojo1") Hello pojo1,
 							 @RequestPart("pojo2") Hello pojo2,
 							 @RequestPart("file") MultipartFile file) {
 			return pojo1.getMessage() + pojo2.getMessage() + file.getOriginalFilename();
@@ -1154,4 +1154,5 @@ public class FeignClientTests {
 		}
 
 	}
+
 }
