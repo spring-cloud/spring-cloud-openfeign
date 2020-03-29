@@ -490,6 +490,20 @@ public class FeignClientTests {
 	}
 
 	@Test
+	public void testRequestPartWithListOfPojosAndListOfMultipartFiles() {
+		Hello pojo1 = new Hello(HELLO_WORLD_1);
+		Hello pojo2 = new Hello(OI_TERRA_2);
+		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
+			"hello".getBytes());
+		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null,
+			"hello".getBytes());
+		String response = this.multipartClient
+			.requestPartListOfPojosAndListOfMultipartFiles(Arrays.asList(pojo1, pojo2), Arrays.asList(file1, file2));
+		assertThat(response).isEqualTo("hello world 1oi terra 2hello1.binhello2.bin");
+	}
+
+
+	@Test
 	public void testRequestBodyWithSingleMultipartFile() {
 		String partName = UUID.randomUUID().toString();
 		MockMultipartFile file1 = new MockMultipartFile(partName, "hello1.bin", null,
@@ -721,6 +735,13 @@ public class FeignClientTests {
 				produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestPartListOfMultipartFilesReturnsFileNames(
 				@RequestPart("files") List<MultipartFile> files);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojosFiles",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfPojosAndListOfMultipartFiles(
+			@RequestPart("pojos") List<Hello> pojos,
+			@RequestPart("files") List<MultipartFile> files);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -1113,6 +1134,24 @@ public class FeignClientTests {
 					.collect(Collectors.joining(","));
 		}
 
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojosFiles",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfPojosAndListOfMultipartFiles(
+			@RequestPart("pojos") List<Hello> pojos,
+			@RequestPart("files") List<MultipartFile> files) {
+			StringBuilder result = new StringBuilder();
+
+			for (Hello pojo : pojos) {
+				result.append(pojo.getMessage());
+			}
+
+			for (MultipartFile file : files) {
+				result.append(file.getOriginalFilename());
+			}
+
+			return result.toString();
+		}
 	}
 
 	public static class Hello {
