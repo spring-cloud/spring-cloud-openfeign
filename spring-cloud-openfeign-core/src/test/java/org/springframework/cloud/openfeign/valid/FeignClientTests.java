@@ -461,19 +461,19 @@ public class FeignClientTests {
 	@Test
 	public void testMultipleRequestParts() {
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
-				"hello".getBytes());
+			"hello".getBytes());
 		String response = this.multipartClient.multipart("abc", "123", file);
 		assertThat(response).isEqualTo("abc123hello.bin");
 	}
 
 	@Test
 	public void testMultiplePojoRequestParts() {
+		Hello pojo1 = new Hello(HELLO_WORLD_1);
+		Hello pojo2 = new Hello(OI_TERRA_2);
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
 			"hello".getBytes());
-		Hello pojo1 = new Hello("hello");
-		Hello pojo2 = new Hello("hello");
 		String response = this.multipartClient.multipartPojo(pojo1, pojo2, file);
-		assertThat(response).isEqualTo("helloworld1helloworld2hello.bin");
+		assertThat(response).isEqualTo("hello world 1oi terra 2hello.bin");
 	}
 
 	@Test
