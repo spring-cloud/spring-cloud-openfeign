@@ -21,6 +21,9 @@ import feign.form.spring.SpringFormEncoder;
 
 import static feign.form.ContentType.MULTIPART;
 
+/**
+ * @author Darren Foong
+ */
 public class SpringPojoFormEncoder extends SpringFormEncoder {
 
 	public SpringPojoFormEncoder(PojoSerializationWriter pojoSerializationWriter) {

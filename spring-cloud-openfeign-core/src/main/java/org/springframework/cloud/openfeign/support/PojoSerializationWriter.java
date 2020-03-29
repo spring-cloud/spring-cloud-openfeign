@@ -29,6 +29,9 @@ import org.springframework.web.multipart.MultipartFile;
 import static feign.form.ContentProcessor.CRLF;
 import static feign.form.util.PojoUtil.isUserPojo;
 
+/**
+ * @author Darren Foong
+ */
 public abstract class PojoSerializationWriter extends AbstractWriter {
 
 	@Override

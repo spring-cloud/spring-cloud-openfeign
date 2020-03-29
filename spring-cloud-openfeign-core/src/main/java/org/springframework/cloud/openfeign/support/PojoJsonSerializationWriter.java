@@ -24,6 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
+/**
+ * @author Darren Foong
+ */
 @Component
 public class PojoJsonSerializationWriter extends PojoSerializationWriter {
 
