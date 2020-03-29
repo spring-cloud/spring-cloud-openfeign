@@ -36,8 +36,12 @@ public abstract class PojoSerializationWriter extends AbstractWriter {
 
 	@Override
 	public boolean isApplicable(Object object) {
-		return !(object instanceof MultipartFile) && !(object instanceof MultipartFile[])
-				&& (isUserPojoCollection(object) || isUserPojo(object));
+		boolean isMultipartFileOrCollection = (object instanceof MultipartFile)
+				|| (object instanceof MultipartFile[]);
+		boolean isUserPojoOrCollection = isUserPojoCollection(object)
+				|| isUserPojo(object);
+
+		return !isMultipartFileOrCollection && isUserPojoOrCollection;
 	}
 
 	@Override
