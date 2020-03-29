@@ -76,7 +76,7 @@ public class FeignClientsConfiguration {
 	private SpringDataWebProperties springDataWebProperties;
 
 	@Autowired(required = false)
-	private PojoFormWriter pojoSerializationWriter;
+	private PojoFormWriter pojoFormWriter;
 
 	@Bean
 	@ConditionalOnMissingBean
@@ -89,9 +89,8 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public Encoder feignEncoder() {
-		if (this.pojoSerializationWriter != null) {
-			return new SpringEncoder(this.pojoSerializationWriter,
-					this.messageConverters);
+		if (this.pojoFormWriter != null) {
+			return new SpringEncoder(this.pojoFormWriter, this.messageConverters);
 		}
 		else {
 			return new SpringEncoder(this.messageConverters);
@@ -104,9 +103,9 @@ public class FeignClientsConfiguration {
 	public Encoder feignEncoderPageable() {
 		PageableSpringEncoder encoder;
 
-		if (this.pojoSerializationWriter != null) {
-			encoder = new PageableSpringEncoder(new SpringEncoder(
-					this.pojoSerializationWriter, this.messageConverters));
+		if (this.pojoFormWriter != null) {
+			encoder = new PageableSpringEncoder(
+					new SpringEncoder(this.pojoFormWriter, this.messageConverters));
 		}
 		else {
 			encoder = new PageableSpringEncoder(

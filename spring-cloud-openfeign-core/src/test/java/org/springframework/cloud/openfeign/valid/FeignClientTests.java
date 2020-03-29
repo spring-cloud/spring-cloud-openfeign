@@ -979,7 +979,7 @@ public class FeignClientTests {
 		}
 
 		@Bean
-		public PojoFormWriter pojoSerializationWriter() {
+		public PojoFormWriter pojoFormWriter() {
 			return new JsonPojoFormWriter();
 		}
 
