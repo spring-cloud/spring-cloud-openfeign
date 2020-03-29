@@ -75,8 +75,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignFormatterRegistrar;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.cloud.openfeign.support.FallbackCommand;
-import org.springframework.cloud.openfeign.support.PojoJsonSerializationWriter;
-import org.springframework.cloud.openfeign.support.PojoSerializationWriter;
+import org.springframework.cloud.openfeign.support.JsonPojoFormWriter;
+import org.springframework.cloud.openfeign.support.PojoFormWriter;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -979,8 +979,8 @@ public class FeignClientTests {
 		}
 
 		@Bean
-		public PojoSerializationWriter pojoSerializationWriter() {
-			return new PojoJsonSerializationWriter();
+		public PojoFormWriter pojoSerializationWriter() {
+			return new JsonPojoFormWriter();
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")

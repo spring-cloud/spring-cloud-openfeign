@@ -26,7 +26,7 @@ import static feign.form.ContentType.MULTIPART;
  */
 public class SpringPojoFormEncoder extends SpringFormEncoder {
 
-	public SpringPojoFormEncoder(PojoSerializationWriter pojoSerializationWriter) {
+	public SpringPojoFormEncoder(PojoFormWriter pojoSerializationWriter) {
 		super();
 
 		MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(

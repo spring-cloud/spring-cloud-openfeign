@@ -40,7 +40,7 @@ import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
-import org.springframework.cloud.openfeign.support.PojoSerializationWriter;
+import org.springframework.cloud.openfeign.support.PojoFormWriter;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
@@ -76,7 +76,7 @@ public class FeignClientsConfiguration {
 	private SpringDataWebProperties springDataWebProperties;
 
 	@Autowired(required = false)
-	private PojoSerializationWriter pojoSerializationWriter;
+	private PojoFormWriter pojoSerializationWriter;
 
 	@Bean
 	@ConditionalOnMissingBean

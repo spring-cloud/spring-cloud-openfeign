@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
  * @author Darren Foong
  */
 @Component
-public class PojoJsonSerializationWriter extends PojoSerializationWriter {
+public class JsonPojoFormWriter extends PojoFormWriter {
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -39,7 +39,7 @@ public class PojoJsonSerializationWriter extends PojoSerializationWriter {
 	}
 
 	@Override
-	protected String serialize(Object object) throws IOException {
+	protected String writePojoAsString(Object object) throws IOException {
 		return objectMapper.writeValueAsString(object);
 	}
 
