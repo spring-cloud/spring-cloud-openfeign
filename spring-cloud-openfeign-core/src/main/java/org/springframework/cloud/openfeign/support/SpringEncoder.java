@@ -68,7 +68,8 @@ public class SpringEncoder implements Encoder {
 		this.messageConverters = messageConverters;
 	}
 
-	public SpringEncoder(PojoSerializationWriter writer, ObjectFactory<HttpMessageConverters> messageConverters) {
+	public SpringEncoder(PojoSerializationWriter writer,
+			ObjectFactory<HttpMessageConverters> messageConverters) {
 		this.springFormEncoder = new SpringPojoFormEncoder(writer);
 		this.messageConverters = messageConverters;
 	}
