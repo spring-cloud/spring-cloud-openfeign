@@ -453,6 +453,12 @@ public class FeignClientTests {
 	}
 
 	@Test
+	public void testSinglePojoRequestPart() {
+		String response = this.multipartClient.singlePojoPart(new Hello(HELLO_WORLD_1));
+		assertThat(response).isEqualTo(HELLO_WORLD_1);
+	}
+
+	@Test
 	public void testMultipleRequestParts() {
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
 				"hello".getBytes());
@@ -682,6 +688,11 @@ public class FeignClientTests {
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 				produces = MediaType.TEXT_PLAIN_VALUE)
 		String singlePart(@RequestPart("hello") String hello);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/singlePojoPart",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String singlePojoPart(@RequestPart("hello") Hello hello);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -1053,8 +1064,15 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.POST, path = "/singlePart",
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 				produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipart(@RequestPart("hello") String hello) {
+		String singlePart(@RequestPart("hello") String hello) {
 			return hello;
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/singlePojoPart",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
+		String singlePojoPart(@RequestPart("hello") Hello hello) {
+			return hello.getMessage();
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
