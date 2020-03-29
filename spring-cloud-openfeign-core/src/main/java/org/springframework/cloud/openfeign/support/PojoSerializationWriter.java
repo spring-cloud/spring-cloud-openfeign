@@ -18,10 +18,12 @@ package org.springframework.cloud.openfeign.support;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.function.Predicate;
 
 import feign.codec.EncodeException;
 import feign.form.multipart.AbstractWriter;
 import feign.form.multipart.Output;
+import feign.form.util.PojoUtil;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,12 +38,8 @@ public abstract class PojoSerializationWriter extends AbstractWriter {
 
 	@Override
 	public boolean isApplicable(Object object) {
-		boolean isMultipartFileOrCollection = (object instanceof MultipartFile)
-				|| (object instanceof MultipartFile[]);
-		boolean isUserPojoOrCollection = isUserPojoCollection(object)
-				|| isUserPojo(object);
-
-		return !isMultipartFileOrCollection && isUserPojoOrCollection;
+		return !isTypeOrCollection(object, o -> o instanceof MultipartFile)
+				&& isTypeOrCollection(object, PojoUtil::isUserPojo);
 	}
 
 	@Override
@@ -65,28 +63,20 @@ public abstract class PojoSerializationWriter extends AbstractWriter {
 
 	protected abstract String serialize(Object object) throws IOException;
 
-	private boolean isUserPojoCollection(Object object) {
-		// TODO Refactor!
+	private boolean isTypeOrCollection(Object object, Predicate<Object> isType) {
 		if (object.getClass().isArray()) {
 			Object[] array = (Object[]) object;
 
-			return array.length > 1 && isUserPojo(array[0]);
+			return array.length > 1 && isType.test(array[0]);
 		}
+		else if (object instanceof Iterable) {
+			Iterable<?> iterable = (Iterable<?>) object;
+			Iterator<?> iterator = iterable.iterator();
 
-		if (!(object instanceof Iterable)) {
-			return false;
-		}
-
-		Iterable<?> iterable = (Iterable<?>) object;
-		Iterator<?> iterator = iterable.iterator();
-
-		if (iterator.hasNext()) {
-			Object next = iterator.next();
-
-			return !(next instanceof MultipartFile) && isUserPojo(next);
+			return iterator.hasNext() && isType.test(iterator.next());
 		}
 		else {
-			return false;
+			return isType.test(object);
 		}
 	}
 
