@@ -38,9 +38,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.openfeign.support.AbstractFormWriter;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
-import org.springframework.cloud.openfeign.support.PojoFormWriter;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
@@ -76,7 +76,7 @@ public class FeignClientsConfiguration {
 	private SpringDataWebProperties springDataWebProperties;
 
 	@Autowired(required = false)
-	private PojoFormWriter pojoFormWriter;
+	private AbstractFormWriter abstractFormWriter;
 
 	@Bean
 	@ConditionalOnMissingBean
@@ -89,8 +89,8 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public Encoder feignEncoder() {
-		if (this.pojoFormWriter != null) {
-			return new SpringEncoder(this.pojoFormWriter, this.messageConverters);
+		if (this.abstractFormWriter != null) {
+			return new SpringEncoder(this.abstractFormWriter, this.messageConverters);
 		}
 		else {
 			return new SpringEncoder(this.messageConverters);
@@ -103,9 +103,9 @@ public class FeignClientsConfiguration {
 	public Encoder feignEncoderPageable() {
 		PageableSpringEncoder encoder;
 
-		if (this.pojoFormWriter != null) {
+		if (this.abstractFormWriter != null) {
 			encoder = new PageableSpringEncoder(
-					new SpringEncoder(this.pojoFormWriter, this.messageConverters));
+					new SpringEncoder(this.abstractFormWriter, this.messageConverters));
 		}
 		else {
 			encoder = new PageableSpringEncoder(

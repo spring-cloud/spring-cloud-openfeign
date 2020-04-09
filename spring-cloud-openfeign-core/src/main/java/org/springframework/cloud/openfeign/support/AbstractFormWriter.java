@@ -34,7 +34,7 @@ import static feign.form.util.PojoUtil.isUserPojo;
 /**
  * @author Darren Foong
  */
-public abstract class PojoFormWriter extends AbstractWriter {
+public abstract class AbstractFormWriter extends AbstractWriter {
 
 	@Override
 	public boolean isApplicable(Object object) {
@@ -50,7 +50,7 @@ public abstract class PojoFormWriter extends AbstractWriter {
 					.append('"').append(CRLF).append("Content-Type: ")
 					.append(getContentType()).append("; charset=")
 					.append(output.getCharset().name()).append(CRLF).append(CRLF)
-					.append(writePojoAsString(object)).toString();
+					.append(writeAsString(object)).toString();
 
 			output.write(string);
 		}
@@ -61,7 +61,7 @@ public abstract class PojoFormWriter extends AbstractWriter {
 
 	protected abstract MediaType getContentType();
 
-	protected abstract String writePojoAsString(Object object) throws IOException;
+	protected abstract String writeAsString(Object object) throws IOException;
 
 	private boolean isTypeOrCollection(Object object, Predicate<Object> isType) {
 		if (object.getClass().isArray()) {

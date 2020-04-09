@@ -26,12 +26,12 @@ import static feign.form.ContentType.MULTIPART;
  */
 public class SpringPojoFormEncoder extends SpringFormEncoder {
 
-	public SpringPojoFormEncoder(PojoFormWriter pojoFormWriter) {
+	public SpringPojoFormEncoder(AbstractFormWriter abstractFormWriter) {
 		super();
 
 		MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(
 				MULTIPART);
-		processor.addFirstWriter(pojoFormWriter);
+		processor.addFirstWriter(abstractFormWriter);
 	}
 
 }
