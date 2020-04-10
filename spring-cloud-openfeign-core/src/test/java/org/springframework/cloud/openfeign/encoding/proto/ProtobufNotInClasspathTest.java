@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign.encoding.proto;
 
 import feign.RequestTemplate;
+import feign.form.spring.SpringFormEncoder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,7 +50,8 @@ public class ProtobufNotInClasspathTest {
 		};
 		RequestTemplate requestTemplate = new RequestTemplate();
 		requestTemplate.method(POST);
-		new SpringEncoder(converters).encode("a=b", String.class, requestTemplate);
+		new SpringEncoder(new SpringFormEncoder(), converters).encode("a=b", String.class,
+				requestTemplate);
 	}
 
 }

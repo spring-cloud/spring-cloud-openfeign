@@ -27,6 +27,8 @@ import feign.Logger;
 import feign.Retryer;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
+import feign.form.MultipartFormContentProcessor;
+import feign.form.spring.SpringFormEncoder;
 import feign.hystrix.HystrixFeign;
 import feign.optionals.OptionalDecoder;
 
@@ -52,6 +54,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
+
+import static feign.form.ContentType.MULTIPART;
 
 /**
  * @author Dave Syer
@@ -93,10 +97,11 @@ public class FeignClientsConfiguration {
 		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
 
 		if (formWriter != null) {
-			return new SpringEncoder(formWriter, this.messageConverters);
+			return new SpringEncoder(new SpringPojoFormEncoder(formWriter),
+					this.messageConverters);
 		}
 		else {
-			return new SpringEncoder(this.messageConverters);
+			return new SpringEncoder(new SpringFormEncoder(), this.messageConverters);
 		}
 	}
 
@@ -110,12 +115,12 @@ public class FeignClientsConfiguration {
 		PageableSpringEncoder encoder;
 
 		if (formWriter != null) {
-			encoder = new PageableSpringEncoder(
-					new SpringEncoder(formWriter, this.messageConverters));
+			encoder = new PageableSpringEncoder(new SpringEncoder(
+					new SpringPojoFormEncoder(formWriter), this.messageConverters));
 		}
 		else {
 			encoder = new PageableSpringEncoder(
-					new SpringEncoder(this.messageConverters));
+					new SpringEncoder(new SpringFormEncoder(), this.messageConverters));
 		}
 
 		if (springDataWebProperties != null) {
@@ -179,6 +184,18 @@ public class FeignClientsConfiguration {
 		@ConditionalOnProperty(name = "feign.hystrix.enabled")
 		public Feign.Builder feignHystrixBuilder() {
 			return HystrixFeign.builder();
+		}
+
+	}
+
+	private class SpringPojoFormEncoder extends SpringFormEncoder {
+
+		SpringPojoFormEncoder(AbstractFormWriter abstractFormWriter) {
+			super();
+
+			MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(
+					MULTIPART);
+			processor.addFirstWriter(abstractFormWriter);
 		}
 
 	}

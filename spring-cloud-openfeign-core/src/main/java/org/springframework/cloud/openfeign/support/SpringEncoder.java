@@ -64,14 +64,9 @@ public class SpringEncoder implements Encoder {
 
 	private final ObjectFactory<HttpMessageConverters> messageConverters;
 
-	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
-		this.springFormEncoder = new SpringFormEncoder();
-		this.messageConverters = messageConverters;
-	}
-
-	public SpringEncoder(AbstractFormWriter writer,
+	public SpringEncoder(SpringFormEncoder springFormEncoder,
 			ObjectFactory<HttpMessageConverters> messageConverters) {
-		this.springFormEncoder = new SpringPojoFormEncoder(writer);
+		this.springFormEncoder = springFormEncoder;
 		this.messageConverters = messageConverters;
 	}
 
