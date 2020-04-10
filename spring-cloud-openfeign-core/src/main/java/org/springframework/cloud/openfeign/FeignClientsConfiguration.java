@@ -31,6 +31,7 @@ import feign.hystrix.HystrixFeign;
 import feign.optionals.OptionalDecoder;
 
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -76,7 +77,7 @@ public class FeignClientsConfiguration {
 	private SpringDataWebProperties springDataWebProperties;
 
 	@Autowired(required = false)
-	private AbstractFormWriter abstractFormWriter;
+	private AbstractFormWriter formWriter;
 
 	@Bean
 	@ConditionalOnMissingBean
@@ -88,9 +89,11 @@ public class FeignClientsConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
-	public Encoder feignEncoder() {
-		if (this.abstractFormWriter != null) {
-			return new SpringEncoder(this.abstractFormWriter, this.messageConverters);
+	public Encoder feignEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider) {
+		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
+
+		if (formWriter != null) {
+			return new SpringEncoder(formWriter, this.messageConverters);
 		}
 		else {
 			return new SpringEncoder(this.messageConverters);
@@ -100,12 +103,15 @@ public class FeignClientsConfiguration {
 	@Bean
 	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
 	@ConditionalOnMissingBean
-	public Encoder feignEncoderPageable() {
+	public Encoder feignEncoderPageable(
+			ObjectProvider<AbstractFormWriter> formWriterProvider) {
+		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
+
 		PageableSpringEncoder encoder;
 
-		if (this.abstractFormWriter != null) {
+		if (formWriter != null) {
 			encoder = new PageableSpringEncoder(
-					new SpringEncoder(this.abstractFormWriter, this.messageConverters));
+					new SpringEncoder(formWriter, this.messageConverters));
 		}
 		else {
 			encoder = new PageableSpringEncoder(
