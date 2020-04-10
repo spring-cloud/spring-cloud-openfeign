@@ -190,12 +190,12 @@ public class FeignClientsConfiguration {
 
 	private class SpringPojoFormEncoder extends SpringFormEncoder {
 
-		SpringPojoFormEncoder(AbstractFormWriter abstractFormWriter) {
+		SpringPojoFormEncoder(AbstractFormWriter formWriter) {
 			super();
 
 			MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(
 					MULTIPART);
-			processor.addFirstWriter(abstractFormWriter);
+			processor.addFirstWriter(formWriter);
 		}
 
 	}
