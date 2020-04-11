@@ -276,17 +276,6 @@ public class SpringMvcContract extends Contract.BaseContract
 	@Override
 	protected boolean processAnnotationsOnParameter(MethodMetadata data,
 			Annotation[] annotations, int paramIndex) {
-		boolean isMultipartFormData = false;
-
-		Collection<String> contentTypes = data.template().headers()
-				.get(HttpEncoding.CONTENT_TYPE);
-
-		if (contentTypes != null && !contentTypes.isEmpty()) {
-			String type = contentTypes.iterator().next();
-			isMultipartFormData = Objects.equals(MediaType.valueOf(type),
-					MediaType.MULTIPART_FORM_DATA);
-		}
-
 		boolean isHttpAnnotation = false;
 
 		AnnotatedParameterProcessor.AnnotatedParameterContext context = new SimpleAnnotatedParameterContext(
@@ -306,7 +295,7 @@ public class SpringMvcContract extends Contract.BaseContract
 			}
 		}
 
-		if (!isMultipartFormData && isHttpAnnotation
+		if (!isMultipartFormData(data) && isHttpAnnotation
 				&& data.indexToExpander().get(paramIndex) == null) {
 			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
 			if (this.conversionService.canConvert(typeDescriptor,
@@ -402,6 +391,18 @@ public class SpringMvcContract extends Contract.BaseContract
 		return parameterNames != null && parameterNames.length > parameterIndex
 		// has a type
 				&& parameterTypes != null && parameterTypes.length > parameterIndex;
+	}
+
+	private boolean isMultipartFormData(MethodMetadata data) {
+		Collection<String> contentTypes = data.template().headers()
+				.get(HttpEncoding.CONTENT_TYPE);
+
+		if (contentTypes != null && !contentTypes.isEmpty()) {
+			String type = contentTypes.iterator().next();
+			return Objects.equals(MediaType.valueOf(type), MediaType.MULTIPART_FORM_DATA);
+		}
+
+		return false;
 	}
 
 	/**
