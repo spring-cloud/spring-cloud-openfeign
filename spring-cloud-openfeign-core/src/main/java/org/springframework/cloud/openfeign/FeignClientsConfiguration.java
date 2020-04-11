@@ -91,15 +91,7 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public Encoder feignEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider) {
-		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
-
-		if (formWriter != null) {
-			return new SpringEncoder(new SpringPojoFormEncoder(formWriter),
-					this.messageConverters);
-		}
-		else {
-			return new SpringEncoder(new SpringFormEncoder(), this.messageConverters);
-		}
+		return springEncoder(formWriterProvider);
 	}
 
 	@Bean
@@ -107,18 +99,8 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	public Encoder feignEncoderPageable(
 			ObjectProvider<AbstractFormWriter> formWriterProvider) {
-		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
-
-		PageableSpringEncoder encoder;
-
-		if (formWriter != null) {
-			encoder = new PageableSpringEncoder(new SpringEncoder(
-					new SpringPojoFormEncoder(formWriter), this.messageConverters));
-		}
-		else {
-			encoder = new PageableSpringEncoder(
-					new SpringEncoder(new SpringFormEncoder(), this.messageConverters));
-		}
+		PageableSpringEncoder encoder = new PageableSpringEncoder(
+				springEncoder(formWriterProvider));
 
 		if (springDataWebProperties != null) {
 			encoder.setPageParameter(
@@ -169,6 +151,18 @@ public class FeignClientsConfiguration {
 	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
 	public Module pageJacksonModule() {
 		return new PageJacksonModule();
+	}
+
+	private Encoder springEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider) {
+		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
+
+		if (formWriter != null) {
+			return new SpringEncoder(new SpringPojoFormEncoder(formWriter),
+					this.messageConverters);
+		}
+		else {
+			return new SpringEncoder(new SpringFormEncoder(), this.messageConverters);
+		}
 	}
 
 	@Configuration(proxyBeanMethods = false)
