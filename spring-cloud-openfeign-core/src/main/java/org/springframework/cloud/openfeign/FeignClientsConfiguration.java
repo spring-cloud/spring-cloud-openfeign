@@ -80,9 +80,6 @@ public class FeignClientsConfiguration {
 	@Autowired(required = false)
 	private SpringDataWebProperties springDataWebProperties;
 
-	@Autowired(required = false)
-	private AbstractFormWriter formWriter;
-
 	@Bean
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder() {
