@@ -60,9 +60,14 @@ public class SpringEncoder implements Encoder {
 
 	private static final Log log = LogFactory.getLog(SpringEncoder.class);
 
-	private SpringFormEncoder springFormEncoder;
+	private final SpringFormEncoder springFormEncoder;
 
 	private final ObjectFactory<HttpMessageConverters> messageConverters;
+
+	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
+		this.springFormEncoder = new SpringFormEncoder();
+		this.messageConverters = messageConverters;
+	}
 
 	public SpringEncoder(SpringFormEncoder springFormEncoder,
 			ObjectFactory<HttpMessageConverters> messageConverters) {

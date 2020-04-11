@@ -26,7 +26,6 @@ import java.util.List;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import feign.RequestTemplate;
-import feign.form.spring.SpringFormEncoder;
 import feign.httpclient.ApacheHttpClient;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -117,7 +116,7 @@ public class ProtobufSpringEncoderTest {
 				return new HttpMessageConverters(new ProtobufHttpMessageConverter());
 			}
 		};
-		return new SpringEncoder(new SpringFormEncoder(), converters);
+		return new SpringEncoder(converters);
 	}
 
 	private RequestTemplate newRequestTemplate() {
