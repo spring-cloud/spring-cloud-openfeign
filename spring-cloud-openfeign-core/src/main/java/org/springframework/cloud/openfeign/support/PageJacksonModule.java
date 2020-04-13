@@ -64,7 +64,7 @@ public class PageJacksonModule extends Module {
 		private final Page<T> delegate;
 
 		SimplePageImpl(@JsonProperty("content") List<T> content,
-				@JsonProperty("page") int number, @JsonProperty("size") int size,
+				@JsonProperty("number") int number, @JsonProperty("size") int size,
 				@JsonProperty("totalElements") long totalElements) {
 			delegate = new PageImpl<>(content, PageRequest.of(number, size),
 					totalElements);
@@ -82,7 +82,7 @@ public class PageJacksonModule extends Module {
 			return delegate.getTotalElements();
 		}
 
-		@JsonProperty("page")
+		@JsonProperty
 		@Override
 		public int getNumber() {
 			return delegate.getNumber();
