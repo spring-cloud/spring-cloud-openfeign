@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import feign.Contract;
 import feign.Feign;
@@ -42,6 +43,7 @@ import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor
 import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestParamParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestPartParameterProcessor;
+import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.DefaultParameterNameDiscoverer;
@@ -54,6 +56,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,6 +75,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Olga Maciaszek-Sharma
  * @author Aaron Whiteside
  * @author Artyom Romanenko
+ * @author Darren Foong
  */
 public class SpringMvcContract extends Contract.BaseContract
 		implements ResourceLoaderAware {
@@ -291,7 +295,8 @@ public class SpringMvcContract extends Contract.BaseContract
 			}
 		}
 
-		if (isHttpAnnotation && data.indexToExpander().get(paramIndex) == null) {
+		if (!isMultipartFormData(data) && isHttpAnnotation
+				&& data.indexToExpander().get(paramIndex) == null) {
 			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
 			if (this.conversionService.canConvert(typeDescriptor,
 					STRING_TYPE_DESCRIPTOR)) {
@@ -386,6 +391,18 @@ public class SpringMvcContract extends Contract.BaseContract
 		return parameterNames != null && parameterNames.length > parameterIndex
 		// has a type
 				&& parameterTypes != null && parameterTypes.length > parameterIndex;
+	}
+
+	private boolean isMultipartFormData(MethodMetadata data) {
+		Collection<String> contentTypes = data.template().headers()
+				.get(HttpEncoding.CONTENT_TYPE);
+
+		if (contentTypes != null && !contentTypes.isEmpty()) {
+			String type = contentTypes.iterator().next();
+			return Objects.equals(MediaType.valueOf(type), MediaType.MULTIPART_FORM_DATA);
+		}
+
+		return false;
 	}
 
 	/**
