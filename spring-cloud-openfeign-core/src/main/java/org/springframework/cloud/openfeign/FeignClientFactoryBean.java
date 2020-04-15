@@ -41,6 +41,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -49,6 +50,7 @@ import org.springframework.util.StringUtils;
  * @author Venil Noronha
  * @author Eko Kurniawan Khannedy
  * @author Gregor Zurowski
+ * @author Matt King
  */
 class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
@@ -96,8 +98,21 @@ class FeignClientFactoryBean
 		// @formatter:on
 
 		configureFeign(context, builder);
+		applyBuildCustomizers(context, builder);
 
 		return builder;
+	}
+
+	private void applyBuildCustomizers(FeignContext context, Feign.Builder builder) {
+		Map<String, FeignBuilderCustomizer> customizerMap = context
+				.getInstances(contextId, FeignBuilderCustomizer.class);
+
+		if (customizerMap != null) {
+			customizerMap.values().stream()
+					.sorted(AnnotationAwareOrderComparator.INSTANCE)
+					.forEach(feignBuilderCustomizer -> feignBuilderCustomizer
+							.customize(builder));
+		}
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
