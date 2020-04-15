@@ -111,8 +111,21 @@ class FeignClientFactoryBean
 		// @formatter:on
 
 		configureFeign(context, builder);
+		applyBuildCustomizers(context, builder);
 
 		return builder;
+	}
+
+	private void applyBuildCustomizers(FeignContext context, Feign.Builder builder) {
+		Map<String, FeignBuilderCustomizer> customizerMap = context
+				.getInstances(contextId, FeignBuilderCustomizer.class);
+
+		if (customizerMap != null) {
+			customizerMap.values().stream()
+					.sorted(AnnotationAwareOrderComparator.INSTANCE)
+					.forEach(feignBuilderCustomizer -> feignBuilderCustomizer
+							.customize(builder));
+		}
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {

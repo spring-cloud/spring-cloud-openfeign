@@ -96,11 +96,12 @@ public class FeignClientsRegistrarTests {
 	@Test
 	public void shouldPassSubLevelFeignClient() {
 		AnnotationConfigApplicationContext config = new AnnotationConfigApplicationContext();
-		((DefaultListableBeanFactory) config.getBeanFactory()).setAllowBeanDefinitionOverriding(false);
+		((DefaultListableBeanFactory) config.getBeanFactory())
+				.setAllowBeanDefinitionOverriding(false);
 		config.register(TopLevelSubLevelTestConfig.class);
-		assertThatCode(() -> config.refresh())
-			.as("Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
-			.doesNotThrowAnyException();
+		assertThatCode(() -> config.refresh()).as(
+				"Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
+				.doesNotThrowAnyException();
 
 	}
 
@@ -138,10 +139,11 @@ public class FeignClientsRegistrarTests {
 	}
 
 	@EnableFeignClients(clients = {
-		org.springframework.cloud.openfeign.feignclientsregistrar.TopLevelClient.class,
-		org.springframework.cloud.openfeign.feignclientsregistrar.sub.SubLevelClient.class})
+			org.springframework.cloud.openfeign.feignclientsregistrar.TopLevelClient.class,
+			org.springframework.cloud.openfeign.feignclientsregistrar.sub.SubLevelClient.class })
 	@EnableAutoConfiguration(exclude = TestAutoConfiguration.class)
 	protected static class TopLevelSubLevelTestConfig {
+
 	}
 
 }
