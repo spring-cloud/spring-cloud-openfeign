@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext;
  * {@link FeignClient} annotation.
  *
  * @author Sven Döring
+ * @author Matt King
  */
 public class FeignClientBuilder {
 
@@ -38,6 +39,11 @@ public class FeignClientBuilder {
 		return new Builder<>(this.applicationContext, type, name);
 	}
 
+	public <T> Builder<T> forType(final Class<T> type,
+			final FeignClientFactoryBean clientFactoryBean, final String name) {
+		return new Builder<>(this.applicationContext, clientFactoryBean, type, name);
+	}
+
 	/**
 	 * Builder of feign targets.
 	 *
@@ -49,7 +55,13 @@ public class FeignClientBuilder {
 
 		private Builder(final ApplicationContext applicationContext, final Class<T> type,
 				final String name) {
-			this.feignClientFactoryBean = new FeignClientFactoryBean();
+			this(applicationContext, new FeignClientFactoryBean(), type, name);
+		}
+
+		private Builder(final ApplicationContext applicationContext,
+				final FeignClientFactoryBean clientFactoryBean, final Class<T> type,
+				final String name) {
+			this.feignClientFactoryBean = clientFactoryBean;
 
 			this.feignClientFactoryBean.setApplicationContext(applicationContext);
 			this.feignClientFactoryBean.setType(type);
