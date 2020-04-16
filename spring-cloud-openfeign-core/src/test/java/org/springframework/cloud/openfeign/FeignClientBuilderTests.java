@@ -148,9 +148,7 @@ public class FeignClientBuilderTests {
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
 				.forType(TestFeignClient.class, new FeignClientFactoryBean(),
 						"TestClient")
-				.decode404(true).fallback(TestFeignClientFallback.class)
-				.fallbackFactory(TestFeignClientFallbackFactory.class).path("Path/")
-				.url("Url/").contextId("TestContext");
+				.decode404(true).path("Path/").url("Url/").contextId("TestContext");
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
@@ -162,9 +160,6 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "url", "http://Url/");
 		assertFactoryBeanField(builder, "path", "/Path");
 		assertFactoryBeanField(builder, "decode404", true);
-		assertFactoryBeanField(builder, "fallback", TestFeignClientFallback.class);
-		assertFactoryBeanField(builder, "fallbackFactory",
-				TestFeignClientFallbackFactory.class);
 	}
 
 	@Test
