@@ -27,7 +27,6 @@
 		<main.basedir>${basedir}</main.basedir>
 		<jackson.version>2.7.3</jackson.version>
 		<spring-cloud-commons.version>3.0.0.BUILD-SNAPSHOT</spring-cloud-commons.version>
-		<spring-cloud-netflix.version>3.0.0.BUILD-SNAPSHOT</spring-cloud-netflix.version>
 
 		<!-- Plugin versions -->
 		<maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
@@ -96,13 +95,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-netflix-dependencies</artifactId>
-				<version>${spring-cloud-netflix.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-commons-dependencies</artifactId>
