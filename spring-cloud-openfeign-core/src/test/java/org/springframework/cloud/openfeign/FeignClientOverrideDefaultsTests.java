@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign;
 
 import feign.Contract;
 import feign.ExceptionPropagationPolicy;
-import feign.Feign;
 import feign.Logger;
 import feign.QueryMapEncoder;
 import feign.Request;
@@ -30,7 +29,6 @@ import feign.auth.BasicAuthRequestInterceptor;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
-import feign.hystrix.HystrixFeign;
 import feign.optionals.OptionalDecoder;
 import feign.querymap.BeanQueryMapEncoder;
 import feign.slf4j.Slf4jLogger;
@@ -38,14 +36,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -122,13 +118,6 @@ public class FeignClientOverrideDefaultsTests {
 	}
 
 	@Test
-	public void overrideBuilder() {
-		HystrixFeign.Builder.class
-				.cast(this.context.getInstance("foo", Feign.Builder.class));
-		Feign.Builder.class.cast(this.context.getInstance("bar", Feign.Builder.class));
-	}
-
-	@Test
 	public void overrideRequestOptions() {
 		assertThat(this.context.getInstance("foo", Request.Options.class)).isNull();
 		Request.Options options = this.context.getInstance("bar", Request.Options.class);
@@ -180,8 +169,7 @@ public class FeignClientOverrideDefaultsTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableFeignClients(clients = { FooClient.class, BarClient.class })
-	@Import({ PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
-			FeignAutoConfiguration.class })
+	@EnableAutoConfiguration
 	protected static class TestConfiguration {
 
 		@Bean
@@ -215,11 +203,6 @@ public class FeignClientOverrideDefaultsTests {
 		@Bean
 		public Contract feignContract() {
 			return new Contract.Default();
-		}
-
-		@Bean
-		public Feign.Builder feignBuilder() {
-			return HystrixFeign.builder();
 		}
 
 		@Bean

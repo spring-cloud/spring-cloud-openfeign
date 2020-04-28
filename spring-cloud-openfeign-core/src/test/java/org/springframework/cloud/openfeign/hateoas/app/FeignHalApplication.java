@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2016-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,14 @@ package org.springframework.cloud.openfeign.hateoas.app;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
-import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
+import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
 /**
  * Test HATEOAS application.
@@ -29,11 +33,26 @@ import org.springframework.context.annotation.Import;
  * @author Hector Espert
  */
 @EnableFeignClients(clients = FeignHalClient.class)
-@RibbonClient(name = "local", configuration = FeignHalRibbonConfiguration.class)
 @SpringBootApplication(
 		scanBasePackages = "org.springframework.cloud.openfeign.hateoas.app",
 		exclude = RepositoryRestMvcAutoConfiguration.class)
+@LoadBalancerClient(name = "local", configuration = LocalHalClientConfiguration.class)
 @Import(NoSecurityConfiguration.class)
 public class FeignHalApplication {
+
+	// Load balancer with fixed server list for "local" pointing to localhost
+
+}
+
+class LocalHalClientConfiguration {
+
+	@LocalServerPort
+	private int port = 0;
+
+	@Bean
+	public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
+			Environment env) {
+		return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
+	}
 
 }

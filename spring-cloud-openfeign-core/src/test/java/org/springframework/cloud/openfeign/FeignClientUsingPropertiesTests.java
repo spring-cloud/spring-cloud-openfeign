@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import feign.Request;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import feign.RetryableException;
@@ -52,7 +51,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -260,7 +258,7 @@ public class FeignClientUsingPropertiesTests {
 
 			requestTemplate.header(HttpHeaders.CONTENT_TYPE,
 					MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-			requestTemplate.body(Request.Body.bodyTemplate(builder.toString(), UTF_8));
+			requestTemplate.body(builder.toString());
 		}
 
 	}

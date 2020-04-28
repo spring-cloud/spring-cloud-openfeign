@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import feign.Contract;
 import feign.Feign;
@@ -42,6 +43,8 @@ import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor
 import org.springframework.cloud.openfeign.annotation.RequestBodyParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestParamParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.RequestPartParameterProcessor;
+import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.DefaultParameterNameDiscoverer;
@@ -54,6 +57,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,6 +74,9 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Halvdan Hoem Grelland
  * @author Aram Peres
  * @author Olga Maciaszek-Sharma
+ * @author Aaron Whiteside
+ * @author Artyom Romanenko
+ * @author Darren Foong
  */
 public class SpringMvcContract extends Contract.BaseContract
 		implements ResourceLoaderAware {
@@ -166,15 +173,14 @@ public class SpringMvcContract extends Contract.BaseContract
 		if (clz.getInterfaces().length == 0) {
 			RequestMapping classAnnotation = findMergedAnnotation(clz,
 					RequestMapping.class);
-			if (classAnnotation != null) {
+			if (classAnnotation != null && classAnnotation.value().length > 0) {
 				// Prepend path from class annotation if specified
-				if (classAnnotation.value().length > 0) {
-					String pathValue = emptyToNull(classAnnotation.value()[0]);
+				String pathValue = emptyToNull(classAnnotation.value()[0]);
+				if (pathValue != null) {
 					pathValue = resolve(pathValue);
-					if (!pathValue.startsWith("/")) {
-						pathValue = "/" + pathValue;
+					if (!pathValue.equals("/")) {
+						data.template().uri(pathValue);
 					}
-					data.template().uri(pathValue);
 				}
 			}
 		}
@@ -228,11 +234,9 @@ public class SpringMvcContract extends Contract.BaseContract
 			String pathValue = emptyToNull(methodMapping.value()[0]);
 			if (pathValue != null) {
 				pathValue = resolve(pathValue);
-				// Append path from @RequestMapping if value is present on method
-				if (!pathValue.startsWith("/") && !data.template().path().endsWith("/")) {
-					pathValue = "/" + pathValue;
+				if (!pathValue.equals("/")) {
+					data.template().uri(pathValue, true);
 				}
-				data.template().uri(pathValue, true);
 			}
 		}
 
@@ -292,7 +296,8 @@ public class SpringMvcContract extends Contract.BaseContract
 			}
 		}
 
-		if (isHttpAnnotation && data.indexToExpander().get(paramIndex) == null) {
+		if (!isMultipartFormData(data) && isHttpAnnotation
+				&& data.indexToExpander().get(paramIndex) == null) {
 			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
 			if (this.conversionService.canConvert(typeDescriptor,
 					STRING_TYPE_DESCRIPTOR)) {
@@ -359,6 +364,7 @@ public class SpringMvcContract extends Contract.BaseContract
 		annotatedArgumentResolvers.add(new RequestParamParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestHeaderParameterProcessor());
 		annotatedArgumentResolvers.add(new QueryMapParameterProcessor());
+		annotatedArgumentResolvers.add(new RequestPartParameterProcessor());
 
 		return annotatedArgumentResolvers;
 	}
@@ -387,6 +393,18 @@ public class SpringMvcContract extends Contract.BaseContract
 		return parameterNames != null && parameterNames.length > parameterIndex
 		// has a type
 				&& parameterTypes != null && parameterTypes.length > parameterIndex;
+	}
+
+	private boolean isMultipartFormData(MethodMetadata data) {
+		Collection<String> contentTypes = data.template().headers()
+				.get(HttpEncoding.CONTENT_TYPE);
+
+		if (contentTypes != null && !contentTypes.isEmpty()) {
+			String type = contentTypes.iterator().next();
+			return Objects.equals(MediaType.valueOf(type), MediaType.MULTIPART_FORM_DATA);
+		}
+
+		return false;
 	}
 
 	/**

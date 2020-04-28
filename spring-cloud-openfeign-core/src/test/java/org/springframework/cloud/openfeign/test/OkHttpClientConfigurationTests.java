@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.openfeign.test;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 
 import feign.Client;
@@ -35,11 +34,11 @@ import org.springframework.cloud.commons.httpclient.DefaultOkHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
+import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.ReflectionUtils;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -64,7 +63,7 @@ public class OkHttpClientConfigurationTests {
 	OkHttpClientConnectionPoolFactory connectionPoolFactory;
 
 	@Autowired
-	LoadBalancerFeignClient feignClient;
+	FeignBlockingLoadBalancerClient feignClient;
 
 	@Test
 	public void testFactories() {
@@ -88,13 +87,11 @@ public class OkHttpClientConfigurationTests {
 	}
 
 	protected <T> T getField(Object target, String name) {
-		Field field = ReflectionUtils.findField(target.getClass(), name);
-		ReflectionUtils.makeAccessible(field);
-		Object value = ReflectionUtils.getField(field, target);
+		Object value = ReflectionTestUtils.getField(target, target.getClass(), name);
 		return (T) value;
 	}
 
-	@FeignClient(name = "foo", serviceId = "foo")
+	@FeignClient(name = "foo")
 	interface FooClient {
 
 	}

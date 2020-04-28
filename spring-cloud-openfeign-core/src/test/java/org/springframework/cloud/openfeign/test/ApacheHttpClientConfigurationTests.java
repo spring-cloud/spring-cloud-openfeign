@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import org.springframework.cloud.commons.httpclient.DefaultApacheHttpClientConne
 import org.springframework.cloud.commons.httpclient.DefaultApacheHttpClientFactory;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
+import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
@@ -65,8 +65,7 @@ import static org.mockito.Mockito.mockingDetails;
  * @author Ryan Baxter
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(
-		properties = { "feign.okhttp.enabled: false", "ribbon.eureka.enabled = false" })
+@SpringBootTest(properties = { "feign.okhttp.enabled: false" })
 @DirtiesContext
 public class ApacheHttpClientConfigurationTests {
 
@@ -77,7 +76,7 @@ public class ApacheHttpClientConfigurationTests {
 	ApacheHttpClientFactory httpClientFactory;
 
 	@Autowired
-	LoadBalancerFeignClient feignClient;
+	FeignBlockingLoadBalancerClient feignClient;
 
 	@Test
 	public void testFactories() {

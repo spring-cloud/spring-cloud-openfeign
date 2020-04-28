@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.GenericHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,6 +53,8 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
  * @author Spencer Gibb
  * @author Scien Jus
  * @author Ahmad Mozafarnia
+ * @author Aaron Whiteside
+ * @author Darren Foong
  */
 public class SpringEncoder implements Encoder {
 
@@ -60,11 +63,18 @@ public class SpringEncoder implements Encoder {
 
 	private static final Log log = LogFactory.getLog(SpringEncoder.class);
 
-	private final SpringFormEncoder springFormEncoder = new SpringFormEncoder();
+	private final SpringFormEncoder springFormEncoder;
 
-	private ObjectFactory<HttpMessageConverters> messageConverters;
+	private final ObjectFactory<HttpMessageConverters> messageConverters;
 
 	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
+		this.springFormEncoder = new SpringFormEncoder();
+		this.messageConverters = messageConverters;
+	}
+
+	public SpringEncoder(SpringFormEncoder springFormEncoder,
+			ObjectFactory<HttpMessageConverters> messageConverters) {
+		this.springFormEncoder = springFormEncoder;
 		this.messageConverters = messageConverters;
 	}
 
@@ -82,16 +92,15 @@ public class SpringEncoder implements Encoder {
 				requestContentType = MediaType.valueOf(type);
 			}
 
-			if (bodyType != null && bodyType.equals(MultipartFile.class)) {
-				if (Objects.equals(requestContentType, MediaType.MULTIPART_FORM_DATA)) {
-					this.springFormEncoder.encode(requestBody, bodyType, request);
-					return;
-				}
-				else {
-					String message = "Content-Type \"" + MediaType.MULTIPART_FORM_DATA
-							+ "\" not set for request body of type "
-							+ requestBody.getClass().getSimpleName();
-					throw new EncodeException(message);
+			if (Objects.equals(requestContentType, MediaType.MULTIPART_FORM_DATA)) {
+				this.springFormEncoder.encode(requestBody, bodyType, request);
+				return;
+			}
+			else {
+				if (bodyType == MultipartFile.class) {
+					log.warn(
+							"For MultipartFile to be handled correctly, the 'consumes' parameter of @RequestMapping "
+									+ "should be specified as MediaType.MULTIPART_FORM_DATA_VALUE");
 				}
 			}
 
@@ -109,7 +118,7 @@ public class SpringEncoder implements Encoder {
 								messageConverter, request);
 					}
 				}
-				catch (IOException ex) {
+				catch (IOException | HttpMessageConversionException ex) {
 					throw new EncodeException("Error converting request body", ex);
 				}
 				if (outputMessage != null) {

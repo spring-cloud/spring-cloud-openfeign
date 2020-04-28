@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2016-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,7 @@
 
 package org.springframework.cloud.openfeign.hateoas.app;
 
-import java.util.Collections;
-
-import com.netflix.loadbalancer.BaseLoadBalancer;
-import com.netflix.loadbalancer.ILoadBalancer;
-import com.netflix.loadbalancer.Server;
-
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 
 /**
  * @author Hector Espert
@@ -32,13 +25,5 @@ public class FeignHalRibbonConfiguration {
 
 	@Value("${local.server.port}")
 	private int serverPort = 0;
-
-	@Bean
-	public ILoadBalancer ribbonLoadBalancer() {
-		Server server = new Server("localhost", serverPort);
-		BaseLoadBalancer balancer = new BaseLoadBalancer();
-		balancer.setServersList(Collections.singletonList(server));
-		return balancer;
-	}
 
 }

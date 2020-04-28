@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.openfeign.valid.scanning;
 
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerList;
 import feign.Client;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,14 +24,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.ribbon.RibbonClients;
-import org.springframework.cloud.netflix.ribbon.StaticServerList;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClients;
+import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -100,7 +100,7 @@ public class FeignClientScanningTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients // NO clients attribute. That's what this class is testing!
-	@RibbonClients(defaultConfiguration = LocalRibbonClientConfiguration.class)
+	@LoadBalancerClients(defaultConfiguration = LocalClientConfiguration.class)
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
@@ -113,14 +113,15 @@ public class FeignClientScanningTests {
 
 	// Load balancer with fixed server list for "local" pointing to localhost
 	@Configuration(proxyBeanMethods = false)
-	public static class LocalRibbonClientConfiguration {
+	static class LocalClientConfiguration {
 
-		@Value("${local.server.port}")
+		@LocalServerPort
 		private int port = 0;
 
 		@Bean
-		public ServerList<Server> ribbonServerList() {
-			return new StaticServerList<>(new Server("localhost", this.port));
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
+				Environment env) {
+			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 		}
 
 	}

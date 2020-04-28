@@ -19,26 +19,24 @@ package org.springframework.cloud.openfeign.annotation;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Map;
 
 import feign.MethodMetadata;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 
 import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
 
 /**
- * {@link RequestParam} parameter processor.
+ * {@link RequestPart} parameter processor.
  *
- * @author Jakub Narloch
- * @author Abhijit Sarkar
+ * @author Aaron Whiteside
  * @see AnnotatedParameterProcessor
  */
-public class RequestParamParameterProcessor implements AnnotatedParameterProcessor {
+public class RequestPartParameterProcessor implements AnnotatedParameterProcessor {
 
-	private static final Class<RequestParam> ANNOTATION = RequestParam.class;
+	private static final Class<RequestPart> ANNOTATION = RequestPart.class;
 
 	@Override
 	public Class<? extends Annotation> getAnnotationType() {
@@ -49,26 +47,17 @@ public class RequestParamParameterProcessor implements AnnotatedParameterProcess
 	public boolean processArgument(AnnotatedParameterContext context,
 			Annotation annotation, Method method) {
 		int parameterIndex = context.getParameterIndex();
-		Class<?> parameterType = method.getParameterTypes()[parameterIndex];
 		MethodMetadata data = context.getMethodMetadata();
 
-		if (Map.class.isAssignableFrom(parameterType)) {
-			checkState(data.queryMapIndex() == null,
-					"Query map can only be present once.");
-			data.queryMapIndex(parameterIndex);
-
-			return true;
-		}
-
-		RequestParam requestParam = ANNOTATION.cast(annotation);
-		String name = requestParam.value();
+		String name = ANNOTATION.cast(annotation).value();
 		checkState(emptyToNull(name) != null,
-				"RequestParam.value() was empty on parameter %s", parameterIndex);
+				"RequestPart.value() was empty on parameter %s", parameterIndex);
 		context.setParameterName(name);
 
-		Collection<String> query = context.setTemplateParameter(name,
-				data.template().queries().get(name));
-		data.template().query(name, query);
+		data.formParams().add(name);
+		Collection<String> names = context.setTemplateParameter(name,
+				data.indexToName().get(parameterIndex));
+		data.indexToName().put(parameterIndex, names);
 		return true;
 	}
 

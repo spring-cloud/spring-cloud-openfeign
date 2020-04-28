@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,11 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import feign.MethodMetadata;
 import feign.Param;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.convert.ConversionService;
@@ -54,10 +57,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 import static org.springframework.cloud.openfeign.support.SpringEncoder.OPTIONAL_REQUEST_BODY;
@@ -67,7 +71,10 @@ import static org.springframework.web.util.UriUtils.encode;
  * @author chadjaros
  * @author Halvdan Hoem Grelland
  * @author Aram Peres
+ * @author Aaron Whiteside
+ * @author Artyom Romanenko
  */
+@RunWith(JUnitParamsRunner.class)
 public class SpringMvcContractTests {
 
 	private static final Class<?> EXECUTABLE_TYPE;
@@ -247,7 +254,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/advanced/test/{id}?amount=" + encode("{amount}", UTF_8));
+				.isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -271,7 +278,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/advanced/test/{id}?amount=" + encode("{amount}", UTF_8));
+				.isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -296,7 +303,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/advanced/test2?amount=" + encode("{amount}", UTF_8));
+				.isEqualTo("/advanced/test2?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -383,7 +390,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/test?id=" + encode("{id}", UTF_8));
+		assertThat(data.template().url()).isEqualTo("/test?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().queries().get("id").toString()).isEqualTo("[{id}]");
 		assertThat(data.indexToExpander().get(0)).isNotNull();
@@ -396,7 +403,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/test?id=" + encode("{id}", UTF_8));
+		assertThat(data.template().url()).isEqualTo("/test?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().queries().get("id").toString()).isEqualTo("[{id}]");
 		assertThat(data.indexToExpander().get(0)).isNotNull();
@@ -451,8 +458,8 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo(
-				"/advanced/testfallback/{id}?amount=" + encode("{amount}", UTF_8));
+		assertThat(data.template().url())
+				.isEqualTo("/advanced/testfallback/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -496,8 +503,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = this.contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-				.isEqualTo("/queryMap?aParam=" + encode("{aParam}", UTF_8));
+		assertThat(data.template().url()).isEqualTo("/queryMap?aParam=" + "{aParam}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.queryMapIndex().intValue()).isEqualTo(0);
 		Map<String, Collection<String>> params = data.template().queries();
@@ -512,7 +518,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-				.isEqualTo("/queryMapObject?aParam=" + encode("{aParam}", UTF_8));
+				.isEqualTo("/queryMapObject?aParam=" + "{aParam}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.queryMapIndex().intValue()).isEqualTo(0);
 		Map<String, Collection<String>> params = data.template().queries();
@@ -576,6 +582,22 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
+	public void testMatrixVariableWithNoName() throws NoSuchMethodException {
+		Method method = TestTemplate_MatrixVariable.class
+				.getDeclaredMethod("matrixVariableNotNamed", Map.class);
+		MethodMetadata data = this.contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Map<String, String> testMap = new HashMap<>();
+
+		testMap.put("param", "value");
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
+		assertThat(";param=value")
+				.isEqualTo(data.indexToExpander().get(0).expand(testMap));
+	}
+
+	@Test
 	public void testAddingTemplatedParameterWithTheSameKey()
 			throws NoSuchMethodException {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod(
@@ -585,6 +607,63 @@ public class SpringMvcContractTests {
 
 		assertThat(data.template().headers().get("Accept")).contains("application/json",
 				"{Accept}");
+	}
+
+	private Class[] doubleMappingClassesProvider() {
+		return new Class[] { TestTemplate_RequestMapping_Empty_Class.class,
+				TestTemplate_RequestMapping_Empty_Method.class };
+	}
+
+	@Test
+	@Parameters(method = "doubleMappingClassesProvider")
+	public void testDoubleRequestMapping_root(Class clazz) throws NoSuchMethodException {
+		Method method = clazz.getDeclaredMethod("root");
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/");
+	}
+
+	@Test
+	@Parameters(method = "doubleMappingClassesProvider")
+	public void testDoubleRequestMapping_rootReverse(Class clazz)
+			throws NoSuchMethodException {
+		Method method = clazz.getDeclaredMethod("rootReverse");
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/");
+	}
+
+	@Test
+	@Parameters(method = "doubleMappingClassesProvider")
+	public void testDoubleRequestMapping_sub(Class clazz) throws NoSuchMethodException {
+		Method method = clazz.getDeclaredMethod("sub");
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/sub");
+	}
+
+	@Test
+	@Parameters(method = "doubleMappingClassesProvider")
+	public void testDoubleRequestMapping_subEmpty(Class clazz)
+			throws NoSuchMethodException {
+		Method method = clazz.getDeclaredMethod("subEmpty");
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/subEmpty");
+	}
+
+	@Test
+	public void testMultipleRequestPartAnnotations() throws NoSuchMethodException {
+		Method method = TestTemplate_RequestPart.class.getDeclaredMethod(
+				"requestWithMultipleParts", MultipartFile.class, String.class);
+
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		assertThat(data.formParams()).contains("file", "id");
 	}
 
 	public interface TestTemplate_Simple {
@@ -691,6 +770,15 @@ public class SpringMvcContractTests {
 
 	}
 
+	public interface TestTemplate_RequestPart {
+
+		@RequestMapping(path = "/requestPart", method = RequestMethod.POST,
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+		void requestWithMultipleParts(@RequestPart("file") MultipartFile file,
+				@RequestPart("id") String identifier);
+
+	}
+
 	public interface TestTemplate_MatrixVariable {
 
 		@RequestMapping(path = "/matrixVariable/{params}")
@@ -698,6 +786,9 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(path = "/matrixVariableObject/{param}")
 		String matrixVariableObject(@MatrixVariable("param") Object object);
+
+		@RequestMapping(path = "/matrixVariable/{params}")
+		String matrixVariableNotNamed(@MatrixVariable Map<String, Object> params);
 
 	}
 
@@ -760,6 +851,40 @@ public class SpringMvcContractTests {
 		@RequestMapping(method = RequestMethod.GET)
 		String getTest(@RequestParam("amount") @NumberFormat(
 				pattern = CUSTOM_PATTERN) BigDecimal amount);
+
+	}
+
+	@RequestMapping("")
+	public interface TestTemplate_RequestMapping_Empty_Class {
+
+		@RequestMapping("/")
+		String root();
+
+		@RequestMapping("")
+		String rootReverse();
+
+		@RequestMapping("/sub")
+		String sub();
+
+		@RequestMapping("subEmpty")
+		String subEmpty();
+
+	}
+
+	@RequestMapping("/")
+	public interface TestTemplate_RequestMapping_Empty_Method {
+
+		@RequestMapping("")
+		String root();
+
+		@RequestMapping("/")
+		String rootReverse();
+
+		@RequestMapping("/sub")
+		String sub();
+
+		@RequestMapping("subEmpty")
+		String subEmpty();
 
 	}
 

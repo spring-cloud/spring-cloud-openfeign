@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import org.junit.Test;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
-import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
+import org.springframework.cloud.openfeign.loadbalancer.FeignLoadBalancerAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -57,8 +56,9 @@ public class FeignClientValidationTests {
 	@Test
 	public void validLoadBalanced() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				LoadBalancerAutoConfiguration.class, RibbonAutoConfiguration.class,
-				FeignRibbonClientAutoConfiguration.class,
+				LoadBalancerAutoConfiguration.class,
+				org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration.class,
+				FeignLoadBalancerAutoConfiguration.class,
 				GoodServiceIdConfiguration.class);
 		assertThat(context.getBean(GoodServiceIdConfiguration.Client.class)).isNotNull();
 		context.close();

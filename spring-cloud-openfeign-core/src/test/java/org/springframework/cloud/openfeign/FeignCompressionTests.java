@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
-import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
 import org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingAutoConfiguration;
 import org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingInterceptor;
 import org.springframework.cloud.openfeign.encoding.FeignContentGzipEncodingAutoConfiguration;
@@ -54,8 +53,7 @@ public class FeignCompressionTests {
 				.withPropertyValues("feign.compression.response.enabled=true",
 						"feign.compression.request.enabled=true",
 						"feign.okhttp.enabled=false")
-				.withConfiguration(AutoConfigurations.of(ArchaiusAutoConfiguration.class,
-						FeignAutoConfiguration.class,
+				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
 						FeignContentGzipEncodingAutoConfiguration.class,
 						FeignAcceptGzipEncodingAutoConfiguration.class,
 						HttpClientConfiguration.class, PlainConfig.class))

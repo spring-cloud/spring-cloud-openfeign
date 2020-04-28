@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,33 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.hystrix.security.app;
+package org.springframework.cloud.openfeign.support;
+
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 
 /**
- * @author Daniel Lavoie
+ * @author Darren Foong
  */
-@RestController
-@RequestMapping("/proxy-username")
-public class ProxyUsernameController {
+@Component
+public class JsonFormWriter extends AbstractFormWriter {
 
 	@Autowired
-	private UsernameClient usernameClient;
+	private ObjectMapper objectMapper;
 
-	@RequestMapping
-	public String getUsername() {
-		return this.usernameClient.getUsername();
+	@Override
+	protected MediaType getContentType() {
+		return MediaType.APPLICATION_JSON;
+	}
+
+	@Override
+	protected String writeAsString(Object object) throws IOException {
+		return objectMapper.writeValueAsString(object);
 	}
 
 }

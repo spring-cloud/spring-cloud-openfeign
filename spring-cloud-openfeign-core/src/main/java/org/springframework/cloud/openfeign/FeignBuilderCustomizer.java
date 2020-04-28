@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.hystrix.security.app;
+package org.springframework.cloud.openfeign;
 
-import java.util.concurrent.Callable;
+import feign.Feign;
 
-import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
+/**
+ * Allows application to customize the Feign builder.
+ *
+ * @author Matt King
+ */
+@FunctionalInterface
+public interface FeignBuilderCustomizer {
 
-public class CustomConcurrenyStrategy extends HystrixConcurrencyStrategy {
-
-	private boolean hookCalled;
-
-	@Override
-	public <T> Callable<T> wrapCallable(Callable<T> callable) {
-		this.hookCalled = true;
-
-		return super.wrapCallable(callable);
-	}
-
-	public boolean isHookCalled() {
-		return this.hookCalled;
-	}
+	void customize(Feign.Builder builder);
 
 }

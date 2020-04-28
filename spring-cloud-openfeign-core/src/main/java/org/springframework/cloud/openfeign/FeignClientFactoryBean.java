@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,9 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
-import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -50,8 +50,9 @@ import org.springframework.util.StringUtils;
  * @author Venil Noronha
  * @author Eko Kurniawan Khannedy
  * @author Gregor Zurowski
+ * @author Matt King
  */
-class FeignClientFactoryBean
+public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
 
 	/***********************************
@@ -78,7 +79,7 @@ class FeignClientFactoryBean
 	private Class<?> fallbackFactory = void.class;
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		Assert.hasText(this.contextId, "Context id must be set");
 		Assert.hasText(this.name, "Name must be set");
 	}
@@ -97,8 +98,21 @@ class FeignClientFactoryBean
 		// @formatter:on
 
 		configureFeign(context, builder);
+		applyBuildCustomizers(context, builder);
 
 		return builder;
+	}
+
+	private void applyBuildCustomizers(FeignContext context, Feign.Builder builder) {
+		Map<String, FeignBuilderCustomizer> customizerMap = context
+				.getInstances(contextId, FeignBuilderCustomizer.class);
+
+		if (customizerMap != null) {
+			customizerMap.values().stream()
+					.sorted(AnnotationAwareOrderComparator.INSTANCE)
+					.forEach(feignBuilderCustomizer -> feignBuilderCustomizer
+							.customize(builder));
+		}
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
@@ -140,6 +154,14 @@ class FeignClientFactoryBean
 		ErrorDecoder errorDecoder = getOptional(context, ErrorDecoder.class);
 		if (errorDecoder != null) {
 			builder.errorDecoder(errorDecoder);
+		}
+		else {
+			FeignErrorDecoderFactory errorDecoderFactory = getOptional(context,
+					FeignErrorDecoderFactory.class);
+			if (errorDecoderFactory != null) {
+				ErrorDecoder factoryErrorDecoder = errorDecoderFactory.create(this.type);
+				builder.errorDecoder(factoryErrorDecoder);
+			}
 		}
 		Request.Options options = getOptional(context, Request.Options.class);
 		if (options != null) {
@@ -254,11 +276,11 @@ class FeignClientFactoryBean
 		}
 
 		throw new IllegalStateException(
-				"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-netflix-ribbon?");
+				"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-loadbalancer?");
 	}
 
 	@Override
-	public Object getObject() throws Exception {
+	public Object getObject() {
 		return getTarget();
 	}
 
@@ -288,11 +310,6 @@ class FeignClientFactoryBean
 		String url = this.url + cleanPath();
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
-			if (client instanceof LoadBalancerFeignClient) {
-				// not load balancing because we have a url,
-				// but ribbon is on the classpath, so unwrap
-				client = ((LoadBalancerFeignClient) client).getDelegate();
-			}
 			if (client instanceof FeignBlockingLoadBalancerClient) {
 				// not load balancing because we have a url,
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
