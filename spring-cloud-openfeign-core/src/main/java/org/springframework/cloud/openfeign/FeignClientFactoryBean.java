@@ -38,6 +38,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.ApplicationContext;
@@ -107,6 +108,11 @@ class FeignClientFactoryBean
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
 		FeignClientProperties properties = this.applicationContext
 				.getBean(FeignClientProperties.class);
+
+		FeignClientConfigurer feignClientConfigurer = getOptional(context,
+				FeignClientConfigurer.class);
+		setInheritParentContext(feignClientConfigurer.inheritParentConfiguration());
+
 		if (properties != null && inheritParentContext) {
 			if (properties.isDefaultToProperties()) {
 				configureUsingConfiguration(context, builder);

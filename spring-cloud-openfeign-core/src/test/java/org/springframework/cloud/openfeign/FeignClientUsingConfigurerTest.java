@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,11 +43,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DirtiesContext
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientUsingAnnotationTest.Application.class, value = {
+@SpringBootTest(classes = FeignClientUsingConfigurerTest.Application.class, value = {
 		"feign.client.config.default.loggerLevel=full",
 		"feign.client.config.default.requestInterceptors[0]=org.springframework.cloud.openfeign.FeignClientUsingPropertiesTests.FooRequestInterceptor",
 		"feign.client.config.default.requestInterceptors[1]=org.springframework.cloud.openfeign.FeignClientUsingPropertiesTests.BarRequestInterceptor" })
-public class FeignClientUsingAnnotationTest {
+public class FeignClientUsingConfigurerTest {
 
 	private static final String BEAN_NAME_PREFIX = "&org.springframework.cloud.openfeign.FeignClientUsingAnnotationTest$";
 
@@ -107,13 +108,24 @@ public class FeignClientUsingAnnotationTest {
 			return requestTemplate -> {
 			};
 		}
+	}
 
-		public class NoInheritConfiguration {
+	public class NoInheritConfiguration {
 
-			@Bean
-			public Logger.Level logLevel() {
-				return Logger.Level.HEADERS;
-			}
+		@Bean
+		public Logger.Level logLevel() {
+			return Logger.Level.HEADERS;
+		}
+
+		@Bean
+		public FeignClientConfigurer feignClientConfigurer() {
+			return new FeignClientConfigurer() {
+
+				@Override
+				public boolean inheritParentConfiguration() {
+					return false;
+				}
+			};
 
 		}
 
@@ -124,8 +136,7 @@ public class FeignClientUsingAnnotationTest {
 
 	}
 
-	@FeignClient(name = "noInheritFeignClient", inheritParentContext = false,
-			configuration = Application.NoInheritConfiguration.class)
+	@FeignClient(name = "noInheritFeignClient", configuration = NoInheritConfiguration.class)
 	interface NoInheritFeignClient {
 
 	}

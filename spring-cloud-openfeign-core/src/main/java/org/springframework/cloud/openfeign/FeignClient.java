@@ -32,7 +32,6 @@ import org.springframework.core.annotation.AliasFor;
  *
  * @author Spencer Gibb
  * @author Venil Noronha
- * @author Matt King
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -122,14 +121,5 @@ public @interface FeignClient {
 	 * @return whether to mark the feign proxy as a primary bean. Defaults to true.
 	 */
 	boolean primary() default true;
-
-	/**
-	 * FALSE will only apply configurations from classes listed in
-	 * <code>configuration()</code>. Will still use parent instance of
-	 * {@link feign.codec.Decoder}, {@link feign.codec.Encoder}, and {@link feign.Contract}
-	 * if none are provided.
-	 * @return weather to inherit parent context for client configuration.
-	 */
-	boolean inheritParentContext() default true;
 
 }
