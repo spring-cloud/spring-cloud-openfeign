@@ -85,7 +85,9 @@ public class FeignClientUsingConfigurerTest {
 
 		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder,
 				"requestInterceptors");
+
 		assertThat(interceptors).as("interceptors not set").isEmpty();
+		assertThat(factoryBean.isInheritParentContext()).as("is inheriting from parent configuration").isFalse();
 	}
 
 	@Test
