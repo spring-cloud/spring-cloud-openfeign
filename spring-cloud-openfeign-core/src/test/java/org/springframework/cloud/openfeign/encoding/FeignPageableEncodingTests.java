@@ -55,10 +55,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Charlie Mordant.
  */
 @SpringBootTest(classes = FeignPageableEncodingTests.Application.class,
-	webEnvironment = RANDOM_PORT,
-	value = {"feign.compression.request.enabled=true",
-		"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
-		"ribbon.OkToRetryOnAllOperations=false"})
+		webEnvironment = RANDOM_PORT,
+		value = { "feign.compression.request.enabled=true",
+				"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
+				"ribbon.OkToRetryOnAllOperations=false" })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FeignPageableEncodingTests {
 
@@ -73,7 +73,7 @@ public class FeignPageableEncodingTests {
 
 		// when
 		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
-			.getInvoicesPaged(pageable);
+				.getInvoicesPaged(pageable);
 
 		// then
 		assertThat(response).isNotNull();
@@ -81,8 +81,8 @@ public class FeignPageableEncodingTests {
 		assertThat(response.getBody()).isNotNull();
 		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
 		assertThat(response.getBody().getPageable().getSort()).hasSize(1);
-		Optional<Sort.Order> optionalOrder = response.getBody().getPageable().getSort().get()
-			.findFirst();
+		Optional<Sort.Order> optionalOrder = response.getBody().getPageable().getSort()
+				.get().findFirst();
 		if (optionalOrder.isPresent()) {
 			Sort.Order order = optionalOrder.get();
 			assertThat(order.getDirection()).isEqualTo(Sort.Direction.ASC);
@@ -94,10 +94,10 @@ public class FeignPageableEncodingTests {
 	@EnableFeignClients(clients = InvoiceClient.class)
 	@LoadBalancerClient(name = "local", configuration = LocalClientConfiguration.class)
 	@SpringBootApplication(
-		scanBasePackages = "org.springframework.cloud.openfeign.encoding.app",
-		exclude = {RepositoryRestMvcAutoConfiguration.class})
+			scanBasePackages = "org.springframework.cloud.openfeign.encoding.app",
+			exclude = { RepositoryRestMvcAutoConfiguration.class })
 	@EnableSpringDataWebSupport
-	@Import({NoSecurityConfiguration.class, FeignClientsConfiguration.class})
+	@Import({ NoSecurityConfiguration.class, FeignClientsConfiguration.class })
 	public static class Application {
 
 	}
@@ -110,7 +110,7 @@ public class FeignPageableEncodingTests {
 
 		@Bean
 		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-			Environment env) {
+				Environment env) {
 			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 		}
 

@@ -82,7 +82,7 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder() {
 		return new OptionalDecoder(
-			new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
+				new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
 	}
 
 	@Bean
@@ -96,17 +96,17 @@ public class FeignClientsConfiguration {
 	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
 	@ConditionalOnMissingBean
 	public Encoder feignEncoderPageable(
-		ObjectProvider<AbstractFormWriter> formWriterProvider) {
+			ObjectProvider<AbstractFormWriter> formWriterProvider) {
 		PageableSpringEncoder encoder = new PageableSpringEncoder(
-			springEncoder(formWriterProvider));
+				springEncoder(formWriterProvider));
 
 		if (springDataWebProperties != null) {
 			encoder.setPageParameter(
-				springDataWebProperties.getPageable().getPageParameter());
+					springDataWebProperties.getPageable().getPageParameter());
 			encoder.setSizeParameter(
-				springDataWebProperties.getPageable().getSizeParameter());
+					springDataWebProperties.getPageable().getSizeParameter());
 			encoder.setSortParameter(
-				springDataWebProperties.getSort().getSortParameter());
+					springDataWebProperties.getSort().getSortParameter());
 		}
 		return encoder;
 	}
@@ -162,7 +162,7 @@ public class FeignClientsConfiguration {
 
 		if (formWriter != null) {
 			return new SpringEncoder(new SpringPojoFormEncoder(formWriter),
-				this.messageConverters);
+					this.messageConverters);
 		}
 		else {
 			return new SpringEncoder(new SpringFormEncoder(), this.messageConverters);
@@ -175,7 +175,7 @@ public class FeignClientsConfiguration {
 			super();
 
 			MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(
-				MULTIPART);
+					MULTIPART);
 			processor.addFirstWriter(formWriter);
 		}
 
