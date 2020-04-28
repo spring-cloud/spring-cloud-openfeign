@@ -42,6 +42,7 @@ import org.springframework.cloud.openfeign.support.AbstractFormWriter;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
+import org.springframework.cloud.openfeign.support.SortJacksonModule;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
@@ -81,7 +82,7 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder() {
 		return new OptionalDecoder(
-				new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
+			new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
 	}
 
 	@Bean
@@ -95,17 +96,17 @@ public class FeignClientsConfiguration {
 	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
 	@ConditionalOnMissingBean
 	public Encoder feignEncoderPageable(
-			ObjectProvider<AbstractFormWriter> formWriterProvider) {
+		ObjectProvider<AbstractFormWriter> formWriterProvider) {
 		PageableSpringEncoder encoder = new PageableSpringEncoder(
-				springEncoder(formWriterProvider));
+			springEncoder(formWriterProvider));
 
 		if (springDataWebProperties != null) {
 			encoder.setPageParameter(
-					springDataWebProperties.getPageable().getPageParameter());
+				springDataWebProperties.getPageable().getPageParameter());
 			encoder.setSizeParameter(
-					springDataWebProperties.getPageable().getSizeParameter());
+				springDataWebProperties.getPageable().getSizeParameter());
 			encoder.setSortParameter(
-					springDataWebProperties.getSort().getSortParameter());
+				springDataWebProperties.getSort().getSortParameter());
 		}
 		return encoder;
 	}
@@ -150,12 +151,18 @@ public class FeignClientsConfiguration {
 		return new PageJacksonModule();
 	}
 
+	@Bean
+	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
+	public Module sortModule() {
+		return new SortJacksonModule();
+	}
+
 	private Encoder springEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider) {
 		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
 
 		if (formWriter != null) {
 			return new SpringEncoder(new SpringPojoFormEncoder(formWriter),
-					this.messageConverters);
+				this.messageConverters);
 		}
 		else {
 			return new SpringEncoder(new SpringFormEncoder(), this.messageConverters);
@@ -168,7 +175,7 @@ public class FeignClientsConfiguration {
 			super();
 
 			MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(
-					MULTIPART);
+				MULTIPART);
 			processor.addFirstWriter(formWriter);
 		}
 
