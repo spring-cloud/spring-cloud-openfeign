@@ -39,7 +39,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Sven Döring
- * @author Matt King
  */
 public class FeignClientBuilderTests {
 
@@ -95,7 +94,7 @@ public class FeignClientBuilderTests {
 		// (2) Or a new field was added and the builder class has to be extended with this
 		// new field.
 		assertThat(methodNames).containsExactly("contextId", "decode404", "fallback",
-				"fallbackFactory", "inheritParentContext", "name", "path", "url");
+				"fallbackFactory", "name", "path", "url");
 	}
 
 	@Test
@@ -117,8 +116,6 @@ public class FeignClientBuilderTests {
 				getDefaultValueFromFeignClientAnnotation("path"));
 		assertFactoryBeanField(builder, "decode404",
 				getDefaultValueFromFeignClientAnnotation("decode404"));
-		assertFactoryBeanField(builder, "inheritParentContext",
-				getDefaultValueFromFeignClientAnnotation("inheritParentContext"));
 		assertFactoryBeanField(builder, "fallback",
 				getDefaultValueFromFeignClientAnnotation("fallback"));
 		assertFactoryBeanField(builder, "fallbackFactory",
@@ -142,7 +139,6 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "url", "http://Url/");
 		assertFactoryBeanField(builder, "path", "/Path");
 		assertFactoryBeanField(builder, "decode404", true);
-		assertFactoryBeanField(builder, "inheritParentContext", true);
 	}
 
 	@Test
