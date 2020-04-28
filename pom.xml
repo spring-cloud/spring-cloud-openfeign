@@ -4,14 +4,14 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>spring-cloud-openfeign</artifactId>
-	<version>3.0.0.BUILD-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Spring Cloud OpenFeign</name>
 	<description>Spring Cloud OpenFeign</description>
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>3.0.0.BUILD-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 	<scm>
@@ -26,8 +26,7 @@
 	<properties>
 		<main.basedir>${basedir}</main.basedir>
 		<jackson.version>2.7.3</jackson.version>
-		<spring-cloud-commons.version>3.0.0.BUILD-SNAPSHOT</spring-cloud-commons.version>
-		<spring-cloud-netflix.version>3.0.0.BUILD-SNAPSHOT</spring-cloud-netflix.version>
+		<spring-cloud-commons.version>3.0.0-SNAPSHOT</spring-cloud-commons.version>
 
 		<!-- Plugin versions -->
 		<maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
@@ -96,13 +95,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-netflix-dependencies</artifactId>
-				<version>${spring-cloud-netflix.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-commons-dependencies</artifactId>

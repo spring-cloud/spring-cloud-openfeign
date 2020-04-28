@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 
 /**
- * A {@link Client} implementation that uses {@link BlockingLoadBalancerClient} to select
- * a {@link ServiceInstance} to use while resolving the request host.
+ * A {@link Client} implementation that uses {@link LoadBalancerClient} to select a
+ * {@link ServiceInstance} to use while resolving the request host.
  *
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
@@ -45,10 +45,10 @@ public class FeignBlockingLoadBalancerClient implements Client {
 
 	private final Client delegate;
 
-	private final BlockingLoadBalancerClient loadBalancerClient;
+	private final LoadBalancerClient loadBalancerClient;
 
 	public FeignBlockingLoadBalancerClient(Client delegate,
-			BlockingLoadBalancerClient loadBalancerClient) {
+			LoadBalancerClient loadBalancerClient) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
 	}

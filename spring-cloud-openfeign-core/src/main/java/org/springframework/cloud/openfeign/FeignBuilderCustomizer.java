@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.testclients;
+package org.springframework.cloud.openfeign;
 
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import feign.Feign;
 
 /**
- * @author Ryan Baxter
+ * Allows application to customize the Feign builder.
+ *
+ * @author Matt King
  */
-@FeignClient(name = "localapp")
-public interface TestClient {
+@FunctionalInterface
+public interface FeignBuilderCustomizer {
 
-	@RequestMapping(method = RequestMethod.GET, value = "/hello")
-	String getHello();
+	void customize(Feign.Builder builder);
 
 }

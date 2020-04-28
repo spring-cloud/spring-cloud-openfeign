@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignFormatterRegistrar;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
+import org.springframework.cloud.openfeign.support.AbstractFormWriter;
+import org.springframework.cloud.openfeign.support.JsonFormWriter;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -92,6 +94,8 @@ import static org.hamcrest.Matchers.instanceOf;
  * @author Jakub Narloch
  * @author Erik Kringen
  * @author Halvdan Hoem Grelland
+ * @author Aaron Whiteside
+ * @author Darren Foong
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ValidFeignClientTests.Application.class,
@@ -308,11 +312,28 @@ public class ValidFeignClientTests {
 	}
 
 	@Test
+	public void testSinglePojoRequestPart() {
+		String response = this.multipartClient.singlePojoPart(new Hello(HELLO_WORLD_1));
+		assertThat(response).isEqualTo(HELLO_WORLD_1);
+	}
+
+	@Test
 	public void testMultipleRequestParts() {
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
 				"hello".getBytes());
 		String response = this.multipartClient.multipart("abc", "123", file);
 		assertThat(response).isEqualTo("abc123hello.bin");
+	}
+
+	@Test
+	public void testMultiplePojoRequestParts() {
+		Hello pojo1 = new Hello(HELLO_WORLD_1);
+		Hello pojo2 = new Hello(OI_TERRA_2);
+		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
+				"hello".getBytes());
+		String response = this.multipartClient.multipartPojo("abc", "123", pojo1, pojo2,
+				file);
+		assertThat(response).isEqualTo("abc123hello world 1oi terra 2hello.bin");
 	}
 
 	@Test
@@ -326,6 +347,20 @@ public class ValidFeignClientTests {
 		String fileNames = this.multipartClient
 				.requestPartListOfMultipartFilesReturnsFileNames(multipartFiles);
 		assertThat(fileNames).contains("hello1.bin", "hello2.bin");
+	}
+
+	@Test
+	public void testRequestPartWithListOfPojosAndListOfMultipartFiles() {
+		Hello pojo1 = new Hello(HELLO_WORLD_1);
+		Hello pojo2 = new Hello(OI_TERRA_2);
+		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
+				"hello".getBytes());
+		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null,
+				"hello".getBytes());
+		String response = this.multipartClient
+				.requestPartListOfPojosAndListOfMultipartFiles(
+						Arrays.asList(pojo1, pojo2), Arrays.asList(file1, file2));
+		assertThat(response).isEqualTo("hello world 1oi terra 2hello1.binhello2.bin");
 	}
 
 	@Test
@@ -389,11 +424,24 @@ public class ValidFeignClientTests {
 				produces = MediaType.TEXT_PLAIN_VALUE)
 		String singlePart(@RequestPart("hello") String hello);
 
+		@RequestMapping(method = RequestMethod.POST, path = "/singlePojoPart",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
+		String singlePojoPart(@RequestPart("hello") Hello hello);
+
 		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 				produces = MediaType.TEXT_PLAIN_VALUE)
 		String multipart(@RequestPart("hello") String hello,
 				@RequestPart("world") String world,
+				@RequestPart("file") MultipartFile file);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipartPojo(@RequestPart("hello") String hello,
+				@RequestPart("world") String world, @RequestPart("pojo1") Hello pojo1,
+				@RequestPart("pojo2") Hello pojo2,
 				@RequestPart("file") MultipartFile file);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
@@ -406,6 +454,13 @@ public class ValidFeignClientTests {
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 				produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestPartListOfMultipartFilesReturnsFileNames(
+				@RequestPart("files") List<MultipartFile> files);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojosFiles",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfPojosAndListOfMultipartFiles(
+				@RequestPart("pojos") List<Hello> pojos,
 				@RequestPart("files") List<MultipartFile> files);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
@@ -602,6 +657,11 @@ public class ValidFeignClientTests {
 			};
 		}
 
+		@Bean
+		public AbstractFormWriter jsonFormWriter() {
+			return new JsonFormWriter();
+		}
+
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")
 		public Hello getHello() {
 			return new Hello(HELLO_WORLD_1);
@@ -707,8 +767,15 @@ public class ValidFeignClientTests {
 		@RequestMapping(method = RequestMethod.POST, path = "/singlePart",
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 				produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipart(@RequestPart("hello") String hello) {
+		String singlePart(@RequestPart("hello") String hello) {
 			return hello;
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/singlePojoPart",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
+		String singlePojoPart(@RequestPart("hello") Hello hello) {
+			return hello.getMessage();
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
@@ -718,6 +785,17 @@ public class ValidFeignClientTests {
 				@RequestPart("world") String world,
 				@RequestPart("file") MultipartFile file) {
 			return hello + world + file.getOriginalFilename();
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipartPojo(@RequestPart("hello") String hello,
+				@RequestPart("world") String world, @RequestPart("pojo1") Hello pojo1,
+				@RequestPart("pojo2") Hello pojo2,
+				@RequestPart("file") MultipartFile file) {
+			return hello + world + pojo1.getMessage() + pojo2.getMessage()
+					+ file.getOriginalFilename();
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
@@ -734,6 +812,25 @@ public class ValidFeignClientTests {
 		String multipartFilenames(HttpServletRequest request) throws Exception {
 			return request.getParts().stream().map(Part::getSubmittedFileName)
 					.collect(Collectors.joining(","));
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojosFiles",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfPojosAndListOfMultipartFiles(
+				@RequestPart("pojos") List<Hello> pojos,
+				@RequestPart("files") List<MultipartFile> files) {
+			StringBuilder result = new StringBuilder();
+
+			for (Hello pojo : pojos) {
+				result.append(pojo.getMessage());
+			}
+
+			for (MultipartFile file : files) {
+				result.append(file.getOriginalFilename());
+			}
+
+			return result.toString();
 		}
 
 	}

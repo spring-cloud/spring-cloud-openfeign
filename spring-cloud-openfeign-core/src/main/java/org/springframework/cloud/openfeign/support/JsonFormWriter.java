@@ -14,20 +14,33 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign;
+package org.springframework.cloud.openfeign.support;
 
-import feign.Feign;
-import feign.Target;
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 
 /**
- * @author Spencer Gibb
+ * @author Darren Foong
  */
-class DefaultTargeter implements Targeter {
+@Component
+public class JsonFormWriter extends AbstractFormWriter {
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	@Override
-	public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign,
-			FeignContext context, Target.HardCodedTarget<T> target) {
-		return feign.target(target);
+	protected MediaType getContentType() {
+		return MediaType.APPLICATION_JSON;
+	}
+
+	@Override
+	protected String writeAsString(Object object) throws IOException {
+		return objectMapper.writeValueAsString(object);
 	}
 
 }

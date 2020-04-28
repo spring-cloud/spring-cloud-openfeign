@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package org.springframework.cloud.openfeign.loadbalancer;
 import feign.Client;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration instantiating a {@link BlockingLoadBalancerClient}-based {@link Client}
- * object that uses {@link Client.Default} under the hood.
+ * Configuration instantiating a {@link LoadBalancerClient}-based {@link Client} object
+ * that uses {@link Client.Default} under the hood.
  *
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
@@ -35,7 +35,7 @@ class DefaultFeignLoadBalancerConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Client feignClient(BlockingLoadBalancerClient loadBalancerClient) {
+	public Client feignClient(LoadBalancerClient loadBalancerClient) {
 		return new FeignBlockingLoadBalancerClient(new Client.Default(null, null),
 				loadBalancerClient);
 	}

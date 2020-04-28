@@ -15,7 +15,7 @@ To use Feign create an interface and annotate it.
 It has pluggable annotation support including Feign annotations and JAX-RS annotations.
 Feign also supports pluggable encoders and decoders.
 Spring Cloud adds support for Spring MVC annotations and for using the same `HttpMessageConverters` used by default in Spring Web.
-Spring Cloud integrates Ribbon and Eureka, as well as Spring Cloud LoadBalancer to provide a load-balanced http client when using Feign.
+Spring Cloud integrates Eureka, as well as Spring Cloud LoadBalancer to provide a load-balanced http client when using Feign.
 
 [[netflix-feign-starter]]
 === How to Include Feign
@@ -52,7 +52,7 @@ public interface StoreClient {
 }
 ----
 
-In the `@FeignClient` annotation the String value ("stores" above) is an arbitrary client name, which is used to create either a https://github.com/Netflix/ribbon[Ribbon] load-balancer (see <<spring-cloud-ribbon,below for details of Ribbon support>>) or https://github.com/spring-cloud/spring-cloud-commons/blob/master/spring-cloud-commons/src/main/java/org/springframework/cloud/client/loadbalancer/reactive/ReactiveLoadBalancer.java[Spring Cloud LoadBalancer].
+In the `@FeignClient` annotation the String value ("stores" above) is an arbitrary client name, which is used to create a https://github.com/spring-cloud/spring-cloud-commons/blob/master/spring-cloud-loadbalancer/src/main/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClient.java[Spring Cloud LoadBalancer client].
 You can also specify a URL using the `url` attribute
 (absolute value or just a hostname). The name of the bean in the
 application context is the fully qualified name of the interface.
@@ -63,12 +63,7 @@ The load-balancer client above will want to discover the physical addresses
 for the "stores" service. If your application is a Eureka client then
 it will resolve the service in the Eureka service registry. If you
 don't want to use Eureka, you can simply configure a list of servers
-in your external configuration (see
-<<spring-cloud-ribbon-without-eureka,above for example>>).
-
-WARNING: In order to maintain backward compatibility, is used as the default load-balancer implementation.
-However, Spring Cloud Netflix Ribbon is now in maintenance mode, so we recommend using Spring Cloud LoadBalancer instead.
-To do this, set the value of `spring.cloud.loadbalancer.ribbon.enabled` to `false`.
+in your external configuration using https://cloud.spring.io/spring-cloud-static/spring-cloud-commons/current/reference/html/#simplediscoveryclient[`SimpleDiscoveryClient`].
 
 [[spring-cloud-feign-overriding-defaults]]
 === Overriding Feign Defaults
@@ -110,17 +105,15 @@ public interface StoreClient {
 }
 ----
 
-Spring Cloud Netflix provides the following beans by default for feign (`BeanType` beanName: `ClassName`):
+Spring Cloud OpenFeign provides the following beans by default for feign (`BeanType` beanName: `ClassName`):
 
 * `Decoder` feignDecoder: `ResponseEntityDecoder` (which wraps a `SpringDecoder`)
 * `Encoder` feignEncoder: `SpringEncoder`
 * `Logger` feignLogger: `Slf4jLogger`
 * `Contract` feignContract: `SpringMvcContract`
 * `Feign.Builder` feignBuilder: `HystrixFeign.Builder`
-* `Client` feignClient: if Ribbon is in the classpath and is enabled it is a `LoadBalancerFeignClient`, otherwise if Spring Cloud LoadBalancer is in the classpath, `FeignBlockingLoadBalancerClient` is used.
+* `Client` feignClient: if Spring Cloud LoadBalancer is in the classpath, `FeignBlockingLoadBalancerClient` is used.
 If none of them is in the classpath, the default feign client is used.
-
-NOTE: `spring-cloud-starter-openfeign` contains both `spring-cloud-starter-netflix-ribbon` and `spring-cloud-starter-loadbalancer`.
 
 The OkHttpClient and ApacheHttpClient feign clients can be used by setting `feign.okhttp.enabled` or `feign.httpclient.enabled` to `true`, respectively, and having them on the classpath.
 You can customize the HTTP client used by providing a bean of either `org.apache.http.impl.client.CloseableHttpClient` when using Apache or `okhttp3.OkHttpClient` when using OK HTTP.
@@ -523,6 +516,37 @@ public interface DemoTemplate {
     CollectionModel<Store> getStores();
 }
 ----
+
+=== Spring @MatrixVariable Support
+
+Spring Cloud OpenFeign provides support for the Spring `@MatrixVariable` annotation.
+
+If a map is passed as the method argument, the `@MatrixVariable` path segment is created by joining key-value pairs from the map with a `=`.
+
+If a different object is passed, either the `name` provided in the `@MatrixVariable` annotation (if defined) or the annotated variable name is
+joined with the provided method argument using `=`.
+
+IMPORTANT:: Even though, on the server side, Spring does not require the users to name the path segment placeholder same as the matrix variable name, since it would be too ambiguous on the client side, Sprig Cloud OpenFeign requires that you add a path segment placeholder with a name matching either the `name` provided in the `@MatrixVariable` annotation (if defined) or the annotated variable name.
+
+For example:
+
+[source,java,indent=0]
+----
+@GetMapping("/objects/links/{matrixVars}")
+Map<String, List<String>> getObjects(@MatrixVariable Map<String, List<String>> matrixVars);
+----
+Note that both variable name and the path segment placeholder are called `matrixVars`.
+
+[source,java,indent=0]
+----
+@FeignClient("demo")
+public interface DemoTemplate {
+
+    @GetMapping(path = "/stores")
+    CollectionModel<Store> getStores();
+}
+----
+
 
 === Troubleshooting
 

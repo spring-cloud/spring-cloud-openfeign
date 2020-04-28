@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2020-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,22 @@
 
 package org.springframework.cloud.openfeign;
 
-import feign.Feign;
-import feign.Target;
+import feign.codec.ErrorDecoder;
 
 /**
- * @author Spencer Gibb
+ * Allows an application to use a custom Feign {@link feign.codec.ErrorDecoder}.
+ *
+ * @author Michael Cramer
  */
-public interface Targeter {
+public interface FeignErrorDecoderFactory {
 
-	<T> T target(FeignClientFactoryBean factory, Feign.Builder feign,
-			FeignContext context, Target.HardCodedTarget<T> target);
+	/**
+	 * Factory method to provide a {@link feign.codec.ErrorDecoder} for a given
+	 * {@link Class}.
+	 * @param type the {@link Class} for which a {@link feign.codec.ErrorDecoder} instance
+	 * is to be created
+	 * @return a {@link feign.codec.ErrorDecoder} instance
+	 */
+	ErrorDecoder create(Class<?> type);
 
 }
