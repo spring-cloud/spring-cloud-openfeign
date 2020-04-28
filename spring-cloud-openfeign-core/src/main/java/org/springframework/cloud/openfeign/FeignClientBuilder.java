@@ -58,6 +58,7 @@ public class FeignClientBuilder {
 			this.feignClientFactoryBean.setType(type);
 			this.feignClientFactoryBean.setName(FeignClientsRegistrar.getName(name));
 			this.feignClientFactoryBean.setContextId(FeignClientsRegistrar.getName(name));
+			this.feignClientFactoryBean.setInheritParentContext(true);
 			// preset default values - these values resemble the default values on the
 			// FeignClient annotation
 			this.url("").path("").decode404(false);
