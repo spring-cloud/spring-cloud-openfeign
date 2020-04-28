@@ -49,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 		"feign.client.config.default.requestInterceptors[1]=org.springframework.cloud.openfeign.FeignClientUsingPropertiesTests.BarRequestInterceptor" })
 public class FeignClientUsingConfigurerTest {
 
-	private static final String BEAN_NAME_PREFIX = "&org.springframework.cloud.openfeign.FeignClientUsingAnnotationTest$";
+	private static final String BEAN_NAME_PREFIX = "&org.springframework.cloud.openfeign.FeignClientUsingConfigurerTest$";
 
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -58,6 +58,7 @@ public class FeignClientUsingConfigurerTest {
 	private FeignContext context;
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testFeignClient() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) applicationContext
 				.getBean(BEAN_NAME_PREFIX + "TestFeignClient");
@@ -78,6 +79,7 @@ public class FeignClientUsingConfigurerTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testNoInheritFeignClient() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) applicationContext
 				.getBean(BEAN_NAME_PREFIX + "NoInheritFeignClient");
@@ -108,9 +110,10 @@ public class FeignClientUsingConfigurerTest {
 			return requestTemplate -> {
 			};
 		}
+
 	}
 
-	public class NoInheritConfiguration {
+	public static class NoInheritConfiguration {
 
 		@Bean
 		public Logger.Level logLevel() {
@@ -136,7 +139,8 @@ public class FeignClientUsingConfigurerTest {
 
 	}
 
-	@FeignClient(name = "noInheritFeignClient", configuration = NoInheritConfiguration.class)
+	@FeignClient(name = "noInheritFeignClient",
+			configuration = NoInheritConfiguration.class)
 	interface NoInheritFeignClient {
 
 	}
