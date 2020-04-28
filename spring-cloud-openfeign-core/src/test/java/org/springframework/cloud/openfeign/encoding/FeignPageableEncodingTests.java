@@ -17,12 +17,11 @@
 package org.springframework.cloud.openfeign.encoding;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import com.netflix.loadbalancer.BaseLoadBalancer;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
-import java.util.Optional;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -84,8 +83,8 @@ public class FeignPageableEncodingTests {
 		assertThat(response.getBody()).isNotNull();
 		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
 		assertThat(response.getBody().getPageable().getSort()).hasSize(1);
-		Optional<Sort.Order> optionalOrder = response.getBody().getPageable().getSort().get()
-			.findFirst();
+		Optional<Sort.Order> optionalOrder = response.getBody().getPageable().getSort()
+				.get().findFirst();
 		if (optionalOrder.isPresent()) {
 			Sort.Order order = optionalOrder.get();
 			assertThat(order.getDirection()).isEqualTo(Sort.Direction.ASC);

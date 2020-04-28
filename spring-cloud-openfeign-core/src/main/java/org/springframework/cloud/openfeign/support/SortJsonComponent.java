@@ -34,6 +34,7 @@ import org.springframework.data.domain.Sort;
 
 /**
  * This class provides support to serialize and deserialize spring {@link Sort} object.
+ *
  * @author canbezmen
  */
 public class SortJsonComponent {
@@ -41,7 +42,8 @@ public class SortJsonComponent {
 	public static class SortSerializer extends JsonSerializer<Sort> {
 
 		@Override
-		public void serialize(Sort value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+		public void serialize(Sort value, JsonGenerator gen,
+				SerializerProvider serializers) throws IOException {
 			gen.writeStartArray();
 			value.iterator().forEachRemaining(v -> {
 				try {
@@ -64,14 +66,16 @@ public class SortJsonComponent {
 	public static class SortDeserializer extends JsonDeserializer<Sort> {
 
 		@Override
-		public Sort deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+		public Sort deserialize(JsonParser jsonParser,
+				DeserializationContext deserializationContext) throws IOException {
 			TreeNode treeNode = jsonParser.getCodec().readTree(jsonParser);
 			if (treeNode.isArray()) {
 				ArrayNode arrayNode = (ArrayNode) treeNode;
 				List<Sort.Order> orders = new ArrayList<>();
 				for (JsonNode jsonNode : arrayNode) {
-					Sort.Order order = new Sort.Order(Sort.Direction
-						.valueOf(jsonNode.get("direction").textValue()), jsonNode.get("property").textValue());
+					Sort.Order order = new Sort.Order(
+							Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
+							jsonNode.get("property").textValue());
 					orders.add(order);
 				}
 				return Sort.by(orders);
@@ -85,4 +89,5 @@ public class SortJsonComponent {
 		}
 
 	}
+
 }
