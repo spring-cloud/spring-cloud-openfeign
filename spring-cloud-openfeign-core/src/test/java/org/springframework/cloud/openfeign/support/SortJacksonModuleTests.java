@@ -16,28 +16,38 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * @author canbezmen
  */
+@ExtendWith(MockitoExtension.class)
 class SortJacksonModuleTests {
 
-	private static ObjectMapper objectMapper;
+	@Spy
+	private ObjectMapper objectMapper;
 
-	@BeforeAll
-	public static void initialize() {
-		objectMapper = new ObjectMapper();
+	@BeforeEach
+	public void setup() {
 		objectMapper.registerModules(new PageJacksonModule());
 		objectMapper.registerModule(new SortJacksonModule());
 	}
@@ -49,20 +59,32 @@ class SortJacksonModuleTests {
 		// When
 		Page<?> result = objectMapper.readValue(pageJson, Page.class);
 		// Then
-		assertThat(result).isNotNull();
-		assertThat(result.getTotalElements()).isEqualTo(3);
-		assertThat(result.getContent()).hasSize(1);
-		assertThat(result.getPageable()).isNotNull();
-		assertThat(result.getPageable().getPageSize()).isEqualTo(2);
-		assertThat(result.getPageable().getPageNumber()).isEqualTo(1);
-		assertThat(result.getPageable().getSort()).hasSize(1);
+		assertThat(result, notNullValue());
+		assertThat(result, hasProperty("totalElements", is(3L)));
+		assertThat(result.getContent(), hasSize(1));
+		assertThat(result.getPageable(), notNullValue());
+		assertThat(result.getPageable().getPageNumber(), is(1));
+		assertThat(result.getPageable().getPageSize(), is(2));
+		assertThat(result.getPageable().getSort(), notNullValue());
+		result.getPageable().getSort();
 		Optional<Sort.Order> optionalOrder = result.getPageable().getSort().get()
 				.findFirst();
 		if (optionalOrder.isPresent()) {
 			Sort.Order order = optionalOrder.get();
-			assertThat(order.getDirection()).isEqualTo(Sort.Direction.ASC);
-			assertThat(order.getProperty()).isEqualTo("field");
+			assertThat(order, hasProperty("property", is("field")));
+			assertThat(order, hasProperty("direction", is(Sort.Direction.ASC)));
 		}
+	}
+
+	@Test
+	public void serializePage() throws IOException {
+		// Given
+		Sort sort = Sort.by(Sort.Order.by("fieldName"));
+		// When
+		String result = objectMapper.writeValueAsString(sort);
+		// Then
+		assertThat(result, containsString("\"direction\":\"ASC\""));
+		assertThat(result, containsString("\"property\":\"fieldName\""));
 	}
 
 }
