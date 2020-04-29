@@ -29,7 +29,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.domain.Sort;
 
 /**
@@ -39,18 +43,27 @@ import org.springframework.data.domain.Sort;
  */
 public class SortJsonComponent {
 
+	private static final Log LOG = LogFactory.getLog(SortJsonComponent.class);
+
 	public static class SortSerializer extends JsonSerializer<Sort> {
 
 		@Override
 		public void serialize(Sort value, JsonGenerator gen,
-				SerializerProvider serializers) throws IOException {
+			SerializerProvider serializers) throws IOException {
 			gen.writeStartArray();
 			value.iterator().forEachRemaining(v -> {
 				try {
 					gen.writeObject(v);
 				}
 				catch (IOException e) {
-					e.printStackTrace();
+					String message = "Couldn't serialize Sort object for " + v;
+					if (LOG.isErrorEnabled()) {
+						LOG.error(message, e);
+					}
+					else {
+						throw new ConversionFailedException(TypeDescriptor.valueOf(Sort.class),
+							TypeDescriptor.valueOf(String.class), v, e);
+					}
 				}
 			});
 			gen.writeEndArray();
@@ -67,15 +80,15 @@ public class SortJsonComponent {
 
 		@Override
 		public Sort deserialize(JsonParser jsonParser,
-				DeserializationContext deserializationContext) throws IOException {
+			DeserializationContext deserializationContext) throws IOException {
 			TreeNode treeNode = jsonParser.getCodec().readTree(jsonParser);
 			if (treeNode.isArray()) {
 				ArrayNode arrayNode = (ArrayNode) treeNode;
 				List<Sort.Order> orders = new ArrayList<>();
 				for (JsonNode jsonNode : arrayNode) {
 					Sort.Order order = new Sort.Order(
-							Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
-							jsonNode.get("property").textValue());
+						Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
+						jsonNode.get("property").textValue());
 					orders.add(order);
 				}
 				return Sort.by(orders);
