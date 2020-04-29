@@ -29,9 +29,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import feign.codec.EncodeException;
 
-import org.springframework.core.convert.ConversionFailedException;
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.domain.Sort;
 
 /**
@@ -52,9 +51,7 @@ public class SortJsonComponent {
 					gen.writeObject(v);
 				}
 				catch (IOException e) {
-					throw new ConversionFailedException(
-							TypeDescriptor.valueOf(Sort.class),
-							TypeDescriptor.valueOf(String.class), v, e);
+					throw new EncodeException("Couldn't serialize object " + v);
 				}
 			});
 			gen.writeEndArray();
