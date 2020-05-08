@@ -24,10 +24,10 @@ import com.fasterxml.jackson.databind.module.SimpleSerializers;
 import org.springframework.data.domain.Sort;
 
 /**
- * This jackson module provides support to add serialize and deserialize for spring
+ * This Jackson module provides support for serializing and deserializing for Spring
  * {@link Sort} object.
  *
- * @author canbezmen
+ * @author can bezmen
  */
 public class SortJacksonModule extends Module {
 

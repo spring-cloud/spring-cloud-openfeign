@@ -34,9 +34,10 @@ import feign.codec.EncodeException;
 import org.springframework.data.domain.Sort;
 
 /**
- * This class provides support to serialize and deserialize spring {@link Sort} object.
+ * This class provides provides support for serializing and deserializing for Spring
+ * {@link Sort} object.
  *
- * @author canbezmen
+ * @author can bezmen
  */
 public class SortJsonComponent {
 

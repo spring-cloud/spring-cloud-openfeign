@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 /**
- * @author canbezmen
+ * @author can bezmen
  */
 @ExtendWith(MockitoExtension.class)
 class SortJacksonModuleTests {

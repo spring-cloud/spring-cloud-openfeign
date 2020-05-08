@@ -33,7 +33,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
- * This jackson module provides support to deserialize spring {@link Page} objects.
+ * This Jackson module provides support to deserialize Spring {@link Page} objects.
  *
  * @author Pascal Büttiker
  */
