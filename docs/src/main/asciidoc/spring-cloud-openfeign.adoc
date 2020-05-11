@@ -118,7 +118,7 @@ If none of them is in the classpath, the default feign client is used.
 The OkHttpClient and ApacheHttpClient feign clients can be used by setting `feign.okhttp.enabled` or `feign.httpclient.enabled` to `true`, respectively, and having them on the classpath.
 You can customize the HTTP client used by providing a bean of either `org.apache.http.impl.client.CloseableHttpClient` when using Apache or `okhttp3.OkHttpClient` when using OK HTTP.
 
-Spring Cloud Netflix _does not_ provide the following beans by default for feign, but still looks up beans of these types from the application context to create the feign client:
+Spring Cloud OpenFeign _does not_ provide the following beans by default for feign, but still looks up beans of these types from the application context to create the feign client:
 
 * `Logger.Level`
 * `Retryer`
@@ -232,6 +232,29 @@ public interface BarClient {
 }
 ----
 
+It is also possible to configure FeignClient not to inherit beans from the parent context.
+You can do this by overriding the `inheritParentConfiguration()` in a  `FeignClientConfigurer`
+bean to return `false`:
+
+[source,java,indent=0]
+----
+@Configuration
+public class CustomConfiguration{
+
+@Bean
+public FeignClientConfigurer feignClientConfigurer() {
+			return new FeignClientConfigurer() {
+
+				@Override
+				public boolean inheritParentConfiguration() {
+					return false;
+				}
+			};
+
+		}
+}
+----
+
 === Creating Feign Clients Manually
 
 In some cases it might be necessary to customize your Feign Clients in a way that is not
@@ -276,6 +299,9 @@ NOTE: `PROD-SVC` is the name of the service the Clients will be making requests 
 NOTE: The Feign `Contract` object defines what annotations and values are valid on interfaces. The
 autowired `Contract` bean provides supports for SpringMVC annotations, instead of
 the default Feign native annotations.
+
+You can also use the `Builder`to configure FeignClient not to inherit beans from the parent context.
+You can do this by overriding calling `inheritParentContext(false)` on the `Builder`.
 
 [[spring-cloud-feign-hystrix]]
 === Feign Hystrix Support
