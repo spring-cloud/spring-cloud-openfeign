@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationContext;
  * {@link FeignClient} annotation.
  *
  * @author Sven Döring
+ * @author Matt King
  */
 public class FeignClientBuilder {
 
@@ -57,6 +58,7 @@ public class FeignClientBuilder {
 			this.feignClientFactoryBean.setType(type);
 			this.feignClientFactoryBean.setName(FeignClientsRegistrar.getName(name));
 			this.feignClientFactoryBean.setContextId(FeignClientsRegistrar.getName(name));
+			this.feignClientFactoryBean.setInheritParentContext(true);
 			// preset default values - these values resemble the default values on the
 			// FeignClient annotation
 			this.url("").path("").decode404(false);
@@ -79,6 +81,11 @@ public class FeignClientBuilder {
 
 		public Builder<T> decode404(final boolean decode404) {
 			this.feignClientFactoryBean.setDecode404(decode404);
+			return this;
+		}
+
+		public Builder<T> inheritParentContext(final boolean inheritParentContext) {
+			this.feignClientFactoryBean.setInheritParentContext(inheritParentContext);
 			return this;
 		}
 
