@@ -176,6 +176,9 @@ public interface StoreClient {
     @RequestMapping(method = RequestMethod.GET, value = "/stores")
     List&lt;Store&gt; getStores();
 
+    @RequestMapping(method = RequestMethod.GET, value = "/stores")
+    Page&lt;Store&gt; getStores(Pageable pageable);
+
     @RequestMapping(method = RequestMethod.POST, value = "/stores/{storeId}", consumes = "application/json")
     Store update(@PathVariable("storeId") Long storeId, Store store);
 }</code></pre>
