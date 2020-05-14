@@ -90,7 +90,9 @@ public class FeignClientErrorDecoderTests {
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
 				.getField(invocationHandler, "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
-		return ReflectionTestUtils.getField(dispatch.get(key), "errorDecoder");
+		return ReflectionTestUtils.getField(
+				ReflectionTestUtils.getField(dispatch.get(key), "asyncResponseHandler"),
+				"errorDecoder");
 	}
 
 	@Configuration(proxyBeanMethods = false)
