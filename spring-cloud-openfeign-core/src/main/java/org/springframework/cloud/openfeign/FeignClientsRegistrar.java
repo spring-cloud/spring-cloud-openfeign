@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -242,9 +243,10 @@ class FeignClientsRegistrar
 
 		String alias = contextId + "FeignClient";
 		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
+		beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, className);
 
-		boolean primary = (Boolean) attributes.get("primary"); // has a default, won't be
-																// null
+		// has a default, won't be null
+		boolean primary = (Boolean) attributes.get("primary");
 
 		beanDefinition.setPrimary(primary);
 
