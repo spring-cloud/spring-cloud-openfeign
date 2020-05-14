@@ -15,7 +15,7 @@
 	<name>spring-cloud-openfeign-dependencies</name>
 	<description>Spring Cloud OpenFeign Dependencies</description>
 	<properties>
-		<feign.version>10.7.4</feign.version>
+		<feign.version>10.10.1</feign.version>
 		<feign-form.version>3.8.0</feign-form.version>
 	</properties>
 	<dependencyManagement>
