@@ -124,12 +124,15 @@ You can customize the HTTP client used by providing a bean of either `org.apache
 Spring Cloud OpenFeign _does not_ provide the following beans by default for feign, but still looks up beans of these types from the application context to create the feign client:
 
 * `Logger.Level`
-* `Retryer`
 * `ErrorDecoder`
 * `Request.Options`
 * `Collection<RequestInterceptor>`
 * `SetterFactory`
 * `QueryMapEncoder`
+
+A bean of `Retryer.NEVER_RETRY` with the type `Retryer` is created by default, which will disable retrying.
+Notice this retrying behavior is different from the Feign default one, where it will automatically retry IOExceptions,
+treating them as transient network related exceptions, and any RetryableException thrown from an ErrorDecoder.
 
 Creating a bean of one of those type and placing it in a `@FeignClient` configuration (such as `FooConfiguration` above) allows you to override each one of the beans described.  Example:
 
