@@ -110,7 +110,7 @@ $(addBlockSwitches);
 <li><a href="#feign-querymap-support">1.10. Feign @QueryMap support</a></li>
 <li><a href="#hateoas-support">1.11. HATEOAS support</a></li>
 <li><a href="#spring-matrixvariable-support">1.12. Spring @MatrixVariable Support</a></li>
-<li><a href="#troubleshooting">1.13. Troubleshooting</a>
+<li><a href="#reactive-support">1.13. Reactive Support</a>
 <ul class="sectlevel3">
 <li><a href="#early-initialization-errors">1.13.1. Early Initialization Errors</a></li>
 </ul>
@@ -950,7 +950,13 @@ public interface DemoTemplate {
 </div>
 </div>
 <div class="sect2">
-<h3 id="troubleshooting"><a class="anchor" href="#troubleshooting"></a><a class="link" href="#troubleshooting">1.13. Troubleshooting</a></h3>
+<h3 id="reactive-support"><a class="anchor" href="#reactive-support"></a><a class="link" href="#reactive-support">1.13. Reactive Support</a></h3>
+<div class="paragraph">
+<p>As the <a href="https://github.com/OpenFeign/feign">OpenFeign project</a> does not currently support reactive clients, such as <a href="https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html">Spring WebClient</a>, neither does Spring Cloud OpenFeign. We will add support for it here as soon as it becomes available in the core project.</p>
+</div>
+<div class="paragraph">
+<p>Until that is done, we recommend using <a href="https://github.com/Playtika/feign-reactive">feign-reactive</a> for Spring WebClient support.</p>
+</div>
 <div class="sect3">
 <h4 id="early-initialization-errors"><a class="anchor" href="#early-initialization-errors"></a><a class="link" href="#early-initialization-errors">1.13.1. Early Initialization Errors</a></h4>
 <div class="paragraph">
