@@ -576,8 +576,10 @@ public interface DemoTemplate {
 }
 ----
 
+=== Reactive Support
+As the https://github.com/OpenFeign/feign[OpenFeign project] does not currently support reactive clients, such as https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html[Spring WebClient], neither does Spring Cloud OpenFeign. We will add support for it here as soon as it becomes available in the core project.
 
-=== Troubleshooting
+Until that is done, we recommend using https://github.com/Playtika/feign-reactive[feign-reactive] for Spring WebClient support.
 
 ==== Early Initialization Errors
 
