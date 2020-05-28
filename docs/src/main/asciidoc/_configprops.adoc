@@ -1,7 +1,7 @@
 |===
 |Name | Default | Description
 
-|feign.client.config | null | null
+|feign.client.config |  | null
 |feign.client.default-config | default | null
 |feign.client.default-to-properties | true | null
 |feign.compression.request.enabled | false | Enables the request sent by Feign to be compressed.
@@ -17,7 +17,7 @@
 |feign.httpclient.max-connections | 200 | null
 |feign.httpclient.max-connections-per-route | 50 | null
 |feign.httpclient.time-to-live | 900 | null
-|feign.httpclient.time-to-live-unit | null | null
+|feign.httpclient.time-to-live-unit |  | null
 |feign.hystrix.enabled | false | If true, an OpenFeign client will be wrapped with a Hystrix circuit breaker.
 |feign.okhttp.enabled | false | Enables the use of the OK HTTP Client by Feign.
 
