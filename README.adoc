@@ -4,6 +4,7 @@ Manual changes to this file will be lost when it is generated again.
 Edit the files in the src/main/asciidoc/ directory instead.
 ////
 
+
 image:https://circleci.com/gh/spring-cloud/spring-cloud-openfeign.svg?style=svg["CircleCI", link="https://circleci.com/gh/spring-cloud/spring-cloud-openfeign"]
 
 image:https://codecov.io/gh/spring-cloud/spring-cloud-openfeign/branch/master/graph/badge.svg["Codecov", link="https://codecov.io/gh/spring-cloud/spring-cloud-openfeign"]
