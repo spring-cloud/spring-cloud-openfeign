@@ -348,9 +348,6 @@ You can customize the HTTP client used by providing a bean of either <code>org.a
 <p><code>Logger.Level</code></p>
 </li>
 <li>
-<p><code>Retryer</code></p>
-</li>
-<li>
 <p><code>ErrorDecoder</code></p>
 </li>
 <li>
@@ -366,6 +363,11 @@ You can customize the HTTP client used by providing a bean of either <code>org.a
 <p><code>QueryMapEncoder</code></p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>A bean of <code>Retryer.NEVER_RETRY</code> with the type <code>Retryer</code> is created by default, which will disable retrying.
+Notice this retrying behavior is different from the Feign default one, where it will automatically retry IOExceptions,
+treating them as transient network related exceptions, and any RetryableException thrown from an ErrorDecoder.</p>
 </div>
 <div class="paragraph">
 <p>Creating a bean of one of those type and placing it in a <code>@FeignClient</code> configuration (such as <code>FooConfiguration</code> above) allows you to override each one of the beans described.  Example:</p>
