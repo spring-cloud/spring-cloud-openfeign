@@ -126,6 +126,7 @@ You can customize the HTTP client used by providing a bean of either `org.apache
 Spring Cloud OpenFeign _does not_ provide the following beans by default for feign, but still looks up beans of these types from the application context to create the feign client:
 
 * `Logger.Level`
+* `Retryer`
 * `ErrorDecoder`
 * `Request.Options`
 * `Collection<RequestInterceptor>`
