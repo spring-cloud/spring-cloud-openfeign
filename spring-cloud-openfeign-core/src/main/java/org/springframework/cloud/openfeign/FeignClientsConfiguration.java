@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.Module;
@@ -25,8 +26,11 @@ import feign.Feign;
 import feign.Logger;
 import feign.Retryer;
 import feign.codec.Decoder;
+import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import feign.form.MultipartFormContentProcessor;
+import feign.form.multipart.Output;
+import feign.form.multipart.Writer;
 import feign.form.spring.SpringFormEncoder;
 import feign.optionals.OptionalDecoder;
 
@@ -184,6 +188,17 @@ public class FeignClientsConfiguration {
 
 			MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(
 					MULTIPART);
+			processor.addFirstWriter(new Writer() {
+				@Override
+				public boolean isApplicable(Object value) {
+					return value instanceof Collection && ((Collection) value).isEmpty();
+				}
+
+				@Override
+				public void write(Output output, String boundary, String key,
+						Object value) throws EncodeException {
+				}
+			});
 			processor.addFirstWriter(formWriter);
 		}
 
