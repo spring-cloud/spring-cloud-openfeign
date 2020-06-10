@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -347,6 +348,16 @@ public class ValidFeignClientTests {
 		String fileNames = this.multipartClient
 				.requestPartListOfMultipartFilesReturnsFileNames(multipartFiles);
 		assertThat(fileNames).contains("hello1.bin", "hello2.bin");
+	}
+
+	@Test
+	public void testRequestPartWithEmptyListOfMultipartFiles() {
+		String partNames = this.multipartClient
+			.requestPartListOfMultipartFilesReturnsPartNames(Collections.emptyList());
+//		assertThat(partNames).isEqualTo("files,files");
+		String fileNames = this.multipartClient
+			.requestPartListOfMultipartFilesReturnsFileNames(Collections.emptyList());
+//		assertThat(fileNames).contains("hello1.bin", "hello2.bin");
 	}
 
 	@Test
