@@ -338,6 +338,19 @@ public class ValidFeignClientTests {
 	}
 
 	@Test
+	public void testRequestPartWithEmptyListOfMultipartFiles() {
+		String partNames = this.multipartClient
+				.requestPartListOfMultipartFilesReturnsPartNames(Collections.emptyList());
+		assertThat(partNames).isNull();
+		String fileNames = this.multipartClient
+				.requestPartListOfMultipartFilesReturnsFileNames(Collections.emptyList());
+		assertThat(fileNames).isNull();
+		String count = this.multipartClient
+				.requestPartListOfMultipartFilesReturnsCount(Collections.emptyList());
+		assertThat(count).isEqualTo("0");
+	}
+
+	@Test
 	public void testRequestPartWithListOfMultipartFiles() {
 		List<MultipartFile> multipartFiles = Arrays.asList(
 				new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes()),
@@ -348,6 +361,9 @@ public class ValidFeignClientTests {
 		String fileNames = this.multipartClient
 				.requestPartListOfMultipartFilesReturnsFileNames(multipartFiles);
 		assertThat(fileNames).contains("hello1.bin", "hello2.bin");
+		String count = this.multipartClient
+				.requestPartListOfMultipartFilesReturnsCount(multipartFiles);
+		assertThat(count).isEqualTo(Integer.toString(multipartFiles.size()));
 	}
 
 	@Test
@@ -454,6 +470,12 @@ public class ValidFeignClientTests {
 				@RequestPart("world") String world, @RequestPart("pojo1") Hello pojo1,
 				@RequestPart("pojo2") Hello pojo2,
 				@RequestPart("file") MultipartFile file);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartCount",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfMultipartFilesReturnsCount(
+				@RequestPart("files") List<MultipartFile> files);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -807,6 +829,14 @@ public class ValidFeignClientTests {
 				@RequestPart("file") MultipartFile file) {
 			return hello + world + pojo1.getMessage() + pojo2.getMessage()
 					+ file.getOriginalFilename();
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartCount",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+				produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfMultipartFilesReturnsCount(
+				@RequestPart("files") List<MultipartFile> files) {
+			return Integer.toString(files.size());
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
