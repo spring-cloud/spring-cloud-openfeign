@@ -29,6 +29,7 @@ import feign.Request;
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
+import feign.form.MultipartFormContentProcessor;
 import feign.form.spring.SpringFormEncoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +47,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 import org.springframework.web.multipart.MultipartFile;
 
+import static feign.form.ContentType.MULTIPART;
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHeaders;
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
 
@@ -67,12 +69,20 @@ public class SpringEncoder implements Encoder {
 	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
 		this.springFormEncoder = new SpringFormEncoder();
 		this.messageConverters = messageConverters;
+
+		MultipartFormContentProcessor processor = (MultipartFormContentProcessor) springFormEncoder
+				.getContentProcessor(MULTIPART);
+		processor.addFirstWriter(new EmptyCollectionWriter());
 	}
 
 	public SpringEncoder(SpringFormEncoder springFormEncoder,
 			ObjectFactory<HttpMessageConverters> messageConverters) {
 		this.springFormEncoder = springFormEncoder;
 		this.messageConverters = messageConverters;
+
+		MultipartFormContentProcessor processor = (MultipartFormContentProcessor) springFormEncoder
+				.getContentProcessor(MULTIPART);
+		processor.addFirstWriter(new EmptyCollectionWriter());
 	}
 
 	@Override
