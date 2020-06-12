@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -350,11 +351,13 @@ public class ValidFeignClientTests {
 	}
 
 	@Test
-	public void testRequestPartWithEmptyListOfPojosAndEmptyListOfMultipartFiles() {
-		// String response = this.multipartClient
-		// .requestPartListOfPojosAndListOfMultipartFiles(Collections.emptyList(),
-		// Collections.emptyList());
-		// assertThat(response).isNull();
+	public void testRequestPartWithListOfPojosAndEmptyListOfMultipartFiles() {
+		Hello pojo1 = new Hello(HELLO_WORLD_1);
+		Hello pojo2 = new Hello(OI_TERRA_2);
+		String response = this.multipartClient
+				.requestPartListOfPojosAndListOfMultipartFiles(
+						Arrays.asList(pojo1, pojo2), Collections.emptyList());
+		assertThat(response).isEqualTo("hello world 1oi terra 2");
 	}
 
 	@Test
@@ -826,9 +829,8 @@ public class ValidFeignClientTests {
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 				produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestPartListOfPojosAndListOfMultipartFiles(
-				@RequestPart(value = "pojos", required = false) List<Hello> pojos,
-				@RequestPart(value = "files",
-						required = false) List<MultipartFile> files) {
+				@RequestPart("pojos") List<Hello> pojos,
+				@RequestPart("files") List<MultipartFile> files) {
 			StringBuilder result = new StringBuilder();
 
 			for (Hello pojo : pojos) {
