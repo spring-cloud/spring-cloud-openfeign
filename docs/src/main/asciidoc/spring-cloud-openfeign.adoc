@@ -561,7 +561,7 @@ If a map is passed as the method argument, the `@MatrixVariable` path segment is
 If a different object is passed, either the `name` provided in the `@MatrixVariable` annotation (if defined) or the annotated variable name is
 joined with the provided method argument using `=`.
 
-IMPORTANT:: Even though, on the server side, Spring does not require the users to name the path segment placeholder same as the matrix variable name, since it would be too ambiguous on the client side, Spring Cloud OpenFeign requires that you add a path segment placeholder with a name matching either the `name` provided in the `@MatrixVariable` annotation (if defined) or the annotated variable name.
+IMPORTANT:: Even though, on the server side, Spring does not require the users to name the path segment placeholder same as the matrix variable name, since it would be too ambiguous on the client side, Sprig Cloud OpenFeign requires that you add a path segment placeholder with a name matching either the `name` provided in the `@MatrixVariable` annotation (if defined) or the annotated variable name.
 
 For example:
 
