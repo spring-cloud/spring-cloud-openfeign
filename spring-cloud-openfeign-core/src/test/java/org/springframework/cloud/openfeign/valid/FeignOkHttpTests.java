@@ -88,7 +88,7 @@ public class FeignOkHttpTests {
 	public void testPatch() {
 		ResponseEntity<Void> response = this.testClient.patchHello(new Hello("foo"));
 		assertThat(response).isNotNull();
-		String header = response.getHeaders().getFirst("X-Hello");
+		String header = response.getHeaders().getFirst("x-hello");
 		assertThat(header).isEqualTo("hello world patch");
 	}
 

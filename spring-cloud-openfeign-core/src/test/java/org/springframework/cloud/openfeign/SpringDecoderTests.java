@@ -133,7 +133,7 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 	public void testResponseEntityVoid() {
 		ResponseEntity<Void> response = testClient().getHelloVoid();
 		assertThat(response).as("response was null").isNotNull();
-		List<String> headerVals = response.getHeaders().get("X-test-header");
+		List<String> headerVals = response.getHeaders().get("x-test-header");
 		assertThat(headerVals).as("headerVals was null").isNotNull();
 		assertThat(headerVals.size()).as("headerVals size was wrong").isEqualTo(1);
 		String header = headerVals.get(0);
