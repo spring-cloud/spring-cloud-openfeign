@@ -429,7 +429,7 @@ public class SpringMvcContractTests {
 
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
-		assertThat(data.template().headers().get("X-Foo").iterator().next())
+		assertThat(data.template().headers().get("x-Foo").iterator().next())
 				.isEqualTo("bar");
 	}
 
