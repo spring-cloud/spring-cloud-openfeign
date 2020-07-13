@@ -423,14 +423,14 @@ public class SpringMvcContractTests {
 	@Test
 	public void testProcessHeaders() throws Exception {
 		Method method = TestTemplate_Headers.class.getDeclaredMethod("getTest",
-			String.class);
+				String.class);
 		MethodMetadata data = this.contract
-			.parseAndValidateMetadata(method.getDeclaringClass(), method);
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("x-Foo").iterator().next())
-			.isEqualTo("bar");
+				.isEqualTo("bar");
 	}
 
 	@Test
