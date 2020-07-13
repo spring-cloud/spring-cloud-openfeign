@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import feign.Client;
 import feign.Contract;
@@ -52,6 +53,7 @@ import org.springframework.util.StringUtils;
  * @author Eko Kurniawan Khannedy
  * @author Gregor Zurowski
  * @author Matt King
+ * @author Olga Maciaszek-Sharma
  */
 class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
@@ -80,6 +82,11 @@ class FeignClientFactoryBean
 	private Class<?> fallback = void.class;
 
 	private Class<?> fallbackFactory = void.class;
+
+	private int readTimeoutMillis = new Request.Options().readTimeoutMillis();
+
+	private int connectTimeoutMillis = new Request.Options()
+		.connectTimeoutMillis();
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -163,6 +170,8 @@ class FeignClientFactoryBean
 				Request.Options.class);
 		if (options != null) {
 			builder.options(options);
+			readTimeoutMillis = options.readTimeoutMillis();
+			connectTimeoutMillis = options.connectTimeoutMillis();
 		}
 		Map<String, RequestInterceptor> requestInterceptors = getInheritedAwareInstances(
 				context, RequestInterceptor.class);
@@ -195,10 +204,13 @@ class FeignClientFactoryBean
 			builder.logLevel(config.getLoggerLevel());
 		}
 
-		if (config.getConnectTimeout() != null && config.getReadTimeout() != null) {
-			builder.options(new Request.Options(config.getConnectTimeout(),
-					config.getReadTimeout()));
-		}
+		connectTimeoutMillis = config.getConnectTimeout() != null ? config
+			.getConnectTimeout() : connectTimeoutMillis;
+		readTimeoutMillis = config.getReadTimeout() != null ? config.getReadTimeout()
+			: readTimeoutMillis;
+
+		builder.options(new Request.Options(connectTimeoutMillis, TimeUnit.MILLISECONDS,
+			readTimeoutMillis, TimeUnit.MILLISECONDS, true));
 
 		if (config.getRetryer() != null) {
 			Retryer retryer = getOrInstantiate(config.getRetryer());

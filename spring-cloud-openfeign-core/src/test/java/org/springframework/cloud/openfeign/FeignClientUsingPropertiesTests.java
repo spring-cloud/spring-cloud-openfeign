@@ -17,13 +17,19 @@
 package org.springframework.cloud.openfeign;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
+import feign.InvocationHandlerFactory;
+import feign.Request;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import feign.RetryableException;
@@ -47,6 +53,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,6 +65,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 /**
  * @author Eko Kurniawan Khannedy
+ * @author Olga Maciaszek-Sharma
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class,
@@ -115,13 +124,13 @@ public class FeignClientUsingPropertiesTests {
 	public UnwrapClient unwrapClient() {
 		this.unwrapFactoryBean.setApplicationContext(this.applicationContext);
 		return this.unwrapFactoryBean.feign(this.context).target(UnwrapClient.class,
-				"http://localhost:" + this.port);
+			"http://localhost:" + this.port);
 	}
 
 	public FormClient formClient() {
 		this.formFactoryBean.setApplicationContext(this.applicationContext);
 		return this.formFactoryBean.feign(this.context).target(FormClient.class,
-				"http://localhost:" + this.port);
+			"http://localhost:" + this.port);
 	}
 
 	@Test
@@ -149,6 +158,49 @@ public class FeignClientUsingPropertiesTests {
 		assertThat(response).isEqualTo("Data");
 	}
 
+	@Test
+	public void readTimeoutShouldWorkWhenConnectTimeoutNotSet() {
+		FeignClientFactoryBean readTimeoutFactoryBean = new FeignClientFactoryBean();
+		readTimeoutFactoryBean.setContextId("readTimeout");
+		readTimeoutFactoryBean.setType(FeignClientFactoryBean.class);
+		readTimeoutFactoryBean.setApplicationContext(applicationContext);
+
+		TimeoutClient client = readTimeoutFactoryBean.feign(context)
+			.target(TimeoutClient.class,
+				"http://localhost:" + port);
+
+		Request.Options options = getRequestOptions((Proxy) client);
+
+		assertThat(options.readTimeoutMillis()).isEqualTo(1000);
+		assertThat(options.connectTimeoutMillis()).isEqualTo(5000);
+	}
+
+	@Test
+	public void connectTimeoutShouldWorkWhenReadTimeoutNotSet() {
+		FeignClientFactoryBean readTimeoutFactoryBean = new FeignClientFactoryBean();
+		readTimeoutFactoryBean.setContextId("connectTimeout");
+		readTimeoutFactoryBean.setType(FeignClientFactoryBean.class);
+		readTimeoutFactoryBean.setApplicationContext(applicationContext);
+
+		TimeoutClient client = readTimeoutFactoryBean.feign(context)
+			.target(TimeoutClient.class,
+				"http://localhost:" + port);
+
+		Request.Options options = getRequestOptions((Proxy) client);
+
+		assertThat(options.connectTimeoutMillis()).isEqualTo(1000);
+		assertThat(options.readTimeoutMillis()).isEqualTo(5000);
+	}
+
+	private Request.Options getRequestOptions(Proxy client) {
+		Object invocationHandler = ReflectionTestUtils.getField(client, "h");
+		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
+			.getField(Objects.requireNonNull(invocationHandler), "dispatch");
+		Method key = new ArrayList<>(dispatch.keySet()).get(0);
+		return (Request.Options) ReflectionTestUtils
+			.getField(dispatch.get(key), "options");
+	}
+
 	protected interface FooClient {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/foo")
@@ -173,9 +225,15 @@ public class FeignClientUsingPropertiesTests {
 	protected interface FormClient {
 
 		@RequestMapping(value = "/form", method = RequestMethod.POST,
-				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+			consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		String form(Map<String, String> form);
 
+	}
+
+	protected interface TimeoutClient {
+
+		@GetMapping("/timeouts")
+		String timeouts();
 	}
 
 	@Configuration(proxyBeanMethods = false)
