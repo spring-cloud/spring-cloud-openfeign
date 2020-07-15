@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -62,6 +63,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import static feign.CollectionFormat.SSV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
@@ -266,6 +268,18 @@ public class SpringMvcContractTests {
 		this.contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		// Don't throw an exception and this passes
+	}
+
+	@Test
+	public void testProcessAnnotationsOnMethod_CollectionFormat()
+			throws NoSuchMethodException {
+		Method method = TestTemplate_Advanced.class
+				.getDeclaredMethod("getWithCollectionFormat");
+
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().collectionFormat()).isEqualTo(SSV);
 	}
 
 	@Test
@@ -773,6 +787,10 @@ public class SpringMvcContractTests {
 	@JsonAutoDetect
 	@RequestMapping("/advanced")
 	public interface TestTemplate_Advanced {
+
+		@CollectionFormat(SSV)
+		@GetMapping
+		ResponseEntity<TestObject> getWithCollectionFormat();
 
 		@ExceptionHandler
 		@RequestMapping(path = "/test/{id}", method = RequestMethod.PUT,

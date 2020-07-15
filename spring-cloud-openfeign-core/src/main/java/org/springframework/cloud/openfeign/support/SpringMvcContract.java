@@ -37,6 +37,7 @@ import feign.Param;
 import feign.Request;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.annotation.MatrixVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
@@ -213,6 +214,12 @@ public class SpringMvcContract extends Contract.BaseContract
 	@Override
 	protected void processAnnotationOnMethod(MethodMetadata data,
 			Annotation methodAnnotation, Method method) {
+		if (CollectionFormat.class.isInstance(methodAnnotation)) {
+			CollectionFormat collectionFormat = findMergedAnnotation(method,
+					CollectionFormat.class);
+			data.template().collectionFormat(collectionFormat.value());
+		}
+
 		if (!RequestMapping.class.isInstance(methodAnnotation) && !methodAnnotation
 				.annotationType().isAnnotationPresent(RequestMapping.class)) {
 			return;
