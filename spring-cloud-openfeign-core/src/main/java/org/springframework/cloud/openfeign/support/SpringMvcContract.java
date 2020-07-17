@@ -37,6 +37,7 @@ import feign.Param;
 import feign.Request;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.annotation.MatrixVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
@@ -121,9 +122,9 @@ public class SpringMvcContract extends Contract.BaseContract
 		List<AnnotatedParameterProcessor> processors = getDefaultAnnotatedArgumentsProcessors();
 		processors.addAll(annotatedParameterProcessors);
 
-		this.annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
+		annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
 		this.conversionService = conversionService;
-		this.convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
+		convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
 	}
 
 	private static TypeDescriptor createTypeDescriptor(Method method, int paramIndex) {
@@ -187,7 +188,7 @@ public class SpringMvcContract extends Contract.BaseContract
 
 	@Override
 	public MethodMetadata parseAndValidateMetadata(Class<?> targetType, Method method) {
-		this.processedMethods.put(Feign.configKey(targetType, method), method);
+		processedMethods.put(Feign.configKey(targetType, method), method);
 		MethodMetadata md = super.parseAndValidateMetadata(targetType, method);
 
 		RequestMapping classAnnotation = findMergedAnnotation(targetType,
@@ -213,6 +214,12 @@ public class SpringMvcContract extends Contract.BaseContract
 	@Override
 	protected void processAnnotationOnMethod(MethodMetadata data,
 			Annotation methodAnnotation, Method method) {
+		if (CollectionFormat.class.isInstance(methodAnnotation)) {
+			CollectionFormat collectionFormat = findMergedAnnotation(method,
+					CollectionFormat.class);
+			data.template().collectionFormat(collectionFormat.value());
+		}
+
 		if (!RequestMapping.class.isInstance(methodAnnotation) && !methodAnnotation
 				.annotationType().isAnnotationPresent(RequestMapping.class)) {
 			return;
@@ -248,13 +255,13 @@ public class SpringMvcContract extends Contract.BaseContract
 		// headers
 		parseHeaders(data, method, methodMapping);
 
-		data.indexToExpander(new LinkedHashMap<Integer, Param.Expander>());
+		data.indexToExpander(new LinkedHashMap<>());
 	}
 
 	private String resolve(String value) {
 		if (StringUtils.hasText(value)
-				&& this.resourceLoader instanceof ConfigurableApplicationContext) {
-			return ((ConfigurableApplicationContext) this.resourceLoader).getEnvironment()
+				&& resourceLoader instanceof ConfigurableApplicationContext) {
+			return ((ConfigurableApplicationContext) resourceLoader).getEnvironment()
 					.resolvePlaceholders(value);
 		}
 		return value;
@@ -280,9 +287,9 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		AnnotatedParameterProcessor.AnnotatedParameterContext context = new SimpleAnnotatedParameterContext(
 				data, paramIndex);
-		Method method = this.processedMethods.get(data.configKey());
+		Method method = processedMethods.get(data.configKey());
 		for (Annotation parameterAnnotation : annotations) {
-			AnnotatedParameterProcessor processor = this.annotatedArgumentProcessors
+			AnnotatedParameterProcessor processor = annotatedArgumentProcessors
 					.get(parameterAnnotation.annotationType());
 			if (processor != null) {
 				Annotation processParameterAnnotation;
@@ -298,9 +305,8 @@ public class SpringMvcContract extends Contract.BaseContract
 		if (!isMultipartFormData(data) && isHttpAnnotation
 				&& data.indexToExpander().get(paramIndex) == null) {
 			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
-			if (this.conversionService.canConvert(typeDescriptor,
-					STRING_TYPE_DESCRIPTOR)) {
-				Param.Expander expander = this.convertingExpanderFactory
+			if (conversionService.canConvert(typeDescriptor, STRING_TYPE_DESCRIPTOR)) {
+				Param.Expander expander = convertingExpanderFactory
 						.getExpander(typeDescriptor);
 				if (expander != null) {
 					data.indexToExpander().put(paramIndex, expander);
@@ -419,7 +425,7 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		@Override
 		public String expand(Object value) {
-			return this.conversionService.convert(value, String.class);
+			return conversionService.convert(value, String.class);
 		}
 
 	}
@@ -434,7 +440,7 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		Param.Expander getExpander(TypeDescriptor typeDescriptor) {
 			return value -> {
-				Object converted = this.conversionService.convert(value, typeDescriptor,
+				Object converted = conversionService.convert(value, typeDescriptor,
 						STRING_TYPE_DESCRIPTOR);
 				return (String) converted;
 			};
@@ -457,17 +463,17 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		@Override
 		public MethodMetadata getMethodMetadata() {
-			return this.methodMetadata;
+			return methodMetadata;
 		}
 
 		@Override
 		public int getParameterIndex() {
-			return this.parameterIndex;
+			return parameterIndex;
 		}
 
 		@Override
 		public void setParameterName(String name) {
-			nameParam(this.methodMetadata, name, this.parameterIndex);
+			nameParam(methodMetadata, name, parameterIndex);
 		}
 
 		@Override

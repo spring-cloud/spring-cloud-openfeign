@@ -586,6 +586,25 @@ public interface DemoTemplate {
 }
 ----
 
+=== Feign `CollectionFormat` support
+We support `feign.CollectionFormat` by providing the `@CollectionFormat` annotation. You can annotate a Feign client method with it by passing the desired `feign.CollectionFormat` as annotation value.
+
+In the following example, the `CSV` format is used instead of the default `EXPLODED` to process the method.
+
+[source,java,indent=0]
+----
+@FeignClient(name = "demo")
+	protected interface PageableFeignClient {
+
+		@CollectionFormat(feign.CollectionFormat.CSV)
+		@GetMapping(path = "/page")
+		ResponseEntity performRequest(Pageable page);
+
+	}
+----
+
+TIP: Set the `CSV` format while sending `Pageable` as a query parameter in order for it to be encoded correctly.
+
 === Reactive Support
 As the https://github.com/OpenFeign/feign[OpenFeign project] does not currently support reactive clients, such as https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html[Spring WebClient], neither does Spring Cloud OpenFeign. We will add support for it here as soon as it becomes available in the core project.
 
