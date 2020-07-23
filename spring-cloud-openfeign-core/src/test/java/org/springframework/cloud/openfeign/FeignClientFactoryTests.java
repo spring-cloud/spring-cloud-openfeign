@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
@@ -98,7 +99,8 @@ public class FeignClientFactoryTests {
 
 		@Bean
 		BlockingLoadBalancerClient loadBalancerClient() {
-			return new BlockingLoadBalancerClient(new LoadBalancerClientFactory());
+			return new BlockingLoadBalancerClient(new LoadBalancerClientFactory(),
+					new LoadBalancerProperties());
 		}
 
 		@Bean
