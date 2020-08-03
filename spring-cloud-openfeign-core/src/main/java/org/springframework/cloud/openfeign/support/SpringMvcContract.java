@@ -57,6 +57,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -408,7 +409,13 @@ public class SpringMvcContract extends Contract.BaseContract
 
 		if (contentTypes != null && !contentTypes.isEmpty()) {
 			String type = contentTypes.iterator().next();
-			return Objects.equals(MediaType.valueOf(type), MediaType.MULTIPART_FORM_DATA);
+			try {
+				return Objects.equals(MediaType.valueOf(type),
+						MediaType.MULTIPART_FORM_DATA);
+			}
+			catch (InvalidMediaTypeException ignored) {
+				return false;
+			}
 		}
 
 		return false;
