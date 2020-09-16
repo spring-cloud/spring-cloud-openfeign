@@ -155,7 +155,7 @@ public class FeignClientOverrideDefaultsTests {
 	@Test
 	public void exceptionPropagationPolicy() {
 		assertThat(this.context.getInstances("foo", ExceptionPropagationPolicy.class))
-				.isNull();
+				.isEmpty();
 		assertThat(this.context.getInstances("bar", ExceptionPropagationPolicy.class))
 				.containsValues(ExceptionPropagationPolicy.UNWRAP);
 	}
