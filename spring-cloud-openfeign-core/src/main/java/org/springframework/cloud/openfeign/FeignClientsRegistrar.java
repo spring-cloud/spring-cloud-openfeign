@@ -226,6 +226,9 @@ class FeignClientsRegistrar
 	private void registerFeignClient(BeanDefinitionRegistry registry,
 			AnnotationMetadata annotationMetadata, Map<String, Object> attributes) {
 		String className = annotationMetadata.getClassName();
+		if (registry.containsBeanDefinition(className)) {
+            return;
+        }
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder
 				.genericBeanDefinition(FeignClientFactoryBean.class);
 		validate(attributes);
@@ -384,12 +387,16 @@ class FeignClientsRegistrar
 
 	private void registerClientConfiguration(BeanDefinitionRegistry registry, Object name,
 			Object configuration) {
+		String beanName = name + "." + FeignClientSpecification.class.getSimpleName();
+		if (registry.containsBeanDefinition(beanName)) {
+            return;
+        }
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.genericBeanDefinition(FeignClientSpecification.class);
 		builder.addConstructorArgValue(name);
 		builder.addConstructorArgValue(configuration);
 		registry.registerBeanDefinition(
-				name + "." + FeignClientSpecification.class.getSimpleName(),
+				beanName,
 				builder.getBeanDefinition());
 	}
 
