@@ -25,7 +25,7 @@
 	</scm>
 	<properties>
 		<main.basedir>${basedir}</main.basedir>
-		<jackson.version>2.7.3</jackson.version>
+		<jackson.version>2.11.2</jackson.version>
 		<spring-cloud-commons.version>2.2.6.BUILD-SNAPSHOT</spring-cloud-commons.version>
 		<spring-cloud-netflix.version>2.2.6.BUILD-SNAPSHOT</spring-cloud-netflix.version>
 
