@@ -48,8 +48,7 @@ public class SortJacksonModule extends Module {
 		context.addSerializers(serializers);
 
 		SimpleDeserializers deserializers = new SimpleDeserializers();
-		deserializers.addDeserializer(Sort.class,
-				new SortJsonComponent.SortDeserializer());
+		deserializers.addDeserializer(Sort.class, new SortJsonComponent.SortDeserializer());
 		context.addDeserializers(deserializers);
 	}
 

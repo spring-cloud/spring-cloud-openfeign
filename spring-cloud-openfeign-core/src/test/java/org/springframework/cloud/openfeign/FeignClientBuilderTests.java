@@ -49,26 +49,23 @@ public class FeignClientBuilderTests {
 
 	private ApplicationContext applicationContext;
 
-	private static Object getDefaultValueFromFeignClientAnnotation(
-			final String methodName) {
+	private static Object getDefaultValueFromFeignClientAnnotation(final String methodName) {
 		final Method method = ReflectionUtils.findMethod(FeignClient.class, methodName);
 		return method.getDefaultValue();
 	}
 
-	private static void assertFactoryBeanField(final FeignClientBuilder.Builder builder,
-			final String fieldName, final Object expectedValue) {
-		final Field factoryBeanField = ReflectionUtils
-				.findField(FeignClientBuilder.Builder.class, "feignClientFactoryBean");
+	private static void assertFactoryBeanField(final FeignClientBuilder.Builder builder, final String fieldName,
+			final Object expectedValue) {
+		final Field factoryBeanField = ReflectionUtils.findField(FeignClientBuilder.Builder.class,
+				"feignClientFactoryBean");
 		ReflectionUtils.makeAccessible(factoryBeanField);
-		final FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) ReflectionUtils
-				.getField(factoryBeanField, builder);
+		final FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) ReflectionUtils.getField(factoryBeanField,
+				builder);
 
-		final Field field = ReflectionUtils.findField(FeignClientFactoryBean.class,
-				fieldName);
+		final Field field = ReflectionUtils.findField(FeignClientFactoryBean.class, fieldName);
 		ReflectionUtils.makeAccessible(field);
 		final Object value = ReflectionUtils.getField(field, factoryBean);
-		assertThat(value).as("Expected value for the field '" + fieldName + "':")
-				.isEqualTo(expectedValue);
+		assertThat(value).as("Expected value for the field '" + fieldName + "':").isEqualTo(expectedValue);
 	}
 
 	@Before
@@ -83,9 +80,8 @@ public class FeignClientBuilderTests {
 		for (final Method method : FeignClient.class.getMethods()) {
 			methodNames.add(method.getName());
 		}
-		methodNames.removeAll(
-				Arrays.asList("annotationType", "value", "serviceId", "qualifier",
-						"configuration", "primary", "equals", "hashCode", "toString"));
+		methodNames.removeAll(Arrays.asList("annotationType", "value", "serviceId", "qualifier", "configuration",
+				"primary", "equals", "hashCode", "toString"));
 		Collections.sort(methodNames);
 		// If this safety check fails the Builder has to be updated.
 		// (1) Either a field was removed from the FeignClient annotation and so it has to
@@ -93,15 +89,14 @@ public class FeignClientBuilderTests {
 		// on this builder class.
 		// (2) Or a new field was added and the builder class has to be extended with this
 		// new field.
-		assertThat(methodNames).containsExactly("contextId", "decode404", "fallback",
-				"fallbackFactory", "name", "path", "url");
+		assertThat(methodNames).containsExactly("contextId", "decode404", "fallback", "fallbackFactory", "name", "path",
+				"url");
 	}
 
 	@Test
 	public void forType_preinitializedBuilder() {
 		// when:
-		final FeignClientBuilder.Builder builder = this.feignClientBuilder
-				.forType(TestFeignClient.class, "TestClient");
+		final FeignClientBuilder.Builder builder = this.feignClientBuilder.forType(TestFeignClient.class, "TestClient");
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
@@ -110,24 +105,18 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "contextId", "TestClient");
 
 		// and:
-		assertFactoryBeanField(builder, "url",
-				getDefaultValueFromFeignClientAnnotation("url"));
-		assertFactoryBeanField(builder, "path",
-				getDefaultValueFromFeignClientAnnotation("path"));
-		assertFactoryBeanField(builder, "decode404",
-				getDefaultValueFromFeignClientAnnotation("decode404"));
-		assertFactoryBeanField(builder, "fallback",
-				getDefaultValueFromFeignClientAnnotation("fallback"));
-		assertFactoryBeanField(builder, "fallbackFactory",
-				getDefaultValueFromFeignClientAnnotation("fallbackFactory"));
+		assertFactoryBeanField(builder, "url", getDefaultValueFromFeignClientAnnotation("url"));
+		assertFactoryBeanField(builder, "path", getDefaultValueFromFeignClientAnnotation("path"));
+		assertFactoryBeanField(builder, "decode404", getDefaultValueFromFeignClientAnnotation("decode404"));
+		assertFactoryBeanField(builder, "fallback", getDefaultValueFromFeignClientAnnotation("fallback"));
+		assertFactoryBeanField(builder, "fallbackFactory", getDefaultValueFromFeignClientAnnotation("fallbackFactory"));
 	}
 
 	@Test
 	public void forType_allFieldsSetOnBuilder() {
 		// when:
-		final FeignClientBuilder.Builder builder = this.feignClientBuilder
-				.forType(TestFeignClient.class, "TestClient").decode404(true).url("Url/")
-				.path("/Path").contextId("TestContext");
+		final FeignClientBuilder.Builder builder = this.feignClientBuilder.forType(TestFeignClient.class, "TestClient")
+				.decode404(true).url("Url/").path("/Path").contextId("TestContext");
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
@@ -146,9 +135,8 @@ public class FeignClientBuilderTests {
 	public void forType_clientFactoryBeanProvided() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
-				.forType(TestFeignClient.class, new FeignClientFactoryBean(),
-						"TestClient")
-				.decode404(true).path("Path/").url("Url/").contextId("TestContext");
+				.forType(TestFeignClient.class, new FeignClientFactoryBean(), "TestClient").decode404(true)
+				.path("Path/").url("Url/").contextId("TestContext");
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
@@ -165,12 +153,14 @@ public class FeignClientBuilderTests {
 	@Test
 	public void forType_build() {
 		// given:
-		Mockito.when(this.applicationContext.getBean(FeignContext.class))
-				.thenThrow(new ClosedFileSystemException()); // throw an unusual exception
-																// in the
-																// FeignClientFactoryBean
-		final FeignClientBuilder.Builder builder = this.feignClientBuilder
-				.forType(TestClient.class, "TestClient");
+		Mockito.when(this.applicationContext.getBean(FeignContext.class)).thenThrow(new ClosedFileSystemException()); // throw
+																														// an
+																														// unusual
+																														// exception
+																														// in
+																														// the
+																														// FeignClientFactoryBean
+		final FeignClientBuilder.Builder builder = this.feignClientBuilder.forType(TestClient.class, "TestClient");
 
 		// expect: 'the build will fail right after calling build() with the mocked
 		// unusual exception'

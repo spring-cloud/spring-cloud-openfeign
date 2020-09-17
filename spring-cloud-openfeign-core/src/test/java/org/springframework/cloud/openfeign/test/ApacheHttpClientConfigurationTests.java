@@ -80,13 +80,12 @@ public class ApacheHttpClientConfigurationTests {
 
 	@Test
 	public void testFactories() {
+		assertThat(this.connectionManagerFactory).isInstanceOf(ApacheHttpClientConnectionManagerFactory.class);
 		assertThat(this.connectionManagerFactory)
-				.isInstanceOf(ApacheHttpClientConnectionManagerFactory.class);
-		assertThat(this.connectionManagerFactory).isInstanceOf(
-				ApacheHttpClientConfigurationTestApp.MyApacheHttpClientConnectionManagerFactory.class);
+				.isInstanceOf(ApacheHttpClientConfigurationTestApp.MyApacheHttpClientConnectionManagerFactory.class);
 		assertThat(this.httpClientFactory).isInstanceOf(ApacheHttpClientFactory.class);
-		assertThat(this.httpClientFactory).isInstanceOf(
-				ApacheHttpClientConfigurationTestApp.MyApacheHttpClientFactory.class);
+		assertThat(this.httpClientFactory)
+				.isInstanceOf(ApacheHttpClientConfigurationTestApp.MyApacheHttpClientFactory.class);
 	}
 
 	@Test
@@ -108,8 +107,7 @@ public class ApacheHttpClientConfigurationTests {
 
 	@SpringBootConfiguration
 	@EnableAutoConfiguration
-	@EnableFeignClients(
-			clients = { ApacheHttpClientConfigurationTestApp.FooClient.class })
+	@EnableFeignClients(clients = { ApacheHttpClientConfigurationTestApp.FooClient.class })
 	static class ApacheHttpClientConfigurationTestApp {
 
 		@FeignClient(name = "foo", serviceId = "foo")
@@ -121,9 +119,8 @@ public class ApacheHttpClientConfigurationTests {
 				extends DefaultApacheHttpClientConnectionManagerFactory {
 
 			@Override
-			public HttpClientConnectionManager newConnectionManager(
-					boolean disableSslValidation, int maxTotalConnections,
-					int maxConnectionsPerRoute, long timeToLive, TimeUnit timeUnit,
+			public HttpClientConnectionManager newConnectionManager(boolean disableSslValidation,
+					int maxTotalConnections, int maxConnectionsPerRoute, long timeToLive, TimeUnit timeUnit,
 					RegistryBuilder registry) {
 				return mock(PoolingHttpClientConnectionManager.class);
 			}
@@ -146,8 +143,7 @@ public class ApacheHttpClientConfigurationTests {
 				Header[] headers = new BasicHeader[0];
 				doReturn(headers).when(response).getAllHeaders();
 				try {
-					Mockito.doReturn(response).when(client)
-							.execute(any(HttpUriRequest.class));
+					Mockito.doReturn(response).when(client).execute(any(HttpUriRequest.class));
 				}
 				catch (IOException e) {
 					e.printStackTrace();
@@ -163,8 +159,7 @@ public class ApacheHttpClientConfigurationTests {
 		static class MyConfig {
 
 			@Bean
-			public ApacheHttpClientFactory apacheHttpClientFactory(
-					HttpClientBuilder builder) {
+			public ApacheHttpClientFactory apacheHttpClientFactory(HttpClientBuilder builder) {
 				return new MyApacheHttpClientFactory(builder);
 			}
 

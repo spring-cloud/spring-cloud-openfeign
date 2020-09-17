@@ -49,10 +49,9 @@ public class FeignOkHttpConfigurationTests {
 	@Before
 	public void setUp() {
 		this.context = new SpringApplicationBuilder()
-				.properties("debug=true", "feign.httpclient.disableSslValidation=true",
-						"feign.okhttp.enabled=true", "feign.httpclient.enabled=false")
-				.web(WebApplicationType.NONE)
-				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
+				.properties("debug=true", "feign.httpclient.disableSslValidation=true", "feign.okhttp.enabled=true",
+						"feign.httpclient.enabled=false")
+				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
 				.run();
 	}
 
@@ -66,11 +65,8 @@ public class FeignOkHttpConfigurationTests {
 	@Test
 	public void disableSslTest() throws Exception {
 		OkHttpClient httpClient = this.context.getBean(OkHttpClient.class);
-		HostnameVerifier hostnameVerifier = (HostnameVerifier) this.getField(httpClient,
-				"hostnameVerifier");
-		assertThat(
-				OkHttpClientFactory.TrustAllHostnames.class.isInstance(hostnameVerifier))
-						.isTrue();
+		HostnameVerifier hostnameVerifier = (HostnameVerifier) this.getField(httpClient, "hostnameVerifier");
+		assertThat(OkHttpClientFactory.TrustAllHostnames.class.isInstance(hostnameVerifier)).isTrue();
 	}
 
 	protected <T> Object getField(Object target, String name) {

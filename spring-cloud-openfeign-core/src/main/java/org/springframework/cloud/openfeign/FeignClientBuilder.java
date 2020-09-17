@@ -39,8 +39,8 @@ public class FeignClientBuilder {
 		return new Builder<>(this.applicationContext, type, name);
 	}
 
-	public <T> Builder<T> forType(final Class<T> type,
-			final FeignClientFactoryBean clientFactoryBean, final String name) {
+	public <T> Builder<T> forType(final Class<T> type, final FeignClientFactoryBean clientFactoryBean,
+			final String name) {
 		return new Builder<>(this.applicationContext, clientFactoryBean, type, name);
 	}
 
@@ -53,14 +53,12 @@ public class FeignClientBuilder {
 
 		private FeignClientFactoryBean feignClientFactoryBean;
 
-		private Builder(final ApplicationContext applicationContext, final Class<T> type,
-				final String name) {
+		private Builder(final ApplicationContext applicationContext, final Class<T> type, final String name) {
 			this(applicationContext, new FeignClientFactoryBean(), type, name);
 		}
 
-		private Builder(final ApplicationContext applicationContext,
-				final FeignClientFactoryBean clientFactoryBean, final Class<T> type,
-				final String name) {
+		private Builder(final ApplicationContext applicationContext, final FeignClientFactoryBean clientFactoryBean,
+				final Class<T> type, final String name) {
 			this.feignClientFactoryBean = clientFactoryBean;
 
 			this.feignClientFactoryBean.setApplicationContext(applicationContext);

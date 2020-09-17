@@ -43,8 +43,7 @@ public interface AnnotatedParameterProcessor {
 	 * @param method the method that contains the annotation
 	 * @return whether the parameter is http
 	 */
-	boolean processArgument(AnnotatedParameterContext context, Annotation annotation,
-			Method method);
+	boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method);
 
 	/**
 	 * Specifies the parameter context.

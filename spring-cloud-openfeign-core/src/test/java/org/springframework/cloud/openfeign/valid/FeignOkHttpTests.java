@@ -55,11 +55,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Spencer Gibb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignOkHttpTests.Application.class,
-		webEnvironment = WebEnvironment.RANDOM_PORT,
-		value = { "spring.application.name=feignclienttest",
-				"feign.hystrix.enabled=false", "feign.httpclient.enabled=false",
-				"feign.okhttp.enabled=true",
+@SpringBootTest(classes = FeignOkHttpTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
+		value = { "spring.application.name=feignclienttest", "feign.hystrix.enabled=false",
+				"feign.httpclient.enabled=false", "feign.okhttp.enabled=true",
 				"spring.cloud.httpclientfactories.ok.enabled=true" })
 @DirtiesContext
 public class FeignOkHttpTests {
@@ -80,8 +78,7 @@ public class FeignOkHttpTests {
 	public void testSimpleType() {
 		Hello hello = this.testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
-		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello("hello world 1"));
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
 	}
 
 	@Test
@@ -118,8 +115,7 @@ public class FeignOkHttpTests {
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		Hello getHello();
 
-		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop",
-				consumes = "application/json")
+		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop", consumes = "application/json")
 		ResponseEntity<Void> patchHello(Hello hello);
 
 	}
@@ -141,8 +137,7 @@ public class FeignOkHttpTests {
 	@RestController
 	@EnableFeignClients(clients = { TestClient.class, UserClient.class })
 	@LoadBalancerClients({
-			@LoadBalancerClient(name = "localapp",
-					configuration = FeignHttpClientTests.LocalClientConfiguration.class),
+			@LoadBalancerClient(name = "localapp", configuration = FeignHttpClientTests.LocalClientConfiguration.class),
 			@LoadBalancerClient(name = "localapp1",
 					configuration = FeignHttpClientTests.LocalClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
@@ -157,12 +152,10 @@ public class FeignOkHttpTests {
 		public ResponseEntity<Void> patchHello(@RequestBody Hello hello,
 				@RequestHeader("Content-Length") int contentLength) {
 			if (contentLength <= 0) {
-				throw new IllegalArgumentException(
-						"Invalid Content-Length " + contentLength);
+				throw new IllegalArgumentException("Invalid Content-Length " + contentLength);
 			}
 			if (!hello.getMessage().equals("foo")) {
-				throw new IllegalArgumentException(
-						"Invalid Hello: " + hello.getMessage());
+				throw new IllegalArgumentException("Invalid Hello: " + hello.getMessage());
 			}
 			return ResponseEntity.ok().header("X-Hello", "hello world patch").build();
 		}
@@ -258,8 +251,7 @@ public class FeignOkHttpTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-				Environment env) {
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
 			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 		}
 

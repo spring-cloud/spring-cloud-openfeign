@@ -41,8 +41,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  *
  * @author Hector Espert
  */
-@SpringBootTest(classes = FeignHalApplication.class, webEnvironment = RANDOM_PORT,
-		value = "debug=true")
+@SpringBootTest(classes = FeignHalApplication.class, webEnvironment = RANDOM_PORT, value = "debug=true")
 @RunWith(SpringRunner.class)
 @DirtiesContext
 public class FeignHalTests {
@@ -74,8 +73,7 @@ public class FeignHalTests {
 		assertThat(collectionModel.hasLinks()).isTrue();
 		assertThat(collectionModel.hasLink("self")).isTrue();
 
-		assertThat(collectionModel.getLink("self")).map(Link::getHref)
-				.contains("/collection");
+		assertThat(collectionModel.getLink("self")).map(Link::getHref).contains("/collection");
 
 		Collection<MarsRover> collection = collectionModel.getContent();
 		assertThat(collection).isNotEmpty();

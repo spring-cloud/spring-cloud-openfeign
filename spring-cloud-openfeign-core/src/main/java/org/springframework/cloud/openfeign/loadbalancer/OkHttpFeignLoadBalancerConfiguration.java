@@ -45,8 +45,7 @@ class OkHttpFeignLoadBalancerConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Client feignClient(okhttp3.OkHttpClient okHttpClient,
-			LoadBalancerClient loadBalancerClient) {
+	public Client feignClient(okhttp3.OkHttpClient okHttpClient, LoadBalancerClient loadBalancerClient) {
 		OkHttpClient delegate = new OkHttpClient(okHttpClient);
 		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient);
 	}

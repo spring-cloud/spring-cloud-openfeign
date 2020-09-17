@@ -42,34 +42,29 @@ public class FeignHalAutoConfigurationContextTests {
 	public void setUp() {
 		contextRunner = new WebApplicationContextRunner()
 				.withConfiguration(AutoConfigurations.of(JacksonAutoConfiguration.class,
-						HttpMessageConvertersAutoConfiguration.class,
-						HypermediaAutoConfiguration.class,
-						RepositoryRestMvcAutoConfiguration.class,
-						FeignHalAutoConfiguration.class))
+						HttpMessageConvertersAutoConfiguration.class, HypermediaAutoConfiguration.class,
+						RepositoryRestMvcAutoConfiguration.class, FeignHalAutoConfiguration.class))
 				.withPropertyValues("debug=true");
 	}
 
 	@Test
 	public void testHalJacksonHttpMessageConverterIsNotLoaded() {
-		FilteredClassLoader filteredClassLoader = new FilteredClassLoader(
-				RepositoryRestMvcConfiguration.class, RepresentationModel.class);
+		FilteredClassLoader filteredClassLoader = new FilteredClassLoader(RepositoryRestMvcConfiguration.class,
+				RepresentationModel.class);
 		contextRunner.withClassLoader(filteredClassLoader)
-				.run(context -> assertThat(context)
-						.doesNotHaveBean("halJacksonHttpMessageConverter"));
+				.run(context -> assertThat(context).doesNotHaveBean("halJacksonHttpMessageConverter"));
 	}
 
 	@Test
 	public void testHalJacksonHttpMessageConverterIsLoaded() {
-		FilteredClassLoader filteredClassLoader = new FilteredClassLoader(
-				RepositoryRestMvcConfiguration.class);
-		contextRunner.withClassLoader(filteredClassLoader).run(
-				context -> assertThat(context).hasBean("halJacksonHttpMessageConverter"));
+		FilteredClassLoader filteredClassLoader = new FilteredClassLoader(RepositoryRestMvcConfiguration.class);
+		contextRunner.withClassLoader(filteredClassLoader)
+				.run(context -> assertThat(context).hasBean("halJacksonHttpMessageConverter"));
 	}
 
 	@Test
 	public void testHalJacksonHttpMessageConverterIsNotLoadedUseRestDataMessageConverterInstead() {
-		contextRunner.run(
-				context -> assertThat(context).hasBean("halJacksonHttpMessageConverter"));
+		contextRunner.run(context -> assertThat(context).hasBean("halJacksonHttpMessageConverter"));
 	}
 
 }

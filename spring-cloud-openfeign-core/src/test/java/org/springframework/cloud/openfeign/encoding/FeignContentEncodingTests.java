@@ -47,8 +47,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  *
  * @author Jakub Narloch
  */
-@SpringBootTest(classes = FeignContentEncodingTests.Application.class,
-		webEnvironment = RANDOM_PORT,
+@SpringBootTest(classes = FeignContentEncodingTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "feign.compression.request.enabled=true",
 				"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
 				"ribbon.OkToRetryOnAllOperations=false" })
@@ -65,8 +64,7 @@ public class FeignContentEncodingTests {
 		final List<Invoice> invoices = Invoices.createInvoiceList(50);
 
 		// when
-		final ResponseEntity<List<Invoice>> response = this.invoiceClient
-				.saveInvoices(invoices);
+		final ResponseEntity<List<Invoice>> response = this.invoiceClient.saveInvoices(invoices);
 
 		// then
 		assertThat(response).isNotNull();
@@ -78,8 +76,7 @@ public class FeignContentEncodingTests {
 
 	@EnableFeignClients(clients = InvoiceClient.class)
 	@LoadBalancerClient(name = "local", configuration = LocalClientConfiguration.class)
-	@SpringBootApplication(
-			scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
+	@SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
 	@Import(NoSecurityConfiguration.class)
 	public static class Application {
 
@@ -92,8 +89,7 @@ public class FeignContentEncodingTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-				Environment env) {
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
 			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 		}
 

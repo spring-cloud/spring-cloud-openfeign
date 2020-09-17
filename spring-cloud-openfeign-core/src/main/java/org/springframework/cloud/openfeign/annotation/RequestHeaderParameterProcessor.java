@@ -46,27 +46,23 @@ public class RequestHeaderParameterProcessor implements AnnotatedParameterProces
 	}
 
 	@Override
-	public boolean processArgument(AnnotatedParameterContext context,
-			Annotation annotation, Method method) {
+	public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
 		int parameterIndex = context.getParameterIndex();
 		Class<?> parameterType = method.getParameterTypes()[parameterIndex];
 		MethodMetadata data = context.getMethodMetadata();
 
 		if (Map.class.isAssignableFrom(parameterType)) {
-			checkState(data.headerMapIndex() == null,
-					"Header map can only be present once.");
+			checkState(data.headerMapIndex() == null, "Header map can only be present once.");
 			data.headerMapIndex(parameterIndex);
 
 			return true;
 		}
 
 		String name = ANNOTATION.cast(annotation).value();
-		checkState(emptyToNull(name) != null,
-				"RequestHeader.value() was empty on parameter %s", parameterIndex);
+		checkState(emptyToNull(name) != null, "RequestHeader.value() was empty on parameter %s", parameterIndex);
 		context.setParameterName(name);
 
-		Collection<String> header = context.setTemplateParameter(name,
-				data.template().headers().get(name));
+		Collection<String> header = context.setTemplateParameter(name, data.template().headers().get(name));
 		data.template().header(name, header);
 		return true;
 	}

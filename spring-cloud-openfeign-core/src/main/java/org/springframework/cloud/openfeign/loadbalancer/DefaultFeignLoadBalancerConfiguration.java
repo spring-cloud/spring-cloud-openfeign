@@ -36,8 +36,7 @@ class DefaultFeignLoadBalancerConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public Client feignClient(LoadBalancerClient loadBalancerClient) {
-		return new FeignBlockingLoadBalancerClient(new Client.Default(null, null),
-				loadBalancerClient);
+		return new FeignBlockingLoadBalancerClient(new Client.Default(null, null), loadBalancerClient);
 	}
 
 }

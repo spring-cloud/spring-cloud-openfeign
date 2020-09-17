@@ -95,14 +95,12 @@ class FeignClientOverrideDefaultsTests {
 	@Test
 	void overrideLoggerLevel() {
 		assertThat(context.getInstance("foo", Logger.Level.class)).isNull();
-		assertThat(context.getInstance("bar", Logger.Level.class))
-				.isEqualTo(Logger.Level.HEADERS);
+		assertThat(context.getInstance("bar", Logger.Level.class)).isEqualTo(Logger.Level.HEADERS);
 	}
 
 	@Test
 	void overrideRetryer() {
-		assertThat(context.getInstance("foo", Retryer.class))
-				.isEqualTo(Retryer.NEVER_RETRY);
+		assertThat(context.getInstance("foo", Retryer.class)).isEqualTo(Retryer.NEVER_RETRY);
 		Retryer.Default.class.cast(context.getInstance("bar", Retryer.class));
 	}
 
@@ -122,29 +120,24 @@ class FeignClientOverrideDefaultsTests {
 
 	@Test
 	void overrideQueryMapEncoder() {
-		QueryMapEncoder.Default.class
-				.cast(context.getInstance("foo", QueryMapEncoder.class));
+		QueryMapEncoder.Default.class.cast(context.getInstance("foo", QueryMapEncoder.class));
 		BeanQueryMapEncoder.class.cast(context.getInstance("bar", QueryMapEncoder.class));
 	}
 
 	@Test
 	void addRequestInterceptor() {
-		assertThat(context.getInstances("foo", RequestInterceptor.class).size())
-				.isEqualTo(1);
-		assertThat(context.getInstances("bar", RequestInterceptor.class).size())
-				.isEqualTo(2);
+		assertThat(context.getInstances("foo", RequestInterceptor.class).size()).isEqualTo(1);
+		assertThat(context.getInstances("bar", RequestInterceptor.class).size()).isEqualTo(2);
 	}
 
 	@Test
 	void exceptionPropagationPolicy() {
-		assertThat(context.getInstances("foo", ExceptionPropagationPolicy.class))
-				.isEmpty();
+		assertThat(context.getInstances("foo", ExceptionPropagationPolicy.class)).isEmpty();
 		assertThat(context.getInstances("bar", ExceptionPropagationPolicy.class))
 				.containsValues(ExceptionPropagationPolicy.UNWRAP);
 	}
 
-	@FeignClient(name = "foo", url = "https://foo",
-			configuration = FooConfiguration.class)
+	@FeignClient(name = "foo", url = "https://foo", configuration = FooConfiguration.class)
 	interface FooClient {
 
 		@RequestLine("GET /")
@@ -152,8 +145,7 @@ class FeignClientOverrideDefaultsTests {
 
 	}
 
-	@FeignClient(name = "bar", url = "https://bar",
-			configuration = BarConfiguration.class)
+	@FeignClient(name = "bar", url = "https://bar", configuration = BarConfiguration.class)
 	interface BarClient {
 
 		@RequestMapping(value = "/", method = RequestMethod.GET)

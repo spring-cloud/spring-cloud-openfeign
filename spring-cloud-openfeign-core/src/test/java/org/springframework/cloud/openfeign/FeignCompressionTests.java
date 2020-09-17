@@ -50,17 +50,15 @@ public class FeignCompressionTests {
 	@Test
 	public void testInterceptors() {
 		new ApplicationContextRunner()
-				.withPropertyValues("feign.compression.response.enabled=true",
-						"feign.compression.request.enabled=true",
+				.withPropertyValues("feign.compression.response.enabled=true", "feign.compression.request.enabled=true",
 						"feign.okhttp.enabled=false")
 				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
-						FeignContentGzipEncodingAutoConfiguration.class,
-						FeignAcceptGzipEncodingAutoConfiguration.class,
+						FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class,
 						HttpClientConfiguration.class, PlainConfig.class))
 				.run(context -> {
 					FeignContext feignContext = context.getBean(FeignContext.class);
-					Map<String, RequestInterceptor> interceptors = feignContext
-							.getInstances("foo", RequestInterceptor.class);
+					Map<String, RequestInterceptor> interceptors = feignContext.getInstances("foo",
+							RequestInterceptor.class);
 					assertThat(interceptors.size()).isEqualTo(2);
 					assertThat(interceptors.get("feignAcceptGzipEncodingInterceptor"))
 							.isInstanceOf(FeignAcceptGzipEncodingInterceptor.class);

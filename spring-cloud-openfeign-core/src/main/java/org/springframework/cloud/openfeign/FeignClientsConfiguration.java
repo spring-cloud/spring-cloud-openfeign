@@ -82,8 +82,7 @@ public class FeignClientsConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder() {
-		return new OptionalDecoder(
-				new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
+		return new OptionalDecoder(new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
 	}
 
 	@Bean
@@ -96,18 +95,13 @@ public class FeignClientsConfiguration {
 	@Bean
 	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
 	@ConditionalOnMissingBean
-	public Encoder feignEncoderPageable(
-			ObjectProvider<AbstractFormWriter> formWriterProvider) {
-		PageableSpringEncoder encoder = new PageableSpringEncoder(
-				springEncoder(formWriterProvider));
+	public Encoder feignEncoderPageable(ObjectProvider<AbstractFormWriter> formWriterProvider) {
+		PageableSpringEncoder encoder = new PageableSpringEncoder(springEncoder(formWriterProvider));
 
 		if (springDataWebProperties != null) {
-			encoder.setPageParameter(
-					springDataWebProperties.getPageable().getPageParameter());
-			encoder.setSizeParameter(
-					springDataWebProperties.getPageable().getSizeParameter());
-			encoder.setSortParameter(
-					springDataWebProperties.getSort().getSortParameter());
+			encoder.setPageParameter(springDataWebProperties.getPageable().getPageParameter());
+			encoder.setSizeParameter(springDataWebProperties.getPageable().getSizeParameter());
+			encoder.setSortParameter(springDataWebProperties.getSort().getSortParameter());
 		}
 		return encoder;
 	}
@@ -169,8 +163,7 @@ public class FeignClientsConfiguration {
 		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
 
 		if (formWriter != null) {
-			return new SpringEncoder(new SpringPojoFormEncoder(formWriter),
-					this.messageConverters);
+			return new SpringEncoder(new SpringPojoFormEncoder(formWriter), this.messageConverters);
 		}
 		else {
 			return new SpringEncoder(new SpringFormEncoder(), this.messageConverters);
@@ -182,8 +175,7 @@ public class FeignClientsConfiguration {
 		SpringPojoFormEncoder(AbstractFormWriter formWriter) {
 			super();
 
-			MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(
-					MULTIPART);
+			MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(MULTIPART);
 			processor.addFirstWriter(formWriter);
 		}
 

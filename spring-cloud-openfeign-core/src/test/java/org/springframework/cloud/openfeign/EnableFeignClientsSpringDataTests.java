@@ -42,8 +42,7 @@ public class EnableFeignClientsSpringDataTests {
 	@Test
 	public void encoderDefaultCorrect() {
 
-		PageableSpringEncoder.class
-				.cast(this.feignContext.getInstance("foo", Encoder.class));
+		PageableSpringEncoder.class.cast(this.feignContext.getInstance("foo", Encoder.class));
 	}
 
 	@Configuration(proxyBeanMethods = false)

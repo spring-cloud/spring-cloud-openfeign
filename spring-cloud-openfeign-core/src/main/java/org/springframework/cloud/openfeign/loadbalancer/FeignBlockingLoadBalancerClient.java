@@ -40,15 +40,13 @@ import org.springframework.util.Assert;
  */
 public class FeignBlockingLoadBalancerClient implements Client {
 
-	private static final Log LOG = LogFactory
-			.getLog(FeignBlockingLoadBalancerClient.class);
+	private static final Log LOG = LogFactory.getLog(FeignBlockingLoadBalancerClient.class);
 
 	private final Client delegate;
 
 	private final LoadBalancerClient loadBalancerClient;
 
-	public FeignBlockingLoadBalancerClient(Client delegate,
-			LoadBalancerClient loadBalancerClient) {
+	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
 	}
@@ -57,24 +55,19 @@ public class FeignBlockingLoadBalancerClient implements Client {
 	public Response execute(Request request, Request.Options options) throws IOException {
 		final URI originalUri = URI.create(request.url());
 		String serviceId = originalUri.getHost();
-		Assert.state(serviceId != null,
-				"Request URI does not contain a valid hostname: " + originalUri);
+		Assert.state(serviceId != null, "Request URI does not contain a valid hostname: " + originalUri);
 		ServiceInstance instance = loadBalancerClient.choose(serviceId);
 		if (instance == null) {
-			String message = "Load balancer does not contain an instance for the service "
-					+ serviceId;
+			String message = "Load balancer does not contain an instance for the service " + serviceId;
 			if (LOG.isWarnEnabled()) {
 				LOG.warn(message);
 			}
-			return Response.builder().request(request)
-					.status(HttpStatus.SERVICE_UNAVAILABLE.value())
+			return Response.builder().request(request).status(HttpStatus.SERVICE_UNAVAILABLE.value())
 					.body(message, StandardCharsets.UTF_8).build();
 		}
-		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri)
-				.toString();
-		Request newRequest = Request.create(request.httpMethod(), reconstructedUrl,
-				request.headers(), request.body(), request.charset(),
-				request.requestTemplate());
+		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri).toString();
+		Request newRequest = Request.create(request.httpMethod(), reconstructedUrl, request.headers(), request.body(),
+				request.charset(), request.requestTemplate());
 		return delegate.execute(newRequest, options);
 	}
 

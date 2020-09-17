@@ -39,9 +39,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Charlie Mordant.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = SpringEncoderTests.Application.class,
-		webEnvironment = RANDOM_PORT, value = {
-				"spring.application.name=springencodertest", "spring.jmx.enabled=false" })
+@SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = RANDOM_PORT,
+		value = { "spring.application.name=springencodertest", "spring.jmx.enabled=false" })
 @DirtiesContext
 public class PageableEncoderTests {
 

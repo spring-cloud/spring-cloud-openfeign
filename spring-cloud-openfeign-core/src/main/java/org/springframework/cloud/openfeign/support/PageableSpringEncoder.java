@@ -75,8 +75,7 @@ public class PageableSpringEncoder implements Encoder {
 	}
 
 	@Override
-	public void encode(Object object, Type bodyType, RequestTemplate template)
-			throws EncodeException {
+	public void encode(Object object, Type bodyType, RequestTemplate template) throws EncodeException {
 
 		if (supports(object)) {
 			if (object instanceof Pageable) {
@@ -101,18 +100,15 @@ public class PageableSpringEncoder implements Encoder {
 				delegate.encode(object, bodyType, template);
 			}
 			else {
-				throw new EncodeException(
-						"PageableSpringEncoder does not support the given object "
-								+ object.getClass()
-								+ " and no delegate was provided for fallback!");
+				throw new EncodeException("PageableSpringEncoder does not support the given object " + object.getClass()
+						+ " and no delegate was provided for fallback!");
 			}
 		}
 	}
 
 	private void applySort(RequestTemplate template, Sort sort) {
 		Collection<String> existingSorts = template.queries().get("sort");
-		List<String> sortQueries = existingSorts != null ? new ArrayList<>(existingSorts)
-				: new ArrayList<>();
+		List<String> sortQueries = existingSorts != null ? new ArrayList<>(existingSorts) : new ArrayList<>();
 		if (!sortParameter.equals("sort")) {
 			existingSorts = template.queries().get(sortParameter);
 			if (existingSorts != null) {

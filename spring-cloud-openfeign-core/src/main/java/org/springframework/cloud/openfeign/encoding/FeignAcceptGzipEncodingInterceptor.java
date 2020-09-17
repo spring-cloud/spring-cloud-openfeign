@@ -33,8 +33,7 @@ public class FeignAcceptGzipEncodingInterceptor extends BaseRequestInterceptor {
 	 * Creates new instance of {@link FeignAcceptGzipEncodingInterceptor}.
 	 * @param properties the encoding properties
 	 */
-	protected FeignAcceptGzipEncodingInterceptor(
-			FeignClientEncodingProperties properties) {
+	protected FeignAcceptGzipEncodingInterceptor(FeignClientEncodingProperties properties) {
 		super(properties);
 	}
 
@@ -44,8 +43,8 @@ public class FeignAcceptGzipEncodingInterceptor extends BaseRequestInterceptor {
 	@Override
 	public void apply(RequestTemplate template) {
 
-		addHeader(template, HttpEncoding.ACCEPT_ENCODING_HEADER,
-				HttpEncoding.GZIP_ENCODING, HttpEncoding.DEFLATE_ENCODING);
+		addHeader(template, HttpEncoding.ACCEPT_ENCODING_HEADER, HttpEncoding.GZIP_ENCODING,
+				HttpEncoding.DEFLATE_ENCODING);
 	}
 
 }

@@ -39,11 +39,9 @@ public class FeignContextTest {
 
 		FeignContext feignContext = new FeignContext();
 		feignContext.setApplicationContext(parent);
-		feignContext.setConfigurations(
-				Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
+		feignContext.setConfigurations(Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
 
-		Logger.Level level = feignContext.getInstanceWithoutAncestors("empty",
-				Logger.Level.class);
+		Logger.Level level = feignContext.getInstanceWithoutAncestors("empty", Logger.Level.class);
 
 		assertThat(level).as("Logger was not null").isNull();
 	}
@@ -59,8 +57,7 @@ public class FeignContextTest {
 
 		FeignContext feignContext = new FeignContext();
 		feignContext.setApplicationContext(parent);
-		feignContext.setConfigurations(
-				Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
+		feignContext.setConfigurations(Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
 
 		Collection<RequestInterceptor> interceptors = feignContext
 				.getInstancesWithoutAncestors("empty", RequestInterceptor.class).values();
@@ -75,11 +72,9 @@ public class FeignContextTest {
 
 		FeignContext feignContext = new FeignContext();
 		feignContext.setApplicationContext(parent);
-		feignContext.setConfigurations(
-				Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
+		feignContext.setConfigurations(Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
 
-		Logger.Level level = feignContext.getInstanceWithoutAncestors("demo",
-				Logger.Level.class);
+		Logger.Level level = feignContext.getInstanceWithoutAncestors("demo", Logger.Level.class);
 
 		assertThat(level).isEqualTo(Logger.Level.FULL);
 	}
@@ -91,8 +86,7 @@ public class FeignContextTest {
 
 		FeignContext feignContext = new FeignContext();
 		feignContext.setApplicationContext(parent);
-		feignContext.setConfigurations(
-				Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
+		feignContext.setConfigurations(Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
 
 		Collection<RequestInterceptor> interceptors = feignContext
 				.getInstancesWithoutAncestors("demo", RequestInterceptor.class).values();

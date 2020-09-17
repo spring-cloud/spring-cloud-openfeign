@@ -53,8 +53,7 @@ public class FeignClientFactoryTests {
 		parent.refresh();
 		FeignContext context = new FeignContext();
 		context.setApplicationContext(parent);
-		context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class),
-				getSpec("bar", BarConfig.class)));
+		context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class), getSpec("bar", BarConfig.class)));
 
 		Foo foo = context.getInstance("foo", Foo.class);
 		assertThat(foo).as("foo was null").isNotNull();
@@ -68,8 +67,7 @@ public class FeignClientFactoryTests {
 
 	@Test
 	public void shouldRedirectToDelegateWhenUrlSet() {
-		new ApplicationContextRunner().withUserConfiguration(TestConfig.class)
-				.run(this::defaultClientUsed);
+		new ApplicationContextRunner().withUserConfiguration(TestConfig.class).run(this::defaultClientUsed);
 	}
 
 	@SuppressWarnings({ "unchecked", "ConstantConditions" })
@@ -99,16 +97,14 @@ public class FeignClientFactoryTests {
 
 		@Bean
 		BlockingLoadBalancerClient loadBalancerClient() {
-			return new BlockingLoadBalancerClient(new LoadBalancerClientFactory(),
-					new LoadBalancerProperties());
+			return new BlockingLoadBalancerClient(new LoadBalancerClientFactory(), new LoadBalancerProperties());
 		}
 
 		@Bean
 		FeignContext feignContext() {
 			FeignContext feignContext = new FeignContext();
-			feignContext.setConfigurations(
-					Collections.singletonList(new FeignClientSpecification("test",
-							new Class[] { LoadBalancerAutoConfiguration.class })));
+			feignContext.setConfigurations(Collections.singletonList(
+					new FeignClientSpecification("test", new Class[] { LoadBalancerAutoConfiguration.class })));
 			return feignContext;
 		}
 

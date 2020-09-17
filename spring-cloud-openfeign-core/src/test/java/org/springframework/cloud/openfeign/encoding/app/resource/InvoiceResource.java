@@ -39,27 +39,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class InvoiceResource {
 
-	@RequestMapping(value = "invoices", method = RequestMethod.GET,
-			produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "invoices", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<Invoice>> getInvoices() {
 
 		return ResponseEntity.ok(createInvoiceList(100));
 	}
 
-	@RequestMapping(value = "invoices", method = RequestMethod.POST,
-			consumes = MediaType.APPLICATION_JSON_VALUE,
+	@RequestMapping(value = "invoices", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<List<Invoice>> saveInvoices(@RequestBody List<Invoice> invoices) {
 
 		return ResponseEntity.ok(invoices);
 	}
 
-	@RequestMapping(value = "invoicesPaged", method = RequestMethod.GET,
-			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Page<Invoice>> getInvoicesPaged(
-			org.springframework.data.domain.Pageable pageable) {
-		Page<Invoice> page = new PageImpl<>(createInvoiceList(pageable.getPageSize()),
-				pageable, 100);
+	@RequestMapping(value = "invoicesPaged", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<Invoice>> getInvoicesPaged(org.springframework.data.domain.Pageable pageable) {
+		Page<Invoice> page = new PageImpl<>(createInvoiceList(pageable.getPageSize()), pageable, 100);
 		return ResponseEntity.ok(page);
 	}
 
@@ -68,8 +63,7 @@ public class InvoiceResource {
 		for (int ind = 0; ind < count; ind++) {
 			final Invoice invoice = new Invoice();
 			invoice.setTitle("Invoice " + (ind + 1));
-			invoice.setAmount(new BigDecimal(
-					String.format(Locale.US, "%.2f", Math.random() * 1000)));
+			invoice.setAmount(new BigDecimal(String.format(Locale.US, "%.2f", Math.random() * 1000)));
 			invoices.add(invoice);
 		}
 		return invoices;

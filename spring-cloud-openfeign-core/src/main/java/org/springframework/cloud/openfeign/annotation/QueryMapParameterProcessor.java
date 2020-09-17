@@ -40,8 +40,7 @@ public class QueryMapParameterProcessor implements AnnotatedParameterProcessor {
 	}
 
 	@Override
-	public boolean processArgument(AnnotatedParameterContext context,
-			Annotation annotation, Method method) {
+	public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
 		int paramIndex = context.getParameterIndex();
 		MethodMetadata metadata = context.getMethodMetadata();
 		if (metadata.queryMapIndex() == null) {

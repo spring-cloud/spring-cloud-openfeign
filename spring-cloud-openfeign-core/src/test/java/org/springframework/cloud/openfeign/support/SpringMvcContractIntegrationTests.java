@@ -56,8 +56,7 @@ public class SpringMvcContractIntegrationTests {
 
 	@BeforeAll
 	public static void beforeClass() {
-		System.setProperty("server.port",
-				String.valueOf(SocketUtils.findAvailableTcpPort()));
+		System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
 	}
 
 	@AfterAll
@@ -67,8 +66,7 @@ public class SpringMvcContractIntegrationTests {
 
 	@Test
 	public void shouldNotThrowInvalidMediaTypeExceptionWhenContentTypeTemplateUsed() {
-		assertThatCode(() -> client.sendMessage("test", "text/markdown"))
-				.doesNotThrowAnyException();
+		assertThatCode(() -> client.sendMessage("test", "text/markdown")).doesNotThrowAnyException();
 	}
 
 	@FeignClient(name = "test", url = "http://localhost:${server.port}/",
@@ -76,8 +74,7 @@ public class SpringMvcContractIntegrationTests {
 	interface TestClient {
 
 		@PostMapping("/test")
-		Object sendMessage(@RequestBody String message,
-				@RequestHeader(HttpHeaders.CONTENT_TYPE) String acceptHeader);
+		Object sendMessage(@RequestBody String message, @RequestHeader(HttpHeaders.CONTENT_TYPE) String acceptHeader);
 
 	}
 
@@ -89,8 +86,7 @@ public class SpringMvcContractIntegrationTests {
 	protected static class Config {
 
 		@PostMapping("/test")
-		Object sendMessage(@RequestBody String message,
-				@RequestHeader(HttpHeaders.CONTENT_TYPE) String acceptHeader) {
+		Object sendMessage(@RequestBody String message, @RequestHeader(HttpHeaders.CONTENT_TYPE) String acceptHeader) {
 			return message;
 		}
 
@@ -107,8 +103,7 @@ public class SpringMvcContractIntegrationTests {
 
 		@Bean
 		public Encoder encoder() {
-			return (object, bodyType, request) -> request
-					.body(object.toString().getBytes(), Charset.defaultCharset());
+			return (object, bodyType, request) -> request.body(object.toString().getBytes(), Charset.defaultCharset());
 		}
 
 	}

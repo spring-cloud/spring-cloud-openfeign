@@ -54,10 +54,8 @@ public final class FeignUtils {
 		return headers;
 	}
 
-	static Collection<String> addTemplateParameter(Collection<String> possiblyNull,
-			String paramName) {
-		Collection<String> params = ofNullable(possiblyNull).map(ArrayList::new)
-				.orElse(new ArrayList<>());
+	static Collection<String> addTemplateParameter(Collection<String> possiblyNull, String paramName) {
+		Collection<String> params = ofNullable(possiblyNull).map(ArrayList::new).orElse(new ArrayList<>());
 		params.add(String.format("{%s}", paramName));
 		return params;
 	}

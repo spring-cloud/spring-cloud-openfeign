@@ -34,20 +34,16 @@ public class FeignErrorDecoderFactoryTests {
 
 	@Test
 	public void testNoDefaultFactory() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SampleConfiguration1.class);
-		String[] beanNamesForType = context
-				.getBeanNamesForType(FeignErrorDecoderFactory.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration1.class);
+		String[] beanNamesForType = context.getBeanNamesForType(FeignErrorDecoderFactory.class);
 		assertThat(beanNamesForType).isEmpty();
 		context.close();
 	}
 
 	@Test
 	public void testCustomErrorDecoderFactory() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SampleConfiguration2.class);
-		FeignErrorDecoderFactory errorDecoderFactory = context
-				.getBean(FeignErrorDecoderFactory.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration2.class);
+		FeignErrorDecoderFactory errorDecoderFactory = context.getBean(FeignErrorDecoderFactory.class);
 		assertThat(errorDecoderFactory).isNotNull();
 		ErrorDecoder errorDecoder = errorDecoderFactory.create(Object.class);
 		assertThat(errorDecoder).isNotNull();
@@ -57,10 +53,8 @@ public class FeignErrorDecoderFactoryTests {
 
 	@Test
 	public void testCustomErrorDecoderFactoryNotOverwritingErrorDecoder() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SampleConfiguration3.class);
-		FeignErrorDecoderFactory errorDecoderFactory = context
-				.getBean(FeignErrorDecoderFactory.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration3.class);
+		FeignErrorDecoderFactory errorDecoderFactory = context.getBean(FeignErrorDecoderFactory.class);
 		assertThat(errorDecoderFactory).isNotNull();
 		ErrorDecoder errorDecoderFromFactory = errorDecoderFactory.create(Object.class);
 		assertThat(errorDecoderFromFactory).isNotNull();

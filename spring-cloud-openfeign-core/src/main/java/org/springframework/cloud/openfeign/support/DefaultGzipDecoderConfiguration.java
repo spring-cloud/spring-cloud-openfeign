@@ -43,8 +43,7 @@ public class DefaultGzipDecoderConfiguration {
 
 	private ObjectFactory<HttpMessageConverters> messageConverters;
 
-	public DefaultGzipDecoderConfiguration(
-			ObjectFactory<HttpMessageConverters> messageConverters) {
+	public DefaultGzipDecoderConfiguration(ObjectFactory<HttpMessageConverters> messageConverters) {
 		this.messageConverters = messageConverters;
 	}
 
@@ -52,8 +51,8 @@ public class DefaultGzipDecoderConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnProperty("feign.compression.response.useGzipDecoder")
 	public Decoder defaultGzipDecoder() {
-		return new OptionalDecoder(new ResponseEntityDecoder(
-				new DefaultGzipDecoder(new SpringDecoder(messageConverters))));
+		return new OptionalDecoder(
+				new ResponseEntityDecoder(new DefaultGzipDecoder(new SpringDecoder(messageConverters))));
 	}
 
 }

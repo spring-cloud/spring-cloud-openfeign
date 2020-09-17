@@ -48,8 +48,7 @@ public abstract class BaseRequestInterceptor implements RequestInterceptor {
 	 * @param name the header name
 	 * @param values the header values
 	 */
-	protected void addHeader(RequestTemplate requestTemplate, String name,
-			String... values) {
+	protected void addHeader(RequestTemplate requestTemplate, String name, String... values) {
 
 		if (!requestTemplate.headers().containsKey(name)) {
 			requestTemplate.header(name, values);

@@ -48,18 +48,15 @@ public class SpringDecoder implements Decoder {
 	}
 
 	@Override
-	public Object decode(final Response response, Type type)
-			throws IOException, FeignException {
-		if (type instanceof Class || type instanceof ParameterizedType
-				|| type instanceof WildcardType) {
+	public Object decode(final Response response, Type type) throws IOException, FeignException {
+		if (type instanceof Class || type instanceof ParameterizedType || type instanceof WildcardType) {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
-			HttpMessageConverterExtractor<?> extractor = new HttpMessageConverterExtractor(
-					type, this.messageConverters.getObject().getConverters());
+			HttpMessageConverterExtractor<?> extractor = new HttpMessageConverterExtractor(type,
+					this.messageConverters.getObject().getConverters());
 
 			return extractor.extractData(new FeignResponseAdapter(response));
 		}
-		throw new DecodeException(response.status(),
-				"type is not an instance of Class or ParameterizedType: " + type,
+		throw new DecodeException(response.status(), "type is not an instance of Class or ParameterizedType: " + type,
 				response.request());
 	}
 

@@ -67,8 +67,7 @@ class SortJacksonModuleTests {
 		assertThat(result.getPageable().getPageSize(), is(2));
 		assertThat(result.getPageable().getSort(), notNullValue());
 		result.getPageable().getSort();
-		Optional<Sort.Order> optionalOrder = result.getPageable().getSort().get()
-				.findFirst();
+		Optional<Sort.Order> optionalOrder = result.getPageable().getSort().get().findFirst();
 		if (optionalOrder.isPresent()) {
 			Sort.Order order = optionalOrder.get();
 			assertThat(order, hasProperty("property", is("field")));

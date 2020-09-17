@@ -41,8 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Olga Maciaszek-Sharma
  */
-@SpringBootTest(classes = PageableSupportTest.Config.class,
-		webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = PageableSupportTest.Config.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class PageableSupportTest {
 
 	@Autowired
@@ -50,8 +49,7 @@ public class PageableSupportTest {
 
 	@BeforeAll
 	public static void beforeClass() {
-		System.setProperty("server.port",
-				String.valueOf(SocketUtils.findAvailableTcpPort()));
+		System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
 	}
 
 	@AfterAll
@@ -61,8 +59,7 @@ public class PageableSupportTest {
 
 	@Test
 	void shouldProperlyFormatPageable() {
-		String direction = feignClient.performRequest(
-				PageRequest.of(1, 10, Sort.by(Sort.Order.desc("property"))));
+		String direction = feignClient.performRequest(PageRequest.of(1, 10, Sort.by(Sort.Order.desc("property"))));
 
 		assertThat(direction).isEqualTo("DESC");
 	}

@@ -54,11 +54,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Aaron Whiteside
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = BeansFeignClientTests.Application.class,
-		webEnvironment = WebEnvironment.RANDOM_PORT,
+@SpringBootTest(classes = BeansFeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest",
-				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
-				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
+				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
+				"feign.okhttp.enabled=false" })
 @DirtiesContext
 public class BeansFeignClientTests {
 
@@ -81,18 +80,15 @@ public class BeansFeignClientTests {
 
 	@Test
 	public void testAnnotations() {
-		Map<String, Object> beans = this.context
-				.getBeansWithAnnotation(FeignClient.class);
-		assertThat(beans.containsKey(TestClient.class.getName()))
-				.as("Wrong clients: " + beans).isTrue();
+		Map<String, Object> beans = this.context.getBeansWithAnnotation(FeignClient.class);
+		assertThat(beans.containsKey(TestClient.class.getName())).as("Wrong clients: " + beans).isTrue();
 	}
 
 	@Test
 	public void testClient() {
 		assertThat(this.testClient).as("testClient was null").isNotNull();
 		assertThat(this.extraClient).as("extraClient was null").isNotNull();
-		assertThat(Proxy.isProxyClass(this.testClient.getClass()))
-				.as("testClient is not a java Proxy").isTrue();
+		assertThat(Proxy.isProxyClass(this.testClient.getClass())).as("testClient is not a java Proxy").isTrue();
 		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.testClient);
 		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
 	}
@@ -100,20 +96,17 @@ public class BeansFeignClientTests {
 	@Test
 	public void extraClient() {
 		assertThat(this.extraClient).as("extraClient was null").isNotNull();
-		assertThat(Proxy.isProxyClass(this.extraClient.getClass()))
-				.as("extraClient is not a java Proxy").isTrue();
-		InvocationHandler invocationHandler = Proxy
-				.getInvocationHandler(this.extraClient);
+		assertThat(Proxy.isProxyClass(this.extraClient.getClass())).as("extraClient is not a java Proxy").isTrue();
+		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.extraClient);
 		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
 	}
 
 	@Test
 	public void buildByBuilder() {
 		assertThat(this.buildByBuilder).as("buildByBuilder was null").isNotNull();
-		assertThat(Proxy.isProxyClass(this.buildByBuilder.getClass()))
-				.as("buildByBuilder is not a java Proxy").isTrue();
-		InvocationHandler invocationHandler = Proxy
-				.getInvocationHandler(this.buildByBuilder);
+		assertThat(Proxy.isProxyClass(this.buildByBuilder.getClass())).as("buildByBuilder is not a java Proxy")
+				.isTrue();
+		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.buildByBuilder);
 		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
 	}
 

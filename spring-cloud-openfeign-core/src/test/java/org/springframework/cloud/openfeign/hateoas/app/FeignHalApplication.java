@@ -33,8 +33,7 @@ import org.springframework.core.env.Environment;
  * @author Hector Espert
  */
 @EnableFeignClients(clients = FeignHalClient.class)
-@SpringBootApplication(
-		scanBasePackages = "org.springframework.cloud.openfeign.hateoas.app",
+@SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.hateoas.app",
 		exclude = RepositoryRestMvcAutoConfiguration.class)
 @LoadBalancerClient(name = "local", configuration = LocalHalClientConfiguration.class)
 @Import(NoSecurityConfiguration.class)
@@ -50,8 +49,7 @@ class LocalHalClientConfiguration {
 	private int port = 0;
 
 	@Bean
-	public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-			Environment env) {
+	public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
 		return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 	}
 

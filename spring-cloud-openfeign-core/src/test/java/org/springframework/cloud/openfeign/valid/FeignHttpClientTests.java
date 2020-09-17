@@ -55,10 +55,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Spencer Gibb
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignHttpClientTests.Application.class,
-		webEnvironment = WebEnvironment.RANDOM_PORT,
-		value = { "spring.application.name=feignclienttest",
-				"feign.hystrix.enabled=false", "feign.okhttp.enabled=false" })
+@SpringBootTest(classes = FeignHttpClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
+		"spring.application.name=feignclienttest", "feign.hystrix.enabled=false", "feign.okhttp.enabled=false" })
 @DirtiesContext
 public class FeignHttpClientTests {
 
@@ -78,8 +76,7 @@ public class FeignHttpClientTests {
 	public void testSimpleType() {
 		Hello hello = this.testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
-		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello("hello world 1"));
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
 	}
 
 	@Test
@@ -113,20 +110,17 @@ public class FeignHttpClientTests {
 
 	protected interface BaseTestClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello",
-				produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.GET, value = "/hello", produces = MediaType.APPLICATION_JSON_VALUE)
 		Hello getHello();
 
-		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop",
-				consumes = "application/json")
+		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop", consumes = "application/json")
 		ResponseEntity<Void> patchHello(Hello hello);
 
 	}
 
 	protected interface UserService {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/users/{id}",
-				produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.GET, value = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 		User getUser(@PathVariable("id") long id);
 
 	}
@@ -140,11 +134,8 @@ public class FeignHttpClientTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = { TestClient.class, UserClient.class })
-	@LoadBalancerClients({
-			@LoadBalancerClient(name = "localapp",
-					configuration = LocalClientConfiguration.class),
-			@LoadBalancerClient(name = "localapp1",
-					configuration = LocalClientConfiguration.class) })
+	@LoadBalancerClients({ @LoadBalancerClient(name = "localapp", configuration = LocalClientConfiguration.class),
+			@LoadBalancerClient(name = "localapp1", configuration = LocalClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application implements UserService {
 
@@ -157,12 +148,10 @@ public class FeignHttpClientTests {
 		public ResponseEntity<Void> patchHello(@RequestBody Hello hello,
 				@RequestHeader("Content-Length") int contentLength) {
 			if (contentLength <= 0) {
-				throw new IllegalArgumentException(
-						"Invalid Content-Length " + contentLength);
+				throw new IllegalArgumentException("Invalid Content-Length " + contentLength);
 			}
 			if (!hello.getMessage().equals("foo")) {
-				throw new IllegalArgumentException(
-						"Invalid Hello: " + hello.getMessage());
+				throw new IllegalArgumentException("Invalid Hello: " + hello.getMessage());
 			}
 			return ResponseEntity.ok().header("X-Hello", "hello world patch").build();
 		}
@@ -258,8 +247,7 @@ public class FeignHttpClientTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-				Environment env) {
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
 			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 		}
 

@@ -35,8 +35,7 @@ final class Invoices {
 		for (int ind = 0; ind < count; ind++) {
 			final Invoice invoice = new Invoice();
 			invoice.setTitle("Invoice " + (ind + 1));
-			invoice.setAmount(new BigDecimal(
-					String.format(Locale.US, "%.2f", Math.random() * 1000)));
+			invoice.setAmount(new BigDecimal(String.format(Locale.US, "%.2f", Math.random() * 1000)));
 			invoices.add(invoice);
 		}
 		return invoices;

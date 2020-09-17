@@ -43,10 +43,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DefaultGzipDecoderTests.Application.class,
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		value = { "spring.application.name=defaultGzipDecoderTests",
-				"feign.compression.response.enabled=true",
-				"feign.compression.response.useGzipDecoder=true",
-				"feign.client.config.default.loggerLevel=full",
+		value = { "spring.application.name=defaultGzipDecoderTests", "feign.compression.response.enabled=true",
+				"feign.compression.response.useGzipDecoder=true", "feign.client.config.default.loggerLevel=full",
 				"logging.level.org.springframework.cloud.openfeign=DEBUG" })
 @DirtiesContext
 public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
@@ -71,20 +69,17 @@ public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
 	public void testBodyDecompress() {
 		ResponseEntity<Hello> response = testClient().getGzipResponse();
 		assertThat(response).as("response was null").isNotNull();
-		assertThat(response.getStatusCode()).as("wrong status code")
-				.isEqualTo(HttpStatus.OK);
+		assertThat(response.getStatusCode()).as("wrong status code").isEqualTo(HttpStatus.OK);
 		Hello hello = response.getBody();
 		assertThat(hello).as("hello was null").isNotNull();
-		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello("hello world via response"));
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world via response"));
 	}
 
 	@Test
 	public void testNullBodyDecompress() {
 		ResponseEntity<Hello> response = testClient().getNullResponse();
 		assertThat(response).as("response was null").isNotNull();
-		assertThat(response.getStatusCode()).as("wrong status code")
-				.isEqualTo(HttpStatus.OK);
+		assertThat(response.getStatusCode()).as("wrong status code").isEqualTo(HttpStatus.OK);
 		Hello hello = response.getBody();
 		assertThat(hello).as("hello was not null").isNull();
 		assertThat(hello).as("null hello didn't match").isEqualTo(null);
@@ -94,12 +89,10 @@ public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
 	public void testCharsetDecompress() {
 		ResponseEntity<Hello> response = testClient().getUtf8Response();
 		assertThat(response).as("response was null").isNotNull();
-		assertThat(response.getStatusCode()).as("wrong status code")
-				.isEqualTo(HttpStatus.OK);
+		assertThat(response.getStatusCode()).as("wrong status code").isEqualTo(HttpStatus.OK);
 		Hello hello = response.getBody();
 		assertThat(hello).as("hello was null").isNotNull();
-		assertThat(hello).as("utf8 hello didn't match")
-				.isEqualTo(new Hello("안녕하세요 means Hello in Korean"));
+		assertThat(hello).as("utf8 hello didn't match").isEqualTo(new Hello("안녕하세요 means Hello in Korean"));
 	}
 
 	private static class Hello {

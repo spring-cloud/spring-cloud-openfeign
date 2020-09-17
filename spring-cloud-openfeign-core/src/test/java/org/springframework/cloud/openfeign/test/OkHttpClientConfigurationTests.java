@@ -48,11 +48,9 @@ import static org.mockito.Mockito.mockingDetails;
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = { "feign.okhttp.enabled: true",
-		"spring.cloud.httpclientfactories.ok.enabled: true",
-		"ribbon.eureka.enabled = false", "ribbon.okhttp.enabled: true",
-		"feign.okhttp.enabled: true", "ribbon.httpclient.enabled: false",
-		"feign.httpclient.enabled: false" })
+@SpringBootTest(properties = { "feign.okhttp.enabled: true", "spring.cloud.httpclientfactories.ok.enabled: true",
+		"ribbon.eureka.enabled = false", "ribbon.okhttp.enabled: true", "feign.okhttp.enabled: true",
+		"ribbon.httpclient.enabled: false", "feign.httpclient.enabled: false" })
 @DirtiesContext
 public class OkHttpClientConfigurationTests {
 
@@ -67,13 +65,10 @@ public class OkHttpClientConfigurationTests {
 
 	@Test
 	public void testFactories() {
-		assertThat(this.connectionPoolFactory)
-				.isInstanceOf(OkHttpClientConnectionPoolFactory.class);
-		assertThat(this.connectionPoolFactory)
-				.isInstanceOf(TestConfig.MyOkHttpClientConnectionPoolFactory.class);
+		assertThat(this.connectionPoolFactory).isInstanceOf(OkHttpClientConnectionPoolFactory.class);
+		assertThat(this.connectionPoolFactory).isInstanceOf(TestConfig.MyOkHttpClientConnectionPoolFactory.class);
 		assertThat(this.okHttpClientFactory).isInstanceOf(OkHttpClientFactory.class);
-		assertThat(this.okHttpClientFactory)
-				.isInstanceOf(TestConfig.MyOkHttpClientFactory.class);
+		assertThat(this.okHttpClientFactory).isInstanceOf(TestConfig.MyOkHttpClientFactory.class);
 	}
 
 	@Test
@@ -115,12 +110,10 @@ public class OkHttpClientConfigurationTests {
 			return mock(OkHttpClient.class);
 		}
 
-		static class MyOkHttpClientConnectionPoolFactory
-				extends DefaultOkHttpClientConnectionPoolFactory {
+		static class MyOkHttpClientConnectionPoolFactory extends DefaultOkHttpClientConnectionPoolFactory {
 
 			@Override
-			public ConnectionPool create(int maxIdleConnections, long keepAliveDuration,
-					TimeUnit timeUnit) {
+			public ConnectionPool create(int maxIdleConnections, long keepAliveDuration, TimeUnit timeUnit) {
 				return new ConnectionPool();
 			}
 

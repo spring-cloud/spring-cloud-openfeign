@@ -34,8 +34,7 @@ public class FeignLoggerFactoryTests {
 
 	@Test
 	public void testDefaultLogger() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SampleConfiguration1.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration1.class);
 		FeignLoggerFactory loggerFactory = context.getBean(FeignLoggerFactory.class);
 		assertThat(loggerFactory).isNotNull();
 		Logger logger = loggerFactory.create(Object.class);
@@ -46,8 +45,7 @@ public class FeignLoggerFactoryTests {
 
 	@Test
 	public void testCustomLogger() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SampleConfiguration2.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration2.class);
 		FeignLoggerFactory loggerFactory = context.getBean(FeignLoggerFactory.class);
 		assertThat(loggerFactory).isNotNull();
 		Logger logger = loggerFactory.create(Object.class);
@@ -58,8 +56,7 @@ public class FeignLoggerFactoryTests {
 
 	@Test
 	public void testCustomLoggerFactory() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SampleConfiguration3.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration3.class);
 		FeignLoggerFactory loggerFactory = context.getBean(FeignLoggerFactory.class);
 		assertThat(loggerFactory).isNotNull();
 		assertThat(loggerFactory instanceof LoggerFactoryImpl).isTrue();

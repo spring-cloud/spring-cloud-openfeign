@@ -48,8 +48,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  *
  * @author Jakub Narloch
  */
-@SpringBootTest(classes = FeignAcceptEncodingTests.Application.class,
-		webEnvironment = RANDOM_PORT,
+@SpringBootTest(classes = FeignAcceptEncodingTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "feign.compression.response.enabled=true" })
 @RunWith(SpringRunner.class)
 @DirtiesContext
@@ -74,8 +73,7 @@ public class FeignAcceptEncodingTests {
 
 	@EnableFeignClients(clients = InvoiceClient.class)
 	@LoadBalancerClient(name = "local", configuration = LocalClientConfiguration.class)
-	@SpringBootApplication(
-			scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
+	@SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
 	@Import(NoSecurityConfiguration.class)
 	public static class Application {
 
@@ -88,8 +86,7 @@ public class FeignAcceptEncodingTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-				Environment env) {
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
 			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 		}
 

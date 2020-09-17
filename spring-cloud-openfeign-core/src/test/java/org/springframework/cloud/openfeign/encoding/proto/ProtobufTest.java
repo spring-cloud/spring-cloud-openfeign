@@ -27,10 +27,8 @@ public final class ProtobufTest {
 	private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 
 	static {
-		String[] descriptorData = {
-				"\n\023protobuf_test.proto\"\"\n\007Request\022\n\n\002id\030\001"
-						+ " \001(\005\022\013\n\003msg\030\002 \001(\tB\024\n\020feign.httpclientP\001b"
-						+ "\006proto3" };
+		String[] descriptorData = { "\n\023protobuf_test.proto\"\"\n\007Request\022\n\n\002id\030\001"
+				+ " \001(\005\022\013\n\003msg\030\002 \001(\tB\024\n\020feign.httpclientP\001b" + "\006proto3" };
 		com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner = new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
 			public com.google.protobuf.ExtensionRegistry assignDescriptors(
 					com.google.protobuf.Descriptors.FileDescriptor root) {
@@ -38,9 +36,8 @@ public final class ProtobufTest {
 				return null;
 			}
 		};
-		com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
-				descriptorData, new com.google.protobuf.Descriptors.FileDescriptor[] {},
-				assigner);
+		com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(descriptorData,
+				new com.google.protobuf.Descriptors.FileDescriptor[] {}, assigner);
 		internal_static_Request_descriptor = getDescriptor().getMessageTypes().get(0);
 		internal_static_Request_fieldAccessorTable = new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
 				internal_static_Request_descriptor, new String[] { "Id", "Msg", });
@@ -49,12 +46,10 @@ public final class ProtobufTest {
 	private ProtobufTest() {
 	}
 
-	public static void registerAllExtensions(
-			com.google.protobuf.ExtensionRegistryLite registry) {
+	public static void registerAllExtensions(com.google.protobuf.ExtensionRegistryLite registry) {
 	}
 
-	public static void registerAllExtensions(
-			com.google.protobuf.ExtensionRegistry registry) {
+	public static void registerAllExtensions(com.google.protobuf.ExtensionRegistry registry) {
 		registerAllExtensions((com.google.protobuf.ExtensionRegistryLite) registry);
 	}
 

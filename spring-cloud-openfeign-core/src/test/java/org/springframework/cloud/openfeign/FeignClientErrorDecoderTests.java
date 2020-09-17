@@ -67,8 +67,7 @@ public class FeignClientErrorDecoderTests {
 
 	@Test
 	public void errorDecoderInConfiguration() {
-		assertThat(this.context.getInstance("foo", ErrorDecoder.class))
-				.isInstanceOf(ErrorDecoder.Default.class);
+		assertThat(this.context.getInstance("foo", ErrorDecoder.class)).isInstanceOf(ErrorDecoder.Default.class);
 		assertThat(this.context.getInstance("bar", ErrorDecoder.class)).isNull();
 	}
 
@@ -90,8 +89,7 @@ public class FeignClientErrorDecoderTests {
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
 				.getField(invocationHandler, "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
-		return ReflectionTestUtils.getField(
-				ReflectionTestUtils.getField(dispatch.get(key), "asyncResponseHandler"),
+		return ReflectionTestUtils.getField(ReflectionTestUtils.getField(dispatch.get(key), "asyncResponseHandler"),
 				"errorDecoder");
 	}
 

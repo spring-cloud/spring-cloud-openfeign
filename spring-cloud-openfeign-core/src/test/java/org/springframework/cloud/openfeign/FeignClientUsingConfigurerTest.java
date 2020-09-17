@@ -63,11 +63,9 @@ public class FeignClientUsingConfigurerTest {
 				.getBean(BEAN_NAME_PREFIX + "TestFeignClient");
 		Feign.Builder builder = factoryBean.feign(context);
 
-		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder,
-				"requestInterceptors");
+		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder, "requestInterceptors");
 		assertThat(interceptors.size()).as("interceptors not set").isEqualTo(3);
-		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set")
-				.isEqualTo(Logger.Level.FULL);
+		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set").isEqualTo(Logger.Level.FULL);
 	}
 
 	private Object getBuilderValue(Feign.Builder builder, String member) {
@@ -83,12 +81,10 @@ public class FeignClientUsingConfigurerTest {
 				.getBean(BEAN_NAME_PREFIX + "NoInheritFeignClient");
 		Feign.Builder builder = factoryBean.feign(context);
 
-		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder,
-				"requestInterceptors");
+		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder, "requestInterceptors");
 
 		assertThat(interceptors).as("interceptors not set").isEmpty();
-		assertThat(factoryBean.isInheritParentContext())
-				.as("is inheriting from parent configuration").isFalse();
+		assertThat(factoryBean.isInheritParentContext()).as("is inheriting from parent configuration").isFalse();
 	}
 
 	@Test
@@ -97,8 +93,7 @@ public class FeignClientUsingConfigurerTest {
 				.getBean(BEAN_NAME_PREFIX + "NoInheritFeignClient");
 		Feign.Builder builder = factoryBean.feign(context);
 
-		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set")
-				.isEqualTo(Logger.Level.HEADERS);
+		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set").isEqualTo(Logger.Level.HEADERS);
 	}
 
 	@EnableAutoConfiguration
@@ -140,8 +135,7 @@ public class FeignClientUsingConfigurerTest {
 
 	}
 
-	@FeignClient(name = "noInheritFeignClient",
-			configuration = NoInheritConfiguration.class)
+	@FeignClient(name = "noInheritFeignClient", configuration = NoInheritConfiguration.class)
 	interface NoInheritFeignClient {
 
 	}

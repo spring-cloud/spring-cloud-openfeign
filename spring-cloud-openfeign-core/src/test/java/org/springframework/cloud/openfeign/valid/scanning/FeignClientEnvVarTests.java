@@ -45,10 +45,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ryan Baxter
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientEnvVarTests.Application.class,
-		webEnvironment = RANDOM_PORT,
-		value = { "spring.application.name=feignclienttest",
-				"feign.httpclient.enabled=false",
+@SpringBootTest(classes = FeignClientEnvVarTests.Application.class, webEnvironment = RANDOM_PORT,
+		value = { "spring.application.name=feignclienttest", "feign.httpclient.enabled=false",
 				"basepackage=org.springframework.cloud.openfeign.testclients" })
 @DirtiesContext
 public class FeignClientEnvVarTests {
@@ -86,10 +84,8 @@ public class FeignClientEnvVarTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-				Environment env) {
-			return ServiceInstanceListSupplier.fixed(env).instance(port, "localapp")
-					.build();
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
+			return ServiceInstanceListSupplier.fixed(env).instance(port, "localapp").build();
 		}
 
 	}

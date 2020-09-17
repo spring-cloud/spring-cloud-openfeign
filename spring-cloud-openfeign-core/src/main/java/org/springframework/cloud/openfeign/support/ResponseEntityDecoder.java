@@ -46,8 +46,7 @@ public class ResponseEntityDecoder implements Decoder {
 	}
 
 	@Override
-	public Object decode(final Response response, Type type)
-			throws IOException, FeignException {
+	public Object decode(final Response response, Type type) throws IOException, FeignException {
 
 		if (isParameterizeHttpEntity(type)) {
 			type = ((ParameterizedType) type).getActualTypeArguments()[0];
@@ -86,8 +85,7 @@ public class ResponseEntityDecoder implements Decoder {
 			headers.put(key, new LinkedList<>(response.headers().get(key)));
 		}
 
-		return new ResponseEntity<>((T) instance, headers,
-				HttpStatus.valueOf(response.status()));
+		return new ResponseEntity<>((T) instance, headers, HttpStatus.valueOf(response.status()));
 	}
 
 }

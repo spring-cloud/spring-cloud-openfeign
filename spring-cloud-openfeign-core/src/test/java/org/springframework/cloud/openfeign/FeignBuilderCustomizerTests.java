@@ -41,8 +41,7 @@ public class FeignBuilderCustomizerTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				FeignBuilderCustomizerTests.SampleConfiguration2.class);
 
-		FeignClientFactoryBean clientFactoryBean = context
-				.getBean(FeignClientFactoryBean.class);
+		FeignClientFactoryBean clientFactoryBean = context.getBean(FeignClientFactoryBean.class);
 		FeignContext feignContext = context.getBean(FeignContext.class);
 
 		Feign.Builder builder = clientFactoryBean.feign(feignContext);
@@ -52,14 +51,12 @@ public class FeignBuilderCustomizerTests {
 		context.close();
 	}
 
-	private void assertFeignBuilderField(Feign.Builder builder, String fieldName,
-			Object expectedValue) {
+	private void assertFeignBuilderField(Feign.Builder builder, String fieldName, Object expectedValue) {
 		Field builderField = ReflectionUtils.findField(Feign.Builder.class, fieldName);
 		ReflectionUtils.makeAccessible(builderField);
 
 		Object value = ReflectionUtils.getField(builderField, builder);
-		assertThat(value).as("Expected value for the field '" + fieldName + "':")
-				.isEqualTo(expectedValue);
+		assertThat(value).as("Expected value for the field '" + fieldName + "':").isEqualTo(expectedValue);
 	}
 
 	@Test
@@ -67,8 +64,7 @@ public class FeignBuilderCustomizerTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				FeignBuilderCustomizerTests.SampleConfiguration3.class);
 
-		FeignClientFactoryBean clientFactoryBean = context
-				.getBean(FeignClientFactoryBean.class);
+		FeignClientFactoryBean clientFactoryBean = context.getBean(FeignClientFactoryBean.class);
 		FeignContext feignContext = context.getBean(FeignContext.class);
 
 		Feign.Builder builder = clientFactoryBean.feign(feignContext);

@@ -68,22 +68,20 @@ public class FeignHalAutoConfigurationTests {
 		ObjectMapper mapper = new ObjectMapper();
 		when(objectMapper.getIfAvailable(any())).thenReturn(mapper);
 
-		when(halConfiguration.getIfAvailable(any()))
-				.thenReturn(mock(HalConfiguration.class));
+		when(halConfiguration.getIfAvailable(any())).thenReturn(mock(HalConfiguration.class));
 		when(relProvider.getIfAvailable()).thenReturn(mock(LinkRelationProvider.class));
 		when(curieProvider.getIfAvailable(any())).thenReturn(mock(CurieProvider.class));
 		when(messageResolver.getIfAvailable()).thenReturn(mock(MessageResolver.class));
 
 		TypeConstrainedMappingJackson2HttpMessageConverter converter = feignHalAutoConfiguration
-				.halJacksonHttpMessageConverter(objectMapper, halConfiguration,
-						messageResolver, curieProvider, relProvider);
+				.halJacksonHttpMessageConverter(objectMapper, halConfiguration, messageResolver, curieProvider,
+						relProvider);
 
 		assertThat(converter).isNotNull();
 		assertThat(converter.getObjectMapper()).isNotNull();
 		assertThat(converter.getSupportedMediaTypes()).isEqualTo(Arrays.asList(HAL_JSON));
 
-		assertThat(Jackson2HalModule.isAlreadyRegisteredIn(converter.getObjectMapper()))
-				.isTrue();
+		assertThat(Jackson2HalModule.isAlreadyRegisteredIn(converter.getObjectMapper())).isTrue();
 	}
 
 }

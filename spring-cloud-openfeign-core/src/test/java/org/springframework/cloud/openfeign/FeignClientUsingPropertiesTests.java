@@ -69,8 +69,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SuppressWarnings("FieldMayBeFinal")
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class,
-		webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class, webEnvironment = RANDOM_PORT)
 @TestPropertySource("classpath:feign-properties.properties")
 @DirtiesContext
 public class FeignClientUsingPropertiesTests {
@@ -112,26 +111,22 @@ public class FeignClientUsingPropertiesTests {
 
 	public FooClient fooClient() {
 		fooFactoryBean.setApplicationContext(applicationContext);
-		return fooFactoryBean.feign(context).target(FooClient.class,
-				"http://localhost:" + port);
+		return fooFactoryBean.feign(context).target(FooClient.class, "http://localhost:" + port);
 	}
 
 	public BarClient barClient() {
 		barFactoryBean.setApplicationContext(applicationContext);
-		return barFactoryBean.feign(context).target(BarClient.class,
-				"http://localhost:" + port);
+		return barFactoryBean.feign(context).target(BarClient.class, "http://localhost:" + port);
 	}
 
 	public UnwrapClient unwrapClient() {
 		unwrapFactoryBean.setApplicationContext(applicationContext);
-		return unwrapFactoryBean.feign(context).target(UnwrapClient.class,
-				"http://localhost:" + port);
+		return unwrapFactoryBean.feign(context).target(UnwrapClient.class, "http://localhost:" + port);
 	}
 
 	public FormClient formClient() {
 		formFactoryBean.setApplicationContext(applicationContext);
-		return formFactoryBean.feign(context).target(FormClient.class,
-				"http://localhost:" + port);
+		return formFactoryBean.feign(context).target(FormClient.class, "http://localhost:" + port);
 	}
 
 	@Test
@@ -166,8 +161,8 @@ public class FeignClientUsingPropertiesTests {
 		readTimeoutFactoryBean.setType(FeignClientFactoryBean.class);
 		readTimeoutFactoryBean.setApplicationContext(applicationContext);
 
-		TimeoutClient client = readTimeoutFactoryBean.feign(context)
-				.target(TimeoutClient.class, "http://localhost:" + port);
+		TimeoutClient client = readTimeoutFactoryBean.feign(context).target(TimeoutClient.class,
+				"http://localhost:" + port);
 
 		Request.Options options = getRequestOptions((Proxy) client);
 
@@ -182,8 +177,8 @@ public class FeignClientUsingPropertiesTests {
 		readTimeoutFactoryBean.setType(FeignClientFactoryBean.class);
 		readTimeoutFactoryBean.setApplicationContext(applicationContext);
 
-		TimeoutClient client = readTimeoutFactoryBean.feign(context)
-				.target(TimeoutClient.class, "http://localhost:" + port);
+		TimeoutClient client = readTimeoutFactoryBean.feign(context).target(TimeoutClient.class,
+				"http://localhost:" + port);
 
 		Request.Options options = getRequestOptions((Proxy) client);
 
@@ -196,8 +191,7 @@ public class FeignClientUsingPropertiesTests {
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
 				.getField(Objects.requireNonNull(invocationHandler), "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
-		return (Request.Options) ReflectionTestUtils.getField(dispatch.get(key),
-				"options");
+		return (Request.Options) ReflectionTestUtils.getField(dispatch.get(key), "options");
 	}
 
 	protected interface FooClient {
@@ -244,8 +238,7 @@ public class FeignClientUsingPropertiesTests {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/foo")
 		public String foo(HttpServletRequest request) throws IllegalAccessException {
-			if ("Foo".equals(request.getHeader("Foo"))
-					&& "Bar".equals(request.getHeader("Bar"))) {
+			if ("Foo".equals(request.getHeader("Foo")) && "Bar".equals(request.getHeader("Bar"))) {
 				return "OK";
 			}
 			else {
@@ -306,16 +299,14 @@ public class FeignClientUsingPropertiesTests {
 	public static class FormEncoder implements Encoder {
 
 		@Override
-		public void encode(Object o, Type type, RequestTemplate requestTemplate)
-				throws EncodeException {
+		public void encode(Object o, Type type, RequestTemplate requestTemplate) throws EncodeException {
 			Map<String, String> form = (Map<String, String>) o;
 			StringBuilder builder = new StringBuilder();
 			form.forEach((key, value) -> {
 				builder.append(key + "=" + value + "&");
 			});
 
-			requestTemplate.header(HttpHeaders.CONTENT_TYPE,
-					MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+			requestTemplate.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 			requestTemplate.body(builder.toString());
 		}
 

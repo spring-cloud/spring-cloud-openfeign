@@ -64,8 +64,7 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 			return false;
 		}
 		FeignClientSpecification that = (FeignClientSpecification) o;
-		return Objects.equals(this.name, that.name)
-				&& Arrays.equals(this.configuration, that.configuration);
+		return Objects.equals(this.name, that.name) && Arrays.equals(this.configuration, that.configuration);
 	}
 
 	@Override
@@ -75,9 +74,8 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 
 	@Override
 	public String toString() {
-		return new StringBuilder("FeignClientSpecification{").append("name='")
-				.append(this.name).append("', ").append("configuration=")
-				.append(Arrays.toString(this.configuration)).append("}").toString();
+		return new StringBuilder("FeignClientSpecification{").append("name='").append(this.name).append("', ")
+				.append("configuration=").append(Arrays.toString(this.configuration)).append("}").toString();
 	}
 
 }
