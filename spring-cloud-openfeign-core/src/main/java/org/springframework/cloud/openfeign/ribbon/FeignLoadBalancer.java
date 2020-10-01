@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.netflix.client.AbstractLoadBalancerAwareClient;
-import com.netflix.client.ClientException;
 import com.netflix.client.ClientRequest;
 import com.netflix.client.IResponse;
 import com.netflix.client.RequestSpecificRetryHandler;
@@ -169,7 +168,7 @@ public class FeignLoadBalancer extends
 					Map<String, Collection<String>> feignHeaders = RibbonRequest.this
 							.toRequest().headers();
 					for (String key : feignHeaders.keySet()) {
-						headers.put(key, new ArrayList<String>(feignHeaders.get(key)));
+						headers.put(key, new ArrayList<>(feignHeaders.get(key)));
 					}
 					HttpHeaders httpHeaders = new HttpHeaders();
 					httpHeaders.putAll(headers);
@@ -206,7 +205,7 @@ public class FeignLoadBalancer extends
 		}
 
 		@Override
-		public Object getPayload() throws ClientException {
+		public Object getPayload() {
 			return this.response.body();
 		}
 

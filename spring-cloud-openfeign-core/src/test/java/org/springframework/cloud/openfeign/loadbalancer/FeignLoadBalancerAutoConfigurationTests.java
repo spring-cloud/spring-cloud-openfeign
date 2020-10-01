@@ -45,7 +45,8 @@ class FeignLoadBalancerAutoConfigurationTests {
 	void shouldInstantiateDefaultFeignBlockingLoadBalancerClientWhenHttpClientDisabled() {
 		ConfigurableApplicationContext context = initContext(
 				"spring.cloud.loadbalancer.ribbon.enabled=false",
-				"feign.httpclient.enabled=false");
+				"feign.httpclient.enabled=false",
+				"spring.cloud.loadbalancer.retry.enabled=false");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalanced(context, Client.Default.class);
 		assertThatBeanNotPresent(context, LoadBalancerFeignClient.class);
@@ -54,7 +55,8 @@ class FeignLoadBalancerAutoConfigurationTests {
 	@Test
 	void shouldInstantiateHttpFeignClientWhenEnabled() {
 		ConfigurableApplicationContext context = initContext(
-				"spring.cloud.loadbalancer.ribbon.enabled=false");
+				"spring.cloud.loadbalancer.ribbon.enabled=false",
+				"spring.cloud.loadbalancer.retry.enabled=false");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalanced(context, ApacheHttpClient.class);
 		assertThatBeanNotPresent(context, LoadBalancerFeignClient.class);
@@ -64,16 +66,47 @@ class FeignLoadBalancerAutoConfigurationTests {
 	void shouldInstantiateOkHttpFeignClientWhenEnabled() {
 		ConfigurableApplicationContext context = initContext(
 				"spring.cloud.loadbalancer.ribbon.enabled=false",
-				"feign.httpclient.enabled=false", "feign.okhttp.enabled=true");
+				"feign.httpclient.enabled=false", "feign.okhttp.enabled=true",
+				"spring.cloud.loadbalancer.retry.enabled=false");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalanced(context, OkHttpClient.class);
 		assertThatBeanNotPresent(context, LoadBalancerFeignClient.class);
 	}
 
 	@Test
+	void shouldInstantiateRetryableDefaultFeignBlockingLoadBalancerClientWhenHttpClientDisabled() {
+		ConfigurableApplicationContext context = initContext(
+				"spring.cloud.loadbalancer.ribbon.enabled=false",
+				"feign.httpclient.enabled=false");
+		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
+		assertLoadBalancedWithRetries(context, Client.Default.class);
+		assertThatBeanNotPresent(context, LoadBalancerFeignClient.class);
+	}
+
+	@Test
+	void shouldInstantiateRetryableHttpFeignClientWhenEnabled() {
+		ConfigurableApplicationContext context = initContext(
+				"spring.cloud.loadbalancer.ribbon.enabled=false");
+		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
+		assertLoadBalancedWithRetries(context, ApacheHttpClient.class);
+		assertThatBeanNotPresent(context, LoadBalancerFeignClient.class);
+	}
+
+	@Test
+	void shouldInstantiateRetryableOkHttpFeignClientWhenEnabled() {
+		ConfigurableApplicationContext context = initContext(
+				"spring.cloud.loadbalancer.ribbon.enabled=false",
+				"feign.httpclient.enabled=false", "feign.okhttp.enabled=true");
+		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
+		assertLoadBalancedWithRetries(context, OkHttpClient.class);
+		assertThatBeanNotPresent(context, LoadBalancerFeignClient.class);
+	}
+
+	@Test
 	void shouldNotProcessLoadBalancerConfigurationWhenRibbonEnabled() {
 		ConfigurableApplicationContext context = initContext(
-				"spring.cloud.loadbalancer.ribbon.enabled=true");
+				"spring.cloud.loadbalancer.ribbon.enabled=true",
+				"spring.cloud.loadbalancer.retry.enabled=false");
 		assertThatOneBeanPresent(context, LoadBalancerFeignClient.class);
 		assertThatBeanNotPresent(context, BlockingLoadBalancerClient.class);
 		assertThatBeanNotPresent(context, FeignBlockingLoadBalancerClient.class);
@@ -102,6 +135,18 @@ class FeignLoadBalancerAutoConfigurationTests {
 				.getBeansOfType(FeignBlockingLoadBalancerClient.class);
 		assertThat(beans).hasSize(1);
 		assertThat(beans.get("feignClient").getDelegate()).isInstanceOf(delegateClass);
+	}
+
+	private void assertLoadBalancedWithRetries(ConfigurableApplicationContext context,
+			Class delegateClass) {
+		Map<String, RetryableBlockingFeignLoadBalancerClient> retryableBeans = context
+				.getBeansOfType(RetryableBlockingFeignLoadBalancerClient.class);
+		assertThat(retryableBeans).hasSize(1);
+		Map<String, FeignBlockingLoadBalancerClient> beans = context
+				.getBeansOfType(FeignBlockingLoadBalancerClient.class);
+		assertThat(beans).isEmpty();
+		assertThat(retryableBeans.get("feignRetryClient").getDelegate())
+				.isInstanceOf(delegateClass);
 	}
 
 	private void assertThatBeanNotPresent(ConfigurableApplicationContext context,

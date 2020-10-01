@@ -36,8 +36,6 @@ import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
 import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancerClient;
 import org.springframework.cloud.netflix.ribbon.RibbonProperties;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
-import org.springframework.retry.RetryCallback;
-import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
@@ -91,39 +89,34 @@ public class RetryableFeignLoadBalancer extends FeignLoadBalancer
 		retryTemplate.setRetryPolicy(retryPolicy == null ? new NeverRetryPolicy()
 				: new FeignRetryPolicy(request.toHttpRequest(), retryPolicy, this,
 						this.getClientName()));
-		return retryTemplate.execute(new RetryCallback<RibbonResponse, IOException>() {
-			@Override
-			public RibbonResponse doWithRetry(RetryContext retryContext)
-					throws IOException {
-				Request feignRequest = null;
-				// on retries the policy will choose the server and set it in the context
-				// extract the server and update the request being made
-				if (retryContext instanceof LoadBalancedRetryContext) {
-					ServiceInstance service = ((LoadBalancedRetryContext) retryContext)
-							.getServiceInstance();
-					if (service != null) {
-						feignRequest = ((RibbonRequest) request
-								.replaceUri(reconstructURIWithServer(
-										new Server(service.getHost(), service.getPort()),
-										request.getUri()))).toRequest();
-					}
+		return retryTemplate.execute(retryContext -> {
+			Request feignRequest = null;
+			// on retries the policy will choose the server and set it in the context
+			// extract the server and update the request being made
+			if (retryContext instanceof LoadBalancedRetryContext) {
+				ServiceInstance service = ((LoadBalancedRetryContext) retryContext)
+						.getServiceInstance();
+				if (service != null) {
+					feignRequest = ((RibbonRequest) request
+							.replaceUri(reconstructURIWithServer(
+									new Server(service.getHost(), service.getPort()),
+									request.getUri()))).toRequest();
 				}
-				if (feignRequest == null) {
-					feignRequest = request.toRequest();
-				}
-				Response response = request.client().execute(feignRequest, options);
-				if (retryPolicy != null
-						&& retryPolicy.retryableStatusCode(response.status())) {
-					byte[] byteArray = response.body() == null ? new byte[] {}
-							: StreamUtils
-									.copyToByteArray(response.body().asInputStream());
-					response.close();
-					throw new RibbonResponseStatusCodeException(
-							RetryableFeignLoadBalancer.this.clientName, response,
-							byteArray, request.getUri());
-				}
-				return new RibbonResponse(request.getUri(), response);
 			}
+			if (feignRequest == null) {
+				feignRequest = request.toRequest();
+			}
+			Response response = request.client().execute(feignRequest, options);
+			if (retryPolicy != null
+					&& retryPolicy.retryableStatusCode(response.status())) {
+				byte[] byteArray = response.body() == null ? new byte[] {}
+						: StreamUtils.copyToByteArray(response.body().asInputStream());
+				response.close();
+				throw new RibbonResponseStatusCodeException(
+						RetryableFeignLoadBalancer.this.clientName, response, byteArray,
+						request.getUri());
+			}
+			return new RibbonResponse(request.getUri(), response);
 		}, new LoadBalancedRecoveryCallback<RibbonResponse, Response>() {
 			@Override
 			protected RibbonResponse createResponse(Response response, URI uri) {
