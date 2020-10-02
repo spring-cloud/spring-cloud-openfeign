@@ -63,7 +63,7 @@ class HttpClientFeignLoadBalancerConfiguration {
 	public Client feignRetryClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory) {
 		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
-		return new RetryableBlockingFeignLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory);
+		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory);
 	}
 
 }

@@ -57,7 +57,7 @@ import org.springframework.util.Assert;
  * @author Olga Maciaszek-Sharma
  * @since 2.2.6
  */
-public class RetryableBlockingFeignLoadBalancerClient implements Client {
+public class RetryableFeignBlockingLoadBalancerClient implements Client {
 
 	private static final Log LOG = LogFactory.getLog(FeignBlockingLoadBalancerClient.class);
 
@@ -67,7 +67,7 @@ public class RetryableBlockingFeignLoadBalancerClient implements Client {
 
 	private final LoadBalancedRetryFactory loadBalancedRetryFactory;
 
-	public RetryableBlockingFeignLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
+	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;

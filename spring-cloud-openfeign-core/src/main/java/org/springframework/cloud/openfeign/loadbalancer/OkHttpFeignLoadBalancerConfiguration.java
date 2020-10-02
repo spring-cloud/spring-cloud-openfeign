@@ -62,7 +62,7 @@ class OkHttpFeignLoadBalancerConfiguration {
 	public Client feignRetryClient(LoadBalancerClient loadBalancerClient, okhttp3.OkHttpClient okHttpClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory) {
 		OkHttpClient delegate = new OkHttpClient(okHttpClient);
-		return new RetryableBlockingFeignLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory);
+		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory);
 	}
 
 }

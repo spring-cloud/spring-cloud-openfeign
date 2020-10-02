@@ -53,7 +53,7 @@ class DefaultFeignLoadBalancerConfiguration {
 			matchIfMissing = true)
 	public Client feignRetryClient(LoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory) {
-		return new RetryableBlockingFeignLoadBalancerClient(new Client.Default(null, null), loadBalancerClient,
+		return new RetryableFeignBlockingLoadBalancerClient(new Client.Default(null, null), loadBalancerClient,
 				loadBalancedRetryFactory);
 	}
 
