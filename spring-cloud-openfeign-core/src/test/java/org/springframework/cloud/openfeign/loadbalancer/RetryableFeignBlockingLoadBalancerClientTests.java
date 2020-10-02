@@ -52,17 +52,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests for {@link RetryableBlockingFeignLoadBalancerClient}. Note: the underlying
+ * Tests for {@link RetryableFeignBlockingLoadBalancerClient}. Note: the underlying
  * {@link BlockingLoadBalancerClient} is already extensively tested in the Spring Cloud
  * Commons project, so here we are only testing the interactions between
- * {@link RetryableBlockingFeignLoadBalancerClient} and its delegates.
+ * {@link RetryableFeignBlockingLoadBalancerClient} and its delegates.
  *
  * @see <a href=
  * "https://github.com/spring-cloud/spring-cloud-commons/blob/master/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
  * @author Olga Maciaszek-Sharma
  */
 @ExtendWith(MockitoExtension.class)
-class RetryableBlockingFeignLoadBalancerClientTests {
+class RetryableFeignBlockingLoadBalancerClientTests {
 
 	private Client delegate = mock(Client.class);
 
@@ -73,7 +73,7 @@ class RetryableBlockingFeignLoadBalancerClientTests {
 
 	private LoadBalancerRetryProperties properties = new LoadBalancerRetryProperties();
 
-	private RetryableBlockingFeignLoadBalancerClient feignBlockingLoadBalancerClient = new RetryableBlockingFeignLoadBalancerClient(
+	private RetryableFeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new RetryableFeignBlockingLoadBalancerClient(
 			delegate, loadBalancerClient, retryFactory);
 
 	private ServiceInstance serviceInstance = new DefaultServiceInstance("test-a", "test",

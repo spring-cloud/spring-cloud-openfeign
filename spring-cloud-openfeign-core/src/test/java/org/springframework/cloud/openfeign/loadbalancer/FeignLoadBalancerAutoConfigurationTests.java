@@ -139,8 +139,8 @@ class FeignLoadBalancerAutoConfigurationTests {
 
 	private void assertLoadBalancedWithRetries(ConfigurableApplicationContext context,
 			Class delegateClass) {
-		Map<String, RetryableBlockingFeignLoadBalancerClient> retryableBeans = context
-				.getBeansOfType(RetryableBlockingFeignLoadBalancerClient.class);
+		Map<String, RetryableFeignBlockingLoadBalancerClient> retryableBeans = context
+				.getBeansOfType(RetryableFeignBlockingLoadBalancerClient.class);
 		assertThat(retryableBeans).hasSize(1);
 		Map<String, FeignBlockingLoadBalancerClient> beans = context
 				.getBeansOfType(FeignBlockingLoadBalancerClient.class);

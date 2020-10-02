@@ -54,7 +54,7 @@ import org.springframework.retry.support.RetryTemplate;
  * @author Olga Maciaszek-Sharma
  * @since 2.2.6
  */
-public class RetryableBlockingFeignLoadBalancerClient implements Client {
+public class RetryableFeignBlockingLoadBalancerClient implements Client {
 
 	private static final Log LOG = LogFactory
 			.getLog(FeignBlockingLoadBalancerClient.class);
@@ -65,7 +65,7 @@ public class RetryableBlockingFeignLoadBalancerClient implements Client {
 
 	private final LoadBalancedRetryFactory loadBalancedRetryFactory;
 
-	public RetryableBlockingFeignLoadBalancerClient(Client delegate,
+	public RetryableFeignBlockingLoadBalancerClient(Client delegate,
 			BlockingLoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory) {
 		this.delegate = delegate;

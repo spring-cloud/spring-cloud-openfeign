@@ -58,7 +58,7 @@ class DefaultFeignLoadBalancerConfiguration {
 	public Client feignRetryClient(BlockingLoadBalancerClient loadBalancerClient,
 			List<LoadBalancedRetryFactory> loadBalancedRetryFactories) {
 		AnnotationAwareOrderComparator.sort(loadBalancedRetryFactories);
-		return new RetryableBlockingFeignLoadBalancerClient(
+		return new RetryableFeignBlockingLoadBalancerClient(
 				new Client.Default(null, null), loadBalancerClient,
 				loadBalancedRetryFactories.get(0));
 	}

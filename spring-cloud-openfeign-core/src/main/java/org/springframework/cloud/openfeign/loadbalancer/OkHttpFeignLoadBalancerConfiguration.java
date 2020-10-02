@@ -68,7 +68,7 @@ class OkHttpFeignLoadBalancerConfiguration {
 			List<LoadBalancedRetryFactory> loadBalancedRetryFactories) {
 		AnnotationAwareOrderComparator.sort(loadBalancedRetryFactories);
 		OkHttpClient delegate = new OkHttpClient(okHttpClient);
-		return new RetryableBlockingFeignLoadBalancerClient(delegate, loadBalancerClient,
+		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient,
 				loadBalancedRetryFactories.get(0));
 	}
 

@@ -69,7 +69,7 @@ class HttpClientFeignLoadBalancerConfiguration {
 			List<LoadBalancedRetryFactory> loadBalancedRetryFactories) {
 		AnnotationAwareOrderComparator.sort(loadBalancedRetryFactories);
 		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
-		return new RetryableBlockingFeignLoadBalancerClient(delegate, loadBalancerClient,
+		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient,
 				loadBalancedRetryFactories.get(0));
 	}
 
