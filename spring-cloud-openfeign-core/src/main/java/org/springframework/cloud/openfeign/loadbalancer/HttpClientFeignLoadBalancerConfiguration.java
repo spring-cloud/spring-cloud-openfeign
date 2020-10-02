@@ -24,8 +24,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.cloud.openfeign.clientconfig.HttpClientFeignConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -44,14 +46,16 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnBean(LoadBalancerClient.class)
 @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
 @Import(HttpClientFeignConfiguration.class)
+@EnableConfigurationProperties(LoadBalancerProperties.class)
 class HttpClientFeignLoadBalancerConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
 	@Conditional(OnRetryNotEnabledCondition.class)
-	public Client feignClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient) {
+	public Client feignClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient,
+			LoadBalancerProperties properties) {
 		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
-		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient);
+		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, properties);
 	}
 
 	@Bean
@@ -61,9 +65,10 @@ class HttpClientFeignLoadBalancerConfiguration {
 	@ConditionalOnProperty(value = "spring.cloud.loadbalancer.retry.enabled", havingValue = "true",
 			matchIfMissing = true)
 	public Client feignRetryClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient,
-			LoadBalancedRetryFactory loadBalancedRetryFactory) {
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties) {
 		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
-		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory);
+		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory,
+				properties);
 	}
 
 }

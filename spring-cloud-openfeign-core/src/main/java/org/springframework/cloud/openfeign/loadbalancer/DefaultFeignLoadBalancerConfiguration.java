@@ -22,8 +22,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -36,13 +38,14 @@ import org.springframework.context.annotation.Configuration;
  * @since 2.2.0
  */
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(LoadBalancerProperties.class)
 class DefaultFeignLoadBalancerConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
 	@Conditional(OnRetryNotEnabledCondition.class)
-	public Client feignClient(LoadBalancerClient loadBalancerClient) {
-		return new FeignBlockingLoadBalancerClient(new Client.Default(null, null), loadBalancerClient);
+	public Client feignClient(LoadBalancerClient loadBalancerClient, LoadBalancerProperties properties) {
+		return new FeignBlockingLoadBalancerClient(new Client.Default(null, null), loadBalancerClient, properties);
 	}
 
 	@Bean
@@ -52,9 +55,9 @@ class DefaultFeignLoadBalancerConfiguration {
 	@ConditionalOnProperty(value = "spring.cloud.loadbalancer.retry.enabled", havingValue = "true",
 			matchIfMissing = true)
 	public Client feignRetryClient(LoadBalancerClient loadBalancerClient,
-			LoadBalancedRetryFactory loadBalancedRetryFactory) {
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties) {
 		return new RetryableFeignBlockingLoadBalancerClient(new Client.Default(null, null), loadBalancerClient,
-				loadBalancedRetryFactory);
+				loadBalancedRetryFactory, properties);
 	}
 
 }
