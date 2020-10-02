@@ -21,8 +21,7 @@ import java.util.concurrent.TimeUnit;
 import feign.Client;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockingDetails;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +36,6 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,13 +44,14 @@ import static org.mockito.Mockito.mockingDetails;
 
 /**
  * @author Ryan Baxter
+ * @author Olga Maciaszek-Sharma
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(properties = { "feign.okhttp.enabled: true", "spring.cloud.httpclientfactories.ok.enabled: true",
 		"ribbon.eureka.enabled = false", "ribbon.okhttp.enabled: true", "feign.okhttp.enabled: true",
-		"ribbon.httpclient.enabled: false", "feign.httpclient.enabled: false" })
+		"ribbon.httpclient.enabled: false", "feign.httpclient.enabled: false",
+		"spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
-public class OkHttpClientConfigurationTests {
+class OkHttpClientConfigurationTests {
 
 	@Autowired
 	OkHttpClientFactory okHttpClientFactory;
@@ -64,16 +63,16 @@ public class OkHttpClientConfigurationTests {
 	FeignBlockingLoadBalancerClient feignClient;
 
 	@Test
-	public void testFactories() {
-		assertThat(this.connectionPoolFactory).isInstanceOf(OkHttpClientConnectionPoolFactory.class);
-		assertThat(this.connectionPoolFactory).isInstanceOf(TestConfig.MyOkHttpClientConnectionPoolFactory.class);
-		assertThat(this.okHttpClientFactory).isInstanceOf(OkHttpClientFactory.class);
-		assertThat(this.okHttpClientFactory).isInstanceOf(TestConfig.MyOkHttpClientFactory.class);
+	void testFactories() {
+		assertThat(connectionPoolFactory).isInstanceOf(OkHttpClientConnectionPoolFactory.class);
+		assertThat(connectionPoolFactory).isInstanceOf(TestConfig.MyOkHttpClientConnectionPoolFactory.class);
+		assertThat(okHttpClientFactory).isInstanceOf(OkHttpClientFactory.class);
+		assertThat(okHttpClientFactory).isInstanceOf(TestConfig.MyOkHttpClientFactory.class);
 	}
 
 	@Test
-	public void testHttpClientWithFeign() {
-		Client delegate = this.feignClient.getDelegate();
+	void testHttpClientWithFeign() {
+		Client delegate = feignClient.getDelegate();
 		assertThat(feign.okhttp.OkHttpClient.class.isInstance(delegate)).isTrue();
 		feign.okhttp.OkHttpClient okHttpClient = (feign.okhttp.OkHttpClient) delegate;
 		OkHttpClient httpClient = getField(okHttpClient, "delegate");

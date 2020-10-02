@@ -23,10 +23,9 @@ import feign.Client;
 import feign.Feign;
 import feign.Target;
 import feign.httpclient.ApacheHttpClient;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -36,7 +35,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.SocketUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,11 +47,11 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 /**
  * @author Spencer Gibb
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignHttpClientUrlTests.TestConfig.class, webEnvironment = DEFINED_PORT, value = {
-		"spring.application.name=feignclienturltest", "feign.hystrix.enabled=false", "feign.okhttp.enabled=false" })
+@SpringBootTest(classes = FeignHttpClientUrlTests.TestConfig.class, webEnvironment = DEFINED_PORT,
+		value = { "spring.application.name=feignclienturltest", "feign.hystrix.enabled=false",
+				"feign.okhttp.enabled=false", "spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
-public class FeignHttpClientUrlTests {
+class FeignHttpClientUrlTests {
 
 	static int port;
 
@@ -66,35 +64,35 @@ public class FeignHttpClientUrlTests {
 	@Autowired
 	private BeanUrlClient beanClient;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() {
 		port = SocketUtils.findAvailableTcpPort();
 		System.setProperty("server.port", String.valueOf(port));
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void afterClass() {
 		System.clearProperty("server.port");
 	}
 
 	@Test
-	public void testUrlHttpClient() {
-		assertThat(this.urlClient).as("UrlClient was null").isNotNull();
-		Hello hello = this.urlClient.getHello();
+	void testUrlHttpClient() {
+		assertThat(urlClient).as("UrlClient was null").isNotNull();
+		Hello hello = urlClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
 	}
 
 	@Test
-	public void testBeanUrl() {
-		Hello hello = this.beanClient.getHello();
+	void testBeanUrl() {
+		Hello hello = beanClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
 	}
 
 	@Test
 	public void testBeanUrlNoProtocol() {
-		Hello hello = this.beanClientNoProtocol.getHello();
+		Hello hello = beanClientNoProtocol.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
 	}
@@ -174,15 +172,15 @@ public class FeignHttpClientUrlTests {
 
 		private String message;
 
-		public Hello() {
+		Hello() {
 		}
 
-		public Hello(String message) {
+		Hello(String message) {
 			this.message = message;
 		}
 
 		public String getMessage() {
-			return this.message;
+			return message;
 		}
 
 		public void setMessage(String message) {
@@ -198,12 +196,12 @@ public class FeignHttpClientUrlTests {
 				return false;
 			}
 			Hello that = (Hello) o;
-			return Objects.equals(this.message, that.message);
+			return Objects.equals(message, that.message);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(this.message);
+			return Objects.hash(message);
 		}
 
 	}

@@ -19,8 +19,7 @@ package org.springframework.cloud.openfeign.valid;
 import java.util.Objects;
 
 import feign.Client;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -41,7 +40,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -53,15 +51,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignHttpClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=feignclienttest", "feign.hystrix.enabled=false", "feign.okhttp.enabled=false" })
+@SpringBootTest(classes = FeignHttpClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
+		value = { "spring.application.name=feignclienttest", "feign.hystrix.enabled=false",
+				"feign.okhttp.enabled=false", "spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
-public class FeignHttpClientTests {
-
-	@LocalServerPort
-	private int port = 0;
+class FeignHttpClientTests {
 
 	@Autowired
 	private TestClient testClient;
@@ -73,32 +69,32 @@ public class FeignHttpClientTests {
 	private UserClient userClient;
 
 	@Test
-	public void testSimpleType() {
-		Hello hello = this.testClient.getHello();
+	void testSimpleType() {
+		Hello hello = testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
 	}
 
 	@Test
-	public void testPatch() {
-		ResponseEntity<Void> response = this.testClient.patchHello(new Hello("foo"));
+	void testPatch() {
+		ResponseEntity<Void> response = testClient.patchHello(new Hello("foo"));
 		assertThat(response).isNotNull();
 		String header = response.getHeaders().getFirst("x-hello");
 		assertThat(header).isEqualTo("hello world patch");
 	}
 
 	@Test
-	public void testFeignClientType() throws IllegalAccessException {
-		assertThat(this.feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
-		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) this.feignClient;
+	void testFeignClientType() {
+		assertThat(feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
+		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) feignClient;
 		Client delegate = client.getDelegate();
 		assertThat(delegate).isInstanceOf(feign.httpclient.ApacheHttpClient.class);
 	}
 
 	@Test
-	public void testFeignInheritanceSupport() {
-		assertThat(this.userClient).as("UserClient was null").isNotNull();
-		final User user = this.userClient.getUser(1);
+	void testFeignInheritanceSupport() {
+		assertThat(userClient).as("UserClient was null").isNotNull();
+		final User user = userClient.getUser(1);
 		assertThat(user).as("Returned user was null").isNotNull();
 		assertThat(new User("John Smith")).as("Users were different").isEqualTo(user);
 	}
@@ -167,15 +163,15 @@ public class FeignHttpClientTests {
 
 		private String message;
 
-		public Hello() {
+		Hello() {
 		}
 
-		public Hello(String message) {
+		Hello(String message) {
 			this.message = message;
 		}
 
 		public String getMessage() {
-			return this.message;
+			return message;
 		}
 
 		public void setMessage(String message) {
@@ -191,12 +187,12 @@ public class FeignHttpClientTests {
 				return false;
 			}
 			Hello that = (Hello) o;
-			return Objects.equals(this.message, that.message);
+			return Objects.equals(message, that.message);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(this.message);
+			return Objects.hash(message);
 		}
 
 	}
@@ -205,15 +201,15 @@ public class FeignHttpClientTests {
 
 		private String name;
 
-		public User() {
+		User() {
 		}
 
-		public User(String name) {
+		User(String name) {
 			this.name = name;
 		}
 
 		public String getName() {
-			return this.name;
+			return name;
 		}
 
 		public void setName(String name) {
@@ -229,12 +225,12 @@ public class FeignHttpClientTests {
 				return false;
 			}
 			User that = (User) o;
-			return Objects.equals(this.name, that.name);
+			return Objects.equals(name, that.name);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(this.name);
+			return Objects.hash(name);
 		}
 
 	}
