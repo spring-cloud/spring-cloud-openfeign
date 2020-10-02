@@ -40,6 +40,7 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryPolicy;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.client.loadbalancer.RetryableRequestContext;
 import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
@@ -67,11 +68,14 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 
 	private final LoadBalancedRetryFactory loadBalancedRetryFactory;
 
+	private final LoadBalancerProperties properties;
+
 	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
-			LoadBalancedRetryFactory loadBalancedRetryFactory) {
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
 		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
+		this.properties = properties;
 	}
 
 	@Override
@@ -95,8 +99,9 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 								+ "Reattempting service instance selection");
 					}
 					ServiceInstance previousServiceInstance = lbContext.getPreviousServiceInstance();
+					String hint = getHint(serviceId);
 					DefaultRequest<RetryableRequestContext> lbRequest = new DefaultRequest<>(
-							new RetryableRequestContext(previousServiceInstance, request));
+							new RetryableRequestContext(previousServiceInstance, request, hint));
 					serviceInstance = loadBalancerClient.choose(serviceId, lbRequest);
 					if (LOG.isDebugEnabled()) {
 						LOG.debug(String.format("Selected service instance: %s", serviceInstance));
@@ -186,6 +191,12 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 				return httpHeaders;
 			}
 		};
+	}
+
+	private String getHint(String serviceId) {
+		String defaultHint = properties.getHint().getOrDefault("default", "default");
+		String hintPropertyValue = properties.getHint().get(serviceId);
+		return hintPropertyValue != null ? hintPropertyValue : defaultHint;
 	}
 
 }

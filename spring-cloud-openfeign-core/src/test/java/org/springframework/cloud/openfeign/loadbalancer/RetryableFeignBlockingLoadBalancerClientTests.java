@@ -73,7 +73,7 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 	private LoadBalancerProperties properties = new LoadBalancerProperties();
 
 	private RetryableFeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new RetryableFeignBlockingLoadBalancerClient(
-			delegate, loadBalancerClient, retryFactory);
+			delegate, loadBalancerClient, retryFactory, properties);
 
 	private ServiceInstance serviceInstance = new DefaultServiceInstance("test-a", "test", "testhost", 80, false);
 

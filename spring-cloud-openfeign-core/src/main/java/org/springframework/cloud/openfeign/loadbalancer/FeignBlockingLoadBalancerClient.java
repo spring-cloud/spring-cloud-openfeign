@@ -27,7 +27,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.DefaultRequest;
+import org.springframework.cloud.client.loadbalancer.DefaultRequestContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 
@@ -46,9 +49,13 @@ public class FeignBlockingLoadBalancerClient implements Client {
 
 	private final LoadBalancerClient loadBalancerClient;
 
-	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient) {
+	private final LoadBalancerProperties properties;
+
+	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
+			LoadBalancerProperties properties) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
+		this.properties = properties;
 	}
 
 	@Override
@@ -56,7 +63,10 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		final URI originalUri = URI.create(request.url());
 		String serviceId = originalUri.getHost();
 		Assert.state(serviceId != null, "Request URI does not contain a valid hostname: " + originalUri);
-		ServiceInstance instance = loadBalancerClient.choose(serviceId);
+		String hint = getHint(serviceId);
+		DefaultRequest<DefaultRequestContext> lbRequest = new DefaultRequest<>(
+				new DefaultRequestContext(request, hint));
+		ServiceInstance instance = loadBalancerClient.choose(serviceId, lbRequest);
 		if (instance == null) {
 			String message = "Load balancer does not contain an instance for the service " + serviceId;
 			if (LOG.isWarnEnabled()) {
@@ -74,6 +84,12 @@ public class FeignBlockingLoadBalancerClient implements Client {
 	// Visible for Sleuth instrumentation
 	public Client getDelegate() {
 		return delegate;
+	}
+
+	private String getHint(String serviceId) {
+		String defaultHint = properties.getHint().getOrDefault("default", "default");
+		String hintPropertyValue = properties.getHint().get(serviceId);
+		return hintPropertyValue != null ? hintPropertyValue : defaultHint;
 	}
 
 }

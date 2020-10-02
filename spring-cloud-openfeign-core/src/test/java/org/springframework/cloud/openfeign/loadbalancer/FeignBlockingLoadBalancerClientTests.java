@@ -34,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,7 @@ import org.springframework.http.MediaType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -65,7 +67,7 @@ class FeignBlockingLoadBalancerClientTests {
 	private BlockingLoadBalancerClient loadBalancerClient = mock(BlockingLoadBalancerClient.class);
 
 	private FeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new FeignBlockingLoadBalancerClient(
-			delegate, loadBalancerClient);
+			delegate, loadBalancerClient, new LoadBalancerProperties());
 
 	@Test
 	void shouldExtractServiceIdFromRequestUrl() throws IOException {
@@ -73,7 +75,7 @@ class FeignBlockingLoadBalancerClientTests {
 
 		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
-		verify(loadBalancerClient).choose("test");
+		verify(loadBalancerClient).choose(eq("test"), any());
 	}
 
 	@Test
@@ -102,7 +104,7 @@ class FeignBlockingLoadBalancerClientTests {
 		Request.Options options = new Request.Options();
 		String url = "http://127.0.0.1/path";
 		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test", "test-host", 8888, false);
-		when(loadBalancerClient.choose("test")).thenReturn(serviceInstance);
+		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(serviceInstance);
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
 				.thenReturn(URI.create(url));
 
