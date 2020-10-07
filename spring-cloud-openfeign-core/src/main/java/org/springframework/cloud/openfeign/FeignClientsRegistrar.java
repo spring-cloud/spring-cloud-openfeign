@@ -16,14 +16,12 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,10 +42,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -362,40 +357,6 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	@Override
 	public void setEnvironment(Environment environment) {
 		this.environment = environment;
-	}
-
-	/**
-	 * Helper class to create a {@link TypeFilter} that matches if all the delegates
-	 * match.
-	 *
-	 * @author Oliver Gierke
-	 */
-	private static class AllTypeFilter implements TypeFilter {
-
-		private final List<TypeFilter> delegates;
-
-		/**
-		 * Creates a new {@link AllTypeFilter} to match if all the given delegates match.
-		 * @param delegates must not be {@literal null}.
-		 */
-		AllTypeFilter(List<TypeFilter> delegates) {
-			Assert.notNull(delegates, "This argument is required, it must not be null");
-			this.delegates = delegates;
-		}
-
-		@Override
-		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
-				throws IOException {
-
-			for (TypeFilter filter : this.delegates) {
-				if (!filter.match(metadataReader, metadataReaderFactory)) {
-					return false;
-				}
-			}
-
-			return true;
-		}
-
 	}
 
 }
