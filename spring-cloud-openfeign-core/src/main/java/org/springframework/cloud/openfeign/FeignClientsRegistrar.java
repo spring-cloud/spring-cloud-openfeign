@@ -21,14 +21,15 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -43,10 +44,8 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.AbstractClassTestingTypeFilter;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
@@ -158,55 +157,43 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	}
 
 	public void registerFeignClients(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
-		ClassPathScanningCandidateComponentProvider scanner = getScanner();
-		scanner.setResourceLoader(this.resourceLoader);
 
-		Set<String> basePackages;
-
+		LinkedHashSet<BeanDefinition> candidateComponents = new LinkedHashSet<>();
 		Map<String, Object> attrs = metadata.getAnnotationAttributes(EnableFeignClients.class.getName());
-		AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(FeignClient.class);
 		final Class<?>[] clients = attrs == null ? null : (Class<?>[]) attrs.get("clients");
 		if (clients == null || clients.length == 0) {
-			scanner.addIncludeFilter(annotationTypeFilter);
-			basePackages = getBasePackages(metadata);
+
+			ClassPathScanningCandidateComponentProvider scanner = getScanner();
+			scanner.setResourceLoader(this.resourceLoader);
+			scanner.addIncludeFilter(new AnnotationTypeFilter(FeignClient.class));
+			Set<String> basePackages = getBasePackages(metadata);
+			for (String basePackage : basePackages) {
+				candidateComponents.addAll(scanner.findCandidateComponents(basePackage));
+			}
 		}
 		else {
-			final Set<String> clientClasses = new HashSet<>();
-			basePackages = new HashSet<>();
 			for (Class<?> clazz : clients) {
-				basePackages.add(ClassUtils.getPackageName(clazz));
-				clientClasses.add(clazz.getCanonicalName());
-			}
-			AbstractClassTestingTypeFilter filter = new AbstractClassTestingTypeFilter() {
-				@Override
-				protected boolean match(ClassMetadata metadata) {
-					String cleaned = metadata.getClassName().replaceAll("\\$", ".");
-					return clientClasses.contains(cleaned);
-				}
-			};
-			scanner.addIncludeFilter(new AllTypeFilter(Arrays.asList(filter, annotationTypeFilter)));
-		}
-
-		for (String basePackage : basePackages) {
-			Set<BeanDefinition> candidateComponents = scanner.findCandidateComponents(basePackage);
-			for (BeanDefinition candidateComponent : candidateComponents) {
-				if (candidateComponent instanceof AnnotatedBeanDefinition) {
-					// verify annotated class is an interface
-					AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
-					AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
-					Assert.isTrue(annotationMetadata.isInterface(),
-							"@FeignClient can only be specified on an interface");
-
-					Map<String, Object> attributes = annotationMetadata
-							.getAnnotationAttributes(FeignClient.class.getCanonicalName());
-
-					String name = getClientName(attributes);
-					registerClientConfiguration(registry, name, attributes.get("configuration"));
-
-					registerFeignClient(registry, annotationMetadata, attributes);
-				}
+				candidateComponents.add(new AnnotatedGenericBeanDefinition(clazz));
 			}
 		}
+
+		for (BeanDefinition candidateComponent : candidateComponents) {
+			if (candidateComponent instanceof AnnotatedBeanDefinition) {
+				// verify annotated class is an interface
+				AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
+				AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
+				Assert.isTrue(annotationMetadata.isInterface(), "@FeignClient can only be specified on an interface");
+
+				Map<String, Object> attributes = annotationMetadata
+						.getAnnotationAttributes(FeignClient.class.getCanonicalName());
+
+				String name = getClientName(attributes);
+				registerClientConfiguration(registry, name, attributes.get("configuration"));
+
+				registerFeignClient(registry, annotationMetadata, attributes);
+			}
+		}
+
 	}
 
 	private void registerFeignClient(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata,
