@@ -287,8 +287,9 @@ public class FeignClientUsingPropertiesTests {
 		@RequestMapping(method = RequestMethod.GET, path = "/eggs")
 		public List<String> eggs(@RequestHeader List<String> eggsHeaders,
 				@RequestParam List<String> eggsParameters) {
-			return Stream.of(eggsHeaders, eggsParameters).map(Collection::stream)
-					.flatMap(Function.identity()).collect(Collectors.toList());
+			return Stream.of(eggsHeaders, eggsParameters)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toList());
 		}
 
 		@RequestMapping(value = "/form", method = RequestMethod.POST,
