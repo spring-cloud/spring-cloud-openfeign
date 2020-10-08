@@ -210,8 +210,7 @@ public class FeignClientProperties {
 			return defaultRequestHeaders;
 		}
 
-		public void setDefaultRequestHeaders(
-				Map<String, Collection<String>> defaultRequestHeaders) {
+		public void setDefaultRequestHeaders(Map<String, Collection<String>> defaultRequestHeaders) {
 			this.defaultRequestHeaders = defaultRequestHeaders;
 		}
 
@@ -219,8 +218,7 @@ public class FeignClientProperties {
 			return defaultRequestParameters;
 		}
 
-		public void setDefaultRequestParameters(
-				Map<String, Collection<String>> defaultRequestParameters) {
+		public void setDefaultRequestParameters(Map<String, Collection<String>> defaultRequestParameters) {
 			this.defaultRequestParameters = defaultRequestParameters;
 		}
 
@@ -249,7 +247,7 @@ public class FeignClientProperties {
 			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout, this.retryer,
 					this.errorDecoder, this.requestInterceptors, this.decode404, this.encoder, this.decoder,
 					this.contract, this.exceptionPropagationPolicy, this.defaultRequestParameters,
-				this.defaultRequestHeaders);
+					this.defaultRequestHeaders);
 		}
 
 	}

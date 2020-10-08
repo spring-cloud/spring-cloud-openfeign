@@ -21,16 +21,15 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -285,11 +284,8 @@ public class FeignClientUsingPropertiesTests {
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/eggs")
-		public List<String> eggs(@RequestHeader List<String> eggsHeaders,
-				@RequestParam List<String> eggsParameters) {
-			return Stream.of(eggsHeaders, eggsParameters)
-				.flatMap(Collection::stream)
-				.collect(Collectors.toList());
+		public List<String> eggs(@RequestHeader List<String> eggsHeaders, @RequestParam List<String> eggsParameters) {
+			return Stream.of(eggsHeaders, eggsParameters).flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
 		@RequestMapping(value = "/form", method = RequestMethod.POST,

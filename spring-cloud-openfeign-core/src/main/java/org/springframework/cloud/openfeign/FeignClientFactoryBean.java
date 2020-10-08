@@ -246,13 +246,12 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 		}
 
 		if (Objects.nonNull(config.getDefaultRequestHeaders())) {
-			builder.requestInterceptor(requestTemplate -> requestTemplate
-					.headers(config.getDefaultRequestHeaders()));
+			builder.requestInterceptor(requestTemplate -> requestTemplate.headers(config.getDefaultRequestHeaders()));
 		}
 
 		if (Objects.nonNull(config.getDefaultRequestParameters())) {
-			builder.requestInterceptor(requestTemplate -> requestTemplate
-					.queries(config.getDefaultRequestParameters()));
+			builder.requestInterceptor(
+					requestTemplate -> requestTemplate.queries(config.getDefaultRequestParameters()));
 		}
 	}
 
