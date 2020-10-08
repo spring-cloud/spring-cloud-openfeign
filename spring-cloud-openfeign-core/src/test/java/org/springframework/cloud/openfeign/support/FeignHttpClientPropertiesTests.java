@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,26 +52,22 @@ public class FeignHttpClientPropertiesTests {
 		setupContext();
 		assertThat(getProperties().getConnectionTimeout())
 				.isEqualTo(FeignHttpClientProperties.DEFAULT_CONNECTION_TIMEOUT);
-		assertThat(getProperties().getMaxConnections())
-				.isEqualTo(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS);
+		assertThat(getProperties().getMaxConnections()).isEqualTo(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS);
 		assertThat(getProperties().getMaxConnectionsPerRoute())
 				.isEqualTo(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-		assertThat(getProperties().getTimeToLive())
-				.isEqualTo(FeignHttpClientProperties.DEFAULT_TIME_TO_LIVE);
+		assertThat(getProperties().getTimeToLive()).isEqualTo(FeignHttpClientProperties.DEFAULT_TIME_TO_LIVE);
 		assertThat(getProperties().isDisableSslValidation())
 				.isEqualTo(FeignHttpClientProperties.DEFAULT_DISABLE_SSL_VALIDATION);
-		assertThat(getProperties().isFollowRedirects())
-				.isEqualTo(FeignHttpClientProperties.DEFAULT_FOLLOW_REDIRECTS);
+		assertThat(getProperties().isFollowRedirects()).isEqualTo(FeignHttpClientProperties.DEFAULT_FOLLOW_REDIRECTS);
 	}
 
 	@Test
 	public void testCustomization() {
-		TestPropertyValues.of("feign.httpclient.maxConnections=2",
-				"feign.httpclient.connectionTimeout=2",
-				"feign.httpclient.maxConnectionsPerRoute=2",
-				"feign.httpclient.timeToLive=2",
-				"feign.httpclient.disableSslValidation=true",
-				"feign.httpclient.followRedirects=false").applyTo(this.context);
+		TestPropertyValues
+				.of("feign.httpclient.maxConnections=2", "feign.httpclient.connectionTimeout=2",
+						"feign.httpclient.maxConnectionsPerRoute=2", "feign.httpclient.timeToLive=2",
+						"feign.httpclient.disableSslValidation=true", "feign.httpclient.followRedirects=false")
+				.applyTo(this.context);
 		setupContext();
 		assertThat(getProperties().getMaxConnections()).isEqualTo(2);
 		assertThat(getProperties().getConnectionTimeout()).isEqualTo(2);
@@ -82,8 +78,7 @@ public class FeignHttpClientPropertiesTests {
 	}
 
 	private void setupContext() {
-		this.context.register(PropertyPlaceholderAutoConfiguration.class,
-				TestConfiguration.class);
+		this.context.register(PropertyPlaceholderAutoConfiguration.class, TestConfiguration.class);
 		this.context.refresh();
 	}
 

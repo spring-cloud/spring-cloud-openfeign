@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,7 @@ public class FeignClientEncodingProperties {
 	/**
 	 * The list of supported mime types.
 	 */
-	private String[] mimeTypes = new String[] { "text/xml", "application/xml",
-			"application/json" };
+	private String[] mimeTypes = new String[] { "text/xml", "application/xml", "application/json" };
 
 	/**
 	 * The minimum threshold content size.
@@ -77,9 +76,8 @@ public class FeignClientEncodingProperties {
 	@Override
 	public String toString() {
 		return new StringBuilder("FeignClientEncodingProperties{").append("mimeTypes=")
-				.append(Arrays.toString(this.mimeTypes)).append(", ")
-				.append("minRequestSize=").append(this.minRequestSize).append("}")
-				.toString();
+				.append(Arrays.toString(this.mimeTypes)).append(", ").append("minRequestSize=")
+				.append(this.minRequestSize).append("}").toString();
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
@@ -52,8 +53,7 @@ public class FeignClientFactoryTests {
 		parent.refresh();
 		FeignContext context = new FeignContext();
 		context.setApplicationContext(parent);
-		context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class),
-				getSpec("bar", BarConfig.class)));
+		context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class), getSpec("bar", BarConfig.class)));
 
 		Foo foo = context.getInstance("foo", Foo.class);
 		assertThat(foo).as("foo was null").isNotNull();
@@ -67,8 +67,7 @@ public class FeignClientFactoryTests {
 
 	@Test
 	public void shouldRedirectToDelegateWhenUrlSet() {
-		new ApplicationContextRunner().withUserConfiguration(TestConfig.class)
-				.run(this::defaultClientUsed);
+		new ApplicationContextRunner().withUserConfiguration(TestConfig.class).run(this::defaultClientUsed);
 	}
 
 	@SuppressWarnings({ "unchecked", "ConstantConditions" })
@@ -98,15 +97,14 @@ public class FeignClientFactoryTests {
 
 		@Bean
 		BlockingLoadBalancerClient loadBalancerClient() {
-			return new BlockingLoadBalancerClient(new LoadBalancerClientFactory());
+			return new BlockingLoadBalancerClient(new LoadBalancerClientFactory(), new LoadBalancerProperties());
 		}
 
 		@Bean
 		FeignContext feignContext() {
 			FeignContext feignContext = new FeignContext();
-			feignContext.setConfigurations(
-					Collections.singletonList(new FeignClientSpecification("test",
-							new Class[] { LoadBalancerAutoConfiguration.class })));
+			feignContext.setConfigurations(Collections.singletonList(
+					new FeignClientSpecification("test", new Class[] { LoadBalancerAutoConfiguration.class })));
 			return feignContext;
 		}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,14 +40,10 @@ import feign.Logger;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,6 +56,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignFormatterRegistrar;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
+import org.springframework.cloud.openfeign.support.AbstractFormWriter;
+import org.springframework.cloud.openfeign.support.JsonFormWriter;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,7 +72,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,23 +82,24 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Spencer Gibb
  * @author Jakub Narloch
  * @author Erik Kringen
  * @author Halvdan Hoem Grelland
+ * @author Aaron Whiteside
+ * @author Darren Foong
+ * @author Olga Maciaszek-Sharma
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = ValidFeignClientTests.Application.class,
-		webEnvironment = WebEnvironment.RANDOM_PORT,
+@SpringBootTest(classes = ValidFeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest",
-				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
-				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false",
-				"feign.hystrix.enabled=true" })
+				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
+				"feign.okhttp.enabled=false", "feign.hystrix.enabled=true",
+				"spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
-public class ValidFeignClientTests {
+class ValidFeignClientTests {
 
 	public static final String HELLO_WORLD_1 = "hello world 1";
 
@@ -110,12 +108,6 @@ public class ValidFeignClientTests {
 	public static final String MYHEADER1 = "myheader1";
 
 	public static final String MYHEADER2 = "myheader2";
-
-	@Rule
-	public ExpectedException expected = ExpectedException.none();
-
-	@Value("${local.server.port}")
-	private int port = 0;
 
 	@Autowired
 	private TestClient testClient;
@@ -144,230 +136,235 @@ public class ValidFeignClientTests {
 	}
 
 	@Test
-	public void testClient() {
-		assertThat(this.testClient).as("testClient was null").isNotNull();
-		assertThat(Proxy.isProxyClass(this.testClient.getClass()))
-				.as("testClient is not a java Proxy").isTrue();
-		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.testClient);
+	void testClient() {
+		assertThat(testClient).as("testClient was null").isNotNull();
+		assertThat(Proxy.isProxyClass(testClient.getClass())).as("testClient is not a java Proxy").isTrue();
+		InvocationHandler invocationHandler = Proxy.getInvocationHandler(testClient);
 		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
 	}
 
 	@Test
-	public void testRequestMappingClassLevelPropertyReplacement() {
-		Hello hello = this.testClient.getHelloUsingPropertyPlaceHolder();
+	void testRequestMappingClassLevelPropertyReplacement() {
+		Hello hello = testClient.getHelloUsingPropertyPlaceHolder();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello(OI_TERRA_2));
 	}
 
 	@Test
 	public void testSimpleType() {
-		Hello hello = this.testClient.getHello();
+		Hello hello = testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
-		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello(HELLO_WORLD_1));
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
-	public void testOptional() {
-		Optional<Hello> hello = this.testClient.getOptionalHello();
+	void testOptional() {
+		Optional<Hello> hello = testClient.getOptionalHello();
 		assertThat(hello).isNotNull().isPresent().contains(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
-	public void testGenericType() {
-		List<Hello> hellos = this.testClient.getHellos();
+	void testGenericType() {
+		List<Hello> hellos = testClient.getHellos();
 		assertThat(hellos).as("hellos was null").isNotNull();
 		assertThat(getHelloList()).as("hellos didn't match").isEqualTo(hellos);
 	}
 
 	@Test
-	public void testRequestInterceptors() {
-		List<String> headers = this.testClient.getHelloHeaders();
+	void testRequestInterceptors() {
+		List<String> headers = testClient.getHelloHeaders();
 		assertThat(headers).as("headers was null").isNotNull();
-		assertThat(headers.contains("myheader1value"))
-				.as("headers didn't contain myheader1value").isTrue();
-		assertThat(headers.contains("myheader2value"))
-				.as("headers didn't contain myheader2value").isTrue();
+		assertThat(headers.contains("myheader1value")).as("headers didn't contain myheader1value").isTrue();
+		assertThat(headers.contains("myheader2value")).as("headers didn't contain myheader2value").isTrue();
 	}
 
 	@Test
-	public void testHeaderPlaceholders() {
-		String header = this.testClient.getHelloHeadersPlaceholders();
+	void testHeaderPlaceholders() {
+		String header = testClient.getHelloHeadersPlaceholders();
 		assertThat(header).as("header was null").isNotNull();
 		assertThat(header).as("header was wrong").isEqualTo("myPlaceholderHeaderValue");
 	}
 
 	@Test
-	public void testFeignClientType() throws IllegalAccessException {
-		assertThat(this.feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
-		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) this.feignClient;
+	void testFeignClientType() {
+		assertThat(feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
+		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) feignClient;
 		Client delegate = client.getDelegate();
 		assertThat(delegate).isInstanceOf(Client.Default.class);
 	}
 
 	@Test
-	public void testServiceId() {
-		assertThat(this.testClientServiceId).as("testClientServiceId was null")
-				.isNotNull();
-		final Hello hello = this.testClientServiceId.getHello();
+	void testServiceId() {
+		assertThat(testClientServiceId).as("testClientServiceId was null").isNotNull();
+		final Hello hello = testClientServiceId.getHello();
 		assertThat(hello).as("The hello response was null").isNotNull();
-		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello(HELLO_WORLD_1));
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
-	public void testParams() {
+	void testParams() {
 		List<String> list = Arrays.asList("a", "1", "test");
-		List<String> params = this.testClient.getParams(list);
+		List<String> params = testClient.getParams(list);
 		assertThat(params).as("params was null").isNotNull();
 		assertThat(params.size()).as("params size was wrong").isEqualTo(list.size());
 	}
 
 	@Test
-	public void testFormattedParams() {
-		List<LocalDate> list = Arrays.asList(LocalDate.of(2001, 1, 1),
-				LocalDate.of(2018, 6, 10));
-		List<LocalDate> params = this.testClient.getFormattedParams(list);
+	void testFormattedParams() {
+		List<LocalDate> list = Arrays.asList(LocalDate.of(2001, 1, 1), LocalDate.of(2018, 6, 10));
+		List<LocalDate> params = testClient.getFormattedParams(list);
 		assertThat(params).as("params was null").isNotNull();
 		assertThat(params).as("params not converted correctly").isEqualTo(list);
 	}
 
 	@Test
-	public void testNoContentResponse() {
-		ResponseEntity<Void> response = this.testClient.noContent();
+	void testNoContentResponse() {
+		ResponseEntity<Void> response = testClient.noContent();
 		assertThat(response).as("response was null").isNotNull();
-		assertThat(response.getStatusCode()).as("status code was wrong")
-				.isEqualTo(HttpStatus.NO_CONTENT);
+		assertThat(response.getStatusCode()).as("status code was wrong").isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
 	@Test
-	public void testHeadResponse() {
-		ResponseEntity<Void> response = this.testClient.head();
+	void testHeadResponse() {
+		ResponseEntity<Void> response = testClient.head();
 		assertThat(response).as("response was null").isNotNull();
-		assertThat(response.getStatusCode()).as("status code was wrong")
-				.isEqualTo(HttpStatus.OK);
+		assertThat(response.getStatusCode()).as("status code was wrong").isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
-	public void testHttpEntity() {
-		HttpEntity<Hello> entity = this.testClient.getHelloEntity();
+	void testHttpEntity() {
+		HttpEntity<Hello> entity = testClient.getHelloEntity();
 		assertThat(entity).as("entity was null").isNotNull();
 		Hello hello = entity.getBody();
 		assertThat(hello).as("hello was null").isNotNull();
-		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello(HELLO_WORLD_1));
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
-	public void testMoreComplexHeader() {
-		String response = this.testClient.moreComplexContentType("{\"value\":\"OK\"}");
+	void testMoreComplexHeader() {
+		String response = testClient.moreComplexContentType("{\"value\":\"OK\"}");
 		assertThat(response).as("response was null").isNotNull();
-		assertThat(response).as("didn't respond with {\"value\":\"OK\"}")
-				.isEqualTo("{\"value\":\"OK\"}");
+		assertThat(response).as("didn't respond with {\"value\":\"OK\"}").isEqualTo("{\"value\":\"OK\"}");
 	}
 
 	@Test
-	public void testDecodeNotFound() {
-		ResponseEntity<String> response = this.decodingTestClient.notFound();
+	void testDecodeNotFound() {
+		ResponseEntity<String> response = decodingTestClient.notFound();
 		assertThat(response).as("response was null").isNotNull();
-		assertThat(response.getStatusCode()).as("status code was wrong")
-				.isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(response.getStatusCode()).as("status code was wrong").isEqualTo(HttpStatus.NOT_FOUND);
 		assertThat(response.getBody()).as("response body was not null").isNull();
 	}
 
 	@Test
-	public void testOptionalNotFound() {
-		Optional<String> s = this.decodingTestClient.optional();
+	void testOptionalNotFound() {
+		Optional<String> s = decodingTestClient.optional();
 		assertThat(s).isNotPresent();
 	}
 
 	@Test
-	public void testConvertingExpander() {
-		assertThat(this.testClient.getToString(Arg.A)).isEqualTo(Arg.A.toString());
-		assertThat(this.testClient.getToString(Arg.B)).isEqualTo(Arg.B.toString());
+	void testConvertingExpander() {
+		assertThat(testClient.getToString(Arg.A)).isEqualTo(Arg.A.toString());
+		assertThat(testClient.getToString(Arg.B)).isEqualTo(Arg.B.toString());
 
-		assertThat(this.testClient.getToString(new OtherArg("foo"))).isEqualTo("bar");
+		assertThat(testClient.getToString(new OtherArg("foo"))).isEqualTo("bar");
 		List<OtherArg> args = new ArrayList<>();
 		args.add(new OtherArg("foo"));
 		args.add(new OtherArg("goo"));
 		List<String> expectedResult = new ArrayList<>();
 		expectedResult.add("bar");
 		expectedResult.add("goo");
-		assertThat(this.testClient.getToString(args)).isEqualTo(expectedResult);
+		assertThat(testClient.getToString(args)).isEqualTo(expectedResult);
 	}
 
 	@Test
-	public void namedFeignClientWorks() {
-		assertThat(this.namedFeignClient).as("namedFeignClient was null").isNotNull();
+	void namedFeignClientWorks() {
+		assertThat(namedFeignClient).as("namedFeignClient was null").isNotNull();
 	}
 
 	@Test
-	public void testSingleRequestPart() {
-		String response = this.multipartClient.singlePart("abc");
+	void testSingleRequestPart() {
+		String response = multipartClient.singlePart("abc");
 		assertThat(response).isEqualTo("abc");
 	}
 
 	@Test
-	public void testMultipleRequestParts() {
-		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
-				"hello".getBytes());
-		String response = this.multipartClient.multipart("abc", "123", file);
+	void testSinglePojoRequestPart() {
+		String response = multipartClient.singlePojoPart(new Hello(HELLO_WORLD_1));
+		assertThat(response).isEqualTo(HELLO_WORLD_1);
+	}
+
+	@Test
+	void testMultipleRequestParts() {
+		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null, "hello".getBytes());
+		String response = multipartClient.multipart("abc", "123", file);
 		assertThat(response).isEqualTo("abc123hello.bin");
 	}
 
 	@Test
-	public void testRequestPartWithListOfMultipartFiles() {
+	void testMultiplePojoRequestParts() {
+		Hello pojo1 = new Hello(HELLO_WORLD_1);
+		Hello pojo2 = new Hello(OI_TERRA_2);
+		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null, "hello".getBytes());
+		String response = multipartClient.multipartPojo("abc", "123", pojo1, pojo2, file);
+		assertThat(response).isEqualTo("abc123hello world 1oi terra 2hello.bin");
+	}
+
+	@Test
+	void testRequestPartWithListOfMultipartFiles() {
 		List<MultipartFile> multipartFiles = Arrays.asList(
 				new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes()),
 				new MockMultipartFile("file2", "hello2.bin", null, "hello".getBytes()));
-		String partNames = this.multipartClient
-				.requestPartListOfMultipartFilesReturnsPartNames(multipartFiles);
+		String partNames = multipartClient.requestPartListOfMultipartFilesReturnsPartNames(multipartFiles);
 		assertThat(partNames).isEqualTo("files,files");
-		String fileNames = this.multipartClient
-				.requestPartListOfMultipartFilesReturnsFileNames(multipartFiles);
+		String fileNames = multipartClient.requestPartListOfMultipartFilesReturnsFileNames(multipartFiles);
 		assertThat(fileNames).contains("hello1.bin", "hello2.bin");
 	}
 
 	@Test
-	public void testRequestBodyWithSingleMultipartFile() {
+	void testRequestPartWithListOfPojosAndListOfMultipartFiles() {
+		Hello pojo1 = new Hello(HELLO_WORLD_1);
+		Hello pojo2 = new Hello(OI_TERRA_2);
+		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes());
+		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null, "hello".getBytes());
+		String response = multipartClient.requestPartListOfPojosAndListOfMultipartFiles(Arrays.asList(pojo1, pojo2),
+				Arrays.asList(file1, file2));
+		assertThat(response).isEqualTo("hello world 1oi terra 2hello1.binhello2.bin");
+	}
+
+	@Test
+	void testRequestBodyWithSingleMultipartFile() {
 		String partName = UUID.randomUUID().toString();
-		MockMultipartFile file1 = new MockMultipartFile(partName, "hello1.bin", null,
-				"hello".getBytes());
-		String response = this.multipartClient.requestBodySingleMultipartFile(file1);
+		MockMultipartFile file1 = new MockMultipartFile(partName, "hello1.bin", null, "hello".getBytes());
+		String response = multipartClient.requestBodySingleMultipartFile(file1);
 		assertThat(response).isEqualTo(partName);
 	}
 
 	@Test
-	public void testRequestBodyWithListOfMultipartFiles() {
-		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
-				"hello".getBytes());
-		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null,
-				"hello".getBytes());
-		String response = this.multipartClient
-				.requestBodyListOfMultipartFiles(Arrays.asList(file1, file2));
+	void testRequestBodyWithListOfMultipartFiles() {
+		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes());
+		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null, "hello".getBytes());
+		String response = multipartClient.requestBodyListOfMultipartFiles(Arrays.asList(file1, file2));
 		assertThat(response).contains("file1", "file2");
 	}
 
 	@Test
-	public void testRequestBodyWithMap() {
-		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null,
-				"hello".getBytes());
-		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null,
-				"hello".getBytes());
+	void testRequestBodyWithMap() {
+		MockMultipartFile file1 = new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes());
+		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null, "hello".getBytes());
 		Map<String, Object> form = new HashMap<>();
 		form.put("file1", file1);
 		form.put("file2", file2);
 		form.put("hello", "world");
-		String response = this.multipartClient.requestBodyMap(form);
+		String response = multipartClient.requestBodyMap(form);
 		assertThat(response).contains("file1", "file2", "hello");
 	}
 
 	@Test
-	public void testInvalidMultipartFile() {
-		MockMultipartFile file = new MockMultipartFile("file1", "hello1.bin", null,
-				"hello".getBytes());
-		expected.expect(instanceOf(EncodeException.class));
-		this.multipartClient.invalid(file);
+	void testInvalidMultipartFile() {
+		assertThatExceptionOfType(EncodeException.class).isThrownBy(() -> {
+			MockMultipartFile file = new MockMultipartFile("file1", "hello1.bin", null, "hello".getBytes());
+			multipartClient.invalid(file);
+		});
 	}
 
 	protected enum Arg {
@@ -385,47 +382,51 @@ public class ValidFeignClientTests {
 	protected interface MultipartClient {
 
 		@RequestMapping(method = RequestMethod.POST, path = "/singlePart",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
 		String singlePart(@RequestPart("hello") String hello);
 
+		@RequestMapping(method = RequestMethod.POST, path = "/singlePojoPart",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String singlePojoPart(@RequestPart("hello") Hello hello);
+
 		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipart(@RequestPart("hello") String hello,
-				@RequestPart("world") String world,
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipart(@RequestPart("hello") String hello, @RequestPart("world") String world,
+				@RequestPart("file") MultipartFile file);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipartPojo(@RequestPart("hello") String hello, @RequestPart("world") String world,
+				@RequestPart("pojo1") Hello pojo1, @RequestPart("pojo2") Hello pojo2,
 				@RequestPart("file") MultipartFile file);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
-		String requestPartListOfMultipartFilesReturnsPartNames(
-				@RequestPart("files") List<MultipartFile> files);
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfMultipartFilesReturnsPartNames(@RequestPart("files") List<MultipartFile> files);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartFilenames",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
-		String requestPartListOfMultipartFilesReturnsFileNames(
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfMultipartFilesReturnsFileNames(@RequestPart("files") List<MultipartFile> files);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojosFiles",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfPojosAndListOfMultipartFiles(@RequestPart("pojos") List<Hello> pojos,
 				@RequestPart("files") List<MultipartFile> files);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestBodyListOfMultipartFiles(@RequestBody List<MultipartFile> files);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestBodySingleMultipartFile(@RequestBody MultipartFile file);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
 		String requestBodyMap(@RequestBody Map<String, ?> form);
 
 		@RequestMapping(method = RequestMethod.POST, path = "/invalid",
-				consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
 		String invalid(@RequestBody MultipartFile file);
 
 	}
@@ -439,8 +440,7 @@ public class ValidFeignClientTests {
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")
 		Optional<Hello> getOptionalHello();
 
-		@RequestMapping(method = RequestMethod.GET,
-				path = "${feignClient.methodLevelRequestMappingPath}")
+		@RequestMapping(method = RequestMethod.GET, path = "${feignClient.methodLevelRequestMappingPath}")
 		Hello getHelloUsingPropertyPlaceHolder();
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
@@ -460,8 +460,8 @@ public class ValidFeignClientTests {
 		List<String> getParams(@RequestParam("params") List<String> params);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
-		List<LocalDate> getFormattedParams(@RequestParam("params") @DateTimeFormat(
-				pattern = "dd-MM-yyyy") List<LocalDate> params);
+		List<LocalDate> getFormattedParams(
+				@RequestParam("params") @DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/noContent")
 		ResponseEntity<Void> noContent();
@@ -472,10 +472,8 @@ public class ValidFeignClientTests {
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")
 		HttpEntity<Hello> getHelloEntity();
 
-		@RequestMapping(method = RequestMethod.POST,
-				consumes = "application/vnd.io.spring.cloud.test.v1+json",
-				produces = "application/vnd.io.spring.cloud.test.v1+json",
-				path = "/complex")
+		@RequestMapping(method = RequestMethod.POST, consumes = "application/vnd.io.spring.cloud.test.v1+json",
+				produces = "application/vnd.io.spring.cloud.test.v1+json", path = "/complex")
 		String moreComplexContentType(String body);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostring")
@@ -518,7 +516,7 @@ public class ValidFeignClientTests {
 
 		@Override
 		public String toString() {
-			return this.value;
+			return value;
 		}
 
 	}
@@ -551,29 +549,22 @@ public class ValidFeignClientTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(
-			clients = { TestClientServiceId.class, TestClient.class,
-					DecodingTestClient.class, MultipartClient.class },
+			clients = { TestClientServiceId.class, TestClient.class, DecodingTestClient.class, MultipartClient.class },
 			defaultConfiguration = TestDefaultFeignConfig.class)
 	@LoadBalancerClients({
 
-			@LoadBalancerClient(name = "localapp",
-					configuration = LocalLoadBalancerClientConfiguration.class),
+			@LoadBalancerClient(name = "localapp", configuration = LocalLoadBalancerClientConfiguration.class),
 
-			@LoadBalancerClient(name = "localapp1",
-					configuration = LocalLoadBalancerClientConfiguration.class),
+			@LoadBalancerClient(name = "localapp1", configuration = LocalLoadBalancerClientConfiguration.class),
 
-			@LoadBalancerClient(name = "localapp2",
-					configuration = LocalLoadBalancerClientConfiguration.class),
-			@LoadBalancerClient(name = "localapp8",
-					configuration = LocalLoadBalancerClientConfiguration.class) })
+			@LoadBalancerClient(name = "localapp2", configuration = LocalLoadBalancerClientConfiguration.class),
+			@LoadBalancerClient(name = "localapp8", configuration = LocalLoadBalancerClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
 		public static void main(String[] args) {
 			new SpringApplicationBuilder(Application.class)
-					.properties("spring.application.name=feignclienttest",
-							"management.contextPath=/admin")
-					.run(args);
+					.properties("spring.application.name=feignclienttest", "management.contextPath=/admin").run(args);
 		}
 
 		@Bean
@@ -593,13 +584,17 @@ public class ValidFeignClientTests {
 						}
 
 						@Override
-						public OtherArg parse(String text, Locale locale)
-								throws ParseException {
+						public OtherArg parse(String text, Locale locale) throws ParseException {
 							return new OtherArg(text);
 						}
 					});
 				}
 			};
+		}
+
+		@Bean
+		public AbstractFormWriter jsonFormWriter() {
+			return new JsonFormWriter();
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hello")
@@ -636,8 +631,7 @@ public class ValidFeignClientTests {
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/helloheadersplaceholders")
-		public String getHelloHeadersPlaceholders(
-				@RequestHeader("myPlaceholderHeader") String myPlaceholderHeader) {
+		public String getHelloHeadersPlaceholders(@RequestHeader("myPlaceholderHeader") String myPlaceholderHeader) {
 			return myPlaceholderHeader;
 		}
 
@@ -647,8 +641,8 @@ public class ValidFeignClientTests {
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/formattedparams")
-		public List<LocalDate> getFormattedParams(@RequestParam("params") @DateTimeFormat(
-				pattern = "dd-MM-yyyy") List<LocalDate> params) {
+		public List<LocalDate> getFormattedParams(
+				@RequestParam("params") @DateTimeFormat(pattern = "dd-MM-yyyy") List<LocalDate> params) {
 			return params;
 		}
 
@@ -672,15 +666,11 @@ public class ValidFeignClientTests {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body((String) null);
 		}
 
-		@RequestMapping(method = RequestMethod.POST,
-				consumes = "application/vnd.io.spring.cloud.test.v1+json",
-				produces = "application/vnd.io.spring.cloud.test.v1+json",
-				path = "/complex")
-		String complex(@RequestBody String body,
-				@RequestHeader("Content-Length") int contentLength) {
+		@RequestMapping(method = RequestMethod.POST, consumes = "application/vnd.io.spring.cloud.test.v1+json",
+				produces = "application/vnd.io.spring.cloud.test.v1+json", path = "/complex")
+		String complex(@RequestBody String body, @RequestHeader("Content-Length") int contentLength) {
 			if (contentLength <= 0) {
-				throw new IllegalArgumentException(
-						"Invalid Content-Length " + contentLength);
+				throw new IllegalArgumentException("Invalid Content-Length " + contentLength);
 			}
 			return body;
 		}
@@ -705,35 +695,59 @@ public class ValidFeignClientTests {
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/singlePart",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipart(@RequestPart("hello") String hello) {
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String singlePart(@RequestPart("hello") String hello) {
 			return hello;
 		}
 
+		@RequestMapping(method = RequestMethod.POST, path = "/singlePojoPart",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String singlePojoPart(@RequestPart("hello") Hello hello) {
+			return hello.getMessage();
+		}
+
 		@RequestMapping(method = RequestMethod.POST, path = "/multipart",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
-		String multipart(@RequestPart("hello") String hello,
-				@RequestPart("world") String world,
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipart(@RequestPart("hello") String hello, @RequestPart("world") String world,
 				@RequestPart("file") MultipartFile file) {
 			return hello + world + file.getOriginalFilename();
 		}
 
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojo",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String multipartPojo(@RequestPart("hello") String hello, @RequestPart("world") String world,
+				@RequestPart("pojo1") Hello pojo1, @RequestPart("pojo2") Hello pojo2,
+				@RequestPart("file") MultipartFile file) {
+			return hello + world + pojo1.getMessage() + pojo2.getMessage() + file.getOriginalFilename();
+		}
+
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartNames",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
 		String multipartNames(HttpServletRequest request) throws Exception {
-			return request.getParts().stream().map(Part::getName)
-					.collect(Collectors.joining(","));
+			return request.getParts().stream().map(Part::getName).collect(Collectors.joining(","));
 		}
 
 		@RequestMapping(method = RequestMethod.POST, path = "/multipartFilenames",
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-				produces = MediaType.TEXT_PLAIN_VALUE)
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
 		String multipartFilenames(HttpServletRequest request) throws Exception {
-			return request.getParts().stream().map(Part::getSubmittedFileName)
-					.collect(Collectors.joining(","));
+			return request.getParts().stream().map(Part::getSubmittedFileName).collect(Collectors.joining(","));
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/multipartPojosFiles",
+				consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+		String requestPartListOfPojosAndListOfMultipartFiles(@RequestPart("pojos") List<Hello> pojos,
+				@RequestPart("files") List<MultipartFile> files) {
+			StringBuilder result = new StringBuilder();
+
+			for (Hello pojo : pojos) {
+				result.append(pojo.getMessage());
+			}
+
+			for (MultipartFile file : files) {
+				result.append(file.getOriginalFilename());
+			}
+
+			return result.toString();
 		}
 
 	}
@@ -742,15 +756,15 @@ public class ValidFeignClientTests {
 
 		private String message;
 
-		public Hello() {
+		Hello() {
 		}
 
-		public Hello(String message) {
+		Hello(String message) {
 			this.message = message;
 		}
 
 		public String getMessage() {
-			return this.message;
+			return message;
 		}
 
 		public void setMessage(String message) {
@@ -766,12 +780,12 @@ public class ValidFeignClientTests {
 				return false;
 			}
 			Hello that = (Hello) o;
-			return Objects.equals(this.message, that.message);
+			return Objects.equals(message, that.message);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(this.message);
+			return Objects.hash(message);
 		}
 
 	}
@@ -794,8 +808,7 @@ public class ValidFeignClientTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-				Environment env) {
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
 			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 		}
 

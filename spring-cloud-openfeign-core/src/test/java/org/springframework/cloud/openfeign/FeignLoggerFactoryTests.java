@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2016-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,7 @@ public class FeignLoggerFactoryTests {
 
 	@Test
 	public void testDefaultLogger() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SampleConfiguration1.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration1.class);
 		FeignLoggerFactory loggerFactory = context.getBean(FeignLoggerFactory.class);
 		assertThat(loggerFactory).isNotNull();
 		Logger logger = loggerFactory.create(Object.class);
@@ -46,8 +45,7 @@ public class FeignLoggerFactoryTests {
 
 	@Test
 	public void testCustomLogger() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SampleConfiguration2.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration2.class);
 		FeignLoggerFactory loggerFactory = context.getBean(FeignLoggerFactory.class);
 		assertThat(loggerFactory).isNotNull();
 		Logger logger = loggerFactory.create(Object.class);
@@ -58,8 +56,7 @@ public class FeignLoggerFactoryTests {
 
 	@Test
 	public void testCustomLoggerFactory() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				SampleConfiguration3.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration3.class);
 		FeignLoggerFactory loggerFactory = context.getBean(FeignLoggerFactory.class);
 		assertThat(loggerFactory).isNotNull();
 		assertThat(loggerFactory instanceof LoggerFactoryImpl).isTrue();

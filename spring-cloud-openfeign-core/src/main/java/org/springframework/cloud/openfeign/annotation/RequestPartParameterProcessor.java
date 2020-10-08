@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,19 +44,16 @@ public class RequestPartParameterProcessor implements AnnotatedParameterProcesso
 	}
 
 	@Override
-	public boolean processArgument(AnnotatedParameterContext context,
-			Annotation annotation, Method method) {
+	public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
 		int parameterIndex = context.getParameterIndex();
 		MethodMetadata data = context.getMethodMetadata();
 
 		String name = ANNOTATION.cast(annotation).value();
-		checkState(emptyToNull(name) != null,
-				"RequestPart.value() was empty on parameter %s", parameterIndex);
+		checkState(emptyToNull(name) != null, "RequestPart.value() was empty on parameter %s", parameterIndex);
 		context.setParameterName(name);
 
 		data.formParams().add(name);
-		Collection<String> names = context.setTemplateParameter(name,
-				data.indexToName().get(parameterIndex));
+		Collection<String> names = context.setTemplateParameter(name, data.indexToName().get(parameterIndex));
 		data.indexToName().put(parameterIndex, names);
 		return true;
 	}

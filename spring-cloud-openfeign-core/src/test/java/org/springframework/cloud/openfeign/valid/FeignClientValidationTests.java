@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ public class FeignClientValidationTests {
 
 	@Test
 	public void validNotLoadBalanced() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				GoodUrlConfiguration.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(GoodUrlConfiguration.class);
 		assertThat(context.getBean(GoodUrlConfiguration.Client.class)).isNotNull();
 		context.close();
 	}
@@ -58,8 +57,7 @@ public class FeignClientValidationTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				LoadBalancerAutoConfiguration.class,
 				org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration.class,
-				FeignLoadBalancerAutoConfiguration.class,
-				GoodServiceIdConfiguration.class);
+				FeignLoadBalancerAutoConfiguration.class, GoodServiceIdConfiguration.class);
 		assertThat(context.getBean(GoodServiceIdConfiguration.Client.class)).isNotNull();
 		context.close();
 	}

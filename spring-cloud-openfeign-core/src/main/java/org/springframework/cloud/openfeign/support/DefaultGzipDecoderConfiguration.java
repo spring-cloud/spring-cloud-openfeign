@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,7 @@ public class DefaultGzipDecoderConfiguration {
 
 	private ObjectFactory<HttpMessageConverters> messageConverters;
 
-	public DefaultGzipDecoderConfiguration(
-			ObjectFactory<HttpMessageConverters> messageConverters) {
+	public DefaultGzipDecoderConfiguration(ObjectFactory<HttpMessageConverters> messageConverters) {
 		this.messageConverters = messageConverters;
 	}
 
@@ -52,8 +51,8 @@ public class DefaultGzipDecoderConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnProperty("feign.compression.response.useGzipDecoder")
 	public Decoder defaultGzipDecoder() {
-		return new OptionalDecoder(new ResponseEntityDecoder(
-				new DefaultGzipDecoder(new SpringDecoder(messageConverters))));
+		return new OptionalDecoder(
+				new ResponseEntityDecoder(new DefaultGzipDecoder(new SpringDecoder(messageConverters))));
 	}
 
 }

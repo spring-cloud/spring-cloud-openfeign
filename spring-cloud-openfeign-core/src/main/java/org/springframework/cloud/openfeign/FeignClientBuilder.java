@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext;
  * {@link FeignClient} annotation.
  *
  * @author Sven Döring
+ * @author Matt King
  */
 public class FeignClientBuilder {
 
@@ -38,6 +39,11 @@ public class FeignClientBuilder {
 		return new Builder<>(this.applicationContext, type, name);
 	}
 
+	public <T> Builder<T> forType(final Class<T> type, final FeignClientFactoryBean clientFactoryBean,
+			final String name) {
+		return new Builder<>(this.applicationContext, clientFactoryBean, type, name);
+	}
+
 	/**
 	 * Builder of feign targets.
 	 *
@@ -47,14 +53,19 @@ public class FeignClientBuilder {
 
 		private FeignClientFactoryBean feignClientFactoryBean;
 
-		private Builder(final ApplicationContext applicationContext, final Class<T> type,
-				final String name) {
-			this.feignClientFactoryBean = new FeignClientFactoryBean();
+		private Builder(final ApplicationContext applicationContext, final Class<T> type, final String name) {
+			this(applicationContext, new FeignClientFactoryBean(), type, name);
+		}
+
+		private Builder(final ApplicationContext applicationContext, final FeignClientFactoryBean clientFactoryBean,
+				final Class<T> type, final String name) {
+			this.feignClientFactoryBean = clientFactoryBean;
 
 			this.feignClientFactoryBean.setApplicationContext(applicationContext);
 			this.feignClientFactoryBean.setType(type);
 			this.feignClientFactoryBean.setName(FeignClientsRegistrar.getName(name));
 			this.feignClientFactoryBean.setContextId(FeignClientsRegistrar.getName(name));
+			this.feignClientFactoryBean.setInheritParentContext(true);
 			// preset default values - these values resemble the default values on the
 			// FeignClient annotation
 			this.url("").path("").decode404(false);
@@ -77,6 +88,11 @@ public class FeignClientBuilder {
 
 		public Builder<T> decode404(final boolean decode404) {
 			this.feignClientFactoryBean.setDecode404(decode404);
+			return this;
+		}
+
+		public Builder<T> inheritParentContext(final boolean inheritParentContext) {
+			this.feignClientFactoryBean.setInheritParentContext(inheritParentContext);
 			return this;
 		}
 

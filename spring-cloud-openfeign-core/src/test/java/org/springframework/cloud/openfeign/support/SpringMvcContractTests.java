@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import feign.Param;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -59,6 +60,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import static feign.CollectionFormat.SSV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
@@ -67,6 +69,8 @@ import static org.junit.Assume.assumeTrue;
  * @author Halvdan Hoem Grelland
  * @author Aram Peres
  * @author Aaron Whiteside
+ * @author Artyom Romanenko
+ * @author Olga Maciaszek-Sharma
  */
 public class SpringMvcContractTests {
 
@@ -94,19 +98,15 @@ public class SpringMvcContractTests {
 	 * @throws IllegalArgumentException if method has no parameters
 	 */
 	private static boolean hasJava8ParameterNames(Method m) {
-		org.springframework.util.Assert.isTrue(m.getParameterTypes().length > 0,
-				"method has no parameters");
+		org.springframework.util.Assert.isTrue(m.getParameterTypes().length > 0, "method has no parameters");
 		if (EXECUTABLE_TYPE != null) {
-			Method getParameters = ReflectionUtils.findMethod(EXECUTABLE_TYPE,
-					"getParameters");
+			Method getParameters = ReflectionUtils.findMethod(EXECUTABLE_TYPE, "getParameters");
 			try {
 				Object[] parameters = (Object[]) getParameters.invoke(m);
-				Method isNamePresent = ReflectionUtils
-						.findMethod(parameters[0].getClass(), "isNamePresent");
+				Method isNamePresent = ReflectionUtils.findMethod(parameters[0].getClass(), "isNamePresent");
 				return Boolean.TRUE.equals(isNamePresent.invoke(parameters[0]));
 			}
-			catch (IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException ex) {
+			catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
 			}
 		}
 		return false;
@@ -118,15 +118,13 @@ public class SpringMvcContractTests {
 		conversionServiceFactoryBean.afterPropertiesSet();
 		ConversionService conversionService = conversionServiceFactoryBean.getObject();
 
-		this.contract = new SpringMvcContract(Collections.emptyList(), conversionService);
+		contract = new SpringMvcContract(Collections.emptyList(), conversionService);
 	}
 
 	@Test
 	public void testProcessAnnotationOnMethod_Simple() throws Exception {
-		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest",
-				String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -136,10 +134,8 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_Simple() throws Exception {
-		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest",
-				String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -151,10 +147,8 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_SimpleGetMapping() throws Exception {
-		Method method = TestTemplate_Simple.class.getDeclaredMethod("getMappingTest",
-				String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getMappingTest", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -165,12 +159,10 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
-	public void testProcessAnnotations_Class_AnnotationsGetSpecificTest()
-			throws Exception {
-		Method method = TestTemplate_Class_Annotations.class
-				.getDeclaredMethod("getSpecificTest", String.class, String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+	public void testProcessAnnotations_Class_AnnotationsGetSpecificTest() throws Exception {
+		Method method = TestTemplate_Class_Annotations.class.getDeclaredMethod("getSpecificTest", String.class,
+				String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/prepend/{classId}/test/{testId}");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -181,10 +173,8 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_Class_AnnotationsGetAllTests() throws Exception {
-		Method method = TestTemplate_Class_Annotations.class
-				.getDeclaredMethod("getAllTests", String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Class_Annotations.class.getDeclaredMethod("getAllTests", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/prepend/{classId}");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -194,29 +184,23 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_ExtendedInterface() throws Exception {
-		Method extendedMethod = TestTemplate_Extended.class.getMethod("getAllTests",
-				String.class);
-		MethodMetadata extendedData = this.contract.parseAndValidateMetadata(
-				extendedMethod.getDeclaringClass(), extendedMethod);
+		Method extendedMethod = TestTemplate_Extended.class.getMethod("getAllTests", String.class);
+		MethodMetadata extendedData = contract.parseAndValidateMetadata(extendedMethod.getDeclaringClass(),
+				extendedMethod);
 
-		Method method = TestTemplate_Class_Annotations.class
-				.getDeclaredMethod("getAllTests", String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Class_Annotations.class.getDeclaredMethod("getAllTests", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo(extendedData.template().url());
 		assertThat(data.template().method()).isEqualTo(extendedData.template().method());
 
-		assertThat(data.indexToName().get(0).iterator().next())
-				.isEqualTo(data.indexToName().get(0).iterator().next());
+		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo(data.indexToName().get(0).iterator().next());
 	}
 
 	@Test
 	public void testProcessAnnotations_SimplePost() throws Exception {
-		Method method = TestTemplate_Simple.class.getDeclaredMethod("postTest",
-				TestObject.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("postTest", TestObject.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("POST");
@@ -227,10 +211,8 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_SimplePostMapping() throws Exception {
-		Method method = TestTemplate_Simple.class.getDeclaredMethod("postMappingTest",
-				TestObject.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("postMappingTest", TestObject.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("POST");
@@ -241,90 +223,82 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotationsOnMethod_Advanced() throws Exception {
-		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest",
-				String.class, String.class, Integer.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest", String.class, String.class,
+				Integer.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-				.isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
-	public void testProcessAnnotationsOnMethod_Advanced_UnknownAnnotation()
-			throws Exception {
-		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest",
-				String.class, String.class, Integer.class);
-		this.contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+	public void testProcessAnnotationsOnMethod_Advanced_UnknownAnnotation() throws Exception {
+		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest", String.class, String.class,
+				Integer.class);
+		contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		// Don't throw an exception and this passes
 	}
 
 	@Test
-	public void testProcessAnnotations_Advanced() throws Exception {
-		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest",
-				String.class, String.class, Integer.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+	public void testProcessAnnotationsOnMethod_CollectionFormat() throws NoSuchMethodException {
+		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getWithCollectionFormat");
 
-		assertThat(data.template().url())
-				.isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().collectionFormat()).isEqualTo(SSV);
+	}
+
+	@Test
+	public void testProcessAnnotations_Advanced() throws Exception {
+		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest", String.class, String.class,
+				Integer.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
-		assertThat(data.indexToName().get(0).iterator().next())
-				.isEqualTo("Authorization");
+		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("Authorization");
 		assertThat(data.indexToName().get(1).iterator().next()).isEqualTo("id");
 		assertThat(data.indexToName().get(2).iterator().next()).isEqualTo("amount");
 		assertThat(data.indexToExpander().get(2)).isNotNull();
 
-		assertThat(data.template().headers().get("Authorization").iterator().next())
-				.isEqualTo("{Authorization}");
-		assertThat(data.template().queries().get("amount").iterator().next())
-				.isEqualTo("{amount}");
+		assertThat(data.template().headers().get("Authorization").iterator().next()).isEqualTo("{Authorization}");
+		assertThat(data.template().queries().get("amount").iterator().next()).isEqualTo("{amount}");
 	}
 
 	@Test
 	public void testProcessAnnotations_Aliased() throws Exception {
-		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest2",
-				String.class, Integer.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest2", String.class, Integer.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-				.isEqualTo("/advanced/test2?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/advanced/test2?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
-		assertThat(data.indexToName().get(0).iterator().next())
-				.isEqualTo("Authorization");
+		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("Authorization");
 		assertThat(data.indexToName().get(1).iterator().next()).isEqualTo("amount");
 
-		assertThat(data.template().headers().get("Authorization").iterator().next())
-				.isEqualTo("{Authorization}");
-		assertThat(data.template().queries().get("amount").iterator().next())
-				.isEqualTo("{amount}");
+		assertThat(data.template().headers().get("Authorization").iterator().next()).isEqualTo("{Authorization}");
+		assertThat(data.template().queries().get("amount").iterator().next()).isEqualTo("{amount}");
 	}
 
 	@Test
 	public void testProcessAnnotations_DateTimeFormatParam() throws Exception {
-		Method method = TestTemplate_DateTimeFormatParameter.class
-				.getDeclaredMethod("getTest", LocalDateTime.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_DateTimeFormatParameter.class.getDeclaredMethod("getTest", LocalDateTime.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		Param.Expander expander = data.indexToExpander().get(0);
 		assertThat(expander).isNotNull();
 
 		LocalDateTime input = LocalDateTime.of(2001, 10, 12, 23, 56, 3);
 
-		DateTimeFormatter formatter = DateTimeFormatter
-				.ofPattern(TestTemplate_DateTimeFormatParameter.CUSTOM_PATTERN);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(TestTemplate_DateTimeFormatParameter.CUSTOM_PATTERN);
 
 		String expected = formatter.format(input);
 
@@ -333,16 +307,13 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_NumberFormatParam() throws Exception {
-		Method method = TestTemplate_NumberFormatParameter.class
-				.getDeclaredMethod("getTest", BigDecimal.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_NumberFormatParameter.class.getDeclaredMethod("getTest", BigDecimal.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		Param.Expander expander = data.indexToExpander().get(0);
 		assertThat(expander).isNotNull();
 
-		NumberStyleFormatter formatter = new NumberStyleFormatter(
-				TestTemplate_NumberFormatParameter.CUSTOM_PATTERN);
+		NumberStyleFormatter formatter = new NumberStyleFormatter(TestTemplate_NumberFormatParameter.CUSTOM_PATTERN);
 
 		BigDecimal input = BigDecimal.valueOf(1220.345);
 
@@ -355,8 +326,7 @@ public class SpringMvcContractTests {
 	@Test
 	public void testProcessAnnotations_Advanced2() throws Exception {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest");
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/advanced");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -367,8 +337,7 @@ public class SpringMvcContractTests {
 	@Test
 	public void testProcessAnnotations_Advanced3() throws Exception {
 		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest");
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -378,10 +347,8 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_ListParams() throws Exception {
-		Method method = TestTemplate_ListParams.class.getDeclaredMethod("getTest",
-				List.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_ListParams.class.getDeclaredMethod("getTest", List.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -391,10 +358,8 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_ListParamsWithoutName() throws Exception {
-		Method method = TestTemplate_ListParamsWithoutName.class
-				.getDeclaredMethod("getTest", List.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_ListParamsWithoutName.class.getDeclaredMethod("getTest", List.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -404,10 +369,8 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_MapParams() throws Exception {
-		Method method = TestTemplate_MapParams.class.getDeclaredMethod("getTest",
-				Map.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_MapParams.class.getDeclaredMethod("getTest", Map.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -417,23 +380,18 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessHeaders() throws Exception {
-		Method method = TestTemplate_Headers.class.getDeclaredMethod("getTest",
-				String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_Headers.class.getDeclaredMethod("getTest", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
-		assertThat(data.template().headers().get("X-Foo").iterator().next())
-				.isEqualTo("bar");
+		assertThat(data.template().headers().get("x-Foo").iterator().next()).isEqualTo("bar");
 	}
 
 	@Test
 	public void testProcessHeadersWithoutValues() throws Exception {
-		Method method = TestTemplate_HeadersWithoutValues.class
-				.getDeclaredMethod("getTest", String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_HeadersWithoutValues.class.getDeclaredMethod("getTest", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -442,38 +400,30 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_Fallback() throws Exception {
-		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTestFallback",
-				String.class, String.class, Integer.class);
+		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTestFallback", String.class, String.class,
+				Integer.class);
 
-		assumeTrue("does not have java 8 parameter names",
-				hasJava8ParameterNames(method));
+		assumeTrue("does not have java 8 parameter names", hasJava8ParameterNames(method));
 
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-				.isEqualTo("/advanced/testfallback/{id}?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/advanced/testfallback/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
-		assertThat(data.indexToName().get(0).iterator().next())
-				.isEqualTo("Authorization");
+		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("Authorization");
 		assertThat(data.indexToName().get(1).iterator().next()).isEqualTo("id");
 		assertThat(data.indexToName().get(2).iterator().next()).isEqualTo("amount");
 
-		assertThat(data.template().headers().get("Authorization").iterator().next())
-				.isEqualTo("{Authorization}");
-		assertThat(data.template().queries().get("amount").iterator().next())
-				.isEqualTo("{amount}");
+		assertThat(data.template().headers().get("Authorization").iterator().next()).isEqualTo("{Authorization}");
+		assertThat(data.template().queries().get("amount").iterator().next()).isEqualTo("{amount}");
 	}
 
 	@Test
 	public void testProcessHeaderMap() throws Exception {
-		Method method = TestTemplate_HeaderMap.class.getDeclaredMethod("headerMap",
-				MultiValueMap.class, String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_HeaderMap.class.getDeclaredMethod("headerMap", MultiValueMap.class, String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/headerMap");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -484,17 +434,15 @@ public class SpringMvcContractTests {
 
 	@Test(expected = IllegalStateException.class)
 	public void testProcessHeaderMapMoreThanOnce() throws Exception {
-		Method method = TestTemplate_HeaderMap.class.getDeclaredMethod(
-				"headerMapMoreThanOnce", MultiValueMap.class, MultiValueMap.class);
-		this.contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_HeaderMap.class.getDeclaredMethod("headerMapMoreThanOnce", MultiValueMap.class,
+				MultiValueMap.class);
+		contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 	}
 
 	@Test
 	public void testProcessQueryMap() throws Exception {
-		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMap",
-				MultiValueMap.class, String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMap", MultiValueMap.class, String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/queryMap?aParam=" + "{aParam}");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -505,13 +453,10 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessQueryMapObject() throws Exception {
-		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapObject",
-				TestObject.class, String.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapObject", TestObject.class, String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-				.isEqualTo("/queryMapObject?aParam=" + "{aParam}");
+		assertThat(data.template().url()).isEqualTo("/queryMapObject?aParam=" + "{aParam}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.queryMapIndex().intValue()).isEqualTo(0);
 		Map<String, Collection<String>> params = data.template().queries();
@@ -520,77 +465,77 @@ public class SpringMvcContractTests {
 
 	@Test(expected = IllegalStateException.class)
 	public void testProcessQueryMapMoreThanOnce() throws Exception {
-		Method method = TestTemplate_QueryMap.class.getDeclaredMethod(
-				"queryMapMoreThanOnce", MultiValueMap.class, MultiValueMap.class);
-		this.contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapMoreThanOnce", MultiValueMap.class,
+				MultiValueMap.class);
+		contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 	}
 
 	@Test
 	public void testMatrixVariable_MapParam() throws Exception {
-		Method method = TestTemplate_MatrixVariable.class
-				.getDeclaredMethod("matrixVariable", Map.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariable", Map.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		Map<String, String> testMap = new HashMap<>();
 		testMap.put("param", "value");
 
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
-		assertThat(";param=value")
-				.isEqualTo(data.indexToExpander().get(0).expand(testMap));
+		assertThat(";param=value").isEqualTo(data.indexToExpander().get(0).expand(testMap));
 	}
 
 	@Test
 	public void testMatrixVariable_ObjectParam() throws Exception {
-		Method method = TestTemplate_MatrixVariable.class
-				.getDeclaredMethod("matrixVariableObject", Object.class);
-		MethodMetadata data = this.contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariableObject", Object.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().url()).isEqualTo("/matrixVariableObject/{param}");
-		assertThat(";param=value")
-				.isEqualTo(data.indexToExpander().get(0).expand("value"));
+		assertThat(";param=value").isEqualTo(data.indexToExpander().get(0).expand("value"));
 	}
 
 	@Test
-	public void testAddingTemplatedParameterWithTheSameKey()
-			throws NoSuchMethodException {
-		Method method = TestTemplate_Advanced.class.getDeclaredMethod(
-				"testAddingTemplatedParamForExistingKey", String.class);
-		MethodMetadata data = contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+	public void testMatrixVariableWithNoName() throws NoSuchMethodException {
+		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariableNotNamed", Map.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Map<String, String> testMap = new HashMap<>();
 
-		assertThat(data.template().headers().get("Accept")).contains("application/json",
-				"{Accept}");
+		testMap.put("param", "value");
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
+		assertThat(";param=value").isEqualTo(data.indexToExpander().get(0).expand(testMap));
+	}
+
+	@Test
+	public void testAddingTemplatedParameterWithTheSameKey() throws NoSuchMethodException {
+		Method method = TestTemplate_Advanced.class.getDeclaredMethod("testAddingTemplatedParamForExistingKey",
+				String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().headers().get("Accept")).contains("application/json", "{Accept}");
 	}
 
 	@Test
 	public void testMultipleRequestPartAnnotations() throws NoSuchMethodException {
-		Method method = TestTemplate_RequestPart.class.getDeclaredMethod(
-				"requestWithMultipleParts", MultipartFile.class, String.class);
+		Method method = TestTemplate_RequestPart.class.getDeclaredMethod("requestWithMultipleParts",
+				MultipartFile.class, String.class);
 
-		MethodMetadata data = contract
-				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 		assertThat(data.formParams()).contains("file", "id");
 	}
 
 	public interface TestTemplate_Simple {
 
-		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET,
-				produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
 
-		@RequestMapping(method = RequestMethod.GET,
-				produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();
 
 		@GetMapping(value = "/test/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getMappingTest(@PathVariable("id") String id);
 
-		@RequestMapping(method = RequestMethod.POST,
-				produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject postTest(@RequestBody TestObject object);
 
 		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -602,8 +547,7 @@ public class SpringMvcContractTests {
 	public interface TestTemplate_Class_Annotations {
 
 		@RequestMapping(value = "/test/{testId}", method = RequestMethod.GET)
-		TestObject getSpecificTest(@PathVariable("classId") String classId,
-				@PathVariable("testId") String testId);
+		TestObject getSpecificTest(@PathVariable("classId") String classId, @PathVariable("testId") String testId);
 
 		@RequestMapping(method = RequestMethod.GET)
 		TestObject getAllTests(@PathVariable("classId") String classId);
@@ -616,8 +560,7 @@ public class SpringMvcContractTests {
 
 	public interface TestTemplate_Headers {
 
-		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET,
-				headers = "X-Foo=bar")
+		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, headers = "X-Foo=bar")
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
 
 	}
@@ -658,8 +601,7 @@ public class SpringMvcContractTests {
 				@RequestHeader(name = "aHeader") String aHeader);
 
 		@RequestMapping(path = "/headerMapMoreThanOnce")
-		String headerMapMoreThanOnce(
-				@RequestHeader MultiValueMap<String, String> headerMap1,
+		String headerMapMoreThanOnce(@RequestHeader MultiValueMap<String, String> headerMap1,
 				@RequestHeader MultiValueMap<String, String> headerMap2);
 
 	}
@@ -675,8 +617,7 @@ public class SpringMvcContractTests {
 				@RequestParam MultiValueMap<String, String> queryMap2);
 
 		@RequestMapping(path = "/queryMapObject")
-		String queryMapObject(@SpringQueryMap TestObject queryMap,
-				@RequestParam(name = "aParam") String aParam);
+		String queryMapObject(@SpringQueryMap TestObject queryMap, @RequestParam(name = "aParam") String aParam);
 
 	}
 
@@ -684,8 +625,7 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(path = "/requestPart", method = RequestMethod.POST,
 				consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-		void requestWithMultipleParts(@RequestPart("file") MultipartFile file,
-				@RequestPart("id") String identifier);
+		void requestWithMultipleParts(@RequestPart("file") MultipartFile file, @RequestPart("id") String identifier);
 
 	}
 
@@ -697,37 +637,39 @@ public class SpringMvcContractTests {
 		@RequestMapping(path = "/matrixVariableObject/{param}")
 		String matrixVariableObject(@MatrixVariable("param") Object object);
 
+		@RequestMapping(path = "/matrixVariable/{params}")
+		String matrixVariableNotNamed(@MatrixVariable Map<String, Object> params);
+
 	}
 
 	@JsonAutoDetect
 	@RequestMapping("/advanced")
 	public interface TestTemplate_Advanced {
 
-		@ExceptionHandler
-		@RequestMapping(path = "/test/{id}", method = RequestMethod.PUT,
-				produces = MediaType.APPLICATION_JSON_VALUE)
-		ResponseEntity<TestObject> getTest(@RequestHeader("Authorization") String auth,
-				@PathVariable("id") String id, @RequestParam("amount") Integer amount);
+		@CollectionFormat(SSV)
+		@GetMapping
+		ResponseEntity<TestObject> getWithCollectionFormat();
 
-		@RequestMapping(path = "/test2", method = RequestMethod.PUT,
-				produces = MediaType.APPLICATION_JSON_VALUE)
-		ResponseEntity<TestObject> getTest2(
-				@RequestHeader(name = "Authorization") String auth,
+		@ExceptionHandler
+		@RequestMapping(path = "/test/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getTest(@RequestHeader("Authorization") String auth, @PathVariable("id") String id,
+				@RequestParam("amount") Integer amount);
+
+		@RequestMapping(path = "/test2", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getTest2(@RequestHeader(name = "Authorization") String auth,
 				@RequestParam(name = "amount") Integer amount);
 
 		@ExceptionHandler
 		@RequestMapping(path = "/testfallback/{id}", method = RequestMethod.PUT,
 				produces = MediaType.APPLICATION_JSON_VALUE)
-		ResponseEntity<TestObject> getTestFallback(@RequestHeader String Authorization,
-				@PathVariable String id, @RequestParam Integer amount);
+		ResponseEntity<TestObject> getTestFallback(@RequestHeader String Authorization, @PathVariable String id,
+				@RequestParam Integer amount);
 
-		@RequestMapping(method = RequestMethod.GET,
-				produces = MediaType.APPLICATION_JSON_VALUE)
+		@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();
 
 		@GetMapping(produces = "application/json")
-		String testAddingTemplatedParamForExistingKey(
-				@RequestHeader("Accept") String accept);
+		String testAddingTemplatedParamForExistingKey(@RequestHeader("Accept") String accept);
 
 	}
 
@@ -746,13 +688,11 @@ public class SpringMvcContractTests {
 		String CUSTOM_PATTERN = "$###,###.###";
 
 		@RequestMapping(method = RequestMethod.GET)
-		String getTest(@RequestParam("amount") @NumberFormat(
-				pattern = CUSTOM_PATTERN) BigDecimal amount);
+		String getTest(@RequestParam("amount") @NumberFormat(pattern = CUSTOM_PATTERN) BigDecimal amount);
 
 	}
 
-	@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE,
-			setterVisibility = NONE)
+	@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 	public class TestObject {
 
 		public String something;
@@ -778,12 +718,10 @@ public class SpringMvcContractTests {
 
 			TestObject that = (TestObject) o;
 
-			if (this.number != null ? !this.number.equals(that.number)
-					: that.number != null) {
+			if (number != null ? !number.equals(that.number) : that.number != null) {
 				return false;
 			}
-			if (this.something != null ? !this.something.equals(that.something)
-					: that.something != null) {
+			if (something != null ? !something.equals(that.something) : that.something != null) {
 				return false;
 			}
 
@@ -792,16 +730,15 @@ public class SpringMvcContractTests {
 
 		@Override
 		public int hashCode() {
-			int result = (this.something != null ? this.something.hashCode() : 0);
-			result = 31 * result + (this.number != null ? this.number.hashCode() : 0);
+			int result = (something != null ? something.hashCode() : 0);
+			result = 31 * result + (number != null ? number.hashCode() : 0);
 			return result;
 		}
 
 		@Override
 		public String toString() {
-			return new StringBuilder("TestObject{").append("something='")
-					.append(this.something).append("', ").append("number=")
-					.append(this.number).append("}").toString();
+			return new StringBuilder("TestObject{").append("something='").append(something).append("', ")
+					.append("number=").append(number).append("}").toString();
 		}
 
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,11 +48,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Jakub Narloch
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignClientNotPrimaryTests.Application.class,
-		webEnvironment = RANDOM_PORT,
+@SpringBootTest(classes = FeignClientNotPrimaryTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=feignclientnotprimarytest",
-				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
-				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
+				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
+				"feign.okhttp.enabled=false" })
 @DirtiesContext
 public class FeignClientNotPrimaryTests {
 
@@ -66,8 +65,7 @@ public class FeignClientNotPrimaryTests {
 
 	@Test
 	public void testClientType() {
-		assertThat(this.testClient).as("testClient was of wrong type")
-				.isInstanceOf(PrimaryTestClient.class);
+		assertThat(this.testClient).as("testClient was of wrong type").isInstanceOf(PrimaryTestClient.class);
 	}
 
 	@Test
@@ -92,8 +90,7 @@ public class FeignClientNotPrimaryTests {
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
-	@EnableFeignClients(clients = { TestClient.class },
-			defaultConfiguration = TestDefaultFeignConfig.class)
+	@EnableFeignClients(clients = { TestClient.class }, defaultConfiguration = TestDefaultFeignConfig.class)
 	@LoadBalancerClient(name = "localapp", configuration = LocalClientConfiguration.class)
 	protected static class Application {
 
@@ -158,10 +155,8 @@ public class FeignClientNotPrimaryTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-				Environment env) {
-			return ServiceInstanceListSupplier.fixed(env).instance(port, "localapp")
-					.build();
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
+			return ServiceInstanceListSupplier.fixed(env).instance(port, "localapp").build();
 		}
 
 	}

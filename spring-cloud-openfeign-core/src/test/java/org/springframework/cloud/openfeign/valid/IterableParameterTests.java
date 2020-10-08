@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,12 +47,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Spencer Gibb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = IterableParameterTests.Application.class,
-		webEnvironment = WebEnvironment.RANDOM_PORT,
+@SpringBootTest(classes = IterableParameterTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=iterableparametertest",
-				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
-				"feign.httpclient.enabled=false", "feign.okhttp.enabled=false",
-				"feign.hystrix.enabled=false" })
+				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
+				"feign.okhttp.enabled=false", "feign.hystrix.enabled=false" })
 @DirtiesContext
 public class IterableParameterTests {
 
@@ -78,8 +76,7 @@ public class IterableParameterTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = TestClient.class)
-	@LoadBalancerClient(name = "localapp",
-			configuration = LocalRibbonClientConfiguration.class)
+	@LoadBalancerClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
@@ -97,10 +94,8 @@ public class IterableParameterTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-				Environment env) {
-			return ServiceInstanceListSupplier.fixed(env).instance(port, "localapp")
-					.build();
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
+			return ServiceInstanceListSupplier.fixed(env).instance(port, "localapp").build();
 		}
 
 	}

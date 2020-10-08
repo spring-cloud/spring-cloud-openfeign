@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,7 @@ public class TestAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@Order(Ordered.HIGHEST_PRECEDENCE)
-	protected static class TestSecurityConfiguration
-			extends WebSecurityConfigurerAdapter {
+	protected static class TestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 		TestSecurityConfiguration() {
 			super(true);
@@ -54,16 +53,14 @@ public class TestAutoConfiguration {
 		@Bean
 		public UserDetailsService userDetailsService() {
 			InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-			manager.createUser(
-					User.withUsername(USER).password(PASSWORD).roles("USER").build());
+			manager.createUser(User.withUsername(USER).password(PASSWORD).roles("USER").build());
 			return manager;
 		}
 
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			// super.configure(http);
-			http.antMatcher("/proxy-username").httpBasic().and().authorizeRequests()
-					.antMatchers("/**").permitAll();
+			http.antMatcher("/proxy-username").httpBasic().and().authorizeRequests().antMatchers("/**").permitAll();
 		}
 
 	}

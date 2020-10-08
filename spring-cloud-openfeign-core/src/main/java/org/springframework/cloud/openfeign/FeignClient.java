@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -26,9 +27,9 @@ import org.springframework.core.annotation.AliasFor;
 
 /**
  * Annotation for interfaces declaring that a REST client with that interface should be
- * created (e.g. for autowiring into another component). If ribbon is available it will be
- * used to load balance the backend requests, and the load balancer can be configured
- * using the same name (i.e. value) as the feign client.
+ * created (e.g. for autowiring into another component). If SC LoadBalancer is available
+ * it will be used to load balance the backend requests, and the load balancer can be
+ * configured using the same name (i.e. value) as the feign client.
  *
  * @author Spencer Gibb
  * @author Venil Noronha
@@ -36,6 +37,7 @@ import org.springframework.core.annotation.AliasFor;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Inherited
 public @interface FeignClient {
 
 	/**

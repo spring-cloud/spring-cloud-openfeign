@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockingDetails;
 import org.mockito.Mockito;
 
@@ -52,7 +51,6 @@ import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalance
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,11 +61,11 @@ import static org.mockito.Mockito.mockingDetails;
 
 /**
  * @author Ryan Baxter
+ * @author Olga Maciaszek-Sharma
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(properties = { "feign.okhttp.enabled: false" })
+@SpringBootTest(properties = { "feign.okhttp.enabled: false", "spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
-public class ApacheHttpClientConfigurationTests {
+class ApacheHttpClientConfigurationTests {
 
 	@Autowired
 	ApacheHttpClientConnectionManagerFactory connectionManagerFactory;
@@ -79,19 +77,18 @@ public class ApacheHttpClientConfigurationTests {
 	FeignBlockingLoadBalancerClient feignClient;
 
 	@Test
-	public void testFactories() {
-		assertThat(this.connectionManagerFactory)
-				.isInstanceOf(ApacheHttpClientConnectionManagerFactory.class);
-		assertThat(this.connectionManagerFactory).isInstanceOf(
-				ApacheHttpClientConfigurationTestApp.MyApacheHttpClientConnectionManagerFactory.class);
-		assertThat(this.httpClientFactory).isInstanceOf(ApacheHttpClientFactory.class);
-		assertThat(this.httpClientFactory).isInstanceOf(
-				ApacheHttpClientConfigurationTestApp.MyApacheHttpClientFactory.class);
+	void testFactories() {
+		assertThat(connectionManagerFactory).isInstanceOf(ApacheHttpClientConnectionManagerFactory.class);
+		assertThat(connectionManagerFactory)
+				.isInstanceOf(ApacheHttpClientConfigurationTestApp.MyApacheHttpClientConnectionManagerFactory.class);
+		assertThat(httpClientFactory).isInstanceOf(ApacheHttpClientFactory.class);
+		assertThat(httpClientFactory)
+				.isInstanceOf(ApacheHttpClientConfigurationTestApp.MyApacheHttpClientFactory.class);
 	}
 
 	@Test
-	public void testHttpClientWithFeign() {
-		Client delegate = this.feignClient.getDelegate();
+	void testHttpClientWithFeign() {
+		Client delegate = feignClient.getDelegate();
 		assertThat(ApacheHttpClient.class.isInstance(delegate)).isTrue();
 		ApacheHttpClient apacheHttpClient = (ApacheHttpClient) delegate;
 		HttpClient httpClient = getField(apacheHttpClient, "client");
@@ -108,8 +105,7 @@ public class ApacheHttpClientConfigurationTests {
 
 	@SpringBootConfiguration
 	@EnableAutoConfiguration
-	@EnableFeignClients(
-			clients = { ApacheHttpClientConfigurationTestApp.FooClient.class })
+	@EnableFeignClients(clients = { ApacheHttpClientConfigurationTestApp.FooClient.class })
 	static class ApacheHttpClientConfigurationTestApp {
 
 		@FeignClient(name = "foo", serviceId = "foo")
@@ -121,9 +117,8 @@ public class ApacheHttpClientConfigurationTests {
 				extends DefaultApacheHttpClientConnectionManagerFactory {
 
 			@Override
-			public HttpClientConnectionManager newConnectionManager(
-					boolean disableSslValidation, int maxTotalConnections,
-					int maxConnectionsPerRoute, long timeToLive, TimeUnit timeUnit,
+			public HttpClientConnectionManager newConnectionManager(boolean disableSslValidation,
+					int maxTotalConnections, int maxConnectionsPerRoute, long timeToLive, TimeUnit timeUnit,
 					RegistryBuilder registry) {
 				return mock(PoolingHttpClientConnectionManager.class);
 			}
@@ -146,8 +141,7 @@ public class ApacheHttpClientConfigurationTests {
 				Header[] headers = new BasicHeader[0];
 				doReturn(headers).when(response).getAllHeaders();
 				try {
-					Mockito.doReturn(response).when(client)
-							.execute(any(HttpUriRequest.class));
+					Mockito.doReturn(response).when(client).execute(any(HttpUriRequest.class));
 				}
 				catch (IOException e) {
 					e.printStackTrace();
@@ -163,8 +157,7 @@ public class ApacheHttpClientConfigurationTests {
 		static class MyConfig {
 
 			@Bean
-			public ApacheHttpClientFactory apacheHttpClientFactory(
-					HttpClientBuilder builder) {
+			public ApacheHttpClientFactory apacheHttpClientFactory(HttpClientBuilder builder) {
 				return new MyApacheHttpClientFactory(builder);
 			}
 

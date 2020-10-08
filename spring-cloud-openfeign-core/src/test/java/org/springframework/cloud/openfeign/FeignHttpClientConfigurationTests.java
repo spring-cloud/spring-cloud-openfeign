@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,10 +53,8 @@ public class FeignHttpClientConfigurationTests {
 	@Before
 	public void setUp() {
 		this.context = new SpringApplicationBuilder()
-				.properties("debug=true", "feign.httpclient.disableSslValidation=true")
-				.web(WebApplicationType.NONE)
-				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
-				.run();
+				.properties("debug=true", "feign.httpclient.disableSslValidation=true").web(WebApplicationType.NONE)
+				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
 	}
 
 	@After
@@ -68,13 +66,10 @@ public class FeignHttpClientConfigurationTests {
 
 	@Test
 	public void disableSslTest() throws Exception {
-		HttpClientConnectionManager connectionManager = this.context
-				.getBean(HttpClientConnectionManager.class);
-		Lookup<ConnectionSocketFactory> socketFactoryRegistry = getConnectionSocketFactoryLookup(
-				connectionManager);
+		HttpClientConnectionManager connectionManager = this.context.getBean(HttpClientConnectionManager.class);
+		Lookup<ConnectionSocketFactory> socketFactoryRegistry = getConnectionSocketFactoryLookup(connectionManager);
 		assertThat(socketFactoryRegistry.lookup("https")).isNotNull();
-		assertThat(this.getX509TrustManager(socketFactoryRegistry).getAcceptedIssuers())
-				.isNull();
+		assertThat(this.getX509TrustManager(socketFactoryRegistry).getAcceptedIssuers()).isNull();
 	}
 
 	private Lookup<ConnectionSocketFactory> getConnectionSocketFactoryLookup(
@@ -84,14 +79,11 @@ public class FeignHttpClientConfigurationTests {
 		return (Lookup) this.getField(connectionOperator, "socketFactoryRegistry");
 	}
 
-	private X509TrustManager getX509TrustManager(
-			Lookup<ConnectionSocketFactory> socketFactoryRegistry) {
+	private X509TrustManager getX509TrustManager(Lookup<ConnectionSocketFactory> socketFactoryRegistry) {
 		ConnectionSocketFactory connectionSocketFactory = (ConnectionSocketFactory) socketFactoryRegistry
 				.lookup("https");
-		SSLSocketFactory sslSocketFactory = (SSLSocketFactory) this
-				.getField(connectionSocketFactory, "socketfactory");
-		SSLContextSpi sslContext = (SSLContextSpi) this.getField(sslSocketFactory,
-				"context");
+		SSLSocketFactory sslSocketFactory = (SSLSocketFactory) this.getField(connectionSocketFactory, "socketfactory");
+		SSLContextSpi sslContext = (SSLContextSpi) this.getField(sslSocketFactory, "context");
 		return (X509TrustManager) this.getField(sslContext, "trustManager");
 	}
 

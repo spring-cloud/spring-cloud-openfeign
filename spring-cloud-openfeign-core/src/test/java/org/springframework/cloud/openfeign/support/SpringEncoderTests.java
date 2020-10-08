@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,9 +66,8 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
  * @author Ahmad Mozafarnia
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = SpringEncoderTests.Application.class,
-		webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-				"spring.application.name=springencodertest", "spring.jmx.enabled=false" })
+@SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
+		value = { "spring.application.name=springencodertest", "spring.jmx.enabled=false" })
 @DirtiesContext
 public class SpringEncoderTests {
 
@@ -93,16 +92,13 @@ public class SpringEncoderTests {
 
 		Collection<String> contentTypeHeader = request.headers().get("Content-Type");
 		assertThat(contentTypeHeader).as("missing content type header").isNotNull();
-		assertThat(contentTypeHeader.isEmpty()).as("missing content type header")
-				.isFalse();
+		assertThat(contentTypeHeader.isEmpty()).as("missing content type header").isFalse();
 
 		String header = contentTypeHeader.iterator().next();
-		assertThat(header).as("content type header is wrong")
-				.isEqualTo("application/mytype");
+		assertThat(header).as("content type header is wrong").isEqualTo("application/mytype");
 
 		assertThat(request.requestCharset()).as("request charset is null").isNotNull();
-		assertThat(request.requestCharset()).as("request charset is wrong")
-				.isEqualTo(StandardCharsets.UTF_8);
+		assertThat(request.requestCharset()).as("request charset is wrong").isEqualTo(StandardCharsets.UTF_8);
 	}
 
 	// gh-225
@@ -116,21 +112,17 @@ public class SpringEncoderTests {
 		};
 
 		request.header(HttpEncoding.CONTENT_TYPE, "application/mygenerictype");
-		encoder.encode(Collections.singletonList("hi"), stringListType.getType(),
-				request);
+		encoder.encode(Collections.singletonList("hi"), stringListType.getType(), request);
 
 		Collection<String> contentTypeHeader = request.headers().get("Content-Type");
 		assertThat(contentTypeHeader).as("missing content type header").isNotNull();
-		assertThat(contentTypeHeader.isEmpty()).as("missing content type header")
-				.isFalse();
+		assertThat(contentTypeHeader.isEmpty()).as("missing content type header").isFalse();
 
 		String header = contentTypeHeader.iterator().next();
-		assertThat(header).as("content type header is wrong")
-				.isEqualTo("application/mygenerictype");
+		assertThat(header).as("content type header is wrong").isEqualTo("application/mygenerictype");
 
 		assertThat(request.requestCharset()).as("request charset is null").isNotNull();
-		assertThat(request.requestCharset()).as("request charset is wrong")
-				.isEqualTo(StandardCharsets.UTF_8);
+		assertThat(request.requestCharset()).as("request charset is wrong").isEqualTo(StandardCharsets.UTF_8);
 	}
 
 	@Test
@@ -142,8 +134,7 @@ public class SpringEncoderTests {
 
 		encoder.encode("hi".getBytes(), null, request);
 
-		assertThat(((List) request.headers().get(CONTENT_TYPE)).get(0))
-				.as("Request Content-Type is not octet-stream")
+		assertThat(((List) request.headers().get(CONTENT_TYPE)).get(0)).as("Request Content-Type is not octet-stream")
 				.isEqualTo(APPLICATION_OCTET_STREAM_VALUE);
 	}
 
@@ -153,8 +144,7 @@ public class SpringEncoderTests {
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
 
-		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file",
-				"hi".getBytes());
+		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 	}
 
@@ -167,22 +157,19 @@ public class SpringEncoderTests {
 		request.header(ACCEPT, MediaType.MULTIPART_FORM_DATA_VALUE);
 		request.header(CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE);
 
-		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file",
-				"hi".getBytes());
+		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 		encoder.encode(multipartFile, MultipartFile.class, request);
 
 		assertThat((String) ((List) request.headers().get(CONTENT_TYPE)).get(0))
 				.as("Request Content-Type is not multipart/form-data")
 				.contains("multipart/form-data; charset=UTF-8; boundary=");
-		assertThat(request.headers().get(CONTENT_TYPE).size())
-				.as("There is more than one Content-Type request header").isEqualTo(1);
-		assertThat(((List) request.headers().get(ACCEPT)).get(0))
-				.as("Request Accept header is not multipart/form-data")
+		assertThat(request.headers().get(CONTENT_TYPE).size()).as("There is more than one Content-Type request header")
+				.isEqualTo(1);
+		assertThat(((List) request.headers().get(ACCEPT)).get(0)).as("Request Accept header is not multipart/form-data")
 				.isEqualTo(MULTIPART_FORM_DATA_VALUE);
 		assertThat(((List) request.headers().get(CONTENT_LENGTH)).get(0))
 				.as("Request Content-Length is not equal to 186").isEqualTo("186");
-		assertThat(new String(request.requestBody().asBytes()))
-				.as("Body content cannot be decoded").contains("hi");
+		assertThat(new String(request.requestBody().asBytes())).as("Body content cannot be decoded").contains("hi");
 	}
 
 	protected interface TestClient {
@@ -218,8 +205,7 @@ public class SpringEncoderTests {
 			return new MyGenericHttpMessageConverter();
 		}
 
-		private static class MyHttpMessageConverter
-				extends AbstractGenericHttpMessageConverter<Object> {
+		private static class MyHttpMessageConverter extends AbstractGenericHttpMessageConverter<Object> {
 
 			MyHttpMessageConverter() {
 				super(new MediaType("application", "mytype"));
@@ -241,8 +227,7 @@ public class SpringEncoderTests {
 			}
 
 			@Override
-			protected void writeInternal(Object o, Type type,
-					HttpOutputMessage outputMessage)
+			protected void writeInternal(Object o, Type type, HttpOutputMessage outputMessage)
 					throws HttpMessageNotWritableException {
 
 			}
@@ -254,16 +239,14 @@ public class SpringEncoderTests {
 			}
 
 			@Override
-			public Object read(Type type, Class<?> contextClass,
-					HttpInputMessage inputMessage)
+			public Object read(Type type, Class<?> contextClass, HttpInputMessage inputMessage)
 					throws HttpMessageNotReadableException {
 				return null;
 			}
 
 		}
 
-		private static class MyGenericHttpMessageConverter
-				extends AbstractGenericHttpMessageConverter<Object> {
+		private static class MyGenericHttpMessageConverter extends AbstractGenericHttpMessageConverter<Object> {
 
 			MyGenericHttpMessageConverter() {
 				super(new MediaType("application", "mygenerictype"));
@@ -273,8 +256,7 @@ public class SpringEncoderTests {
 				if (type instanceof ParameterizedType) {
 					ParameterizedType parameterizedType = (ParameterizedType) type;
 					return parameterizedType.getRawType() == List.class
-							&& parameterizedType
-									.getActualTypeArguments()[0] == String.class;
+							&& parameterizedType.getActualTypeArguments()[0] == String.class;
 				}
 				else {
 					return false;
@@ -292,21 +274,18 @@ public class SpringEncoderTests {
 			}
 
 			@Override
-			public boolean canRead(Type type, Class<?> contextClass,
-					MediaType mediaType) {
+			public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
 				return canRead(mediaType) && isStringList(type);
 			}
 
 			@Override
-			protected void writeInternal(Object o, Type type,
-					HttpOutputMessage outputMessage)
+			protected void writeInternal(Object o, Type type, HttpOutputMessage outputMessage)
 					throws HttpMessageNotWritableException {
 
 			}
 
 			@Override
-			public Object read(Type type, Class<?> contextClass,
-					HttpInputMessage inputMessage)
+			public Object read(Type type, Class<?> contextClass, HttpInputMessage inputMessage)
 					throws HttpMessageNotReadableException {
 				return null;
 			}

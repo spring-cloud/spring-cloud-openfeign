@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,46 @@ package org.springframework.cloud.openfeign.loadbalancer;
 
 import feign.Client;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration instantiating a {@link BlockingLoadBalancerClient}-based {@link Client}
- * object that uses {@link Client.Default} under the hood.
+ * Configuration instantiating a {@link LoadBalancerClient}-based {@link Client} object
+ * that uses {@link Client.Default} under the hood.
  *
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
  */
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(LoadBalancerProperties.class)
 class DefaultFeignLoadBalancerConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Client feignClient(BlockingLoadBalancerClient loadBalancerClient) {
-		return new FeignBlockingLoadBalancerClient(new Client.Default(null, null),
-				loadBalancerClient);
+	@Conditional(OnRetryNotEnabledCondition.class)
+	public Client feignClient(LoadBalancerClient loadBalancerClient, LoadBalancerProperties properties) {
+		return new FeignBlockingLoadBalancerClient(new Client.Default(null, null), loadBalancerClient, properties);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnClass(name = "org.springframework.retry.support.RetryTemplate")
+	@ConditionalOnBean(LoadBalancedRetryFactory.class)
+	@ConditionalOnProperty(value = "spring.cloud.loadbalancer.retry.enabled", havingValue = "true",
+			matchIfMissing = true)
+	public Client feignRetryClient(LoadBalancerClient loadBalancerClient,
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties) {
+		return new RetryableFeignBlockingLoadBalancerClient(new Client.Default(null, null), loadBalancerClient,
+				loadBalancedRetryFactory, properties);
 	}
 
 }

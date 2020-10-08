@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 	 * Creates new instance of {@link FeignContentGzipEncodingInterceptor}.
 	 * @param properties the encoding properties
 	 */
-	protected FeignContentGzipEncodingInterceptor(
-			FeignClientEncodingProperties properties) {
+	protected FeignContentGzipEncodingInterceptor(FeignClientEncodingProperties properties) {
 		super(properties);
 	}
 
@@ -45,8 +44,8 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 	public void apply(RequestTemplate template) {
 
 		if (requiresCompression(template)) {
-			addHeader(template, HttpEncoding.CONTENT_ENCODING_HEADER,
-					HttpEncoding.GZIP_ENCODING, HttpEncoding.DEFLATE_ENCODING);
+			addHeader(template, HttpEncoding.CONTENT_ENCODING_HEADER, HttpEncoding.GZIP_ENCODING,
+					HttpEncoding.DEFLATE_ENCODING);
 		}
 	}
 
@@ -93,8 +92,7 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 			return false;
 		}
 
-		if (getProperties().getMimeTypes() == null
-				|| getProperties().getMimeTypes().length == 0) {
+		if (getProperties().getMimeTypes() == null || getProperties().getMimeTypes().length == 0) {
 			// no specific mime types has been set - matching everything
 			return true;
 		}

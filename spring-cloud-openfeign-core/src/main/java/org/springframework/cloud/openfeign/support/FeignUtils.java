@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,10 +54,8 @@ public final class FeignUtils {
 		return headers;
 	}
 
-	static Collection<String> addTemplateParameter(Collection<String> possiblyNull,
-			String paramName) {
-		Collection<String> params = ofNullable(possiblyNull).map(ArrayList::new)
-				.orElse(new ArrayList<>());
+	static Collection<String> addTemplateParameter(Collection<String> possiblyNull, String paramName) {
+		Collection<String> params = ofNullable(possiblyNull).map(ArrayList::new).orElse(new ArrayList<>());
 		params.add(String.format("{%s}", paramName));
 		return params;
 	}

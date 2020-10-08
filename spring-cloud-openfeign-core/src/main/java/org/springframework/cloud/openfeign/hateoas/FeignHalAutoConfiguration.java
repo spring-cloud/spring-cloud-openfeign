@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2016-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,7 @@ import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnWebApplication
 @ConditionalOnClass(RepresentationModel.class)
-@AutoConfigureAfter({ JacksonAutoConfiguration.class,
-		HttpMessageConvertersAutoConfiguration.class,
+@AutoConfigureAfter({ JacksonAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class,
 		RepositoryRestMvcAutoConfiguration.class })
 @AutoConfigureBefore(HypermediaAutoConfiguration.class)
 public class FeignHalAutoConfiguration {
@@ -60,24 +59,21 @@ public class FeignHalAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public TypeConstrainedMappingJackson2HttpMessageConverter halJacksonHttpMessageConverter(
-			ObjectProvider<ObjectMapper> objectMapper,
-			ObjectProvider<HalConfiguration> halConfiguration,
-			ObjectProvider<MessageResolver> messageResolver,
-			ObjectProvider<CurieProvider> curieProvider,
+			ObjectProvider<ObjectMapper> objectMapper, ObjectProvider<HalConfiguration> halConfiguration,
+			ObjectProvider<MessageResolver> messageResolver, ObjectProvider<CurieProvider> curieProvider,
 			ObjectProvider<LinkRelationProvider> linkRelationProvider) {
 
 		ObjectMapper mapper = objectMapper.getIfAvailable(ObjectMapper::new).copy();
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-		HalConfiguration configuration = halConfiguration
-				.getIfAvailable(HalConfiguration::new);
+		HalConfiguration configuration = halConfiguration.getIfAvailable(HalConfiguration::new);
 
 		CurieProvider curieProviderInstance = curieProvider
 				.getIfAvailable(() -> new DefaultCurieProvider(Collections.emptyMap()));
 
 		Jackson2HalModule.HalHandlerInstantiator halHandlerInstantiator = new Jackson2HalModule.HalHandlerInstantiator(
-				linkRelationProvider.getIfAvailable(), curieProviderInstance,
-				messageResolver.getIfAvailable(), configuration);
+				linkRelationProvider.getIfAvailable(), curieProviderInstance, messageResolver.getIfAvailable(),
+				configuration);
 
 		mapper.setHandlerInstantiator(halHandlerInstantiator);
 

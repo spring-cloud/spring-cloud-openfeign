@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,9 @@ package org.springframework.cloud.openfeign.valid;
 import java.util.Objects;
 
 import feign.Client;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -41,7 +39,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -53,19 +50,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignOkHttpTests.Application.class,
-		webEnvironment = WebEnvironment.RANDOM_PORT,
-		value = { "spring.application.name=feignclienttest",
-				"feign.hystrix.enabled=false", "feign.httpclient.enabled=false",
-				"feign.okhttp.enabled=true",
-				"spring.cloud.httpclientfactories.ok.enabled=true" })
+@SpringBootTest(classes = FeignOkHttpTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
+		value = { "spring.application.name=feignclienttest", "feign.hystrix.enabled=false",
+				"feign.httpclient.enabled=false", "feign.okhttp.enabled=true",
+				"spring.cloud.httpclientfactories.ok.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
-public class FeignOkHttpTests {
-
-	@Value("${local.server.port}")
-	private int port = 0;
+class FeignOkHttpTests {
 
 	@Autowired
 	private TestClient testClient;
@@ -77,33 +69,32 @@ public class FeignOkHttpTests {
 	private UserClient userClient;
 
 	@Test
-	public void testSimpleType() {
-		Hello hello = this.testClient.getHello();
+	void testSimpleType() {
+		Hello hello = testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
-		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello("hello world 1"));
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
 	}
 
 	@Test
-	public void testPatch() {
-		ResponseEntity<Void> response = this.testClient.patchHello(new Hello("foo"));
+	void testPatch() {
+		ResponseEntity<Void> response = testClient.patchHello(new Hello("foo"));
 		assertThat(response).isNotNull();
-		String header = response.getHeaders().getFirst("X-Hello");
+		String header = response.getHeaders().getFirst("x-hello");
 		assertThat(header).isEqualTo("hello world patch");
 	}
 
 	@Test
-	public void testFeignClientType() throws IllegalAccessException {
-		assertThat(this.feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
-		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) this.feignClient;
+	void testFeignClientType() {
+		assertThat(feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
+		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) feignClient;
 		Client delegate = client.getDelegate();
 		assertThat(delegate).isInstanceOf(feign.okhttp.OkHttpClient.class);
 	}
 
 	@Test
-	public void testFeignInheritanceSupport() {
-		assertThat(this.userClient).as("UserClient was null").isNotNull();
-		final User user = this.userClient.getUser(1);
+	void testFeignInheritanceSupport() {
+		assertThat(userClient).as("UserClient was null").isNotNull();
+		final User user = userClient.getUser(1);
 		assertThat(user).as("Returned user was null").isNotNull();
 		assertThat(new User("John Smith")).as("Users were different").isEqualTo(user);
 	}
@@ -118,8 +109,7 @@ public class FeignOkHttpTests {
 		@RequestMapping(method = RequestMethod.GET, value = "/hello")
 		Hello getHello();
 
-		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop",
-				consumes = "application/json")
+		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop", consumes = "application/json")
 		ResponseEntity<Void> patchHello(Hello hello);
 
 	}
@@ -141,8 +131,7 @@ public class FeignOkHttpTests {
 	@RestController
 	@EnableFeignClients(clients = { TestClient.class, UserClient.class })
 	@LoadBalancerClients({
-			@LoadBalancerClient(name = "localapp",
-					configuration = FeignHttpClientTests.LocalClientConfiguration.class),
+			@LoadBalancerClient(name = "localapp", configuration = FeignHttpClientTests.LocalClientConfiguration.class),
 			@LoadBalancerClient(name = "localapp1",
 					configuration = FeignHttpClientTests.LocalClientConfiguration.class) })
 	@Import(NoSecurityConfiguration.class)
@@ -157,12 +146,10 @@ public class FeignOkHttpTests {
 		public ResponseEntity<Void> patchHello(@RequestBody Hello hello,
 				@RequestHeader("Content-Length") int contentLength) {
 			if (contentLength <= 0) {
-				throw new IllegalArgumentException(
-						"Invalid Content-Length " + contentLength);
+				throw new IllegalArgumentException("Invalid Content-Length " + contentLength);
 			}
 			if (!hello.getMessage().equals("foo")) {
-				throw new IllegalArgumentException(
-						"Invalid Hello: " + hello.getMessage());
+				throw new IllegalArgumentException("Invalid Hello: " + hello.getMessage());
 			}
 			return ResponseEntity.ok().header("X-Hello", "hello world patch").build();
 		}
@@ -178,15 +165,15 @@ public class FeignOkHttpTests {
 
 		private String message;
 
-		public Hello() {
+		Hello() {
 		}
 
-		public Hello(String message) {
+		Hello(String message) {
 			this.message = message;
 		}
 
 		public String getMessage() {
-			return this.message;
+			return message;
 		}
 
 		public void setMessage(String message) {
@@ -202,12 +189,12 @@ public class FeignOkHttpTests {
 				return false;
 			}
 			Hello that = (Hello) o;
-			return Objects.equals(this.message, that.message);
+			return Objects.equals(message, that.message);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(this.message);
+			return Objects.hash(message);
 		}
 
 	}
@@ -216,15 +203,15 @@ public class FeignOkHttpTests {
 
 		private String name;
 
-		public User() {
+		User() {
 		}
 
-		public User(String name) {
+		User(String name) {
 			this.name = name;
 		}
 
 		public String getName() {
-			return this.name;
+			return name;
 		}
 
 		public void setName(String name) {
@@ -240,12 +227,12 @@ public class FeignOkHttpTests {
 				return false;
 			}
 			User that = (User) o;
-			return Objects.equals(this.name, that.name);
+			return Objects.equals(name, that.name);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(this.name);
+			return Objects.hash(name);
 		}
 
 	}
@@ -258,8 +245,7 @@ public class FeignOkHttpTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(
-				Environment env) {
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
 			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
 		}
 

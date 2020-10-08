@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,7 @@ public class ResponseEntityDecoder implements Decoder {
 	}
 
 	@Override
-	public Object decode(final Response response, Type type)
-			throws IOException, FeignException {
+	public Object decode(final Response response, Type type) throws IOException, FeignException {
 
 		if (isParameterizeHttpEntity(type)) {
 			type = ((ParameterizedType) type).getActualTypeArguments()[0];
@@ -86,8 +85,7 @@ public class ResponseEntityDecoder implements Decoder {
 			headers.put(key, new LinkedList<>(response.headers().get(key)));
 		}
 
-		return new ResponseEntity<>((T) instance, headers,
-				HttpStatus.valueOf(response.status()));
+		return new ResponseEntity<>((T) instance, headers, HttpStatus.valueOf(response.status()));
 	}
 
 }

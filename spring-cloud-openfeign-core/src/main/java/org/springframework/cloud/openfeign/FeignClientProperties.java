@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,8 +79,7 @@ public class FeignClientProperties {
 		}
 		FeignClientProperties that = (FeignClientProperties) o;
 		return this.defaultToProperties == that.defaultToProperties
-				&& Objects.equals(this.defaultConfig, that.defaultConfig)
-				&& Objects.equals(this.config, that.config);
+				&& Objects.equals(this.defaultConfig, that.defaultConfig) && Objects.equals(this.config, that.config);
 	}
 
 	@Override
@@ -163,8 +162,7 @@ public class FeignClientProperties {
 			return this.requestInterceptors;
 		}
 
-		public void setRequestInterceptors(
-				List<Class<RequestInterceptor>> requestInterceptors) {
+		public void setRequestInterceptors(List<Class<RequestInterceptor>> requestInterceptors) {
 			this.requestInterceptors = requestInterceptors;
 		}
 
@@ -204,8 +202,7 @@ public class FeignClientProperties {
 			return exceptionPropagationPolicy;
 		}
 
-		public void setExceptionPropagationPolicy(
-				ExceptionPropagationPolicy exceptionPropagationPolicy) {
+		public void setExceptionPropagationPolicy(ExceptionPropagationPolicy exceptionPropagationPolicy) {
 			this.exceptionPropagationPolicy = exceptionPropagationPolicy;
 		}
 
@@ -228,15 +225,6 @@ public class FeignClientProperties {
 		}
 
 		@Override
-		public int hashCode() {
-			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout,
-					this.retryer, this.errorDecoder, this.requestInterceptors,
-					this.decode404, this.encoder, this.decoder, this.contract,
-					this.exceptionPropagationPolicy, this.defaultRequestParameters,
-					this.defaultRequestHeaders);
-		}
-
-		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
 				return true;
@@ -245,22 +233,23 @@ public class FeignClientProperties {
 				return false;
 			}
 			FeignClientConfiguration that = (FeignClientConfiguration) o;
-			return this.loggerLevel == that.loggerLevel
-					&& Objects.equals(this.connectTimeout, that.connectTimeout)
-					&& Objects.equals(this.readTimeout, that.readTimeout)
-					&& Objects.equals(this.retryer, that.retryer)
+			return this.loggerLevel == that.loggerLevel && Objects.equals(this.connectTimeout, that.connectTimeout)
+					&& Objects.equals(this.readTimeout, that.readTimeout) && Objects.equals(this.retryer, that.retryer)
 					&& Objects.equals(this.errorDecoder, that.errorDecoder)
 					&& Objects.equals(this.requestInterceptors, that.requestInterceptors)
-					&& Objects.equals(this.decode404, that.decode404)
-					&& Objects.equals(this.encoder, that.encoder)
-					&& Objects.equals(this.decoder, that.decoder)
-					&& Objects.equals(this.contract, that.contract)
-					&& Objects.equals(this.exceptionPropagationPolicy,
-							that.exceptionPropagationPolicy)
-					&& Objects.equals(this.defaultRequestHeaders,
-							that.defaultRequestHeaders)
-					&& Objects.equals(this.defaultRequestParameters,
-							that.defaultRequestParameters);
+					&& Objects.equals(this.decode404, that.decode404) && Objects.equals(this.encoder, that.encoder)
+					&& Objects.equals(this.decoder, that.decoder) && Objects.equals(this.contract, that.contract)
+					&& Objects.equals(this.exceptionPropagationPolicy, that.exceptionPropagationPolicy)
+					&& Objects.equals(this.defaultRequestHeaders, that.defaultRequestHeaders)
+					&& Objects.equals(this.defaultRequestParameters, that.defaultRequestParameters);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout, this.retryer,
+					this.errorDecoder, this.requestInterceptors, this.decode404, this.encoder, this.decoder,
+					this.contract, this.exceptionPropagationPolicy, this.defaultRequestParameters,
+				this.defaultRequestHeaders);
 		}
 
 	}

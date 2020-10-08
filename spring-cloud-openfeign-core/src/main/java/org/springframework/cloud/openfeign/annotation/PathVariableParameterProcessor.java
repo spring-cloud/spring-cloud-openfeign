@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,18 +46,15 @@ public class PathVariableParameterProcessor implements AnnotatedParameterProcess
 	}
 
 	@Override
-	public boolean processArgument(AnnotatedParameterContext context,
-			Annotation annotation, Method method) {
+	public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
 		String name = ANNOTATION.cast(annotation).value();
-		checkState(emptyToNull(name) != null,
-				"PathVariable annotation was empty on param %s.",
+		checkState(emptyToNull(name) != null, "PathVariable annotation was empty on param %s.",
 				context.getParameterIndex());
 		context.setParameterName(name);
 
 		MethodMetadata data = context.getMethodMetadata();
 		String varName = '{' + name + '}';
-		if (!data.template().url().contains(varName)
-				&& !searchMapValues(data.template().queries(), varName)
+		if (!data.template().url().contains(varName) && !searchMapValues(data.template().queries(), varName)
 				&& !searchMapValues(data.template().headers(), varName)) {
 			data.formParams().add(name);
 		}

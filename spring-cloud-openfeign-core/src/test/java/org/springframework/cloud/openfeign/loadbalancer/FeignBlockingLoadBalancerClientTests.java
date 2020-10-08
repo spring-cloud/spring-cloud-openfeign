@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,7 @@ import org.springframework.http.MediaType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -62,11 +64,10 @@ class FeignBlockingLoadBalancerClientTests {
 
 	private Client delegate = mock(Client.class);
 
-	private BlockingLoadBalancerClient loadBalancerClient = mock(
-			BlockingLoadBalancerClient.class);
+	private BlockingLoadBalancerClient loadBalancerClient = mock(BlockingLoadBalancerClient.class);
 
 	private FeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new FeignBlockingLoadBalancerClient(
-			delegate, loadBalancerClient);
+			delegate, loadBalancerClient, new LoadBalancerProperties());
 
 	@Test
 	void shouldExtractServiceIdFromRequestUrl() throws IOException {
@@ -74,7 +75,7 @@ class FeignBlockingLoadBalancerClientTests {
 
 		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
-		verify(loadBalancerClient).choose("test");
+		verify(loadBalancerClient).choose(eq("test"), any());
 	}
 
 	@Test
@@ -82,22 +83,19 @@ class FeignBlockingLoadBalancerClientTests {
 		Request request = testRequest("");
 
 		assertThatIllegalStateException()
-				.isThrownBy(() -> feignBlockingLoadBalancerClient.execute(request,
-						new Request.Options()))
-				.withMessage(
-						"Request URI does not contain a valid hostname: http:///path");
+				.isThrownBy(() -> feignBlockingLoadBalancerClient.execute(request, new Request.Options()))
+				.withMessage("Request URI does not contain a valid hostname: http:///path");
 	}
 
 	@Test
 	void shouldRespondWithServiceUnavailableIfInstanceNotFound() throws IOException {
 		Request request = testRequest();
 
-		Response response = feignBlockingLoadBalancerClient.execute(request,
-				new Request.Options());
+		Response response = feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
 		assertThat(response.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE.value());
-		assertThat(response.body().toString()).isEqualTo(
-				"Load balancer does not contain an instance for the service test");
+		assertThat(response.body().toString())
+				.isEqualTo("Load balancer does not contain an instance for the service test");
 	}
 
 	@Test
@@ -105,11 +103,10 @@ class FeignBlockingLoadBalancerClientTests {
 		Request request = testRequest();
 		Request.Options options = new Request.Options();
 		String url = "http://127.0.0.1/path";
-		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test",
-				"test-host", 8888, false);
-		when(loadBalancerClient.choose("test")).thenReturn(serviceInstance);
-		when(loadBalancerClient.reconstructURI(serviceInstance,
-				URI.create("http://test/path"))).thenReturn(URI.create(url));
+		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test", "test-host", 8888, false);
+		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(serviceInstance);
+		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
+				.thenReturn(URI.create(url));
 
 		feignBlockingLoadBalancerClient.execute(request, options);
 
@@ -129,14 +126,13 @@ class FeignBlockingLoadBalancerClientTests {
 	}
 
 	private Request testRequest(String host) {
-		return Request.create(Request.HttpMethod.GET, "http://" + host + "/path",
-				testHeaders(), "hello".getBytes(), StandardCharsets.UTF_8, null);
+		return Request.create(Request.HttpMethod.GET, "http://" + host + "/path", testHeaders(), "hello".getBytes(),
+				StandardCharsets.UTF_8, null);
 	}
 
 	private Map<String, Collection<String>> testHeaders() {
 		Map<String, Collection<String>> feignHeaders = new HashMap<>();
-		feignHeaders.put(HttpHeaders.CONTENT_TYPE,
-				Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
+		feignHeaders.put(HttpHeaders.CONTENT_TYPE, Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
 		return feignHeaders;
 
 	}

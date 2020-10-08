@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,9 +68,8 @@ public class ProtobufSpringEncoderTest {
 
 	// a protobuf object with some content
 	private org.springframework.cloud.openfeign.encoding.proto.Request request = org.springframework.cloud.openfeign.encoding.proto.Request
-			.newBuilder().setId(1000000).setMsg("Erlang/OTP 最初是爱立信为开发电信设备系统设计的编程语言平台，"
-					+ "电信设备(路由器、接入网关、…)典型设计是通过背板连接主控板卡与多块业务板卡的分布式系统。")
-			.build();
+			.newBuilder().setId(1000000)
+			.setMsg("Erlang/OTP 最初是爱立信为开发电信设备系统设计的编程语言平台，" + "电信设备(路由器、接入网关、…)典型设计是通过背板连接主控板卡与多块业务板卡的分布式系统。").build();
 
 	@Test
 	public void testProtobuf() throws IOException, URISyntaxException {
@@ -92,8 +91,7 @@ public class ProtobufSpringEncoderTest {
 		RequestTemplate requestTemplate = newRequestTemplate();
 		newEncoder().encode(this.request, Request.class, requestTemplate);
 		// set a charset
-		requestTemplate.body(
-				encoded(requestTemplate.requestBody().asBytes(), StandardCharsets.UTF_8));
+		requestTemplate.body(encoded(requestTemplate.requestBody().asBytes(), StandardCharsets.UTF_8));
 		HttpEntity entity = toApacheHttpEntity(requestTemplate);
 		byte[] bytes = read(entity.getContent(), (int) entity.getContentLength());
 
@@ -125,21 +123,17 @@ public class ProtobufSpringEncoderTest {
 		return requestTemplate;
 	}
 
-	private HttpEntity toApacheHttpEntity(RequestTemplate requestTemplate)
-			throws IOException, URISyntaxException {
+	private HttpEntity toApacheHttpEntity(RequestTemplate requestTemplate) throws IOException, URISyntaxException {
 		final List<HttpUriRequest> request = new ArrayList<>(1);
 		BDDMockito.given(this.httpClient.execute(ArgumentMatchers.<HttpUriRequest>any()))
 				.will(new Answer<HttpResponse>() {
 					@Override
-					public HttpResponse answer(InvocationOnMock invocationOnMock)
-							throws Throwable {
+					public HttpResponse answer(InvocationOnMock invocationOnMock) throws Throwable {
 						request.add((HttpUriRequest) invocationOnMock.getArguments()[0]);
-						return new BasicHttpResponse(new BasicStatusLine(
-								new ProtocolVersion("http", 1, 1), 200, null));
+						return new BasicHttpResponse(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, null));
 					}
 				});
-		new ApacheHttpClient(this.httpClient).execute(
-				requestTemplate.resolve(new HashMap<>()).request(),
+		new ApacheHttpClient(this.httpClient).execute(requestTemplate.resolve(new HashMap<>()).request(),
 				new feign.Request.Options());
 		HttpUriRequest httpUriRequest = request.get(0);
 		return ((HttpEntityEnclosingRequestBase) httpUriRequest).getEntity();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,19 +45,15 @@ public class DefaultGzipDecoder implements Decoder {
 	}
 
 	@Override
-	public Object decode(final Response response, Type type)
-			throws IOException, FeignException {
-		Collection<String> encoding = response.headers()
-				.containsKey(HttpEncoding.CONTENT_ENCODING_HEADER)
-						? response.headers().get(HttpEncoding.CONTENT_ENCODING_HEADER)
-						: null;
+	public Object decode(final Response response, Type type) throws IOException, FeignException {
+		Collection<String> encoding = response.headers().containsKey(HttpEncoding.CONTENT_ENCODING_HEADER)
+				? response.headers().get(HttpEncoding.CONTENT_ENCODING_HEADER) : null;
 
 		if (encoding != null) {
 			if (encoding.contains(HttpEncoding.GZIP_ENCODING)) {
 				String decompressedBody = decompress(response);
 				if (decompressedBody != null) {
-					Response decompressedResponse = response.toBuilder()
-							.body(decompressedBody.getBytes()).build();
+					Response decompressedResponse = response.toBuilder().body(decompressedBody.getBytes()).build();
 					return decoder.decode(decompressedResponse, type);
 				}
 			}
@@ -69,8 +65,7 @@ public class DefaultGzipDecoder implements Decoder {
 		if (response.body() == null) {
 			return null;
 		}
-		try (GZIPInputStream gzipInputStream = new GZIPInputStream(
-				response.body().asInputStream());
+		try (GZIPInputStream gzipInputStream = new GZIPInputStream(response.body().asInputStream());
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8))) {
 			String outputString = "";

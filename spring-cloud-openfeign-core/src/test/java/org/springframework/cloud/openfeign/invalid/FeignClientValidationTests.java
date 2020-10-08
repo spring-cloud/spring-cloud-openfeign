@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,7 @@ public class FeignClientValidationTests {
 	public void testServiceIdAndValue() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				LoadBalancerAutoConfiguration.class, NameAndServiceIdConfiguration.class);
-		assertThat(context.getBean(NameAndServiceIdConfiguration.Client.class))
-				.isNotNull();
+		assertThat(context.getBean(NameAndServiceIdConfiguration.Client.class)).isNotNull();
 		context.close();
 	}
 
@@ -54,15 +53,10 @@ public class FeignClientValidationTests {
 	public void testDuplicatedClientNames() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.setAllowBeanDefinitionOverriding(false);
-		context.register(LoadBalancerAutoConfiguration.class,
-				DuplicatedFeignClientNamesConfiguration.class);
+		context.register(LoadBalancerAutoConfiguration.class, DuplicatedFeignClientNamesConfiguration.class);
 		context.refresh();
-		assertThat(
-				context.getBean(DuplicatedFeignClientNamesConfiguration.FooClient.class))
-						.isNotNull();
-		assertThat(
-				context.getBean(DuplicatedFeignClientNamesConfiguration.BarClient.class))
-						.isNotNull();
+		assertThat(context.getBean(DuplicatedFeignClientNamesConfiguration.FooClient.class)).isNotNull();
+		assertThat(context.getBean(DuplicatedFeignClientNamesConfiguration.BarClient.class)).isNotNull();
 		context.close();
 	}
 
@@ -89,9 +83,8 @@ public class FeignClientValidationTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
-	@EnableFeignClients(
-			clients = { DuplicatedFeignClientNamesConfiguration.FooClient.class,
-					DuplicatedFeignClientNamesConfiguration.BarClient.class })
+	@EnableFeignClients(clients = { DuplicatedFeignClientNamesConfiguration.FooClient.class,
+			DuplicatedFeignClientNamesConfiguration.BarClient.class })
 	protected static class DuplicatedFeignClientNamesConfiguration {
 
 		@FeignClient(contextId = "foo", name = "bar")

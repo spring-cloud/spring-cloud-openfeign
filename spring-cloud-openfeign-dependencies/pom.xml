@@ -6,16 +6,16 @@
 	<parent>
 		<artifactId>spring-cloud-dependencies-parent</artifactId>
 		<groupId>org.springframework.cloud</groupId>
-		<version>3.0.0.BUILD-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 	<artifactId>spring-cloud-openfeign-dependencies</artifactId>
-	<version>3.0.0.BUILD-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>spring-cloud-openfeign-dependencies</name>
 	<description>Spring Cloud OpenFeign Dependencies</description>
 	<properties>
-		<feign.version>10.7.4</feign.version>
+		<feign.version>10.10.1</feign.version>
 		<feign-form.version>3.8.0</feign-form.version>
 	</properties>
 	<dependencyManagement>

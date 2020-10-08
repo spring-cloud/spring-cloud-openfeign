@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,7 @@ public class OkHttpFeignConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(ConnectionPool.class)
-	public ConnectionPool httpClientConnectionPool(
-			FeignHttpClientProperties httpClientProperties,
+	public ConnectionPool httpClientConnectionPool(FeignHttpClientProperties httpClientProperties,
 			OkHttpClientConnectionPoolFactory connectionPoolFactory) {
 		Integer maxTotalConnections = httpClientProperties.getMaxConnections();
 		Long timeToLive = httpClientProperties.getTimeToLive();
@@ -56,15 +55,13 @@ public class OkHttpFeignConfiguration {
 	}
 
 	@Bean
-	public okhttp3.OkHttpClient client(OkHttpClientFactory httpClientFactory,
-			ConnectionPool connectionPool,
+	public okhttp3.OkHttpClient client(OkHttpClientFactory httpClientFactory, ConnectionPool connectionPool,
 			FeignHttpClientProperties httpClientProperties) {
 		Boolean followRedirects = httpClientProperties.isFollowRedirects();
 		Integer connectTimeout = httpClientProperties.getConnectionTimeout();
-		this.okHttpClient = httpClientFactory
-				.createBuilder(httpClientProperties.isDisableSslValidation())
-				.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-				.followRedirects(followRedirects).connectionPool(connectionPool).build();
+		this.okHttpClient = httpClientFactory.createBuilder(httpClientProperties.isDisableSslValidation())
+				.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS).followRedirects(followRedirects)
+				.connectionPool(connectionPool).build();
 		return this.okHttpClient;
 	}
 

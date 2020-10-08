@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,17 +50,15 @@ public class FeignCompressionTests {
 	@Test
 	public void testInterceptors() {
 		new ApplicationContextRunner()
-				.withPropertyValues("feign.compression.response.enabled=true",
-						"feign.compression.request.enabled=true",
+				.withPropertyValues("feign.compression.response.enabled=true", "feign.compression.request.enabled=true",
 						"feign.okhttp.enabled=false")
 				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
-						FeignContentGzipEncodingAutoConfiguration.class,
-						FeignAcceptGzipEncodingAutoConfiguration.class,
+						FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class,
 						HttpClientConfiguration.class, PlainConfig.class))
 				.run(context -> {
 					FeignContext feignContext = context.getBean(FeignContext.class);
-					Map<String, RequestInterceptor> interceptors = feignContext
-							.getInstances("foo", RequestInterceptor.class);
+					Map<String, RequestInterceptor> interceptors = feignContext.getInstances("foo",
+							RequestInterceptor.class);
 					assertThat(interceptors.size()).isEqualTo(2);
 					assertThat(interceptors.get("feignAcceptGzipEncodingInterceptor"))
 							.isInstanceOf(FeignAcceptGzipEncodingInterceptor.class);

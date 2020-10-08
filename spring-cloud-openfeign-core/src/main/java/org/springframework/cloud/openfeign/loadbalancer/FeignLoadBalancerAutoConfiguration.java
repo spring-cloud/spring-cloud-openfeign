@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,31 +23,28 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * An autoconfiguration that instantiates {@link BlockingLoadBalancerClient}-based
- * implementations of {@link Client}. In order to use this load-balancing mechanism, the
- * Ribbon-based implementation has to be disabled by setting
- * <code>spring.cloud.loadbalancer.ribbon.enabled</code> to <code>true</code>.
+ * An autoconfiguration that instantiates {@link LoadBalancerClient}-based implementations
+ * of {@link Client}.
  *
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
  */
 @ConditionalOnClass(Feign.class)
-@ConditionalOnBean(BlockingLoadBalancerClient.class)
+@ConditionalOnBean(LoadBalancerClient.class)
 @AutoConfigureBefore(FeignAutoConfiguration.class)
 @EnableConfigurationProperties(FeignHttpClientProperties.class)
 @Configuration(proxyBeanMethods = false)
 // Order is important here, last should be the default, first should be optional
 // see
 // https://github.com/spring-cloud/spring-cloud-netflix/issues/2086#issuecomment-316281653
-@Import({ HttpClientFeignLoadBalancerConfiguration.class,
-		OkHttpFeignLoadBalancerConfiguration.class,
+@Import({ HttpClientFeignLoadBalancerConfiguration.class, OkHttpFeignLoadBalancerConfiguration.class,
 		DefaultFeignLoadBalancerConfiguration.class })
 public class FeignLoadBalancerAutoConfiguration {
 
