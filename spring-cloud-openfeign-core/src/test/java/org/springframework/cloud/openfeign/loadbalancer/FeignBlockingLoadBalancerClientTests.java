@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import feign.Client;
 import feign.Request;
@@ -34,8 +36,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.CompletionContext;
+import org.springframework.cloud.client.loadbalancer.DefaultRequestContext;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycle;
 import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
+import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -66,8 +72,12 @@ class FeignBlockingLoadBalancerClientTests {
 
 	private BlockingLoadBalancerClient loadBalancerClient = mock(BlockingLoadBalancerClient.class);
 
+	private final LoadBalancerClientFactory loadBalancerClientFactory = mock(LoadBalancerClientFactory.class);
+
+	private final LoadBalancerProperties loadBalancerProperties = new LoadBalancerProperties();
+
 	private FeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new FeignBlockingLoadBalancerClient(
-			delegate, loadBalancerClient, new LoadBalancerProperties());
+			delegate, loadBalancerClient, loadBalancerProperties, loadBalancerClientFactory);
 
 	@Test
 	void shouldExtractServiceIdFromRequestUrl() throws IOException {
@@ -121,6 +131,35 @@ class FeignBlockingLoadBalancerClientTests {
 		assertThat(new String(actualRequest.body())).isEqualTo("hello");
 	}
 
+	@Test
+	void shouldExecuteLoadBalancerLifecycleCallbacks() throws IOException {
+		Request request = testRequest();
+		Request.Options options = new Request.Options();
+		String url = "http://127.0.0.1/path";
+		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test", "test-host", 8888, false);
+		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(serviceInstance);
+		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
+				.thenReturn(URI.create(url));
+		String callbackTestHint = "callbackTestHint";
+		loadBalancerProperties.getHint().put("test", callbackTestHint);
+		Map<String, LoadBalancerLifecycle> loadBalancerLifecycleBeans = new HashMap<>();
+		loadBalancerLifecycleBeans.put("loadBalancerLifecycle", new TestLoadBalancerLifecycle());
+		loadBalancerLifecycleBeans.put("anotherLoadBalancerLifecycle", new AnotherLoadBalancerLifecycle());
+		when(loadBalancerClientFactory.getInstances("test", LoadBalancerLifecycle.class))
+				.thenReturn(loadBalancerLifecycleBeans);
+
+		Object actualResult = feignBlockingLoadBalancerClient.execute(request, options);
+
+		Collection<org.springframework.cloud.client.loadbalancer.Request<Object>> lifecycleLogRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
+				.get("loadBalancerLifecycle")).getStartLog().values();
+		Collection<CompletionContext<Object, ServiceInstance>> anotherLifecycleLogRequests = ((AnotherLoadBalancerLifecycle) loadBalancerLifecycleBeans
+				.get("anotherLoadBalancerLifecycle")).getCompleteLog().values();
+		assertThat(lifecycleLogRequests)
+				.extracting(lbRequest -> ((DefaultRequestContext) lbRequest.getContext()).getHint())
+				.contains(callbackTestHint);
+		assertThat(anotherLifecycleLogRequests).extracting(CompletionContext::getClientResponse).contains(actualResult);
+	}
+
 	private Request testRequest() {
 		return testRequest("test");
 	}
@@ -134,6 +173,45 @@ class FeignBlockingLoadBalancerClientTests {
 		Map<String, Collection<String>> feignHeaders = new HashMap<>();
 		feignHeaders.put(HttpHeaders.CONTENT_TYPE, Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
 		return feignHeaders;
+
+	}
+
+	protected static class TestLoadBalancerLifecycle implements LoadBalancerLifecycle<Object, Object, ServiceInstance> {
+
+		final ConcurrentHashMap<String, org.springframework.cloud.client.loadbalancer.Request<Object>> startLog = new ConcurrentHashMap<>();
+
+		final ConcurrentHashMap<String, CompletionContext<Object, ServiceInstance>> completeLog = new ConcurrentHashMap<>();
+
+		@Override
+		public void onStart(org.springframework.cloud.client.loadbalancer.Request<Object> request) {
+			startLog.put(getName() + UUID.randomUUID(), request);
+		}
+
+		@Override
+		public void onComplete(CompletionContext<Object, ServiceInstance> completionContext) {
+			completeLog.put(getName() + UUID.randomUUID(), completionContext);
+		}
+
+		ConcurrentHashMap<String, org.springframework.cloud.client.loadbalancer.Request<Object>> getStartLog() {
+			return startLog;
+		}
+
+		ConcurrentHashMap<String, CompletionContext<Object, ServiceInstance>> getCompleteLog() {
+			return completeLog;
+		}
+
+		protected String getName() {
+			return this.getClass().getSimpleName();
+		}
+
+	}
+
+	protected static class AnotherLoadBalancerLifecycle extends TestLoadBalancerLifecycle {
+
+		@Override
+		protected String getName() {
+			return this.getClass().getSimpleName();
+		}
 
 	}
 
