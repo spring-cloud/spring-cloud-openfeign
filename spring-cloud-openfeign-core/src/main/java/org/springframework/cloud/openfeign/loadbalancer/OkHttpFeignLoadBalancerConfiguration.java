@@ -27,6 +27,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
+import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.cloud.openfeign.clientconfig.OkHttpFeignConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -43,7 +44,7 @@ import org.springframework.context.annotation.Import;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(OkHttpClient.class)
 @ConditionalOnProperty("feign.okhttp.enabled")
-@ConditionalOnBean(LoadBalancerClient.class)
+@ConditionalOnBean({ LoadBalancerClient.class, LoadBalancerClientFactory.class })
 @Import(OkHttpFeignConfiguration.class)
 @EnableConfigurationProperties(LoadBalancerProperties.class)
 class OkHttpFeignLoadBalancerConfiguration {
@@ -52,9 +53,9 @@ class OkHttpFeignLoadBalancerConfiguration {
 	@ConditionalOnMissingBean
 	@Conditional(OnRetryNotEnabledCondition.class)
 	public Client feignClient(okhttp3.OkHttpClient okHttpClient, LoadBalancerClient loadBalancerClient,
-			LoadBalancerProperties properties) {
+			LoadBalancerProperties properties, LoadBalancerClientFactory loadBalancerClientFactory) {
 		OkHttpClient delegate = new OkHttpClient(okHttpClient);
-		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, properties);
+		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, properties, loadBalancerClientFactory);
 	}
 
 	@Bean
@@ -64,10 +65,11 @@ class OkHttpFeignLoadBalancerConfiguration {
 	@ConditionalOnProperty(value = "spring.cloud.loadbalancer.retry.enabled", havingValue = "true",
 			matchIfMissing = true)
 	public Client feignRetryClient(LoadBalancerClient loadBalancerClient, okhttp3.OkHttpClient okHttpClient,
-			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties) {
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties,
+			LoadBalancerClientFactory loadBalancerClientFactory) {
 		OkHttpClient delegate = new OkHttpClient(okHttpClient);
 		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory,
-				properties);
+				properties, loadBalancerClientFactory);
 	}
 
 }

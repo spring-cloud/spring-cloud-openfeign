@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign.loadbalancer;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 import feign.Client;
 import feign.Request;
@@ -27,12 +28,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.CompletionContext;
 import org.springframework.cloud.client.loadbalancer.DefaultRequest;
 import org.springframework.cloud.client.loadbalancer.DefaultRequestContext;
+import org.springframework.cloud.client.loadbalancer.DefaultResponse;
+import org.springframework.cloud.client.loadbalancer.HttpRequestContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycle;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycleValidator;
 import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
+import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.Assert;
+
+import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing;
 
 /**
  * A {@link Client} implementation that uses {@link LoadBalancerClient} to select a
@@ -41,6 +51,7 @@ import org.springframework.util.Assert;
  * @author Olga Maciaszek-Sharma
  * @since 2.2.0
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class FeignBlockingLoadBalancerClient implements Client {
 
 	private static final Log LOG = LogFactory.getLog(FeignBlockingLoadBalancerClient.class);
@@ -51,11 +62,14 @@ public class FeignBlockingLoadBalancerClient implements Client {
 
 	private final LoadBalancerProperties properties;
 
+	private final LoadBalancerClientFactory loadBalancerClientFactory;
+
 	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
-			LoadBalancerProperties properties) {
+			LoadBalancerProperties properties, LoadBalancerClientFactory loadBalancerClientFactory) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
 		this.properties = properties;
+		this.loadBalancerClientFactory = loadBalancerClientFactory;
 	}
 
 	@Override
@@ -66,19 +80,30 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		String hint = getHint(serviceId);
 		DefaultRequest<DefaultRequestContext> lbRequest = new DefaultRequest<>(
 				new DefaultRequestContext(request, hint));
+		Set<LoadBalancerLifecycle> supportedLifecycleProcessors = LoadBalancerLifecycleValidator
+				.getSupportedLifecycleProcessors(
+						loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle.class),
+						HttpRequestContext.class, ClientHttpResponse.class, ServiceInstance.class);
+		supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
 		ServiceInstance instance = loadBalancerClient.choose(serviceId, lbRequest);
+		org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
+				instance);
 		if (instance == null) {
 			String message = "Load balancer does not contain an instance for the service " + serviceId;
 			if (LOG.isWarnEnabled()) {
 				LOG.warn(message);
 			}
+			supportedLifecycleProcessors.forEach(
+					lifecycle -> lifecycle.onComplete(new CompletionContext<ClientHttpResponse, ServiceInstance>(
+							CompletionContext.Status.DISCARD, lbResponse)));
 			return Response.builder().request(request).status(HttpStatus.SERVICE_UNAVAILABLE.value())
 					.body(message, StandardCharsets.UTF_8).build();
 		}
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri).toString();
 		Request newRequest = Request.create(request.httpMethod(), reconstructedUrl, request.headers(), request.body(),
 				request.charset(), request.requestTemplate());
-		return delegate.execute(newRequest, options);
+		return executeWithLoadBalancerLifecycleProcessing(delegate, options, newRequest, lbResponse,
+				supportedLifecycleProcessors);
 	}
 
 	// Visible for Sleuth instrumentation
