@@ -42,6 +42,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.Assert;
 
+import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing;
+
 /**
  * A {@link Client} implementation that uses {@link LoadBalancerClient} to select a
  * {@link ServiceInstance} to use while resolving the request host.
@@ -100,25 +102,8 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri).toString();
 		Request newRequest = Request.create(request.httpMethod(), reconstructedUrl, request.headers(), request.body(),
 				request.charset(), request.requestTemplate());
-		return executeWithLoadBalancerLifecycleProcessing(options, supportedLifecycleProcessors, lbResponse,
-				newRequest);
-	}
-
-	private Response executeWithLoadBalancerLifecycleProcessing(Request.Options options,
-			Set<LoadBalancerLifecycle> supportedLifecycleProcessors,
-			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse, Request newRequest)
-			throws IOException {
-		try {
-			Response response = delegate.execute(newRequest, options);
-			supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
-					.onComplete(new CompletionContext<>(CompletionContext.Status.SUCCESS, lbResponse, response)));
-			return response;
-		}
-		catch (Exception exception) {
-			supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
-					.onComplete(new CompletionContext<>(CompletionContext.Status.FAILED, exception, lbResponse)));
-			throw exception;
-		}
+		return executeWithLoadBalancerLifecycleProcessing(delegate, options, newRequest, lbResponse,
+				supportedLifecycleProcessors);
 	}
 
 	// Visible for Sleuth instrumentation

@@ -59,6 +59,8 @@ import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 
+import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing;
+
 /**
  * A {@link Client} implementation that provides Spring Retry support for requests
  * load-balanced with Spring Cloud LoadBalancer.
@@ -150,8 +152,10 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 							request.body(), request.charset(), request.requestTemplate());
 				}
 			}
-			Response response = executeWithLoadBalancerLifecycleProcessing(options, feignRequest,
-					retrievedServiceInstance, retrievedServiceInstance != null, supportedLifecycleProcessors);
+			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
+					retrievedServiceInstance);
+			Response response = executeWithLoadBalancerLifecycleProcessing(delegate, options, feignRequest, lbResponse,
+					supportedLifecycleProcessors, retrievedServiceInstance != null);
 			int responseStatus = response.status();
 			if (retryPolicy != null && retryPolicy.retryableStatusCode(responseStatus)) {
 				if (LOG.isDebugEnabled()) {
@@ -167,28 +171,6 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 				return response;
 			}
 		});
-	}
-
-	private Response executeWithLoadBalancerLifecycleProcessing(Request.Options options, Request feignRequest,
-			ServiceInstance retrievedServiceInstance, boolean loadBalanced,
-			Set<LoadBalancerLifecycle> supportedLifecycleProcessors) throws IOException {
-		org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
-				retrievedServiceInstance);
-		try {
-			Response response = delegate.execute(feignRequest, options);
-			if (loadBalanced) {
-				supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
-						.onComplete(new CompletionContext<>(CompletionContext.Status.SUCCESS, lbResponse, response)));
-			}
-			return response;
-		}
-		catch (Exception exception) {
-			if (loadBalanced) {
-				supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
-						.onComplete(new CompletionContext<>(CompletionContext.Status.FAILED, exception, lbResponse)));
-			}
-			throw exception;
-		}
 	}
 
 	private RetryTemplate buildRetryTemplate(String serviceId, Request request, LoadBalancedRetryPolicy retryPolicy) {
