@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -173,7 +175,10 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 		Map<String, RequestInterceptor> requestInterceptors = getInheritedAwareInstances(context,
 				RequestInterceptor.class);
 		if (requestInterceptors != null) {
-			builder.requestInterceptors(requestInterceptors.values());
+			List<RequestInterceptor> interceptors = new ArrayList<>(
+					requestInterceptors.values());
+			AnnotationAwareOrderComparator.sort(interceptors);
+			builder.requestInterceptors(interceptors);
 		}
 		QueryMapEncoder queryMapEncoder = getInheritedAwareOptional(context, QueryMapEncoder.class);
 		if (queryMapEncoder != null) {
