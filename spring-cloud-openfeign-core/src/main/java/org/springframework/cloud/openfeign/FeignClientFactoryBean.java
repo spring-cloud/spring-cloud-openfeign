@@ -175,8 +175,7 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 		Map<String, RequestInterceptor> requestInterceptors = getInheritedAwareInstances(context,
 				RequestInterceptor.class);
 		if (requestInterceptors != null) {
-			List<RequestInterceptor> interceptors = new ArrayList<>(
-					requestInterceptors.values());
+			List<RequestInterceptor> interceptors = new ArrayList<>(requestInterceptors.values());
 			AnnotationAwareOrderComparator.sort(interceptors);
 			builder.requestInterceptors(interceptors);
 		}
