@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +46,7 @@ import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalance
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -173,7 +176,10 @@ class FeignClientFactoryBean
 		Map<String, RequestInterceptor> requestInterceptors = getInheritedAwareInstances(
 				context, RequestInterceptor.class);
 		if (requestInterceptors != null) {
-			builder.requestInterceptors(requestInterceptors.values());
+			List<RequestInterceptor> interceptors = new ArrayList<>(
+					requestInterceptors.values());
+			AnnotationAwareOrderComparator.sort(interceptors);
+			builder.requestInterceptors(interceptors);
 		}
 		QueryMapEncoder queryMapEncoder = getInheritedAwareOptional(context,
 				QueryMapEncoder.class);
