@@ -274,6 +274,42 @@ public FeignClientConfigurer feignClientConfigurer() {
 }
 ----
 
+[[timeout-handling]]
+=== Timeout Handling
+
+We can configure timeouts on both default and named client. OpenFeign works with two timeout parameters:
+
+- `connectTimeout` prevents blocking the caller due to the long server processing time.
+- `readTimeout` is applied from the time of connection establishment and is triggered when returning the response takes too long.
+
+NOTE: In case the server is not even running or available at all a packet results in _connection refused_. The communication ends either with an error message or in a fallback. This can happen _before_ the `connectTimeout` is set very low. The time taken to perform a lookup and to receive such a packet causes a significant part of such delay. It is subject to change based on the remote host that involves a DNS lookup.
+
+When Hystrix <<spring-cloud-openfeign#spring-cloud-feign-hystrix,is enabled>> its timeout configuration link:https://github.com/Netflix/Hystrix/wiki/Configuration#execution.isolation.thread.timeoutInMilliseconds[defaults] to 1000 milliseconds hence it might occur before the client timeout as configured above. Increasing such a timeout prevents doing so.
+
+[source,yaml]
+----
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+  hystrix:
+    enabled: true
+
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: true
+        isolation:
+          thread:
+            timeoutInMilliseconds: 60000
+----
+
+NOTE: When Hystrix timeout is enabled and its timeout is set longer than of a feign client, `HystrixTimeoutException` wraps a feign exception. Otherwise, the only difference is the cause exception. The purpose of `HystrixTimeoutException` is to wrap any runtime exception which occurs as first and throw an instance of itself.
+
 === Creating Feign Clients Manually
 
 In some cases it might be necessary to customize your Feign Clients in a way that is not
