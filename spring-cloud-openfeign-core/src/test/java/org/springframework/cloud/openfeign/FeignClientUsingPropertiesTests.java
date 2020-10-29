@@ -140,12 +140,14 @@ public class FeignClientUsingPropertiesTests {
 
 	public EggsClient eggsClient() {
 		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean.setApplicationContext(this.applicationContext);
-		return this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean.feign(this.context).target(EggsClient.class, "http://localhost:" + this.port);
+		return this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean.feign(this.context)
+				.target(EggsClient.class, "http://localhost:" + this.port);
 	}
 
 	public PawsClient pawsClient() {
 		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean.setApplicationContext(this.applicationContext);
-		return this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean.feign(this.context).target(PawsClient.class, "http://localhost:" + this.port);
+		return this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean.feign(this.context)
+				.target(PawsClient.class, "http://localhost:" + this.port);
 	}
 
 	public UnwrapClient unwrapClient() {
@@ -237,14 +239,14 @@ public class FeignClientUsingPropertiesTests {
 
 	protected interface FooClient {
 
-		@GetMapping(value = "/foo")
+		@GetMapping(path = "/foo")
 		String foo();
 
 	}
 
 	protected interface BarClient {
 
-		@GetMapping(value = "/bar")
+		@GetMapping(path = "/bar")
 		String bar();
 
 	}
@@ -263,18 +265,16 @@ public class FeignClientUsingPropertiesTests {
 
 	}
 
-
-
 	protected interface UnwrapClient {
 
-		@GetMapping(value = "/bar") // intentionally /bar
+		@GetMapping(path = "/bar") // intentionally /bar
 		String unwrap() throws IOException;
 
 	}
 
 	protected interface FormClient {
 
-		@PostMapping(value = "/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		@PostMapping(path = "/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		String form(Map<String, String> form);
 
 	}
@@ -292,7 +292,7 @@ public class FeignClientUsingPropertiesTests {
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
-		@GetMapping(value = "/foo")
+		@GetMapping(path = "/foo")
 		public String foo(HttpServletRequest request) throws IllegalAccessException {
 			if ("Foo".equals(request.getHeader("Foo")) && "Bar".equals(request.getHeader("Bar"))) {
 				return "OK";
@@ -302,7 +302,7 @@ public class FeignClientUsingPropertiesTests {
 			}
 		}
 
-		@GetMapping(value = "/bar")
+		@GetMapping(path = "/bar")
 		public String bar() throws InterruptedException {
 			Thread.sleep(2000L);
 			return "OK";
@@ -318,7 +318,7 @@ public class FeignClientUsingPropertiesTests {
 			return Stream.of(pawsHeaders, pawsParameters).flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
-		@PostMapping(value = "/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		@PostMapping(path = "/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		public String form(HttpServletRequest request) {
 			return request.getParameter("form");
 		}

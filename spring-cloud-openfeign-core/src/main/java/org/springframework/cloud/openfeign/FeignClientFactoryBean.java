@@ -251,8 +251,7 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 		}
 
 		if (Objects.nonNull(config.getDefaultQueryParameters())) {
-			builder.requestInterceptor(
-					requestTemplate -> requestTemplate.queries(config.getDefaultQueryParameters()));
+			builder.requestInterceptor(requestTemplate -> requestTemplate.queries(config.getDefaultQueryParameters()));
 		}
 	}
 
