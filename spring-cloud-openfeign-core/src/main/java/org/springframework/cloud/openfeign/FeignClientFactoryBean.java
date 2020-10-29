@@ -57,6 +57,7 @@ import org.springframework.util.StringUtils;
  * @author Gregor Zurowski
  * @author Matt King
  * @author Olga Maciaszek-Sharma
+ * @author Ilia Ilinykh
  */
 class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
@@ -242,6 +243,16 @@ class FeignClientFactoryBean
 
 		if (Objects.nonNull(config.getEncoder())) {
 			builder.encoder(getOrInstantiate(config.getEncoder()));
+		}
+
+		if (Objects.nonNull(config.getDefaultRequestHeaders())) {
+			builder.requestInterceptor(requestTemplate -> requestTemplate
+					.headers(config.getDefaultRequestHeaders()));
+		}
+
+		if (Objects.nonNull(config.getDefaultQueryParameters())) {
+			builder.requestInterceptor(requestTemplate -> requestTemplate
+					.queries(config.getDefaultQueryParameters()));
 		}
 
 		if (Objects.nonNull(config.getDecoder())) {

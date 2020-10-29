@@ -175,6 +175,10 @@ feign:
         loggerLevel: full
         errorDecoder: com.example.SimpleErrorDecoder
         retryer: com.example.SimpleRetryer
+       defaultQueryParameters:
+          query: queryValue
+        defaultRequestHeaders:
+          header: headerValue
         requestInterceptors:
           - com.example.FooRequestInterceptor
           - com.example.BarRequestInterceptor
@@ -187,6 +191,8 @@ feign:
 Default configurations can be specified in the `@EnableFeignClients` attribute `defaultConfiguration` in a similar manner as described above. The difference is that this configuration will apply to _all_ feign clients.
 
 If you prefer using configuration properties to configured all `@FeignClient`, you can create configuration properties with `default` feign name.
+
+You can use `feign.client.config.feignName.defaultQueryParameters` and `feign.client.config.feignName.defaultRequestHeaders` to specify query parameters and headers that will be sent with every request of the client named `feignName`.
 
 application.yml
 [source,yaml]

@@ -22,9 +22,15 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -55,8 +61,11 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,6 +75,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 /**
  * @author Eko Kurniawan Khannedy
  * @author Olga Maciaszek-Sharma
+ * @author Ilia Ilinykh
  */
 @SuppressWarnings("FieldMayBeFinal")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -92,6 +102,10 @@ public class FeignClientUsingPropertiesTests {
 
 	private FeignClientFactoryBean formFactoryBean;
 
+	private FeignClientFactoryBean defaultHeadersAndQuerySingleParamsFeignClientFactoryBean;
+
+	private FeignClientFactoryBean defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean;
+
 	public FeignClientUsingPropertiesTests() {
 		fooFactoryBean = new FeignClientFactoryBean();
 		fooFactoryBean.setContextId("foo");
@@ -108,6 +122,18 @@ public class FeignClientUsingPropertiesTests {
 		formFactoryBean = new FeignClientFactoryBean();
 		formFactoryBean.setContextId("form");
 		formFactoryBean.setType(FeignClientFactoryBean.class);
+
+		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean = new FeignClientFactoryBean();
+		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
+				.setContextId("singleValue");
+		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
+				.setType(FeignClientFactoryBean.class);
+
+		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean = new FeignClientFactoryBean();
+		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
+				.setContextId("multipleValue");
+		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
+				.setType(FeignClientFactoryBean.class);
 	}
 
 	public FooClient fooClient() {
@@ -160,6 +186,35 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	@Test
+	public void testSingleValue() {
+		List<String> response = singleValueClient().singleValue();
+		assertThat(response).isEqualTo(Arrays.asList("header", "parameter"));
+	}
+
+	@Test
+	public void testMultipleValue() {
+		List<String> response = multipleValueClient().multipleValue();
+		assertThat(response).isEqualTo(
+				Arrays.asList("header1", "header2", "parameter1", "parameter2"));
+	}
+
+	public SingleValueClient singleValueClient() {
+		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
+				.setApplicationContext(this.applicationContext);
+		return this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
+				.feign(this.context)
+				.target(SingleValueClient.class, "http://localhost:" + this.port);
+	}
+
+	public MultipleValueClient multipleValueClient() {
+		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
+				.setApplicationContext(this.applicationContext);
+		return this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
+				.feign(this.context)
+				.target(MultipleValueClient.class, "http://localhost:" + this.port);
+	}
+
+	@Test
 	public void readTimeoutShouldWorkWhenConnectTimeoutNotSet() {
 		FeignClientFactoryBean readTimeoutFactoryBean = new FeignClientFactoryBean();
 		readTimeoutFactoryBean.setContextId("readTimeout");
@@ -202,21 +257,21 @@ public class FeignClientUsingPropertiesTests {
 
 	protected interface FooClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/foo")
+		@GetMapping(path = "/foo")
 		String foo();
 
 	}
 
 	protected interface BarClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/bar")
+		@GetMapping(path = "/bar")
 		String bar();
 
 	}
 
 	protected interface UnwrapClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/bar") // intentionally /bar
+		@GetMapping(path = "/bar") // intentionally /bar
 		String unwrap() throws IOException;
 
 	}
@@ -226,6 +281,20 @@ public class FeignClientUsingPropertiesTests {
 		@RequestMapping(value = "/form", method = RequestMethod.POST,
 				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		String form(Map<String, String> form);
+
+	}
+
+	protected interface SingleValueClient {
+
+		@GetMapping(path = "/singleValue")
+		List<String> singleValue();
+
+	}
+
+	protected interface MultipleValueClient {
+
+		@GetMapping(path = "/multipleValue")
+		List<String> multipleValue();
 
 	}
 
@@ -253,16 +322,31 @@ public class FeignClientUsingPropertiesTests {
 			}
 		}
 
-		@RequestMapping(method = RequestMethod.GET, value = "/bar")
+		@GetMapping(path = "/bar")
 		public String bar() throws InterruptedException {
-			Thread.sleep(2000L);
+			TimeUnit.SECONDS.sleep(2);
 			return "OK";
 		}
 
-		@RequestMapping(value = "/form", method = RequestMethod.POST,
+		@PostMapping(path = "/form",
 				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		public String form(HttpServletRequest request) {
 			return request.getParameter("form");
+		}
+
+		@GetMapping(path = "/singleValue")
+		public List<String> singleValue(@RequestHeader List<String> singleValueHeaders,
+				@RequestParam List<String> singleValueParameters) {
+			return Stream.of(singleValueHeaders, singleValueParameters)
+					.flatMap(Collection::stream).collect(Collectors.toList());
+		}
+
+		@GetMapping(path = "/multipleValue")
+		public List<String> multipleValue(
+				@RequestHeader List<String> multipleValueHeaders,
+				@RequestParam List<String> multipleValueParameters) {
+			return Stream.of(multipleValueHeaders, multipleValueParameters)
+					.flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
 	}
