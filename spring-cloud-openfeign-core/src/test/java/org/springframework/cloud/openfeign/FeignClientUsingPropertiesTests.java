@@ -186,32 +186,32 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	@Test
-	public void testEggs() {
+	public void testSingleValue() {
 		List<String> response = singleValueClient().singleValue();
 		assertThat(response).isEqualTo(Arrays.asList("header", "parameter"));
 	}
 
 	@Test
-	public void testPaws() {
+	public void testMultipleValue() {
 		List<String> response = multipleValueClient().multipleValue();
 		assertThat(response).isEqualTo(
 				Arrays.asList("header1", "header2", "parameter1", "parameter2"));
 	}
 
-	public EggsClient singleValueClient() {
+	public SingleValueClient singleValueClient() {
 		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
 				.setApplicationContext(this.applicationContext);
 		return this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
 				.feign(this.context)
-				.target(EggsClient.class, "http://localhost:" + this.port);
+				.target(SingleValueClient.class, "http://localhost:" + this.port);
 	}
 
-	public PawsClient multipleValueClient() {
+	public MultipleValueClient multipleValueClient() {
 		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
 				.setApplicationContext(this.applicationContext);
 		return this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
 				.feign(this.context)
-				.target(PawsClient.class, "http://localhost:" + this.port);
+				.target(MultipleValueClient.class, "http://localhost:" + this.port);
 	}
 
 	@Test
@@ -284,14 +284,14 @@ public class FeignClientUsingPropertiesTests {
 
 	}
 
-	protected interface EggsClient {
+	protected interface SingleValueClient {
 
 		@GetMapping(path = "/singleValue")
 		List<String> singleValue();
 
 	}
 
-	protected interface PawsClient {
+	protected interface MultipleValueClient {
 
 		@GetMapping(path = "/multipleValue")
 		List<String> multipleValue();
