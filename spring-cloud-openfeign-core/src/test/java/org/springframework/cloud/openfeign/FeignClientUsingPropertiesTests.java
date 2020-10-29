@@ -124,13 +124,13 @@ public class FeignClientUsingPropertiesTests {
 
 		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean = new FeignClientFactoryBean();
 		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
-				.setContextId("eggs");
+				.setContextId("singleValue");
 		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
 				.setType(FeignClientFactoryBean.class);
 
 		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean = new FeignClientFactoryBean();
 		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
-				.setContextId("paws");
+				.setContextId("multipleValue");
 		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
 				.setType(FeignClientFactoryBean.class);
 	}
@@ -186,18 +186,18 @@ public class FeignClientUsingPropertiesTests {
 
 	@Test
 	public void testEggs() {
-		List<String> response = eggsClient().eggs();
+		List<String> response = singleValueClient().singleValue();
 		assertThat(response).isEqualTo(Arrays.asList("header", "parameter"));
 	}
 
 	@Test
 	public void testPaws() {
-		List<String> response = pawsClient().paws();
+		List<String> response = multipleValueClient().multipleValue();
 		assertThat(response).isEqualTo(
 				Arrays.asList("header1", "header2", "parameter1", "parameter2"));
 	}
 
-	public EggsClient eggsClient() {
+	public EggsClient singleValueClient() {
 		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
 				.setApplicationContext(this.applicationContext);
 		return this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean
@@ -205,7 +205,7 @@ public class FeignClientUsingPropertiesTests {
 				.target(EggsClient.class, "http://localhost:" + this.port);
 	}
 
-	public PawsClient pawsClient() {
+	public PawsClient multipleValueClient() {
 		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
 				.setApplicationContext(this.applicationContext);
 		return this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean
@@ -285,15 +285,15 @@ public class FeignClientUsingPropertiesTests {
 
 	protected interface EggsClient {
 
-		@GetMapping(path = "/eggs")
-		List<String> eggs();
+		@GetMapping(path = "/singleValue")
+		List<String> singleValue();
 
 	}
 
 	protected interface PawsClient {
 
-		@GetMapping(path = "/paws")
-		List<String> paws();
+		@GetMapping(path = "/multipleValue")
+		List<String> multipleValue();
 
 	}
 
@@ -333,18 +333,19 @@ public class FeignClientUsingPropertiesTests {
 			return request.getParameter("form");
 		}
 
-		@GetMapping(path = "/eggs")
-		public List<String> eggs(@RequestHeader List<String> eggsHeaders,
-				@RequestParam List<String> eggsParameters) {
-			return Stream.of(eggsHeaders, eggsParameters).flatMap(Collection::stream)
-					.collect(Collectors.toList());
+		@GetMapping(path = "/singleValue")
+		public List<String> singleValue(@RequestHeader List<String> singleValueHeaders,
+				@RequestParam List<String> singleValueParameters) {
+			return Stream.of(singleValueHeaders, singleValueParameters)
+					.flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
-		@GetMapping(path = "/paws")
-		public List<String> paws(@RequestHeader List<String> pawsHeaders,
-				@RequestParam List<String> pawsParameters) {
-			return Stream.of(pawsHeaders, pawsParameters).flatMap(Collection::stream)
-					.collect(Collectors.toList());
+		@GetMapping(path = "/multipleValue")
+		public List<String> multipleValue(
+				@RequestHeader List<String> multipleValueHeaders,
+				@RequestParam List<String> multipleValueParameters) {
+			return Stream.of(multipleValueHeaders, multipleValueParameters)
+					.flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
 	}
