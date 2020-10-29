@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -323,7 +324,7 @@ public class FeignClientUsingPropertiesTests {
 
 		@GetMapping(path = "/bar")
 		public String bar() throws InterruptedException {
-			Thread.sleep(2000L);
+			TimeUnit.SECONDS.sleep(2);
 			return "OK";
 		}
 
