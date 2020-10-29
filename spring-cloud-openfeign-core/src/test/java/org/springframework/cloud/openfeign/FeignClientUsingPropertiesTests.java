@@ -60,9 +60,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -73,6 +72,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 /**
  * @author Eko Kurniawan Khannedy
  * @author Olga Maciaszek-Sharma
+ * @author Ilia Ilinykh
  */
 @SuppressWarnings("FieldMayBeFinal")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -94,7 +94,9 @@ public class FeignClientUsingPropertiesTests {
 
 	private FeignClientFactoryBean barFactoryBean;
 
-	private FeignClientFactoryBean eggsClientFactoryBean;
+	private FeignClientFactoryBean defaultHeadersAndQuerySingleParamsFeignClientFactoryBean;
+
+	private FeignClientFactoryBean defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean;
 
 	private FeignClientFactoryBean unwrapFactoryBean;
 
@@ -109,9 +111,13 @@ public class FeignClientUsingPropertiesTests {
 		barFactoryBean.setContextId("bar");
 		barFactoryBean.setType(FeignClientFactoryBean.class);
 
-		this.eggsClientFactoryBean = new FeignClientFactoryBean();
-		this.eggsClientFactoryBean.setContextId("eggs");
-		this.eggsClientFactoryBean.setType(FeignClientFactoryBean.class);
+		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean = new FeignClientFactoryBean();
+		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean.setContextId("eggs");
+		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean.setType(FeignClientFactoryBean.class);
+
+		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean = new FeignClientFactoryBean();
+		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean.setContextId("paws");
+		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean.setType(FeignClientFactoryBean.class);
 
 		unwrapFactoryBean = new FeignClientFactoryBean();
 		unwrapFactoryBean.setContextId("unwrap");
@@ -133,8 +139,13 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	public EggsClient eggsClient() {
-		this.eggsClientFactoryBean.setApplicationContext(this.applicationContext);
-		return this.eggsClientFactoryBean.feign(this.context).target(EggsClient.class, "http://localhost:" + this.port);
+		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean.setApplicationContext(this.applicationContext);
+		return this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean.feign(this.context).target(EggsClient.class, "http://localhost:" + this.port);
+	}
+
+	public PawsClient pawsClient() {
+		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean.setApplicationContext(this.applicationContext);
+		return this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean.feign(this.context).target(PawsClient.class, "http://localhost:" + this.port);
 	}
 
 	public UnwrapClient unwrapClient() {
@@ -157,6 +168,12 @@ public class FeignClientUsingPropertiesTests {
 	public void testEggs() {
 		List<String> response = eggsClient().eggs();
 		assertThat(response).isEqualTo(Arrays.asList("header", "parameter"));
+	}
+
+	@Test
+	public void testPaws() {
+		List<String> response = pawsClient().paws();
+		assertThat(response).isEqualTo(Arrays.asList("header1", "header2", "parameter1", "parameter2"));
 	}
 
 	@Test(expected = RetryableException.class)
@@ -220,36 +237,44 @@ public class FeignClientUsingPropertiesTests {
 
 	protected interface FooClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/foo")
+		@GetMapping(value = "/foo")
 		String foo();
 
 	}
 
 	protected interface BarClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/bar")
+		@GetMapping(value = "/bar")
 		String bar();
 
 	}
 
 	protected interface EggsClient {
 
-		@RequestMapping(method = RequestMethod.GET, path = "/eggs")
+		@GetMapping(path = "/eggs")
 		List<String> eggs();
 
 	}
 
+	protected interface PawsClient {
+
+		@GetMapping(path = "/paws")
+		List<String> paws();
+
+	}
+
+
+
 	protected interface UnwrapClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/bar") // intentionally /bar
+		@GetMapping(value = "/bar") // intentionally /bar
 		String unwrap() throws IOException;
 
 	}
 
 	protected interface FormClient {
 
-		@RequestMapping(value = "/form", method = RequestMethod.POST,
-				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		@PostMapping(value = "/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		String form(Map<String, String> form);
 
 	}
@@ -267,7 +292,7 @@ public class FeignClientUsingPropertiesTests {
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/foo")
+		@GetMapping(value = "/foo")
 		public String foo(HttpServletRequest request) throws IllegalAccessException {
 			if ("Foo".equals(request.getHeader("Foo")) && "Bar".equals(request.getHeader("Bar"))) {
 				return "OK";
@@ -277,19 +302,23 @@ public class FeignClientUsingPropertiesTests {
 			}
 		}
 
-		@RequestMapping(method = RequestMethod.GET, value = "/bar")
+		@GetMapping(value = "/bar")
 		public String bar() throws InterruptedException {
 			Thread.sleep(2000L);
 			return "OK";
 		}
 
-		@RequestMapping(method = RequestMethod.GET, path = "/eggs")
+		@GetMapping(path = "/eggs")
 		public List<String> eggs(@RequestHeader List<String> eggsHeaders, @RequestParam List<String> eggsParameters) {
 			return Stream.of(eggsHeaders, eggsParameters).flatMap(Collection::stream).collect(Collectors.toList());
 		}
 
-		@RequestMapping(value = "/form", method = RequestMethod.POST,
-				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		@GetMapping(path = "/paws")
+		public List<String> paws(@RequestHeader List<String> pawsHeaders, @RequestParam List<String> pawsParameters) {
+			return Stream.of(pawsHeaders, pawsParameters).flatMap(Collection::stream).collect(Collectors.toList());
+		}
+
+		@PostMapping(value = "/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		public String form(HttpServletRequest request) {
 			return request.getParameter("form");
 		}

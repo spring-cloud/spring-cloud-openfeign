@@ -35,6 +35,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Eko Kurniawan Khannedy
+ * @author Ilia Ilinykh
  */
 @ConfigurationProperties("feign.client")
 public class FeignClientProperties {
@@ -116,7 +117,7 @@ public class FeignClientProperties {
 
 		private Map<String, Collection<String>> defaultRequestHeaders;
 
-		private Map<String, Collection<String>> defaultRequestParameters;
+		private Map<String, Collection<String>> defaultQueryParameters;
 
 		public Logger.Level getLoggerLevel() {
 			return this.loggerLevel;
@@ -214,12 +215,12 @@ public class FeignClientProperties {
 			this.defaultRequestHeaders = defaultRequestHeaders;
 		}
 
-		public Map<String, Collection<String>> getDefaultRequestParameters() {
-			return defaultRequestParameters;
+		public Map<String, Collection<String>> getDefaultQueryParameters() {
+			return defaultQueryParameters;
 		}
 
-		public void setDefaultRequestParameters(Map<String, Collection<String>> defaultRequestParameters) {
-			this.defaultRequestParameters = defaultRequestParameters;
+		public void setDefaultQueryParameters(Map<String, Collection<String>> defaultQueryParameters) {
+			this.defaultQueryParameters = defaultQueryParameters;
 		}
 
 		@Override
@@ -239,14 +240,14 @@ public class FeignClientProperties {
 					&& Objects.equals(this.decoder, that.decoder) && Objects.equals(this.contract, that.contract)
 					&& Objects.equals(this.exceptionPropagationPolicy, that.exceptionPropagationPolicy)
 					&& Objects.equals(this.defaultRequestHeaders, that.defaultRequestHeaders)
-					&& Objects.equals(this.defaultRequestParameters, that.defaultRequestParameters);
+					&& Objects.equals(this.defaultQueryParameters, that.defaultQueryParameters);
 		}
 
 		@Override
 		public int hashCode() {
 			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout, this.retryer,
 					this.errorDecoder, this.requestInterceptors, this.decode404, this.encoder, this.decoder,
-					this.contract, this.exceptionPropagationPolicy, this.defaultRequestParameters,
+					this.contract, this.exceptionPropagationPolicy, this.defaultQueryParameters,
 					this.defaultRequestHeaders);
 		}
 
