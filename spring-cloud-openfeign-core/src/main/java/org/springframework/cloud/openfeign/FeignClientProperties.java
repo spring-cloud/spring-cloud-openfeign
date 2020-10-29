@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Eko Kurniawan Khannedy
+ * @author Ilia Ilinykh
  */
 @ConfigurationProperties("feign.client")
 public class FeignClientProperties {
@@ -104,6 +106,10 @@ public class FeignClientProperties {
 
 		private List<Class<RequestInterceptor>> requestInterceptors;
 
+		private Map<String, Collection<String>> defaultRequestHeaders;
+
+		private Map<String, Collection<String>> defaultQueryParameters;
+
 		private Boolean decode404;
 
 		private Class<Decoder> decoder;
@@ -161,6 +167,24 @@ public class FeignClientProperties {
 		public void setRequestInterceptors(
 				List<Class<RequestInterceptor>> requestInterceptors) {
 			this.requestInterceptors = requestInterceptors;
+		}
+
+		public Map<String, Collection<String>> getDefaultRequestHeaders() {
+			return defaultRequestHeaders;
+		}
+
+		public void setDefaultRequestHeaders(
+				Map<String, Collection<String>> defaultRequestHeaders) {
+			this.defaultRequestHeaders = defaultRequestHeaders;
+		}
+
+		public Map<String, Collection<String>> getDefaultQueryParameters() {
+			return defaultQueryParameters;
+		}
+
+		public void setDefaultQueryParameters(
+				Map<String, Collection<String>> defaultQueryParameters) {
+			this.defaultQueryParameters = defaultQueryParameters;
 		}
 
 		public Boolean getDecode404() {
@@ -224,7 +248,11 @@ public class FeignClientProperties {
 					&& Objects.equals(this.decoder, that.decoder)
 					&& Objects.equals(this.contract, that.contract)
 					&& Objects.equals(this.exceptionPropagationPolicy,
-							that.exceptionPropagationPolicy);
+							that.exceptionPropagationPolicy)
+					&& Objects.equals(this.defaultRequestHeaders,
+							that.defaultRequestHeaders)
+					&& Objects.equals(this.defaultQueryParameters,
+							that.defaultQueryParameters);
 		}
 
 		@Override
@@ -232,7 +260,8 @@ public class FeignClientProperties {
 			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout,
 					this.retryer, this.errorDecoder, this.requestInterceptors,
 					this.decode404, this.encoder, this.decoder, this.contract,
-					this.exceptionPropagationPolicy);
+					this.exceptionPropagationPolicy, this.defaultQueryParameters,
+					this.defaultRequestHeaders);
 		}
 
 	}
