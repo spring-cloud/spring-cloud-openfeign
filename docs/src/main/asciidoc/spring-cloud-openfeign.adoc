@@ -308,7 +308,7 @@ hystrix:
             timeoutInMilliseconds: 60000
 ----
 
-NOTE: When the Hystrix timeout is enabled and its timeout is set longer than that of a feign client, `HystrixTimeoutException` wraps a feign exception. Otherwise, the only difference is the cause of the exception. The purpose of `HystrixTimeoutException` is to wrap any runtime exception that occurs as first and throw an instance of itself.
+NOTE: When the Hystrix timeout is enabled and its timeout is set longer than that of a feign client, `HystrixTimeoutException` wraps a feign exception. Otherwise, the only difference is the cause of the exception. The purpose of `HystrixTimeoutException` is to wrap any runtime exception that occurs first and throw an instance of itself.
 
 === Creating Feign Clients Manually
 
