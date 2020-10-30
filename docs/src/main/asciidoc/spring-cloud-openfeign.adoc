@@ -284,7 +284,7 @@ We can configure timeouts on both default and named client. OpenFeign works with
 
 NOTE: In case the server is not even running or available at all a packet results in _connection refused_. The communication ends either with an error message or in a fallback. This can happen _before_ the `connectTimeout` is set very low. The time taken to perform a lookup and to receive such a packet causes a significant part of such delay. It is subject to change based on the remote host that involves a DNS lookup.
 
-When Hystrix <<spring-cloud-openfeign#spring-cloud-feign-hystrix,is enabled>> its timeout configuration link:https://github.com/Netflix/Hystrix/wiki/Configuration#execution.isolation.thread.timeoutInMilliseconds[defaults] to 1000 milliseconds hence it might occur before the client timeout as configured above. Increasing such a timeout prevents doing so.
+When Hystrix <<spring-cloud-openfeign#spring-cloud-feign-hystrix,is enabled>> its timeout configuration link:https://github.com/Netflix/Hystrix/wiki/Configuration#execution.isolation.thread.timeoutInMilliseconds[defaults] to 1000 milliseconds hence it might occur before the client timeout as configured above. Increasing such a timeout prevents it from happening.
 
 [source,yaml]
 ----
