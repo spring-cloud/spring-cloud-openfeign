@@ -20,7 +20,9 @@ import java.util.Collections;
 
 import org.junit.Test;
 
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.cloud.openfeign.test.TestAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.env.MockEnvironment;
@@ -32,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Spencer Gibb
  * @author Gang Li
+ * @author Michal Domagala
  */
 public class FeignClientsRegistrarTests {
 
@@ -89,6 +92,14 @@ public class FeignClientsRegistrarTests {
 		new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
 	}
 
+	@Test
+	public void shouldPassSubLevelFeignClient() {
+		AnnotationConfigApplicationContext config = new AnnotationConfigApplicationContext();
+		((DefaultListableBeanFactory) config.getBeanFactory()).setAllowBeanDefinitionOverriding(false);
+		config.register(TopLevelSubLevelTestCongig.class);
+		config.refresh();
+	}
+
 	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/",
 			fallback = FallbackClient.class)
 	protected interface FallbackClient {
@@ -120,6 +131,13 @@ public class FeignClientsRegistrarTests {
 			clients = { FeignClientsRegistrarTests.FallbackFactoryClient.class })
 	protected static class FallbackFactoryTestConfig {
 
+	}
+
+	@EnableFeignClients(clients = {
+		org.springframework.cloud.openfeign.feignclientsregistrar.TopLevelClient.class,
+		org.springframework.cloud.openfeign.feignclientsregistrar.sub.SubLevelClient.class})
+	@EnableAutoConfiguration(exclude = TestAutoConfiguration.class)
+	protected static class TopLevelSubLevelTestCongig {
 	}
 
 }
