@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * @author Spencer Gibb
@@ -96,8 +97,11 @@ public class FeignClientsRegistrarTests {
 	public void shouldPassSubLevelFeignClient() {
 		AnnotationConfigApplicationContext config = new AnnotationConfigApplicationContext();
 		((DefaultListableBeanFactory) config.getBeanFactory()).setAllowBeanDefinitionOverriding(false);
-		config.register(TopLevelSubLevelTestCongig.class);
-		config.refresh();
+		config.register(TopLevelSubLevelTestConfig.class);
+		assertThatCode(() -> config.refresh())
+			.as("Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
+			.doesNotThrowAnyException();
+
 	}
 
 	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/",
@@ -137,7 +141,7 @@ public class FeignClientsRegistrarTests {
 		org.springframework.cloud.openfeign.feignclientsregistrar.TopLevelClient.class,
 		org.springframework.cloud.openfeign.feignclientsregistrar.sub.SubLevelClient.class})
 	@EnableAutoConfiguration(exclude = TestAutoConfiguration.class)
-	protected static class TopLevelSubLevelTestCongig {
+	protected static class TopLevelSubLevelTestConfig {
 	}
 
 }
