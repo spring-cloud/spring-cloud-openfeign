@@ -20,7 +20,9 @@ import java.util.Collections;
 
 import org.junit.Test;
 
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.cloud.openfeign.test.TestAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.env.MockEnvironment;
@@ -28,10 +30,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * @author Spencer Gibb
  * @author Gang Li
+ * @author Michal Domagala
  */
 public class FeignClientsRegistrarTests {
 
@@ -89,6 +93,17 @@ public class FeignClientsRegistrarTests {
 		new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
 	}
 
+	@Test
+	public void shouldPassSubLevelFeignClient() {
+		AnnotationConfigApplicationContext config = new AnnotationConfigApplicationContext();
+		((DefaultListableBeanFactory) config.getBeanFactory()).setAllowBeanDefinitionOverriding(false);
+		config.register(TopLevelSubLevelTestConfig.class);
+		assertThatCode(() -> config.refresh())
+				.as("Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
+				.doesNotThrowAnyException();
+
+	}
+
 	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)
 	protected interface FallbackClient {
 
@@ -117,6 +132,13 @@ public class FeignClientsRegistrarTests {
 	@EnableAutoConfiguration
 	@EnableFeignClients(clients = { FeignClientsRegistrarTests.FallbackFactoryClient.class })
 	protected static class FallbackFactoryTestConfig {
+
+	}
+
+	@EnableFeignClients(clients = { org.springframework.cloud.openfeign.feignclientsregistrar.TopLevelClient.class,
+			org.springframework.cloud.openfeign.feignclientsregistrar.sub.SubLevelClient.class })
+	@EnableAutoConfiguration(exclude = TestAutoConfiguration.class)
+	protected static class TopLevelSubLevelTestConfig {
 
 	}
 
