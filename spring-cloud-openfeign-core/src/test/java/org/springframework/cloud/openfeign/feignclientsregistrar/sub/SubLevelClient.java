@@ -24,4 +24,5 @@ import org.springframework.cloud.openfeign.FeignClient;
 
 @FeignClient("sub-level")
 public interface SubLevelClient {
+
 }
