@@ -192,7 +192,8 @@ class FeignClientsRegistrar
 						"@FeignClient can only be specified on an interface");
 
 				Map<String, Object> attributes = annotationMetadata
-						.getAnnotationAttributes(FeignClient.class.getCanonicalName());
+						.getAnnotationAttributes(
+								FeignClient.class.getCanonicalName());
 
 				String name = getClientName(attributes);
 				registerClientConfiguration(registry, name,
