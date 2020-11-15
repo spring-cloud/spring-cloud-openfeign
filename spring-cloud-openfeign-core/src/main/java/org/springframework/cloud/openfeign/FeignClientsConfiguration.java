@@ -82,6 +82,9 @@ public class FeignClientsConfiguration {
 	@Autowired(required = false)
 	private SpringDataWebProperties springDataWebProperties;
 
+	@Autowired(required = false)
+	private FeignClientProperties feignClientProperties;
+
 	@Bean
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder() {
@@ -118,7 +121,10 @@ public class FeignClientsConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public Contract feignContract(ConversionService feignConversionService) {
-		return new SpringMvcContract(this.parameterProcessors, feignConversionService);
+		boolean decodeSlash = feignClientProperties == null
+				|| feignClientProperties.isDecodeSlash();
+		return new SpringMvcContract(this.parameterProcessors, feignConversionService,
+				decodeSlash);
 	}
 
 	@Bean

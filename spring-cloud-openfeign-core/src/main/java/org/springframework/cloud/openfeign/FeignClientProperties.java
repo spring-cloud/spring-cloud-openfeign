@@ -36,6 +36,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * @author Eko Kurniawan Khannedy
  * @author Ilia Ilinykh
+ * @author Ram Anaswara
  */
 @ConfigurationProperties("feign.client")
 public class FeignClientProperties {
@@ -45,6 +46,12 @@ public class FeignClientProperties {
 	private String defaultConfig = "default";
 
 	private Map<String, FeignClientConfiguration> config = new HashMap<>();
+
+	/**
+	 * Feign clients do not encode slash `/` characters by default. To change this
+	 * behavior, set the `decodeSlash` to `false`.
+	 */
+	private boolean decodeSlash = true;
 
 	public boolean isDefaultToProperties() {
 		return this.defaultToProperties;
@@ -70,6 +77,14 @@ public class FeignClientProperties {
 		this.config = config;
 	}
 
+	public boolean isDecodeSlash() {
+		return decodeSlash;
+	}
+
+	public void setDecodeSlash(boolean decodeSlash) {
+		this.decodeSlash = decodeSlash;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -81,12 +96,14 @@ public class FeignClientProperties {
 		FeignClientProperties that = (FeignClientProperties) o;
 		return this.defaultToProperties == that.defaultToProperties
 				&& Objects.equals(this.defaultConfig, that.defaultConfig)
-				&& Objects.equals(this.config, that.config);
+				&& Objects.equals(this.config, that.config)
+				&& Objects.equals(this.decodeSlash, that.decodeSlash);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.defaultToProperties, this.defaultConfig, this.config);
+		return Objects.hash(this.defaultToProperties, this.defaultConfig, this.config,
+				this.decodeSlash);
 	}
 
 	/**
