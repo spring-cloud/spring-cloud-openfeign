@@ -114,11 +114,7 @@ public class SpringMvcContractTests {
 
 	@Before
 	public void setup() {
-		FormattingConversionServiceFactoryBean conversionServiceFactoryBean = new FormattingConversionServiceFactoryBean();
-		conversionServiceFactoryBean.afterPropertiesSet();
-		ConversionService conversionService = conversionServiceFactoryBean.getObject();
-
-		contract = new SpringMvcContract(Collections.emptyList(), conversionService);
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService());
 	}
 
 	@Test
@@ -130,6 +126,20 @@ public class SpringMvcContractTests {
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+
+		assertThat(data.template().decodeSlash()).isTrue();
+	}
+
+	@Test
+	public void testProcessAnnotationOnMethod_Simple_SlashEncoded() throws Exception {
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), false);
+
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test/{id}");
+
+		assertThat(data.template().decodeSlash()).isFalse();
 	}
 
 	@Test
@@ -180,6 +190,20 @@ public class SpringMvcContractTests {
 		assertThat(data.template().method()).isEqualTo("GET");
 
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("classId");
+
+		assertThat(data.template().decodeSlash()).isTrue();
+	}
+
+	@Test
+	public void testProcessAnnotations_Class_AnnotationsGetAllTests_EncodeSlash() throws Exception {
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), false);
+
+		Method method = TestTemplate_Class_Annotations.class.getDeclaredMethod("getAllTests", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/prepend/{classId}");
+
+		assertThat(data.template().decodeSlash()).isFalse();
 	}
 
 	@Test
@@ -195,6 +219,26 @@ public class SpringMvcContractTests {
 		assertThat(data.template().method()).isEqualTo(extendedData.template().method());
 
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo(data.indexToName().get(0).iterator().next());
+
+		assertThat(data.template().decodeSlash()).isTrue();
+	}
+
+	@Test
+	public void testProcessAnnotations_ExtendedInterface_EncodeSlash() throws Exception {
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), false);
+
+		Method extendedMethod = TestTemplate_Extended.class.getMethod("getAllTests", String.class);
+		MethodMetadata extendedData = contract.parseAndValidateMetadata(extendedMethod.getDeclaringClass(),
+				extendedMethod);
+
+		Method method = TestTemplate_Class_Annotations.class.getDeclaredMethod("getAllTests", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo(extendedData.template().url());
+		assertThat(data.template().method()).isEqualTo(extendedData.template().method());
+
+		assertThat(data.template().decodeSlash()).isFalse();
+
 	}
 
 	@Test
@@ -343,6 +387,21 @@ public class SpringMvcContractTests {
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+
+		assertThat(data.template().decodeSlash()).isTrue();
+	}
+
+	@Test
+	public void testProcessAnnotations_Advanced3_DecodeSlashFlagNotModified() throws Exception {
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), false);
+
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/");
+
+		assertThat(data.template().decodeSlash()).isTrue();
+
 	}
 
 	@Test
@@ -522,6 +581,12 @@ public class SpringMvcContractTests {
 
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 		assertThat(data.formParams()).contains("file", "id");
+	}
+
+	private ConversionService getConversionService() {
+		FormattingConversionServiceFactoryBean conversionServiceFactoryBean = new FormattingConversionServiceFactoryBean();
+		conversionServiceFactoryBean.afterPropertiesSet();
+		return conversionServiceFactoryBean.getObject();
 	}
 
 	public interface TestTemplate_Simple {
