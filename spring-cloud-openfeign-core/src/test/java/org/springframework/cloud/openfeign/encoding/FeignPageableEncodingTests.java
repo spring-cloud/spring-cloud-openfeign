@@ -32,7 +32,6 @@ import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoCon
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.cloud.openfeign.encoding.app.client.InvoiceClient;
 import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
@@ -59,6 +58,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(classes = FeignPageableEncodingTests.Application.class,
 		webEnvironment = RANDOM_PORT,
 		value = { "feign.compression.request.enabled=true",
+				"feign.autoconfiguration.jackson.enabled=true",
 				"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
 				"ribbon.OkToRetryOnAllOperations=false" })
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -99,7 +99,7 @@ public class FeignPageableEncodingTests {
 			scanBasePackages = "org.springframework.cloud.openfeign.encoding.app",
 			exclude = { RepositoryRestMvcAutoConfiguration.class })
 	@EnableSpringDataWebSupport
-	@Import({ NoSecurityConfiguration.class, FeignClientsConfiguration.class })
+	@Import({ NoSecurityConfiguration.class })
 	public static class Application {
 
 	}

@@ -663,6 +663,14 @@ To work around this problem you can use an `ObjectProvider` when autowiring your
 ObjectProvider<TestFeginClient> testFeginClient;
 ----
 
+=== Spring Data Support
+You may consider enabling Jackson Modules for the support `org.springframework.data.domain.Page` and `org.springframework.data.domain.Sort` decoding.
+
+[source,java]
+----
+feign.autoconfiguration.jackson.enabled=true
+----
+
 == Configuration properties
 
 To see the list of all Sleuth related configuration properties please check link:appendix.html[the Appendix page].
