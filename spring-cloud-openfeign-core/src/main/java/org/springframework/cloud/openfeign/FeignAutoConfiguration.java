@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -29,6 +30,8 @@ import feign.Feign;
 import feign.httpclient.ApacheHttpClient;
 import feign.okhttp.OkHttpClient;
 import okhttp3.ConnectionPool;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.RegistryBuilder;
@@ -62,6 +65,8 @@ import org.springframework.context.annotation.Import;
 		FeignHttpClientProperties.class })
 @Import(DefaultGzipDecoderConfiguration.class)
 public class FeignAutoConfiguration {
+
+	private static final Log LOG = LogFactory.getLog(FeignAutoConfiguration.class);
 
 	@Autowired(required = false)
 	private List<FeignClientSpecification> configurations = new ArrayList<>();
@@ -163,10 +168,17 @@ public class FeignAutoConfiguration {
 		}
 
 		@PreDestroy
-		public void destroy() throws Exception {
+		public void destroy() {
 			this.connectionManagerTimer.cancel();
 			if (this.httpClient != null) {
-				this.httpClient.close();
+				try {
+					this.httpClient.close();
+				}
+				catch (IOException e) {
+					if (LOG.isErrorEnabled()) {
+						LOG.error("Could not correctly close httpClient.");
+					}
+				}
 			}
 		}
 
