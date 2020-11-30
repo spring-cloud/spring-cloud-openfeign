@@ -16,11 +16,14 @@
 
 package org.springframework.cloud.openfeign.clientconfig;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -47,6 +50,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(CloseableHttpClient.class)
 public class HttpClientFeignConfiguration {
+
+	private static final Log LOG = LogFactory.getLog(HttpClientFeignConfiguration.class);
 
 	private final Timer connectionManagerTimer = new Timer("FeignApacheHttpClientConfiguration.connectionManagerTimer",
 			true);
@@ -103,10 +108,17 @@ public class HttpClientFeignConfiguration {
 	}
 
 	@PreDestroy
-	public void destroy() throws Exception {
+	public void destroy() {
 		this.connectionManagerTimer.cancel();
 		if (this.httpClient != null) {
-			this.httpClient.close();
+			try {
+				this.httpClient.close();
+			}
+			catch (IOException e) {
+				if (LOG.isErrorEnabled()) {
+					LOG.error("Could not correctly close httpClient.");
+				}
+			}
 		}
 	}
 
