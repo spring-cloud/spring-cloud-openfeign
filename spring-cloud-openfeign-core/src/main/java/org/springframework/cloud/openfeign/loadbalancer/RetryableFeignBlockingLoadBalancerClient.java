@@ -148,8 +148,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 					}
 					String reconstructedUrl = loadBalancerClient.reconstructURI(retrievedServiceInstance, originalUri)
 							.toString();
-					feignRequest = Request.create(request.httpMethod(), reconstructedUrl, request.headers(),
-							request.body(), request.charset(), request.requestTemplate());
+					feignRequest = buildRequest(request, reconstructedUrl);
 				}
 			}
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
@@ -171,6 +170,11 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 				return response;
 			}
 		});
+	}
+
+	protected Request buildRequest(Request request, String reconstructedUrl) {
+		return Request.create(request.httpMethod(), reconstructedUrl, request.headers(), request.body(),
+				request.charset(), request.requestTemplate());
 	}
 
 	private RetryTemplate buildRetryTemplate(String serviceId, Request request, LoadBalancedRetryPolicy retryPolicy) {

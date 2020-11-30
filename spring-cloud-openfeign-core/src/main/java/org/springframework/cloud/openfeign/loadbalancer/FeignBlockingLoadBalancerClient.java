@@ -100,10 +100,14 @@ public class FeignBlockingLoadBalancerClient implements Client {
 					.body(message, StandardCharsets.UTF_8).build();
 		}
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri).toString();
-		Request newRequest = Request.create(request.httpMethod(), reconstructedUrl, request.headers(), request.body(),
-				request.charset(), request.requestTemplate());
+		Request newRequest = buildRequest(request, reconstructedUrl);
 		return executeWithLoadBalancerLifecycleProcessing(delegate, options, newRequest, lbResponse,
 				supportedLifecycleProcessors);
+	}
+
+	protected Request buildRequest(Request request, String reconstructedUrl) {
+		return Request.create(request.httpMethod(), reconstructedUrl, request.headers(), request.body(),
+				request.charset(), request.requestTemplate());
 	}
 
 	// Visible for Sleuth instrumentation
