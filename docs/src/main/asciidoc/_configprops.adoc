@@ -2,6 +2,7 @@
 |Name | Default | Description
 
 |feign.client.config |  | 
+|feign.client.decode-slash | true | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
 |feign.client.default-config | default | 
 |feign.client.default-to-properties | true | 
 |feign.compression.request.enabled | false | Enables the request sent by Feign to be compressed.
