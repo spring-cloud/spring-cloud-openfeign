@@ -608,6 +608,28 @@ public class SpringMvcContractTests {
 		assertThat(data.formParams()).contains("file", "id");
 	}
 
+	@Test
+	public void testProcessAnnotations_AdvancedMissingLeadingSlashInPath()
+			throws Exception {
+		Method method = TestTemplate_Advanced.class
+				.getDeclaredMethod("getTestNoLeadingSlash", String.class, Integer.class);
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url())
+				.isEqualTo("/advanced/test?amount=" + "{amount}");
+	}
+
+	@Test
+	public void testProcessAnnotations_SimplePathIsOnlyASlash() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getSlashPath",
+				String.class);
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/?id=" + "{id}");
+	}
+
 	public interface TestTemplate_Simple {
 
 		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET,
@@ -627,6 +649,9 @@ public class SpringMvcContractTests {
 
 		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject postMappingTest(@RequestBody TestObject object);
+
+		@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getSlashPath(@RequestParam("id") String id);
 
 	}
 
@@ -767,6 +792,12 @@ public class SpringMvcContractTests {
 		@GetMapping(produces = "application/json")
 		String testAddingTemplatedParamForExistingKey(
 				@RequestHeader("Accept") String accept);
+
+		@RequestMapping(path = "test", method = RequestMethod.PUT,
+				produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getTestNoLeadingSlash(
+				@RequestHeader("Authorization") String auth,
+				@RequestParam("amount") Integer amount);
 
 	}
 
