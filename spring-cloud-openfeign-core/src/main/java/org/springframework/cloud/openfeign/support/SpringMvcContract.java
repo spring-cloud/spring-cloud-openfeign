@@ -78,6 +78,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Aaron Whiteside
  * @author Artyom Romanenko
  * @author Darren Foong
+ * @author Ram Anaswara
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
 
@@ -101,6 +102,8 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 	private ResourceLoader resourceLoader = new DefaultResourceLoader();
 
+	private boolean decodeSlash;
+
 	public SpringMvcContract() {
 		this(Collections.emptyList());
 	}
@@ -111,6 +114,11 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
 			ConversionService conversionService) {
+		this(annotatedParameterProcessors, conversionService, true);
+	}
+
+	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
+			ConversionService conversionService, boolean decodeSlash) {
 		Assert.notNull(annotatedParameterProcessors, "Parameter processors can not be null.");
 		Assert.notNull(conversionService, "ConversionService can not be null.");
 
@@ -120,6 +128,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
 		this.conversionService = conversionService;
 		convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
+		this.decodeSlash = decodeSlash;
 	}
 
 	private static TypeDescriptor createTypeDescriptor(Method method, int paramIndex) {
@@ -171,6 +180,9 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 						pathValue = "/" + pathValue;
 					}
 					data.template().uri(pathValue);
+					if (data.template().decodeSlash() != decodeSlash) {
+						data.template().decodeSlash(decodeSlash);
+					}
 				}
 			}
 		}
@@ -232,6 +244,9 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 					pathValue = "/" + pathValue;
 				}
 				data.template().uri(pathValue, true);
+				if (data.template().decodeSlash() != decodeSlash) {
+					data.template().decodeSlash(decodeSlash);
+				}
 			}
 		}
 

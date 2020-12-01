@@ -272,6 +272,8 @@ public FeignClientConfigurer feignClientConfigurer() {
 }
 ----
 
+TIP: By default, Feign clients do not encode slash `/` characters. You can change this behaviour, by setting the value of `feign.client.decodeSlash` to `false`.
+
 [[timeout-handling]]
 === Timeout Handling
 

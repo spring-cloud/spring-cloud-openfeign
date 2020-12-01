@@ -23,32 +23,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * Integration tests for {@link SpringMvcContract}.
  *
- * @author Olga Maciaszek-Sharma
  * @author Ram Anaswara
  */
-@SpringBootTest(classes = AbstractSpringMvcContractIntegrationTests.Config.class,
-		webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class SpringMvcContractIntegrationTests extends AbstractSpringMvcContractIntegrationTests {
+@SpringBootTest(classes = SpringMvcContractSlashEncodingIntegrationTests.Config.class,
+		webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, properties = { "feign.client.decodeSlash=false" })
+public class SpringMvcContractSlashEncodingIntegrationTests extends AbstractSpringMvcContractIntegrationTests {
 
 	@Autowired
 	private TestClient client;
 
 	@Test
-	public void shouldNotThrowInvalidMediaTypeExceptionWhenContentTypeTemplateUsed() {
-		assertThatCode(() -> client.sendMessage("test", "text/markdown")).doesNotThrowAnyException();
-	}
-
-	@Test
-	public void feignClientShouldPreserveSlash() {
+	public void feignClientShouldNotDecodeEncodedSlash() {
 		Response response = (Response) client.getMessage("https://www.google.com");
 
 		String urlQueryParam = getUrlQueryParam(response);
-		assertThat(urlQueryParam).isEqualTo("https%3A//www.google.com");
+		assertThat(urlQueryParam).isEqualTo("https%3A%2F%2Fwww.google.com");
 	}
 
 }
