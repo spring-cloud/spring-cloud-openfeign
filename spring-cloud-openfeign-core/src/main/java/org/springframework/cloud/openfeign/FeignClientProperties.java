@@ -54,7 +54,7 @@ public class FeignClientProperties {
 	private boolean decodeSlash = true;
 
 	public boolean isDefaultToProperties() {
-		return this.defaultToProperties;
+		return defaultToProperties;
 	}
 
 	public void setDefaultToProperties(boolean defaultToProperties) {
@@ -62,7 +62,7 @@ public class FeignClientProperties {
 	}
 
 	public String getDefaultConfig() {
-		return this.defaultConfig;
+		return defaultConfig;
 	}
 
 	public void setDefaultConfig(String defaultConfig) {
@@ -70,7 +70,7 @@ public class FeignClientProperties {
 	}
 
 	public Map<String, FeignClientConfiguration> getConfig() {
-		return this.config;
+		return config;
 	}
 
 	public void setConfig(Map<String, FeignClientConfiguration> config) {
@@ -94,16 +94,15 @@ public class FeignClientProperties {
 			return false;
 		}
 		FeignClientProperties that = (FeignClientProperties) o;
-		return this.defaultToProperties == that.defaultToProperties
-				&& Objects.equals(this.defaultConfig, that.defaultConfig)
-				&& Objects.equals(this.config, that.config)
-				&& Objects.equals(this.decodeSlash, that.decodeSlash);
+		return defaultToProperties == that.defaultToProperties
+				&& Objects.equals(defaultConfig, that.defaultConfig)
+				&& Objects.equals(config, that.config)
+				&& Objects.equals(decodeSlash, that.decodeSlash);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.defaultToProperties, this.defaultConfig, this.config,
-				this.decodeSlash);
+		return Objects.hash(defaultToProperties, defaultConfig, config, decodeSlash);
 	}
 
 	/**
@@ -138,7 +137,7 @@ public class FeignClientProperties {
 		private ExceptionPropagationPolicy exceptionPropagationPolicy;
 
 		public Logger.Level getLoggerLevel() {
-			return this.loggerLevel;
+			return loggerLevel;
 		}
 
 		public void setLoggerLevel(Logger.Level loggerLevel) {
@@ -146,7 +145,7 @@ public class FeignClientProperties {
 		}
 
 		public Integer getConnectTimeout() {
-			return this.connectTimeout;
+			return connectTimeout;
 		}
 
 		public void setConnectTimeout(Integer connectTimeout) {
@@ -154,7 +153,7 @@ public class FeignClientProperties {
 		}
 
 		public Integer getReadTimeout() {
-			return this.readTimeout;
+			return readTimeout;
 		}
 
 		public void setReadTimeout(Integer readTimeout) {
@@ -162,7 +161,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<Retryer> getRetryer() {
-			return this.retryer;
+			return retryer;
 		}
 
 		public void setRetryer(Class<Retryer> retryer) {
@@ -170,7 +169,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<ErrorDecoder> getErrorDecoder() {
-			return this.errorDecoder;
+			return errorDecoder;
 		}
 
 		public void setErrorDecoder(Class<ErrorDecoder> errorDecoder) {
@@ -178,7 +177,7 @@ public class FeignClientProperties {
 		}
 
 		public List<Class<RequestInterceptor>> getRequestInterceptors() {
-			return this.requestInterceptors;
+			return requestInterceptors;
 		}
 
 		public void setRequestInterceptors(
@@ -205,7 +204,7 @@ public class FeignClientProperties {
 		}
 
 		public Boolean getDecode404() {
-			return this.decode404;
+			return decode404;
 		}
 
 		public void setDecode404(Boolean decode404) {
@@ -213,7 +212,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<Decoder> getDecoder() {
-			return this.decoder;
+			return decoder;
 		}
 
 		public void setDecoder(Class<Decoder> decoder) {
@@ -221,7 +220,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<Encoder> getEncoder() {
-			return this.encoder;
+			return encoder;
 		}
 
 		public void setEncoder(Class<Encoder> encoder) {
@@ -229,7 +228,7 @@ public class FeignClientProperties {
 		}
 
 		public Class<Contract> getContract() {
-			return this.contract;
+			return contract;
 		}
 
 		public void setContract(Class<Contract> contract) {
@@ -254,31 +253,29 @@ public class FeignClientProperties {
 				return false;
 			}
 			FeignClientConfiguration that = (FeignClientConfiguration) o;
-			return this.loggerLevel == that.loggerLevel
-					&& Objects.equals(this.connectTimeout, that.connectTimeout)
-					&& Objects.equals(this.readTimeout, that.readTimeout)
-					&& Objects.equals(this.retryer, that.retryer)
-					&& Objects.equals(this.errorDecoder, that.errorDecoder)
-					&& Objects.equals(this.requestInterceptors, that.requestInterceptors)
-					&& Objects.equals(this.decode404, that.decode404)
-					&& Objects.equals(this.encoder, that.encoder)
-					&& Objects.equals(this.decoder, that.decoder)
-					&& Objects.equals(this.contract, that.contract)
-					&& Objects.equals(this.exceptionPropagationPolicy,
+			return loggerLevel == that.loggerLevel
+					&& Objects.equals(connectTimeout, that.connectTimeout)
+					&& Objects.equals(readTimeout, that.readTimeout)
+					&& Objects.equals(retryer, that.retryer)
+					&& Objects.equals(errorDecoder, that.errorDecoder)
+					&& Objects.equals(requestInterceptors, that.requestInterceptors)
+					&& Objects.equals(decode404, that.decode404)
+					&& Objects.equals(encoder, that.encoder)
+					&& Objects.equals(decoder, that.decoder)
+					&& Objects.equals(contract, that.contract)
+					&& Objects.equals(exceptionPropagationPolicy,
 							that.exceptionPropagationPolicy)
-					&& Objects.equals(this.defaultRequestHeaders,
-							that.defaultRequestHeaders)
-					&& Objects.equals(this.defaultQueryParameters,
+					&& Objects.equals(defaultRequestHeaders, that.defaultRequestHeaders)
+					&& Objects.equals(defaultQueryParameters,
 							that.defaultQueryParameters);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(this.loggerLevel, this.connectTimeout, this.readTimeout,
-					this.retryer, this.errorDecoder, this.requestInterceptors,
-					this.decode404, this.encoder, this.decoder, this.contract,
-					this.exceptionPropagationPolicy, this.defaultQueryParameters,
-					this.defaultRequestHeaders);
+			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer,
+					errorDecoder, requestInterceptors, decode404, encoder, decoder,
+					contract, exceptionPropagationPolicy, defaultQueryParameters,
+					defaultRequestHeaders);
 		}
 
 	}
