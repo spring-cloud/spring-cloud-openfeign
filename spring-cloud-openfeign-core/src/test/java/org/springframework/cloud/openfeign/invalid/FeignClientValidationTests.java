@@ -71,7 +71,7 @@ public class FeignClientValidationTests {
 	@EnableFeignClients(clients = NameAndServiceIdConfiguration.Client.class)
 	protected static class NameAndServiceIdConfiguration {
 
-		@FeignClient(name = "bar", serviceId = "foo")
+		@FeignClient(name = "bar")
 		interface Client {
 
 			@RequestMapping(method = RequestMethod.GET, value = "/")

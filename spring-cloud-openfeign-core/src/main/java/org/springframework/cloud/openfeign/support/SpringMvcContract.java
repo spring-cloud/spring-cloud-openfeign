@@ -401,25 +401,6 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		return false;
 	}
 
-	/**
-	 * @deprecated Not used internally anymore. Will be removed in the future.
-	 */
-	@Deprecated
-	public static class ConvertingExpander implements Param.Expander {
-
-		private final ConversionService conversionService;
-
-		public ConvertingExpander(ConversionService conversionService) {
-			this.conversionService = conversionService;
-		}
-
-		@Override
-		public String expand(Object value) {
-			return conversionService.convert(value, String.class);
-		}
-
-	}
-
 	private static class ConvertingExpanderFactory {
 
 		private final ConversionService conversionService;

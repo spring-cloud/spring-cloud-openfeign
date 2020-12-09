@@ -108,7 +108,7 @@ class ApacheHttpClientConfigurationTests {
 	@EnableFeignClients(clients = { ApacheHttpClientConfigurationTestApp.FooClient.class })
 	static class ApacheHttpClientConfigurationTestApp {
 
-		@FeignClient(name = "foo", serviceId = "foo")
+		@FeignClient(name = "foo")
 		interface FooClient {
 
 		}
