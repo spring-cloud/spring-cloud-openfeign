@@ -92,8 +92,6 @@ In this case the client is composed from the components already in `FeignClients
 
 NOTE: `FooConfiguration` does not need to be annotated with `@Configuration`. However, if it is, then take care to exclude it from any `@ComponentScan` that would otherwise include this configuration as it will become the default source for `feign.Decoder`, `feign.Encoder`, `feign.Contract`, etc., when specified. This can be avoided by putting it in a separate, non-overlapping package from any `@ComponentScan` or `@SpringBootApplication`, or it can be explicitly excluded in `@ComponentScan`.
 
-NOTE: The `serviceId` attribute is now deprecated in favor of the `name` attribute.
-
 NOTE: Using `contextId` attribute of the `@FeignClient` annotation in addition to changing the name of
 the `ApplicationContext` ensemble, it will override the alias of the client name
 and it will be used as part of the name of the configuration bean created for that client.
