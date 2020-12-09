@@ -39,6 +39,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.CompletionContext;
 import org.springframework.cloud.client.loadbalancer.DefaultRequestContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycle;
+import org.springframework.cloud.client.loadbalancer.ResponseData;
 import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
@@ -134,6 +135,7 @@ class FeignBlockingLoadBalancerClientTests {
 	@Test
 	void shouldExecuteLoadBalancerLifecycleCallbacks() throws IOException {
 		Request request = testRequest();
+		when(delegate.execute(any(), any())).thenReturn(Response.builder().status(200).request(request).build());
 		Request.Options options = new Request.Options();
 		String url = "http://127.0.0.1/path";
 		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test", "test-host", 8888, false);
@@ -148,7 +150,7 @@ class FeignBlockingLoadBalancerClientTests {
 		when(loadBalancerClientFactory.getInstances("test", LoadBalancerLifecycle.class))
 				.thenReturn(loadBalancerLifecycleBeans);
 
-		Object actualResult = feignBlockingLoadBalancerClient.execute(request, options);
+		feignBlockingLoadBalancerClient.execute(request, options);
 
 		Collection<org.springframework.cloud.client.loadbalancer.Request<Object>> lifecycleLogRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
 				.get("loadBalancerLifecycle")).getStartLog().values();
@@ -157,7 +159,9 @@ class FeignBlockingLoadBalancerClientTests {
 		assertThat(lifecycleLogRequests)
 				.extracting(lbRequest -> ((DefaultRequestContext) lbRequest.getContext()).getHint())
 				.contains(callbackTestHint);
-		assertThat(anotherLifecycleLogRequests).extracting(CompletionContext::getClientResponse).contains(actualResult);
+		assertThat(anotherLifecycleLogRequests)
+				.extracting(completionContext -> ((ResponseData) completionContext.getClientResponse()).getHttpStatus())
+				.contains(HttpStatus.OK);
 	}
 
 	private Request testRequest() {

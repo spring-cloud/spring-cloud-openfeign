@@ -35,7 +35,6 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.CompletionContext;
 import org.springframework.cloud.client.loadbalancer.DefaultRequest;
 import org.springframework.cloud.client.loadbalancer.DefaultResponse;
-import org.springframework.cloud.client.loadbalancer.HttpRequestContext;
 import org.springframework.cloud.client.loadbalancer.InterceptorRetryPolicy;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRecoveryCallback;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryContext;
@@ -44,6 +43,8 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryPolicy;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycle;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycleValidator;
+import org.springframework.cloud.client.loadbalancer.RequestData;
+import org.springframework.cloud.client.loadbalancer.ResponseData;
 import org.springframework.cloud.client.loadbalancer.RetryableRequestContext;
 import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
 import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
@@ -51,7 +52,6 @@ import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
@@ -107,7 +107,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			Set<LoadBalancerLifecycle> supportedLifecycleProcessors = LoadBalancerLifecycleValidator
 					.getSupportedLifecycleProcessors(
 							loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle.class),
-							HttpRequestContext.class, ClientHttpResponse.class, ServiceInstance.class);
+							RetryableRequestContext.class, RequestData.class, ServiceInstance.class);
 			// On retries the policy will choose the server and set it in the context
 			// and extract the server and update the request being made
 			if (context instanceof LoadBalancedRetryContext) {
@@ -136,9 +136,9 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 					}
 					org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
 							retrievedServiceInstance);
-					supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onComplete(
-							new CompletionContext<ClientHttpResponse, ServiceInstance>(CompletionContext.Status.DISCARD,
-									lbResponse)));
+					supportedLifecycleProcessors.forEach(
+							lifecycle -> lifecycle.onComplete(new CompletionContext<ResponseData, ServiceInstance>(
+									CompletionContext.Status.DISCARD, lbResponse)));
 					feignRequest = request;
 				}
 				else {

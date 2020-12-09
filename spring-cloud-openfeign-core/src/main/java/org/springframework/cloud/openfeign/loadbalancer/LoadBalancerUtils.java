@@ -17,6 +17,9 @@
 package org.springframework.cloud.openfeign.loadbalancer;
 
 import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 
 import feign.Client;
@@ -26,6 +29,11 @@ import feign.Response;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.CompletionContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycle;
+import org.springframework.cloud.client.loadbalancer.RequestData;
+import org.springframework.cloud.client.loadbalancer.ResponseData;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 
 /**
  * @author Olga Maciaszek-Sharma
@@ -45,8 +53,9 @@ final class LoadBalancerUtils {
 		try {
 			Response response = feignClient.execute(feignRequest, options);
 			if (loadBalanced) {
-				supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
-						.onComplete(new CompletionContext<>(CompletionContext.Status.SUCCESS, lbResponse, response)));
+				supportedLifecycleProcessors.forEach(
+						lifecycle -> lifecycle.onComplete(new CompletionContext<>(CompletionContext.Status.SUCCESS,
+								lbResponse, buildResponseData(response))));
 			}
 			return response;
 		}
@@ -57,6 +66,20 @@ final class LoadBalancerUtils {
 			}
 			throw exception;
 		}
+	}
+
+	static ResponseData buildResponseData(Response response) {
+		HttpHeaders responseHeaders = new HttpHeaders();
+		response.headers().forEach((key, value) -> responseHeaders.put(key, new ArrayList<>(value)));
+		return new ResponseData(HttpStatus.resolve(response.status()), responseHeaders, null,
+				buildRequestData(response.request()));
+	}
+
+	static RequestData buildRequestData(Request request) {
+		HttpHeaders requestHeaders = new HttpHeaders();
+		request.headers().forEach((key, value) -> requestHeaders.put(key, new ArrayList<>(value)));
+		return new RequestData(HttpMethod.resolve(request.httpMethod().name()), URI.create(request.url()),
+				requestHeaders, null, new HashMap<>());
 	}
 
 	static Response executeWithLoadBalancerLifecycleProcessing(Client feignClient, Request.Options options,

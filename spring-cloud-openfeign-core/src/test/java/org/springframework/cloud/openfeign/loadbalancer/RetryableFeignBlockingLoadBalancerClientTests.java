@@ -41,11 +41,13 @@ import org.springframework.cloud.client.loadbalancer.CompletionContext;
 import org.springframework.cloud.client.loadbalancer.DefaultRequestContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycle;
+import org.springframework.cloud.client.loadbalancer.ResponseData;
 import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.loadbalancer.blocking.retry.BlockingLoadBalancedRetryPolicy;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -192,7 +194,7 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		when(loadBalancerClientFactory.getInstances("test", LoadBalancerLifecycle.class))
 				.thenReturn(loadBalancerLifecycleBeans);
 
-		Object actualResult = feignBlockingLoadBalancerClient.execute(request, options);
+		feignBlockingLoadBalancerClient.execute(request, options);
 
 		Collection<org.springframework.cloud.client.loadbalancer.Request<Object>> lifecycleLogRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
 				.get("loadBalancerLifecycle")).getStartLog().values();
@@ -201,7 +203,9 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		assertThat(lifecycleLogRequests)
 				.extracting(lbRequest -> ((DefaultRequestContext) lbRequest.getContext()).getHint())
 				.contains(callbackTestHint);
-		assertThat(anotherLifecycleLogRequests).extracting(CompletionContext::getClientResponse).contains(actualResult);
+		assertThat(anotherLifecycleLogRequests)
+				.extracting(completionContext -> ((ResponseData) completionContext.getClientResponse()).getHttpStatus())
+				.contains(HttpStatus.OK);
 	}
 
 	private Request testRequest() {
