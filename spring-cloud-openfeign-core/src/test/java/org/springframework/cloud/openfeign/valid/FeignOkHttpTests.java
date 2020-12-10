@@ -26,9 +26,11 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
 import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClients;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
+import org.springframework.cloud.loadbalancer.support.ServiceInstanceListSuppliers;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
@@ -36,7 +38,6 @@ import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -245,8 +246,9 @@ class FeignOkHttpTests {
 		private int port = 0;
 
 		@Bean
-		public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
-			return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier() {
+			return ServiceInstanceListSuppliers.from("local",
+					new DefaultServiceInstance("local-1", "local", "localhost", port, false));
 		}
 
 	}

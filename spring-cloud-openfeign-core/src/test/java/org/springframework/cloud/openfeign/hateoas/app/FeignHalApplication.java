@@ -19,13 +19,14 @@ package org.springframework.cloud.openfeign.hateoas.app;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
+import org.springframework.cloud.loadbalancer.support.ServiceInstanceListSuppliers;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 
 /**
  * Test HATEOAS application.
@@ -49,8 +50,9 @@ class LocalHalClientConfiguration {
 	private int port = 0;
 
 	@Bean
-	public ServiceInstanceListSupplier staticServiceInstanceListSupplier(Environment env) {
-		return ServiceInstanceListSupplier.fixed(env).instance(port, "local").build();
+	public ServiceInstanceListSupplier staticServiceInstanceListSupplier() {
+		return ServiceInstanceListSuppliers.from("local",
+				new DefaultServiceInstance("local-1", "local", "localhost", port, false));
 	}
 
 }
