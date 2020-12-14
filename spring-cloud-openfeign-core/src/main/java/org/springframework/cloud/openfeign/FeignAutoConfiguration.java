@@ -27,6 +27,7 @@ import javax.annotation.PreDestroy;
 
 import feign.Client;
 import feign.Feign;
+import feign.RequestInterceptor;
 import feign.httpclient.ApacheHttpClient;
 import feign.okhttp.OkHttpClient;
 import okhttp3.ConnectionPool;
@@ -39,6 +40,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -48,11 +50,14 @@ import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionMa
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
+import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 
 /**
  * @author Spencer Gibb
@@ -205,6 +210,21 @@ public class FeignAutoConfiguration {
 		@ConditionalOnMissingBean(Client.class)
 		public Client feignClient(okhttp3.OkHttpClient client) {
 			return new OkHttpClient(client);
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(OAuth2ClientContext.class)
+	@ConditionalOnProperty("feign.oauth2.enabled")
+	protected static class Oauth2FeignConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean(OAuth2FeignRequestInterceptor.class)
+		@ConditionalOnBean({ OAuth2ClientContext.class, OAuth2ProtectedResourceDetails.class })
+		public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2ClientContext oAuth2ClientContext,
+				OAuth2ProtectedResourceDetails resource) {
+			return new OAuth2FeignRequestInterceptor(oAuth2ClientContext, resource);
 		}
 
 	}
