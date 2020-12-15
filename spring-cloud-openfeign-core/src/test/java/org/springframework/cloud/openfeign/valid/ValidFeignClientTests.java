@@ -97,7 +97,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 @SpringBootTest(classes = ValidFeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest",
 				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
-				"feign.okhttp.enabled=false", "feign.hystrix.enabled=true",
+				"feign.okhttp.enabled=false", "feign.circuitbreaker.enabled=true",
 				"spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
 class ValidFeignClientTests {

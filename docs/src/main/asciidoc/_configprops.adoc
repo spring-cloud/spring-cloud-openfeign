@@ -1,6 +1,7 @@
 |===
 |Name | Default | Description
 
+|feign.circuitbreaker.enabled | `false` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
 |feign.client.config |  | 
 |feign.client.decode-slash | `true` | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
 |feign.client.default-config | `default` | 
@@ -19,7 +20,6 @@
 |feign.httpclient.max-connections-per-route | `50` | 
 |feign.httpclient.time-to-live | `900` | 
 |feign.httpclient.time-to-live-unit |  | 
-|feign.hystrix.enabled | `false` | If true, an OpenFeign client will be wrapped with a Hystrix circuit breaker.
 |feign.okhttp.enabled | `false` | Enables the use of the OK HTTP Client by Feign.
 
 |===

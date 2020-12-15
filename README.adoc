@@ -28,6 +28,8 @@ image:https://api.codacy.com/project/badge/Grade/97b04c4e609c4b4f86b415e4437a648
 :project-full-name: Spring Cloud OpenFeign
 :all: {asterisk}{asterisk}
 
+:core_path: {project-root}/spring-cloud-openfeign-core
+
 This project provides OpenFeign integrations for Spring Boot apps through autoconfiguration
 and binding to the Spring Environment and other Spring programming model idioms.
 

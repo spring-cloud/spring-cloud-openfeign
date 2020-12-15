@@ -14,3 +14,5 @@
 :sc-ext: java
 :project-full-name: Spring Cloud OpenFeign
 :all: {asterisk}{asterisk}
+
+:core_path: {project-root}/spring-cloud-openfeign-core

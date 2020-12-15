@@ -114,7 +114,7 @@ Spring Cloud OpenFeign provides the following beans by default for feign (`BeanT
 * `Encoder` feignEncoder: `SpringEncoder`
 * `Logger` feignLogger: `Slf4jLogger`
 * `Contract` feignContract: `SpringMvcContract`
-* `Feign.Builder` feignBuilder: `HystrixFeign.Builder`
+* `Feign.Builder` feignBuilder: `FeignCircuitBreaker.Builder`
 * `Client` feignClient: if Spring Cloud LoadBalancer is in the classpath, `FeignBlockingLoadBalancerClient` is used.
 If none of them is in the classpath, the default feign client is used.
 
@@ -205,26 +205,6 @@ feign:
 If we create both `@Configuration` bean and configuration properties, configuration properties will win.
 It will override `@Configuration` values. But if you want to change the priority to `@Configuration`,
 you can change `feign.client.default-to-properties` to `false`.
-
-NOTE: If you need to use `ThreadLocal` bound variables in your `RequestInterceptor`s you will need to either set the
-thread isolation strategy for Hystrix to `SEMAPHORE` or disable Hystrix in Feign.
-
-application.yml
-[source,yaml]
-----
-# To disable Hystrix in Feign
-feign:
-  hystrix:
-    enabled: false
-
-# To set thread isolation to SEMAPHORE
-hystrix:
-  command:
-    default:
-      execution:
-        isolation:
-          strategy: SEMAPHORE
-----
 
 If we want to create multiple feign clients with the same name or url
 so that they would point to the same server but each with a different custom configuration then
@@ -330,12 +310,12 @@ the default Feign native annotations.
 You can also use the `Builder`to configure FeignClient not to inherit beans from the parent context.
 You can do this by overriding calling `inheritParentContext(false)` on the `Builder`.
 
-[[spring-cloud-feign-hystrix]]
-=== Feign Hystrix Support
+[[spring-cloud-feign-circuitbreaker]]
+=== Feign Spring Cloud CircuitBreaker Support
 
-If Hystrix is on the classpath and `feign.hystrix.enabled=true`, Feign will wrap all methods with a circuit breaker. Returning a `com.netflix.hystrix.HystrixCommand` is also available. This lets you use reactive patterns (with a call to `.toObservable()` or `.observe()` or asynchronous use (with a call to `.queue()`).
+If Spring Cloud CircuitBreaker is on the classpath and `feign.circuitbreaker.enabled=true`, Feign will wrap all methods with a circuit breaker.
 
-To disable Hystrix support on a per-client basis create a vanilla `Feign.Builder` with the "prototype" scope, e.g.:
+To disable Spring Cloud CircuitBreaker support on a per-client basis create a vanilla `Feign.Builder` with the "prototype" scope, e.g.:
 
 [source,java,indent=0]
 ----
@@ -349,60 +329,26 @@ public class FooConfiguration {
 }
 ----
 
-WARNING:  Prior to the Spring Cloud Dalston release, if Hystrix was on the classpath Feign would have wrapped
-all methods in a circuit breaker by default.  This default behavior was changed in Spring Cloud Dalston in
-favor for an opt-in approach.
+[[spring-cloud-feign-circuitbreaker-fallback]]
+=== Feign Spring Cloud CircuitBreaker Fallbacks
 
-[[spring-cloud-feign-hystrix-fallback]]
-=== Feign Hystrix Fallbacks
-
-Hystrix supports the notion of a fallback: a default code path that is executed when they circuit is open or there is an error. To enable fallbacks for a given `@FeignClient` set the `fallback` attribute to the class name that implements the fallback. You also need to declare your implementation as a Spring bean.
+Spring Cloud CircuitBreaker supports the notion of a fallback: a default code path that is executed when they circuit is open or there is an error. To enable fallbacks for a given `@FeignClient` set the `fallback` attribute to the class name that implements the fallback. You also need to declare your implementation as a Spring bean.
 
 [source,java,indent=0]
 ----
-@FeignClient(name = "hello", fallback = HystrixClientFallback.class)
-protected interface HystrixClient {
-    @RequestMapping(method = RequestMethod.GET, value = "/hello")
-    Hello iFailSometimes();
-}
-
-static class HystrixClientFallback implements HystrixClient {
-    @Override
-    public Hello iFailSometimes() {
-        return new Hello("fallback");
-    }
-}
+include::{core_path}/src/test/java/org/springframework/cloud/openfeign/circuitbreaker/CirciutBreakerTests.java[tags=client_with_fallback, indent=0]
 ----
 
 If one needs access to the cause that made the fallback trigger, one can use the `fallbackFactory` attribute inside `@FeignClient`.
 
 [source,java,indent=0]
 ----
-@FeignClient(name = "hello", fallbackFactory = HystrixClientFallbackFactory.class)
-protected interface HystrixClient {
-	@RequestMapping(method = RequestMethod.GET, value = "/hello")
-	Hello iFailSometimes();
-}
-
-@Component
-static class HystrixClientFallbackFactory implements FallbackFactory<HystrixClient> {
-	@Override
-	public HystrixClient create(Throwable cause) {
-		return new HystrixClient() {
-			@Override
-			public Hello iFailSometimes() {
-				return new Hello("fallback; reason was: " + cause.getMessage());
-			}
-		};
-	}
-}
+include::{core_path}/src/test/java/org/springframework/cloud/openfeign/circuitbreaker/CirciutBreakerTests.java[tags=client_with_fallback_factory, indent=0]
 ----
-
-WARNING: There is a limitation with the implementation of fallbacks in Feign and how Hystrix fallbacks work. Fallbacks are currently not supported for methods that return `com.netflix.hystrix.HystrixCommand` and `rx.Observable`.
 
 === Feign and `@Primary`
 
-When using Feign with Hystrix fallbacks, there are multiple beans in the `ApplicationContext` of the same type. This will cause `@Autowired` to not work because there isn't exactly one bean, or one marked as primary. To work around this, Spring Cloud OpenFeign marks all Feign instances as `@Primary`, so Spring Framework will know which bean to inject. In some cases, this may not be desirable. To turn off this behavior set the `primary` attribute of `@FeignClient` to false.
+When using Feign with Spring Cloud CircuitBreaker fallbacks, there are multiple beans in the `ApplicationContext` of the same type. This will cause `@Autowired` to not work because there isn't exactly one bean, or one marked as primary. To work around this, Spring Cloud OpenFeign marks all Feign instances as `@Primary`, so Spring Framework will know which bean to inject. In some cases, this may not be desirable. To turn off this behavior set the `primary` attribute of `@FeignClient` to false.
 
 [source,java,indent=0]
 ----
