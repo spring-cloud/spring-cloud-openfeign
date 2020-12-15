@@ -109,6 +109,7 @@ public @interface FeignClient {
 	 * annotated by {@link FeignClient}. The fallback factory must be a valid spring bean.
 	 *
 	 * @see feign.hystrix.FallbackFactory for details.
+	 * @see FallbackFactory for details.
 	 * @return fallback factory for the specified Feign client interface
 	 */
 	Class<?> fallbackFactory() default void.class;

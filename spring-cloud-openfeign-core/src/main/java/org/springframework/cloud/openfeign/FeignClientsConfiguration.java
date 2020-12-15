@@ -35,12 +35,15 @@ import feign.optionals.OptionalDecoder;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.support.AbstractFormWriter;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
@@ -208,6 +211,28 @@ public class FeignClientsConfiguration {
 			MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(
 					MULTIPART);
 			processor.addFirstWriter(formWriter);
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(CircuitBreaker.class)
+	@ConditionalOnProperty("feign.circuitbreaker.enabled")
+	protected static class CircuitBreakerPresentFeignBuilderConfiguration {
+
+		@Bean
+		@Scope("prototype")
+		@ConditionalOnMissingBean({ Feign.Builder.class, CircuitBreakerFactory.class })
+		public Feign.Builder defaultFeignBuilder(Retryer retryer) {
+			return Feign.builder().retryer(retryer);
+		}
+
+		@Bean
+		@Scope("prototype")
+		@ConditionalOnMissingBean
+		@ConditionalOnBean(CircuitBreakerFactory.class)
+		public Feign.Builder circuitBreakerFeignBuilder() {
+			return FeignCircuitBreaker.builder();
 		}
 
 	}
