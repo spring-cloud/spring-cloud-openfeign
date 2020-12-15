@@ -39,11 +39,14 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.actuator.HasFeatures;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionManagerFactory;
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
@@ -51,6 +54,7 @@ import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -82,12 +86,33 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
+	@Conditional(FeignCircuitBreakerDisabledConditions.class)
 	protected static class DefaultFeignTargeterConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
 		public Targeter feignTargeter() {
 			return new DefaultTargeter();
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(CircuitBreaker.class)
+	@ConditionalOnProperty("feign.circuitbreaker.enabled")
+	protected static class CircuitBreakerPresentFeignTargeterConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean(CircuitBreakerFactory.class)
+		public Targeter defaultFeignTargeter() {
+			return new DefaultTargeter();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		@ConditionalOnBean(CircuitBreakerFactory.class)
+		public Targeter circuitBreakerFeignTargeter(CircuitBreakerFactory circuitBreakerFactory) {
+			return new FeignCircuitBreakerTargeter(circuitBreakerFactory);
 		}
 
 	}

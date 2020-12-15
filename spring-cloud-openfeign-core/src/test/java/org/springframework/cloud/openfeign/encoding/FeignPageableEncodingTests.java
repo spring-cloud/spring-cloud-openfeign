@@ -56,9 +56,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Charlie Mordant.
  */
 @SpringBootTest(classes = FeignPageableEncodingTests.Application.class, webEnvironment = RANDOM_PORT,
-		value = { "feign.compression.request.enabled=true",
-				"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
-				"ribbon.OkToRetryOnAllOperations=false" })
+		value = { "feign.compression.request.enabled=true", "ribbon.OkToRetryOnAllOperations=false" })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FeignPageableEncodingTests {
 

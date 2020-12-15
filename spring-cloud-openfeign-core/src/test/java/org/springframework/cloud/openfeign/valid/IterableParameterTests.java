@@ -51,7 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = IterableParameterTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=iterableparametertest",
 				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
-				"feign.okhttp.enabled=false", "feign.hystrix.enabled=false" })
+				"feign.okhttp.enabled=false", "feign.circuitbreaker.enabled=false" })
 @DirtiesContext
 public class IterableParameterTests {
 

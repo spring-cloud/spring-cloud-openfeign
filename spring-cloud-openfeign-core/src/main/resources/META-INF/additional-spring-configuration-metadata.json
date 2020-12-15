@@ -3,9 +3,9 @@
 	],
 	"properties": [
 		{
-			"name": "feign.hystrix.enabled",
+			"name": "feign.circuitbreaker.enabled",
 			"type": "java.lang.Boolean",
-			"description": "If true, an OpenFeign client will be wrapped with a Hystrix circuit breaker.",
+			"description": "If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.",
 			"defaultValue": "false"
 		},
 		{
