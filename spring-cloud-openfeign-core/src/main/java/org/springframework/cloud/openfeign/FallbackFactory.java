@@ -55,6 +55,7 @@ public interface FallbackFactory<T> {
 	T create(Throwable cause);
 
 	final class Default<T> implements FallbackFactory<T> {
+
 		final Log logger;
 
 		final T constant;
