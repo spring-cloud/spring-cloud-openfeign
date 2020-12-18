@@ -93,15 +93,15 @@ public class FeignBlockingLoadBalancerClient implements Client {
 			if (LOG.isWarnEnabled()) {
 				LOG.warn(message);
 			}
-			supportedLifecycleProcessors
-					.forEach(lifecycle -> lifecycle.onComplete(new CompletionContext<ResponseData, ServiceInstance>(
-							CompletionContext.Status.DISCARD, lbResponse)));
+			supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
+					.onComplete(new CompletionContext<ResponseData, ServiceInstance, RequestDataContext>(
+							CompletionContext.Status.DISCARD, lbResponse, lbRequest)));
 			return Response.builder().request(request).status(HttpStatus.SERVICE_UNAVAILABLE.value())
 					.body(message, StandardCharsets.UTF_8).build();
 		}
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri).toString();
 		Request newRequest = buildRequest(request, reconstructedUrl);
-		return executeWithLoadBalancerLifecycleProcessing(delegate, options, newRequest, lbResponse,
+		return executeWithLoadBalancerLifecycleProcessing(delegate, options, newRequest, lbResponse, lbRequest,
 				supportedLifecycleProcessors);
 	}
 
