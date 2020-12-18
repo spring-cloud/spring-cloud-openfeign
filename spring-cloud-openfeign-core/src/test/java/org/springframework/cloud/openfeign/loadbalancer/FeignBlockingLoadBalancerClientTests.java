@@ -37,9 +37,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.CompletionContext;
-import org.springframework.cloud.client.loadbalancer.DefaultRequestContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycle;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
+import org.springframework.cloud.client.loadbalancer.RequestDataContext;
 import org.springframework.cloud.client.loadbalancer.ResponseData;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
@@ -152,15 +152,18 @@ class FeignBlockingLoadBalancerClientTests {
 
 		feignBlockingLoadBalancerClient.execute(request, options);
 
-		Collection<org.springframework.cloud.client.loadbalancer.Request<Object>> lifecycleLogRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
+		Collection<org.springframework.cloud.client.loadbalancer.Request<RequestDataContext>> lifecycleLogRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
 				.get("loadBalancerLifecycle")).getStartLog().values();
-		Collection<CompletionContext<Object, ServiceInstance>> anotherLifecycleLogRequests = ((AnotherLoadBalancerLifecycle) loadBalancerLifecycleBeans
+		Collection<org.springframework.cloud.client.loadbalancer.Request<RequestDataContext>> lifecycleLogStartedRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
+				.get("loadBalancerLifecycle")).getStartRequestLog().values();
+		Collection<CompletionContext<ResponseData, ServiceInstance, RequestDataContext>> anotherLifecycleLogRequests = ((AnotherLoadBalancerLifecycle) loadBalancerLifecycleBeans
 				.get("anotherLoadBalancerLifecycle")).getCompleteLog().values();
-		assertThat(lifecycleLogRequests)
-				.extracting(lbRequest -> ((DefaultRequestContext) lbRequest.getContext()).getHint())
+		assertThat(lifecycleLogRequests).extracting(lbRequest -> lbRequest.getContext().getHint())
+				.contains(callbackTestHint);
+		assertThat(lifecycleLogStartedRequests).extracting(lbRequest -> lbRequest.getContext().getHint())
 				.contains(callbackTestHint);
 		assertThat(anotherLifecycleLogRequests)
-				.extracting(completionContext -> ((ResponseData) completionContext.getClientResponse()).getHttpStatus())
+				.extracting(completionContext -> completionContext.getClientResponse().getHttpStatus())
 				.contains(HttpStatus.OK);
 	}
 
@@ -180,28 +183,41 @@ class FeignBlockingLoadBalancerClientTests {
 
 	}
 
-	protected static class TestLoadBalancerLifecycle implements LoadBalancerLifecycle<Object, Object, ServiceInstance> {
+	protected static class TestLoadBalancerLifecycle
+			implements LoadBalancerLifecycle<RequestDataContext, ResponseData, ServiceInstance> {
 
-		final ConcurrentHashMap<String, org.springframework.cloud.client.loadbalancer.Request<Object>> startLog = new ConcurrentHashMap<>();
+		final Map<String, org.springframework.cloud.client.loadbalancer.Request<RequestDataContext>> startLog = new ConcurrentHashMap<>();
 
-		final ConcurrentHashMap<String, CompletionContext<Object, ServiceInstance>> completeLog = new ConcurrentHashMap<>();
+		final Map<String, org.springframework.cloud.client.loadbalancer.Request<RequestDataContext>> startRequestLog = new ConcurrentHashMap<>();
+
+		final Map<String, CompletionContext<ResponseData, ServiceInstance, RequestDataContext>> completeLog = new ConcurrentHashMap<>();
 
 		@Override
-		public void onStart(org.springframework.cloud.client.loadbalancer.Request<Object> request) {
+		public void onStart(org.springframework.cloud.client.loadbalancer.Request<RequestDataContext> request) {
 			startLog.put(getName() + UUID.randomUUID(), request);
 		}
 
 		@Override
-		public void onComplete(CompletionContext<Object, ServiceInstance> completionContext) {
+		public void onStartRequest(org.springframework.cloud.client.loadbalancer.Request<RequestDataContext> request,
+				org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse) {
+			startRequestLog.put(getName() + UUID.randomUUID(), request);
+		}
+
+		@Override
+		public void onComplete(CompletionContext<ResponseData, ServiceInstance, RequestDataContext> completionContext) {
 			completeLog.put(getName() + UUID.randomUUID(), completionContext);
 		}
 
-		ConcurrentHashMap<String, org.springframework.cloud.client.loadbalancer.Request<Object>> getStartLog() {
+		Map<String, org.springframework.cloud.client.loadbalancer.Request<RequestDataContext>> getStartLog() {
 			return startLog;
 		}
 
-		ConcurrentHashMap<String, CompletionContext<Object, ServiceInstance>> getCompleteLog() {
+		Map<String, CompletionContext<ResponseData, ServiceInstance, RequestDataContext>> getCompleteLog() {
 			return completeLog;
+		}
+
+		Map<String, org.springframework.cloud.client.loadbalancer.Request<RequestDataContext>> getStartRequestLog() {
+			return startRequestLog;
 		}
 
 		protected String getName() {

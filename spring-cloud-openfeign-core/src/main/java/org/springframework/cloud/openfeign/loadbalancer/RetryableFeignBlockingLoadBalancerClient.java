@@ -44,7 +44,6 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycle;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycleValidator;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
-import org.springframework.cloud.client.loadbalancer.RequestData;
 import org.springframework.cloud.client.loadbalancer.ResponseData;
 import org.springframework.cloud.client.loadbalancer.RetryableRequestContext;
 import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
@@ -59,7 +58,7 @@ import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 
-import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing;
+import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils.buildRequestData;
 
 /**
  * A {@link Client} implementation that provides Spring Retry support for requests
@@ -107,7 +106,10 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			Set<LoadBalancerLifecycle> supportedLifecycleProcessors = LoadBalancerLifecycleValidator
 					.getSupportedLifecycleProcessors(
 							loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle.class),
-							RetryableRequestContext.class, RequestData.class, ServiceInstance.class);
+							RetryableRequestContext.class, ResponseData.class, ServiceInstance.class);
+			String hint = getHint(serviceId);
+			DefaultRequest<RetryableRequestContext> lbRequest = new DefaultRequest<>(
+					new RetryableRequestContext(null, buildRequestData(request), hint));
 			// On retries the policy will choose the server and set it in the context
 			// and extract the server and update the request being made
 			if (context instanceof LoadBalancedRetryContext) {
@@ -119,9 +121,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 								+ "Reattempting service instance selection");
 					}
 					ServiceInstance previousServiceInstance = lbContext.getPreviousServiceInstance();
-					String hint = getHint(serviceId);
-					DefaultRequest<RetryableRequestContext> lbRequest = new DefaultRequest<>(
-							new RetryableRequestContext(previousServiceInstance, request, hint));
+					lbRequest.getContext().setPreviousServiceInstance(previousServiceInstance);
 					supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
 					retrievedServiceInstance = loadBalancerClient.choose(serviceId, lbRequest);
 					if (LOG.isDebugEnabled()) {
@@ -136,9 +136,9 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 					}
 					org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
 							retrievedServiceInstance);
-					supportedLifecycleProcessors.forEach(
-							lifecycle -> lifecycle.onComplete(new CompletionContext<ResponseData, ServiceInstance>(
-									CompletionContext.Status.DISCARD, lbResponse)));
+					supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
+							.onComplete(new CompletionContext<ResponseData, ServiceInstance, RetryableRequestContext>(
+									CompletionContext.Status.DISCARD, lbRequest, lbResponse)));
 					feignRequest = request;
 				}
 				else {
@@ -153,8 +153,9 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			}
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
 					retrievedServiceInstance);
-			Response response = executeWithLoadBalancerLifecycleProcessing(delegate, options, feignRequest, lbResponse,
-					supportedLifecycleProcessors, retrievedServiceInstance != null);
+			Response response = LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing(delegate, options,
+					feignRequest, lbRequest, lbResponse, supportedLifecycleProcessors,
+					retrievedServiceInstance != null);
 			int responseStatus = response.status();
 			if (retryPolicy != null && retryPolicy.retryableStatusCode(responseStatus)) {
 				if (LOG.isDebugEnabled()) {
