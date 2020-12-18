@@ -101,7 +101,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		}
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri).toString();
 		Request newRequest = buildRequest(request, reconstructedUrl);
-		return executeWithLoadBalancerLifecycleProcessing(delegate, options, newRequest, lbResponse, lbRequest,
+		return executeWithLoadBalancerLifecycleProcessing(delegate, options, newRequest, lbRequest, lbResponse,
 				supportedLifecycleProcessors);
 	}
 
