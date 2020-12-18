@@ -57,14 +57,14 @@ final class LoadBalancerUtils {
 			if (loadBalanced) {
 				supportedLifecycleProcessors.forEach(
 						lifecycle -> lifecycle.onComplete(new CompletionContext<>(CompletionContext.Status.SUCCESS,
-								lbResponse, buildResponseData(response), lbRequest)));
+								lbRequest, lbResponse, buildResponseData(response))));
 			}
 			return response;
 		}
 		catch (Exception exception) {
 			if (loadBalanced) {
 				supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onComplete(
-						new CompletionContext<>(CompletionContext.Status.FAILED, exception, lbResponse, lbRequest)));
+						new CompletionContext<>(CompletionContext.Status.FAILED, exception, lbRequest, lbResponse)));
 			}
 			throw exception;
 		}

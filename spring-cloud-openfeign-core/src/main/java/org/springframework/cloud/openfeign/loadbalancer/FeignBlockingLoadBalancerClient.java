@@ -95,7 +95,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 			}
 			supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
 					.onComplete(new CompletionContext<ResponseData, ServiceInstance, RequestDataContext>(
-							CompletionContext.Status.DISCARD, lbResponse, lbRequest)));
+							CompletionContext.Status.DISCARD, lbRequest, lbResponse)));
 			return Response.builder().request(request).status(HttpStatus.SERVICE_UNAVAILABLE.value())
 					.body(message, StandardCharsets.UTF_8).build();
 		}

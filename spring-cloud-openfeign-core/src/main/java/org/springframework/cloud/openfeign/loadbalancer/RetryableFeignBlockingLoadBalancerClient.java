@@ -138,7 +138,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 							retrievedServiceInstance);
 					supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
 							.onComplete(new CompletionContext<ResponseData, ServiceInstance, RetryableRequestContext>(
-									CompletionContext.Status.DISCARD, lbResponse, lbRequest)));
+									CompletionContext.Status.DISCARD, lbRequest, lbResponse)));
 					feignRequest = request;
 				}
 				else {
