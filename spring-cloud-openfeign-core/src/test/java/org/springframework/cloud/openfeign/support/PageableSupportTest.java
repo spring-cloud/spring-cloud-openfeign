@@ -16,46 +16,40 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
+import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
+import org.springframework.cloud.loadbalancer.support.ServiceInstanceListSuppliers;
 import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.util.SocketUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
  * @author Olga Maciaszek-Sharma
  */
-@SpringBootTest(classes = PageableSupportTest.Config.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = PageableSupportTest.Config.class, webEnvironment = RANDOM_PORT)
 public class PageableSupportTest {
 
 	@Autowired
 	private PageableFeignClient feignClient;
-
-	@BeforeAll
-	public static void beforeClass() {
-		System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
-	}
-
-	@AfterAll
-	public static void afterClass() {
-		System.clearProperty("server.port");
-	}
 
 	@Test
 	void shouldProperlyFormatPageable() {
@@ -64,7 +58,7 @@ public class PageableSupportTest {
 		assertThat(direction).isEqualTo("DESC");
 	}
 
-	@FeignClient(name = "pageable", url = "http://localhost:${server.port}/")
+	@FeignClient("pageable")
 	protected interface PageableFeignClient {
 
 		@CollectionFormat(feign.CollectionFormat.CSV)
@@ -79,11 +73,27 @@ public class PageableSupportTest {
 	@RestController
 	@EnableFeignClients(clients = PageableFeignClient.class)
 	@Import(NoSecurityConfiguration.class)
+	@LoadBalancerClient(name = "pageable", configuration = LocalClientConfiguration.class)
 	protected static class Config {
 
 		@GetMapping(path = "/page")
 		String performRequest(Pageable page) {
 			return page.getSort().getOrderFor("property").getDirection().toString();
+		}
+
+	}
+
+	// Load balancer with fixed server list for "local" pointing to localhost
+	@Configuration(proxyBeanMethods = false)
+	static class LocalClientConfiguration {
+
+		@LocalServerPort
+		private int port = 0;
+
+		@Bean
+		public ServiceInstanceListSupplier staticServiceInstanceListSupplier() {
+			return ServiceInstanceListSuppliers.from("pageable",
+					new DefaultServiceInstance("pageable-1", "pageable", "localhost", port, false));
 		}
 
 	}
