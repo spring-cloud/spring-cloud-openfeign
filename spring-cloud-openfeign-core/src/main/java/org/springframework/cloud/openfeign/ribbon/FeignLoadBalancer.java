@@ -33,6 +33,7 @@ import com.netflix.client.RetryHandler;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.reactive.LoadBalancerCommand;
 import feign.Client;
 import feign.Request;
 import feign.Response;
@@ -91,6 +92,11 @@ public class FeignLoadBalancer extends
 		}
 		Response response = request.client().execute(request.toRequest(), options);
 		return new RibbonResponse(request.getUri(), response);
+	}
+
+	@Override
+	protected void customizeLoadBalancerCommandBuilder(RibbonRequest request, IClientConfig config, LoadBalancerCommand.Builder<RibbonResponse> builder) {
+		builder.withServerLocator(request.request.headers().get("loadBalancerKey"));
 	}
 
 	@Override
