@@ -26,10 +26,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
@@ -49,18 +49,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 		"feign.client.config.default.requestInterceptors[1]=org.springframework.cloud.openfeign.FeignClientUsingPropertiesTests.BarRequestInterceptor" })
 public class FeignClientUsingConfigurerTest {
 
-	private static final String BEAN_NAME_PREFIX = "&org.springframework.cloud.openfeign.FeignClientUsingConfigurerTest$";
+	private static final String BEAN_NAME_PREFIX = "org.springframework.cloud.openfeign.FeignClientUsingConfigurerTest$";
 
 	@Autowired
-	private ApplicationContext applicationContext;
+	private ConfigurableListableBeanFactory beanFactory;
 
 	@Autowired
 	private FeignContext context;
 
 	@Test
 	public void testFeignClient() {
-		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) applicationContext
-				.getBean(BEAN_NAME_PREFIX + "TestFeignClient");
+		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
+				.getBeanDefinition(BEAN_NAME_PREFIX + "TestFeignClient")
+				.getAttribute("feignClientsRegistrarFactoryBean");
 		Feign.Builder builder = factoryBean.feign(context);
 
 		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder, "requestInterceptors");
@@ -77,8 +78,9 @@ public class FeignClientUsingConfigurerTest {
 
 	@Test
 	public void testNoInheritFeignClient() {
-		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) applicationContext
-				.getBean(BEAN_NAME_PREFIX + "NoInheritFeignClient");
+		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
+				.getBeanDefinition(BEAN_NAME_PREFIX + "NoInheritFeignClient")
+				.getAttribute("feignClientsRegistrarFactoryBean");
 		Feign.Builder builder = factoryBean.feign(context);
 
 		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder, "requestInterceptors");
@@ -89,8 +91,9 @@ public class FeignClientUsingConfigurerTest {
 
 	@Test
 	public void testNoInheritFeignClient_ignoreProperties() {
-		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) applicationContext
-				.getBean(BEAN_NAME_PREFIX + "NoInheritFeignClient");
+		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
+				.getBeanDefinition(BEAN_NAME_PREFIX + "NoInheritFeignClient")
+				.getAttribute("feignClientsRegistrarFactoryBean");
 		Feign.Builder builder = factoryBean.feign(context);
 
 		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set").isEqualTo(Logger.Level.HEADERS);

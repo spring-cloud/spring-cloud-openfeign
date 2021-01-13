@@ -30,6 +30,9 @@ import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.config.BeanExpressionContext;
+import org.springframework.beans.factory.config.BeanExpressionResolver;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
@@ -194,23 +197,40 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	private void registerFeignClient(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata,
 			Map<String, Object> attributes) {
 		String className = annotationMetadata.getClassName();
-		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(FeignClientFactoryBean.class);
-		validate(attributes);
-		definition.addPropertyValue("url", getUrl(attributes));
-		definition.addPropertyValue("path", getPath(attributes));
+		Class clazz = ClassUtils.resolveClassName(className, null);
+		ConfigurableBeanFactory beanFactory = registry instanceof ConfigurableBeanFactory
+				? (ConfigurableBeanFactory) registry : null;
+		String contextId = getContextId(beanFactory, attributes);
 		String name = getName(attributes);
-		definition.addPropertyValue("name", name);
-		String contextId = getContextId(attributes);
-		definition.addPropertyValue("contextId", contextId);
-		definition.addPropertyValue("type", className);
-		definition.addPropertyValue("decode404", attributes.get("decode404"));
-		definition.addPropertyValue("fallback", attributes.get("fallback"));
-		definition.addPropertyValue("fallbackFactory", attributes.get("fallbackFactory"));
+		FeignClientFactoryBean factoryBean = new FeignClientFactoryBean();
+		factoryBean.setBeanFactory(beanFactory);
+		factoryBean.setName(name);
+		factoryBean.setContextId(contextId);
+		factoryBean.setType(clazz);
+		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(clazz, () -> {
+			factoryBean.setUrl(getUrl(beanFactory, attributes));
+			factoryBean.setPath(getPath(beanFactory, attributes));
+			factoryBean.setDecode404(Boolean.parseBoolean(String.valueOf(attributes.get("decode404"))));
+			Object fallback = attributes.get("fallback");
+			if (fallback != null) {
+				factoryBean.setFallback(fallback instanceof Class ? (Class<?>) fallback
+						: ClassUtils.resolveClassName(fallback.toString(), null));
+			}
+			Object fallbackFactory = attributes.get("fallbackFactory");
+			if (fallbackFactory != null) {
+				factoryBean.setFallbackFactory(fallbackFactory instanceof Class ? (Class<?>) fallbackFactory
+						: ClassUtils.resolveClassName(fallbackFactory.toString(), null));
+			}
+			return factoryBean.getObject();
+		});
 		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+		definition.setLazyInit(true);
+		validate(attributes);
 
 		String alias = contextId + "FeignClient";
 		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
 		beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, className);
+		beanDefinition.setAttribute("feignClientsRegistrarFactoryBean", factoryBean);
 
 		// has a default, won't be null
 		boolean primary = (Boolean) attributes.get("primary");
@@ -235,6 +255,10 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	}
 
 	/* for testing */ String getName(Map<String, Object> attributes) {
+		return getName(null, attributes);
+	}
+
+	String getName(ConfigurableBeanFactory beanFactory, Map<String, Object> attributes) {
 		String name = (String) attributes.get("serviceId");
 		if (!StringUtils.hasText(name)) {
 			name = (String) attributes.get("name");
@@ -242,34 +266,42 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		if (!StringUtils.hasText(name)) {
 			name = (String) attributes.get("value");
 		}
-		name = resolve(name);
+		name = resolve(beanFactory, name);
 		return getName(name);
 	}
 
-	private String getContextId(Map<String, Object> attributes) {
+	private String getContextId(ConfigurableBeanFactory beanFactory, Map<String, Object> attributes) {
 		String contextId = (String) attributes.get("contextId");
 		if (!StringUtils.hasText(contextId)) {
 			return getName(attributes);
 		}
 
-		contextId = resolve(contextId);
+		contextId = resolve(beanFactory, contextId);
 		return getName(contextId);
 	}
 
-	private String resolve(String value) {
+	private String resolve(ConfigurableBeanFactory beanFactory, String value) {
 		if (StringUtils.hasText(value)) {
-			return this.environment.resolvePlaceholders(value);
+			if (beanFactory == null) {
+				return this.environment.resolvePlaceholders(value);
+			}
+			BeanExpressionResolver resolver = beanFactory.getBeanExpressionResolver();
+			String resolved = beanFactory.resolveEmbeddedValue(value);
+			if (resolver == null) {
+				return resolved;
+			}
+			return String.valueOf(resolver.evaluate(resolved, new BeanExpressionContext(beanFactory, null)));
 		}
 		return value;
 	}
 
-	private String getUrl(Map<String, Object> attributes) {
-		String url = resolve((String) attributes.get("url"));
+	private String getUrl(ConfigurableBeanFactory beanFactory, Map<String, Object> attributes) {
+		String url = resolve(beanFactory, (String) attributes.get("url"));
 		return getUrl(url);
 	}
 
-	private String getPath(Map<String, Object> attributes) {
-		String path = resolve((String) attributes.get("path"));
+	private String getPath(ConfigurableBeanFactory beanFactory, Map<String, Object> attributes) {
+		String path = resolve(beanFactory, (String) attributes.get("path"));
 		return getPath(path);
 	}
 

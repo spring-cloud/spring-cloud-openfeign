@@ -38,6 +38,8 @@ import feign.codec.ErrorDecoder;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -58,7 +60,8 @@ import org.springframework.util.StringUtils;
  * @author Olga Maciaszek-Sharma
  * @author Ilia Ilinykh
  */
-public class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
+public class FeignClientFactoryBean
+		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
 
 	/***********************************
 	 * WARNING! Nothing in this class should be @Autowired. It causes NPEs because of some
@@ -80,6 +83,8 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 	private boolean inheritParentContext = true;
 
 	private ApplicationContext applicationContext;
+
+	private BeanFactory beanFactory;
 
 	private Class<?> fallback = void.class;
 
@@ -125,7 +130,8 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
-		FeignClientProperties properties = applicationContext.getBean(FeignClientProperties.class);
+		FeignClientProperties properties = beanFactory != null ? beanFactory.getBean(FeignClientProperties.class)
+				: applicationContext.getBean(FeignClientProperties.class);
 
 		FeignClientConfigurer feignClientConfigurer = getOptional(context, FeignClientConfigurer.class);
 		setInheritParentContext(feignClientConfigurer.inheritParentConfiguration());
@@ -261,7 +267,7 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 
 	private <T> T getOrInstantiate(Class<T> tClass) {
 		try {
-			return applicationContext.getBean(tClass);
+			return beanFactory != null ? beanFactory.getBean(tClass) : applicationContext.getBean(tClass);
 		}
 		catch (NoSuchBeanDefinitionException e) {
 			return BeanUtils.instantiateClass(tClass);
@@ -321,7 +327,8 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 	 * information
 	 */
 	<T> T getTarget() {
-		FeignContext context = applicationContext.getBean(FeignContext.class);
+		FeignContext context = this.beanFactory != null ? this.beanFactory.getBean(FeignContext.class)
+				: applicationContext.getBean(FeignContext.class);
 		Feign.Builder builder = feign(context);
 
 		if (!StringUtils.hasText(url)) {
@@ -437,6 +444,7 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 		this.applicationContext = context;
+		this.beanFactory = context;
 	}
 
 	public Class<?> getFallback() {
@@ -464,7 +472,8 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 			return false;
 		}
 		FeignClientFactoryBean that = (FeignClientFactoryBean) o;
-		return Objects.equals(applicationContext, that.applicationContext) && decode404 == that.decode404
+		return Objects.equals(applicationContext, that.applicationContext)
+				&& Objects.equals(beanFactory, that.beanFactory) && decode404 == that.decode404
 				&& inheritParentContext == that.inheritParentContext && Objects.equals(fallback, that.fallback)
 				&& Objects.equals(fallbackFactory, that.fallbackFactory) && Objects.equals(name, that.name)
 				&& Objects.equals(path, that.path) && Objects.equals(type, that.type) && Objects.equals(url, that.url);
@@ -484,6 +493,11 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 				.append(inheritParentContext).append(", ").append("applicationContext=").append(applicationContext)
 				.append(", ").append("fallback=").append(fallback).append(", ").append("fallbackFactory=")
 				.append(fallbackFactory).append("}").toString();
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
 	}
 
 }
