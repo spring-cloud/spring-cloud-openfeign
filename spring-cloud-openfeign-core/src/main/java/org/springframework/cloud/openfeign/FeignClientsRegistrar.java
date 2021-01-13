@@ -202,14 +202,14 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 				? (ConfigurableBeanFactory) registry : null;
 		String contextId = getContextId(beanFactory, attributes);
 		String name = getName(attributes);
+		FeignClientFactoryBean factoryBean = new FeignClientFactoryBean();
+		factoryBean.setBeanFactory(beanFactory);
+		factoryBean.setName(name);
+		factoryBean.setContextId(contextId);
+		factoryBean.setType(clazz);
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(clazz, () -> {
-			FeignClientFactoryBean factoryBean = new FeignClientFactoryBean();
-			factoryBean.setBeanFactory(beanFactory);
 			factoryBean.setUrl(getUrl(beanFactory, attributes));
 			factoryBean.setPath(getPath(beanFactory, attributes));
-			factoryBean.setName(name);
-			factoryBean.setContextId(contextId);
-			factoryBean.setType(clazz);
 			factoryBean.setDecode404(Boolean.parseBoolean(String.valueOf(attributes.get("decode404"))));
 			Object fallback = attributes.get("fallback");
 			if (fallback != null) {
@@ -230,6 +230,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		String alias = contextId + "FeignClient";
 		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
 		beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, className);
+		beanDefinition.setAttribute("feignClientsRegistrarFactoryBean", factoryBean);
 
 		// has a default, won't be null
 		boolean primary = (Boolean) attributes.get("primary");
