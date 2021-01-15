@@ -24,3 +24,18 @@ public class WebApplication {
 }
 
 ```
+
+## Contributing
+
+We welcome contributions. You can read more on how to contribute to the project https://github.com/spring-cloud/spring-cloud-openfeign/blob/master/README.adoc#3-contributing[here].
+
+## Community Support
+
+* Issues can be reported via https://github.com/spring-cloud/spring-cloud-openfeign/issues[Github].
+* We monitor https://stackoverflow.com/[StackOverflow] for questions with `spring-cloud-feign` tag.
+* You can contact our team at https://gitter.im/spring-cloud/spring-cloud[Gitter].
+
+## Commercial Support
+
+Commercial Support is provided as part of the https://spring.io/support[VMware Spring Runtime] offering.
+
