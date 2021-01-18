@@ -25,6 +25,10 @@ public class WebApplication {
 
 ```
 
+## Contributing
+
+We welcome contributions. You can read more on how to contribute to the project https://github.com/spring-cloud/spring-cloud-openfeign/blob/master/README.adoc#3-contributing[here].
+
 ## Community Support
 
 * You can report issues through https://github.com/spring-cloud/spring-cloud-openfeign/issues[Github].
