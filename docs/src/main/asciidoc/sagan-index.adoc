@@ -31,8 +31,8 @@ We welcome contributions. You can read more on how to contribute to the project 
 
 ## Community Support
 
-* Issues can be reported via https://github.com/spring-cloud/spring-cloud-openfeign/issues[Github].
-* We monitor https://stackoverflow.com/[StackOverflow] for questions with `spring-cloud-feign` tag.
+* You can report issues through https://github.com/spring-cloud/spring-cloud-openfeign/issues[Github].
+* We monitor https://stackoverflow.com/[StackOverflow] for questions with the `spring-cloud-feign` tag.
 * You can contact our team at https://gitter.im/spring-cloud/spring-cloud[Gitter].
 
 ## Commercial Support
