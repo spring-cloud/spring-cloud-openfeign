@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.Module;
+import feign.Capability;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
@@ -28,7 +29,9 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.form.MultipartFormContentProcessor;
 import feign.form.spring.SpringFormEncoder;
+import feign.micrometer.MicrometerCapability;
 import feign.optionals.OptionalDecoder;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -80,6 +83,9 @@ public class FeignClientsConfiguration {
 
 	@Autowired(required = false)
 	private Logger logger;
+
+	@Autowired(required = false)
+	private MeterRegistry meterRegistry;
 
 	@Autowired(required = false)
 	private SpringDataWebProperties springDataWebProperties;
@@ -140,6 +146,15 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean(FeignLoggerFactory.class)
 	public FeignLoggerFactory feignLoggerFactory() {
 		return new DefaultFeignLoggerFactory(this.logger);
+	}
+
+	@Bean
+	@ConditionalOnBean(type = "io.micrometer.core.instrument.MeterRegistry")
+	@ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
+	@ConditionalOnMissingBean(type = "feign.micrometer.MicrometerCapability")
+	@ConditionalOnProperty(name = "feign.metrics.enabled", matchIfMissing = true)
+	public Capability micrometerCapability() {
+		return new MicrometerCapability(this.meterRegistry);
 	}
 
 	@Bean

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import feign.Capability;
 import feign.Client;
 import feign.Contract;
 import feign.ExceptionPropagationPolicy;
@@ -198,6 +199,12 @@ public class FeignClientFactoryBean
 		if (exceptionPropagationPolicy != null) {
 			builder.exceptionPropagationPolicy(exceptionPropagationPolicy);
 		}
+
+		Map<String, Capability> capabilities = getInheritedAwareInstances(context, Capability.class);
+		if (capabilities != null) {
+			capabilities.values().stream().sorted(AnnotationAwareOrderComparator.INSTANCE)
+					.forEach(builder::addCapability);
+		}
 	}
 
 	protected void configureUsingProperties(FeignClientProperties.FeignClientConfiguration config,
@@ -262,6 +269,10 @@ public class FeignClientFactoryBean
 
 		if (Objects.nonNull(config.getExceptionPropagationPolicy())) {
 			builder.exceptionPropagationPolicy(config.getExceptionPropagationPolicy());
+		}
+
+		if (config.getCapabilities() != null) {
+			config.getCapabilities().stream().map(this::getOrInstantiate).forEach(builder::addCapability);
 		}
 	}
 

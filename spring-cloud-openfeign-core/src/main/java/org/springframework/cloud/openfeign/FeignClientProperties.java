@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import feign.Capability;
 import feign.Contract;
 import feign.ExceptionPropagationPolicy;
 import feign.Logger;
@@ -134,6 +135,8 @@ public class FeignClientProperties {
 
 		private ExceptionPropagationPolicy exceptionPropagationPolicy;
 
+		private List<Class<Capability>> capabilities;
+
 		public Logger.Level getLoggerLevel() {
 			return loggerLevel;
 		}
@@ -236,6 +239,14 @@ public class FeignClientProperties {
 
 		public void setExceptionPropagationPolicy(ExceptionPropagationPolicy exceptionPropagationPolicy) {
 			this.exceptionPropagationPolicy = exceptionPropagationPolicy;
+		}
+
+		public List<Class<Capability>> getCapabilities() {
+			return capabilities;
+		}
+
+		public void setCapabilities(List<Class<Capability>> capabilities) {
+			this.capabilities = capabilities;
 		}
 
 		@Override
