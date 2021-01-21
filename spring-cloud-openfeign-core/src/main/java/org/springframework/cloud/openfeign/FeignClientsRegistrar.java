@@ -56,6 +56,7 @@ import org.springframework.util.StringUtils;
  * @author Venil Noronha
  * @author Gang Li
  * @author Michal Domagala
+ * @author Marcin Grzejszczak
  */
 class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
@@ -159,7 +160,6 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 
 		LinkedHashSet<BeanDefinition> candidateComponents = new LinkedHashSet<>();
 		Map<String, Object> attrs = metadata.getAnnotationAttributes(EnableFeignClients.class.getName());
-		AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(FeignClient.class);
 		final Class<?>[] clients = attrs == null ? null : (Class<?>[]) attrs.get("clients");
 		if (clients == null || clients.length == 0) {
 			ClassPathScanningCandidateComponentProvider scanner = getScanner();

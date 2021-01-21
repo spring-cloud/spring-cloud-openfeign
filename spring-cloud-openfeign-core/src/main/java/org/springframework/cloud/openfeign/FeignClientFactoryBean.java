@@ -60,6 +60,7 @@ import org.springframework.util.StringUtils;
  * @author Matt King
  * @author Olga Maciaszek-Sharma
  * @author Ilia Ilinykh
+ * @author Marcin Grzejszczak
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -338,7 +339,7 @@ public class FeignClientFactoryBean
 	 * information
 	 */
 	<T> T getTarget() {
-		FeignContext context = this.beanFactory != null ? this.beanFactory.getBean(FeignContext.class)
+		FeignContext context = beanFactory != null ? beanFactory.getBean(FeignContext.class)
 				: applicationContext.getBean(FeignContext.class);
 		Feign.Builder builder = feign(context);
 
@@ -454,8 +455,8 @@ public class FeignClientFactoryBean
 
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
-		this.applicationContext = context;
-		this.beanFactory = context;
+		applicationContext = context;
+		beanFactory = context;
 	}
 
 	public Class<?> getFallback() {
@@ -492,8 +493,8 @@ public class FeignClientFactoryBean
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(applicationContext, decode404, inheritParentContext, fallback, fallbackFactory, name, path,
-				type, url);
+		return Objects.hash(applicationContext, beanFactory, decode404, inheritParentContext, fallback, fallbackFactory,
+				name, path, type, url);
 	}
 
 	@Override
@@ -502,8 +503,9 @@ public class FeignClientFactoryBean
 				.append(name).append("', ").append("url='").append(url).append("', ").append("path='").append(path)
 				.append("', ").append("decode404=").append(decode404).append(", ").append("inheritParentContext=")
 				.append(inheritParentContext).append(", ").append("applicationContext=").append(applicationContext)
-				.append(", ").append("fallback=").append(fallback).append(", ").append("fallbackFactory=")
-				.append(fallbackFactory).append("}").toString();
+				.append(", ").append("beanFactory=").append(beanFactory).append(", ").append("fallback=")
+				.append(fallback).append(", ").append("fallbackFactory=").append(fallbackFactory).append("}")
+				.toString();
 	}
 
 	@Override
