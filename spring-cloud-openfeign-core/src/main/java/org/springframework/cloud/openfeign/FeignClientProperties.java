@@ -38,6 +38,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Eko Kurniawan Khannedy
  * @author Ilia Ilinykh
  * @author Ram Anaswara
+ * @author Jonatan Ivanov
  */
 @ConfigurationProperties("feign.client")
 public class FeignClientProperties {
@@ -136,6 +137,8 @@ public class FeignClientProperties {
 		private ExceptionPropagationPolicy exceptionPropagationPolicy;
 
 		private List<Class<Capability>> capabilities;
+
+		private FeignClientMetricsConfiguration metrics;
 
 		public Logger.Level getLoggerLevel() {
 			return loggerLevel;
@@ -249,6 +252,14 @@ public class FeignClientProperties {
 			this.capabilities = capabilities;
 		}
 
+		public FeignClientMetricsConfiguration getMetrics() {
+			return metrics;
+		}
+
+		public void setMetrics(FeignClientMetricsConfiguration metrics) {
+			this.metrics = metrics;
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -266,14 +277,50 @@ public class FeignClientProperties {
 					&& Objects.equals(decoder, that.decoder) && Objects.equals(contract, that.contract)
 					&& Objects.equals(exceptionPropagationPolicy, that.exceptionPropagationPolicy)
 					&& Objects.equals(defaultRequestHeaders, that.defaultRequestHeaders)
-					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters);
+					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters)
+					&& Objects.equals(capabilities, that.capabilities) && Objects.equals(metrics, that.metrics);
 		}
 
 		@Override
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
 					decode404, encoder, decoder, contract, exceptionPropagationPolicy, defaultQueryParameters,
-					defaultRequestHeaders);
+					defaultRequestHeaders, capabilities, metrics);
+		}
+
+	}
+
+	/**
+	 * Feign client metrics configuration.
+	 */
+	public static class FeignClientMetricsConfiguration {
+
+		private Boolean enabled = true;
+
+		public Boolean getEnabled() {
+			return enabled;
+		}
+
+		public void setEnabled(Boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			FeignClientMetricsConfiguration that = (FeignClientMetricsConfiguration) o;
+			return Objects.equals(enabled, that.enabled);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(enabled);
 		}
 
 	}

@@ -61,6 +61,7 @@ import org.springframework.util.StringUtils;
  * @author Olga Maciaszek-Sharma
  * @author Ilia Ilinykh
  * @author Marcin Grzejszczak
+ * @author Jonatan Ivanov
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
