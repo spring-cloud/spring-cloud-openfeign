@@ -44,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Michael Cramer
+ * @author Jonatan Ivanov
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientErrorDecoderTests.TestConfiguration.class)
@@ -85,7 +86,8 @@ public class FeignClientErrorDecoderTests {
 
 	@SuppressWarnings({ "unchecked", "ConstantConditions" })
 	private Object getErrorDecoderFromClient(final Object client) {
-		Object invocationHandler = ReflectionTestUtils.getField(client, "h");
+		Object invocationHandlerLambda = ReflectionTestUtils.getField(client, "h");
+		Object invocationHandler = ReflectionTestUtils.getField(invocationHandlerLambda, "arg$2");
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
 				.getField(invocationHandler, "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);

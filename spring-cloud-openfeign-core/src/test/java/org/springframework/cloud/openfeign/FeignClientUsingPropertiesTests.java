@@ -76,6 +76,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Eko Kurniawan Khannedy
  * @author Olga Maciaszek-Sharma
  * @author Ilia Ilinykh
+ * @author Jonatan Ivanov
  */
 @SuppressWarnings("FieldMayBeFinal")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -233,7 +234,8 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	private Request.Options getRequestOptions(Proxy client) {
-		Object invocationHandler = ReflectionTestUtils.getField(client, "h");
+		Object invocationHandlerLambda = ReflectionTestUtils.getField(client, "h");
+		Object invocationHandler = ReflectionTestUtils.getField(invocationHandlerLambda, "arg$2");
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
 				.getField(Objects.requireNonNull(invocationHandler), "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
