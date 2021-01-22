@@ -36,7 +36,7 @@ class FeignClientMetricsEnabledCondition implements Condition {
 		return Optional.ofNullable(feignClientProperties).map(FeignClientProperties::getConfig)
 				.map(configMap -> configMap.get(clientName))
 				.map(FeignClientProperties.FeignClientConfiguration::getMetrics)
-				.map(FeignClientProperties.FeignClientMetricsConfiguration::getEnabled).orElse(true);
+				.map(FeignClientProperties.MetricsConfiguration::getEnabled).orElse(true);
 	}
 
 }
