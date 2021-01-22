@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.Module;
-import feign.Capability;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
@@ -147,16 +146,6 @@ public class FeignClientsConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnBean(type = "io.micrometer.core.instrument.MeterRegistry")
-	@ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
-	@ConditionalOnMissingBean(type = "feign.micrometer.MicrometerCapability")
-	@ConditionalOnProperty(name = "feign.metrics.enabled", matchIfMissing = true)
-	@Conditional(FeignClientMetricsEnabledCondition.class)
-	public Capability micrometerCapability(MeterRegistry meterRegistry) {
-		return new MicrometerCapability(meterRegistry);
-	}
-
-	@Bean
 	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
 	public Module pageJacksonModule() {
 		return new PageJacksonModule();
@@ -228,6 +217,21 @@ public class FeignClientsConfiguration {
 		@ConditionalOnBean(CircuitBreakerFactory.class)
 		public Feign.Builder circuitBreakerFeignBuilder() {
 			return FeignCircuitBreaker.builder();
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnBean(type = "io.micrometer.core.instrument.MeterRegistry")
+	@ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
+	@ConditionalOnProperty(name = "feign.metrics.enabled", matchIfMissing = true)
+	@Conditional(FeignClientMetricsEnabledCondition.class)
+	protected static class MetricsConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean
+		public MicrometerCapability micrometerCapability(MeterRegistry meterRegistry) {
+			return new MicrometerCapability(meterRegistry);
 		}
 
 	}
