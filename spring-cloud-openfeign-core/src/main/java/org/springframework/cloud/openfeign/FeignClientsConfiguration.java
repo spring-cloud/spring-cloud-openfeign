@@ -68,6 +68,7 @@ import static feign.form.ContentType.MULTIPART;
  * @author Dave Syer
  * @author Venil Noronha
  * @author Darren Foong
+ * @author Jonatan Ivanov
  */
 @Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
@@ -83,9 +84,6 @@ public class FeignClientsConfiguration {
 
 	@Autowired(required = false)
 	private Logger logger;
-
-	@Autowired(required = false)
-	private MeterRegistry meterRegistry;
 
 	@Autowired(required = false)
 	private SpringDataWebProperties springDataWebProperties;
@@ -153,8 +151,9 @@ public class FeignClientsConfiguration {
 	@ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
 	@ConditionalOnMissingBean(type = "feign.micrometer.MicrometerCapability")
 	@ConditionalOnProperty(name = "feign.metrics.enabled", matchIfMissing = true)
-	public Capability micrometerCapability() {
-		return new MicrometerCapability(this.meterRegistry);
+	@Conditional(FeignClientMetricsEnabledCondition.class)
+	public Capability micrometerCapability(@Autowired(required = false) MeterRegistry meterRegistry) {
+		return new MicrometerCapability(meterRegistry);
 	}
 
 	@Bean
