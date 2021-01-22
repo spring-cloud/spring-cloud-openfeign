@@ -16,12 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.Map;
-
 import feign.Feign;
-import feign.InvocationHandlerFactory;
 import feign.Target;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -76,15 +71,16 @@ public final class FeignCircuitBreaker {
 			return build(fallbackFactory).newInstance(target);
 		}
 
+		@Override
+		public <T> T target(Target<T> target) {
+			return build(null).newInstance(target);
+		}
+
 		public Feign build(final FallbackFactory<?> nullableFallbackFactory) {
-			super.invocationHandlerFactory(new InvocationHandlerFactory() {
-				@Override
-				public InvocationHandler create(Target target,
-						Map<Method, MethodHandler> dispatch) {
-					return new FeignCircuitBreakerInvocationHandler(circuitBreakerFactory,
-							feignClientName, target, dispatch, nullableFallbackFactory);
-				}
-			});
+			super.invocationHandlerFactory(
+					(target, dispatch) -> new FeignCircuitBreakerInvocationHandler(
+							circuitBreakerFactory, feignClientName, target, dispatch,
+							nullableFallbackFactory));
 			return super.build();
 		}
 
