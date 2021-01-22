@@ -11,6 +11,7 @@
 	<suppress files=".*LoadBalancerFeignClientOverrideTests.*" checks="LineLengthCheck" />
 	<suppress files=".*ProtobufSpringEncoderTest.*" checks="LineLengthCheck" />
 	<suppress files=".*ProtobufTest.*" checks="LineLengthCheck" />
+	<suppress files=".*Hello.*" checks="RedundantModifier"/>
 	<!-- Important -->
 	<suppress files=".*HttpEncoding.*" checks="InterfaceIsTypeCheck" />
 </suppressions>
