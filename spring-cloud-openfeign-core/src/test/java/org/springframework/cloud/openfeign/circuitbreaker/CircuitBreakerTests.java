@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 
 package org.springframework.cloud.openfeign.circuitbreaker;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,10 +56,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Spencer Gibb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = CirciutBreakerTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT, value = {
+@SpringBootTest(classes = CircuitBreakerTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT, value = {
 		"spring.application.name=springcircuittest", "spring.jmx.enabled=false", "feign.circuitbreaker.enabled=true" })
 @DirtiesContext
-public class CirciutBreakerTests {
+public class CircuitBreakerTests {
 
 	@Autowired
 	MyCircuitBreaker myCircuitBreaker;
@@ -185,44 +182,6 @@ public class CirciutBreakerTests {
 	}
 	// end::client_with_fallback_factory[]
 
-	public static class Hello {
-
-		private String message;
-
-		public Hello() {
-		}
-
-		public Hello(String message) {
-			this.message = message;
-		}
-
-		public String getMessage() {
-			return this.message;
-		}
-
-		public void setMessage(String message) {
-			this.message = message;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) {
-				return true;
-			}
-			if (o == null || getClass() != o.getClass()) {
-				return false;
-			}
-			Hello that = (Hello) o;
-			return Objects.equals(this.message, that.message);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(this.message);
-		}
-
-	}
-
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
@@ -276,32 +235,6 @@ public class CirciutBreakerTests {
 		@Bean
 		TestFallbackFactory testFallbackFactory() {
 			return new TestFallbackFactory();
-		}
-
-	}
-
-	static class MyCircuitBreaker implements CircuitBreaker {
-
-		AtomicBoolean runWasCalled = new AtomicBoolean();
-
-		@Override
-		public <T> T run(Supplier<T> toRun) {
-			this.runWasCalled.set(true);
-			return toRun.get();
-		}
-
-		@Override
-		public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
-			try {
-				return run(toRun);
-			}
-			catch (Throwable throwable) {
-				return fallback.apply(throwable);
-			}
-		}
-
-		public void clear() {
-			this.runWasCalled.set(false);
 		}
 
 	}

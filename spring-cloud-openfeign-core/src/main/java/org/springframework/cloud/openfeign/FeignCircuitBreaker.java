@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.Map;
-
 import feign.Feign;
-import feign.InvocationHandlerFactory;
 import feign.Target;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -73,14 +68,14 @@ public final class FeignCircuitBreaker {
 			return build(fallbackFactory).newInstance(target);
 		}
 
+		@Override
+		public <T> T target(Target<T> target) {
+			return build(null).newInstance(target);
+		}
+
 		public Feign build(final FallbackFactory<?> nullableFallbackFactory) {
-			super.invocationHandlerFactory(new InvocationHandlerFactory() {
-				@Override
-				public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
-					return new FeignCircuitBreakerInvocationHandler(circuitBreakerFactory, feignClientName, target,
-							dispatch, nullableFallbackFactory);
-				}
-			});
+			super.invocationHandlerFactory((target, dispatch) -> new FeignCircuitBreakerInvocationHandler(
+					circuitBreakerFactory, feignClientName, target, dispatch, nullableFallbackFactory));
 			return super.build();
 		}
 
