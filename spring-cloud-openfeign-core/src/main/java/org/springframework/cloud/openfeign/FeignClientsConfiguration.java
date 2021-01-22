@@ -152,7 +152,7 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean(type = "feign.micrometer.MicrometerCapability")
 	@ConditionalOnProperty(name = "feign.metrics.enabled", matchIfMissing = true)
 	@Conditional(FeignClientMetricsEnabledCondition.class)
-	public Capability micrometerCapability(@Autowired(required = false) MeterRegistry meterRegistry) {
+	public Capability micrometerCapability(MeterRegistry meterRegistry) {
 		return new MicrometerCapability(meterRegistry);
 	}
 
