@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.util.Optional;
+import java.util.Map;
 
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
@@ -31,11 +31,22 @@ class FeignClientMetricsEnabledCondition implements Condition {
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		FeignClientProperties feignClientProperties = context.getBeanFactory()
 				.getBeanProvider(FeignClientProperties.class).getIfAvailable();
+		if (feignClientProperties != null) {
+			Map<String, FeignClientProperties.FeignClientConfiguration> feignClientConfigMap = feignClientProperties
+					.getConfig();
+			if (feignClientConfigMap != null) {
+				FeignClientProperties.FeignClientConfiguration feignClientConfig = feignClientConfigMap
+						.get(context.getEnvironment().getProperty("feign.client.name"));
+				if (feignClientConfig != null) {
+					FeignClientProperties.MetricsConfiguration metrics = feignClientConfig.getMetrics();
+					if (metrics != null && metrics.getEnabled() != null) {
+						return metrics.getEnabled();
+					}
+				}
+			}
+		}
 
-		return Optional.ofNullable(feignClientProperties).map(FeignClientProperties::getConfig)
-				.map(configMap -> configMap.get(context.getEnvironment().getProperty("feign.client.name")))
-				.map(FeignClientProperties.FeignClientConfiguration::getMetrics)
-				.map(FeignClientProperties.MetricsConfiguration::getEnabled).orElse(true);
+		return true;
 	}
 
 }
