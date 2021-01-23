@@ -34,6 +34,8 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import feign.Capability;
+import feign.Feign;
 import feign.InvocationHandlerFactory;
 import feign.Request;
 import feign.RequestInterceptor;
@@ -43,6 +45,7 @@ import feign.Retryer;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
+import feign.micrometer.MicrometerCapability;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -233,6 +236,21 @@ public class FeignClientUsingPropertiesTests {
 		assertThat(options.readTimeoutMillis()).isEqualTo(5000);
 	}
 
+	@Test
+	public void clientShouldContainCapabilities() {
+		fooFactoryBean.setApplicationContext(applicationContext);
+		Feign.Builder feignBuilder = fooFactoryBean.feign(context);
+		FooClient fooClient = feignBuilder.target(FooClient.class, "http://localhost:" + port);
+
+		String response = fooClient.foo();
+		assertThat(response).isEqualTo("OK");
+		List<Capability> capabilities = (List) ReflectionTestUtils.getField(feignBuilder, "capabilities");
+		assertThat(capabilities)
+			.hasSize(2)
+			.hasAtLeastOneElementOfType(NoOpCapability.class)
+			.hasAtLeastOneElementOfType(MicrometerCapability.class);
+	}
+
 	private Request.Options getRequestOptions(Proxy client) {
 		Object invocationHandlerLambda = ReflectionTestUtils.getField(client, "h");
 		Object invocationHandler = ReflectionTestUtils.getField(invocationHandlerLambda, "arg$2");
@@ -384,6 +402,10 @@ public class FeignClientUsingPropertiesTests {
 			requestTemplate.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 			requestTemplate.body(builder.toString());
 		}
+
+	}
+
+	public static class NoOpCapability implements Capability {
 
 	}
 
