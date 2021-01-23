@@ -31,10 +31,9 @@ class FeignClientMetricsEnabledCondition implements Condition {
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		FeignClientProperties feignClientProperties = context.getBeanFactory()
 				.getBeanProvider(FeignClientProperties.class).getIfAvailable();
-		String clientName = context.getEnvironment().getProperty("feign.client.name");
 
 		return Optional.ofNullable(feignClientProperties).map(FeignClientProperties::getConfig)
-				.map(configMap -> configMap.get(clientName))
+				.map(configMap -> configMap.get(context.getEnvironment().getProperty("feign.client.name")))
 				.map(FeignClientProperties.FeignClientConfiguration::getMetrics)
 				.map(FeignClientProperties.MetricsConfiguration::getEnabled).orElse(true);
 	}
