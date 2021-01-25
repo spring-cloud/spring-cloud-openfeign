@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Jonatan Ivanov
  */
-class MetricsConfigurationTest {
+class MetricsConfigurationTests {
 
 	@Test
 	void shouldBeEnabledByDefault() {
