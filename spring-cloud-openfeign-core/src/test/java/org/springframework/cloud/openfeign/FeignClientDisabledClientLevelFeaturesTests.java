@@ -41,9 +41,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jonatan Ivanov
  */
 @DirtiesContext
-@ActiveProfiles("no-metrics")
-@SpringBootTest(classes = FeignClientDisabledFeaturesTests.TestConfiguration.class)
-class FeignClientDisabledFeaturesTests {
+@ActiveProfiles("no-foo-metrics")
+@SpringBootTest(classes = FeignClientDisabledClientLevelFeaturesTests.TestConfiguration.class)
+class FeignClientDisabledClientLevelFeaturesTests {
 
 	@Autowired
 	private FeignContext context;
@@ -61,13 +61,14 @@ class FeignClientDisabledFeaturesTests {
 	}
 
 	@Test
-	void capabilitiesShouldNotBeAvailable() {
+	void capabilitiesShouldNotBeAvailableWhenDisabled() {
 		assertThat(context.getInstance("foo", MicrometerCapability.class)).isNull();
 		assertThat(context.getInstances("foo", Capability.class)).isEmpty();
 
-		assertThat(context.getInstance("bar", MicrometerCapability.class)).isNull();
+		assertThat(context.getInstance("bar", MicrometerCapability.class)).isNotNull();
 		Map<String, Capability> barCapabilities = context.getInstances("bar", Capability.class);
-		assertThat(barCapabilities).hasSize(1);
+		assertThat(barCapabilities).hasSize(2);
+		assertThat(barCapabilities.get("micrometerCapability")).isExactlyInstanceOf(MicrometerCapability.class);
 		assertThat(barCapabilities.get("noOpCapability")).isExactlyInstanceOf(NoOpCapability.class);
 	}
 
