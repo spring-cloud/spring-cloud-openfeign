@@ -91,6 +91,7 @@ class FeignClientDisabledFeaturesTests {
 	@EnableFeignClients(clients = { FooClient.class, BarClient.class })
 	@EnableAutoConfiguration
 	protected static class TestConfiguration {
+
 	}
 
 	public static class FooConfiguration {

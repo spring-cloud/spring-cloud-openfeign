@@ -245,10 +245,8 @@ public class FeignClientUsingPropertiesTests {
 		String response = fooClient.foo();
 		assertThat(response).isEqualTo("OK");
 		List<Capability> capabilities = (List) ReflectionTestUtils.getField(feignBuilder, "capabilities");
-		assertThat(capabilities)
-			.hasSize(2)
-			.hasAtLeastOneElementOfType(NoOpCapability.class)
-			.hasAtLeastOneElementOfType(MicrometerCapability.class);
+		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
+				.hasAtLeastOneElementOfType(MicrometerCapability.class);
 	}
 
 	private Request.Options getRequestOptions(Proxy client) {

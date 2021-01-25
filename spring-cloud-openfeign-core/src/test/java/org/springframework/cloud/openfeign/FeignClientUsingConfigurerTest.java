@@ -72,10 +72,8 @@ public class FeignClientUsingConfigurerTest {
 		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set").isEqualTo(Logger.Level.FULL);
 
 		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
-		assertThat(capabilities)
-			.hasSize(2)
-			.hasAtLeastOneElementOfType(NoOpCapability.class)
-			.hasAtLeastOneElementOfType(MicrometerCapability.class);
+		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
+				.hasAtLeastOneElementOfType(MicrometerCapability.class);
 	}
 
 	private Object getBuilderValue(Feign.Builder builder, String member) {
@@ -97,10 +95,8 @@ public class FeignClientUsingConfigurerTest {
 		assertThat(factoryBean.isInheritParentContext()).as("is inheriting from parent configuration").isFalse();
 
 		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
-		assertThat(capabilities)
-			.hasSize(2)
-			.hasAtLeastOneElementOfType(NoOpCapability.class)
-			.hasAtLeastOneElementOfType(MicrometerCapability.class);
+		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
+				.hasAtLeastOneElementOfType(MicrometerCapability.class);
 	}
 
 	@Test
@@ -113,10 +109,8 @@ public class FeignClientUsingConfigurerTest {
 		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set").isEqualTo(Logger.Level.HEADERS);
 
 		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
-		assertThat(capabilities)
-			.hasSize(2)
-			.hasAtLeastOneElementOfType(NoOpCapability.class)
-			.hasAtLeastOneElementOfType(MicrometerCapability.class);
+		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
+				.hasAtLeastOneElementOfType(MicrometerCapability.class);
 	}
 
 	@EnableAutoConfiguration

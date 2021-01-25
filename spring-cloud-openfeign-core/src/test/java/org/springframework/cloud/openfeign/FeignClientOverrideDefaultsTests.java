@@ -144,12 +144,14 @@ class FeignClientOverrideDefaultsTests {
 
 	@Test
 	void shouldOverrideMicrometerCapability() {
-		assertThat(context.getInstance("foo", MicrometerCapability.class)).isExactlyInstanceOf(TestMicrometerCapability.class);
+		assertThat(context.getInstance("foo", MicrometerCapability.class))
+				.isExactlyInstanceOf(TestMicrometerCapability.class);
 		Map<String, Capability> fooCapabilities = context.getInstances("foo", Capability.class);
 		assertThat(fooCapabilities).hasSize(1);
 		assertThat(fooCapabilities.get("micrometerCapability")).isExactlyInstanceOf(TestMicrometerCapability.class);
 
-		assertThat(context.getInstance("bar", MicrometerCapability.class)).isExactlyInstanceOf(TestMicrometerCapability.class);
+		assertThat(context.getInstance("bar", MicrometerCapability.class))
+				.isExactlyInstanceOf(TestMicrometerCapability.class);
 		Map<String, Capability> barCapabilities = context.getInstances("bar", Capability.class);
 		assertThat(barCapabilities).hasSize(2);
 		assertThat(barCapabilities.get("micrometerCapability")).isExactlyInstanceOf(TestMicrometerCapability.class);
@@ -185,7 +187,7 @@ class FeignClientOverrideDefaultsTests {
 
 		@Bean
 		MicrometerCapability micrometerCapability() {
-			return  new TestMicrometerCapability();
+			return new TestMicrometerCapability();
 		}
 
 	}
