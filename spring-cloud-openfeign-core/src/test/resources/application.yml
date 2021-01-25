@@ -34,3 +34,7 @@ feignClient:
   methodLevelRequestMappingPath: /hello2
   myPlaceholderHeader: myPlaceholderHeaderValue
 management.endpoints.web.expose: '*'
+
+---
+spring.config.activate.on-profile: nometrics
+feign.metrics.enabled: false
