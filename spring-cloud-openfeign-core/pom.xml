@@ -188,6 +188,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>nl.jqno.equalsverifier</groupId>
+			<artifactId>equalsverifier</artifactId>
+			<version>3.5.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-loadbalancer</artifactId>
 			<optional>true</optional>
