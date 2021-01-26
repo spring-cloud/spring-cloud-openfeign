@@ -19,7 +19,6 @@ package org.springframework.cloud.openfeign;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.Module;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
@@ -46,10 +45,8 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.support.AbstractFormWriter;
-import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
-import org.springframework.cloud.openfeign.support.SortJacksonModule;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
@@ -143,18 +140,6 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean(FeignLoggerFactory.class)
 	public FeignLoggerFactory feignLoggerFactory() {
 		return new DefaultFeignLoggerFactory(this.logger);
-	}
-
-	@Bean
-	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
-	public Module pageJacksonModule() {
-		return new PageJacksonModule();
-	}
-
-	@Bean
-	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
-	public Module sortModule() {
-		return new SortJacksonModule();
 	}
 
 	@Bean

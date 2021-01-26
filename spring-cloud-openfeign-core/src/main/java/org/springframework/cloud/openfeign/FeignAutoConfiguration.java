@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
 
+import com.fasterxml.jackson.databind.Module;
 import feign.Client;
 import feign.Feign;
 import feign.RequestInterceptor;
@@ -55,6 +56,8 @@ import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
+import org.springframework.cloud.openfeign.support.PageJacksonModule;
+import org.springframework.cloud.openfeign.support.SortJacksonModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -65,6 +68,8 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 /**
  * @author Spencer Gibb
  * @author Julien Roy
+ * @author Grzegorz Poznachowski
+ * @author Nikita Konev
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -87,6 +92,22 @@ public class FeignAutoConfiguration {
 		FeignContext context = new FeignContext();
 		context.setConfigurations(this.configurations);
 		return context;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(PageJacksonModule.class)
+	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
+	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled", havingValue = "true")
+	public Module pageJacksonModule() {
+		return new PageJacksonModule();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(SortJacksonModule.class)
+	@ConditionalOnClass(name = "org.springframework.data.domain.Sort")
+	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled", havingValue = "true")
+	public Module sortModule() {
+		return new SortJacksonModule();
 	}
 
 	@Configuration(proxyBeanMethods = false)
