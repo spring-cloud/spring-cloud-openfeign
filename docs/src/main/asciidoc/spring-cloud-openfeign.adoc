@@ -549,7 +549,7 @@ public interface DemoTemplate {
 ----
 
 === Feign `CollectionFormat` support
-We support `feign.CollectionFormat` by providing the `@CollectionFormat` annotation. You can annotate a Feign client method with it by passing the desired `feign.CollectionFormat` as annotation value.
+We support `feign.CollectionFormat` by providing the `@CollectionFormat` annotation.You can annotate a Feign client method with it by passing the desired `feign.CollectionFormat` as annotation value.
 
 In the following example, the `CSV` format is used instead of the default `EXPLODED` to process the method.
 
@@ -568,7 +568,7 @@ In the following example, the `CSV` format is used instead of the default `EXPLO
 TIP: Set the `CSV` format while sending `Pageable` as a query parameter in order for it to be encoded correctly.
 
 === Reactive Support
-As the https://github.com/OpenFeign/feign[OpenFeign project] does not currently support reactive clients, such as https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html[Spring WebClient], neither does Spring Cloud OpenFeign. We will add support for it here as soon as it becomes available in the core project.
+As the https://github.com/OpenFeign/feign[OpenFeign project] does not currently support reactive clients, such as https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html[Spring WebClient], neither does Spring Cloud OpenFeign.We will add support for it here as soon as it becomes available in the core project.
 
 Until that is done, we recommend using https://github.com/Playtika/feign-reactive[feign-reactive] for Spring WebClient support.
 
@@ -581,6 +581,15 @@ To work around this problem you can use an `ObjectProvider` when autowiring your
 ----
 @Autowired
 ObjectProvider<TestFeginClient> testFeginClient;
+----
+
+=== Spring Data Support
+
+You may consider enabling Jackson Modules for the support `org.springframework.data.domain.Page` and `org.springframework.data.domain.Sort` decoding.
+
+[source,java]
+----
+feign.autoconfiguration.jackson.enabled=true
 ----
 
 == Configuration properties

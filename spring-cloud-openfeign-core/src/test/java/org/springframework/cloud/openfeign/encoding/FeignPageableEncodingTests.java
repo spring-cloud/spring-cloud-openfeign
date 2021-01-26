@@ -31,7 +31,6 @@ import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.support.ServiceInstanceListSuppliers;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.cloud.openfeign.encoding.app.client.InvoiceClient;
 import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
@@ -56,7 +55,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Charlie Mordant.
  */
 @SpringBootTest(classes = FeignPageableEncodingTests.Application.class, webEnvironment = RANDOM_PORT,
-		value = { "feign.compression.request.enabled=true", "ribbon.OkToRetryOnAllOperations=false" })
+		value = { "feign.compression.request.enabled=true", "feign.autoconfiguration.jackson.enabled=true" })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FeignPageableEncodingTests {
 
@@ -92,7 +91,7 @@ public class FeignPageableEncodingTests {
 	@SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.encoding.app",
 			exclude = { RepositoryRestMvcAutoConfiguration.class })
 	@EnableSpringDataWebSupport
-	@Import({ NoSecurityConfiguration.class, FeignClientsConfiguration.class })
+	@Import({ NoSecurityConfiguration.class })
 	public static class Application {
 
 	}
