@@ -32,9 +32,9 @@ Example spring boot app
 @EnableFeignClients
 public class Application {
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
 
 }
 ----
@@ -44,14 +44,14 @@ public class Application {
 ----
 @FeignClient("stores")
 public interface StoreClient {
-    @RequestMapping(method = RequestMethod.GET, value = "/stores")
-    List<Store> getStores();
+	@RequestMapping(method = RequestMethod.GET, value = "/stores")
+	List<Store> getStores();
 
-    @RequestMapping(method = RequestMethod.GET, value = "/stores")
-    Page<Store> getStores(Pageable pageable);
+	@RequestMapping(method = RequestMethod.GET, value = "/stores")
+	Page<Store> getStores(Pageable pageable);
 
-    @RequestMapping(method = RequestMethod.POST, value = "/stores/{storeId}", consumes = "application/json")
-    Store update(@PathVariable("storeId") Long storeId, Store store);
+	@RequestMapping(method = RequestMethod.POST, value = "/stores/{storeId}", consumes = "application/json")
+	Store update(@PathVariable("storeId") Long storeId, Store store);
 }
 ----
 
@@ -84,7 +84,7 @@ Spring Cloud lets you take full control of the feign client by declaring additio
 ----
 @FeignClient(name = "stores", configuration = FooConfiguration.class)
 public interface StoreClient {
-    //..
+	//..
 }
 ----
 
@@ -104,7 +104,7 @@ Placeholders are supported in the `name` and `url` attributes.
 ----
 @FeignClient(name = "${feign.name}", url = "${feign.url}")
 public interface StoreClient {
-    //..
+	//..
 }
 ----
 
@@ -145,15 +145,15 @@ Creating a bean of one of those type and placing it in a `@FeignClient` configur
 ----
 @Configuration
 public class FooConfiguration {
-    @Bean
-    public Contract feignContract() {
-        return new feign.Contract.Default();
-    }
+	@Bean
+	public Contract feignContract() {
+		return new feign.Contract.Default();
+	}
 
-    @Bean
-    public BasicAuthRequestInterceptor basicAuthRequestInterceptor() {
-        return new BasicAuthRequestInterceptor("user", "password");
-    }
+	@Bean
+	public BasicAuthRequestInterceptor basicAuthRequestInterceptor() {
+		return new BasicAuthRequestInterceptor("user", "password");
+	}
 }
 ----
 
@@ -165,29 +165,29 @@ application.yml
 [source,yaml]
 ----
 feign:
-  client:
-    config:
-      feignName:
-        connectTimeout: 5000
-        readTimeout: 5000
-        loggerLevel: full
-        errorDecoder: com.example.SimpleErrorDecoder
-        retryer: com.example.SimpleRetryer
-       defaultQueryParameters:
-          query: queryValue
-        defaultRequestHeaders:
-          header: headerValue
-        requestInterceptors:
-          - com.example.FooRequestInterceptor
-          - com.example.BarRequestInterceptor
-        decode404: false
-        encoder: com.example.SimpleEncoder
-        decoder: com.example.SimpleDecoder
-        contract: com.example.SimpleContract
-        capabilities:
-          - com.example.FooCapability
-          - com.example.BarCapability
-        metrics.enabled: false
+	client:
+		config:
+			feignName:
+				connectTimeout: 5000
+				readTimeout: 5000
+				loggerLevel: full
+				errorDecoder: com.example.SimpleErrorDecoder
+				retryer: com.example.SimpleRetryer
+				defaultQueryParameters:
+					query: queryValue
+				defaultRequestHeaders:
+					header: headerValue
+				requestInterceptors:
+					- com.example.FooRequestInterceptor
+					- com.example.BarRequestInterceptor
+				decode404: false
+				encoder: com.example.SimpleEncoder
+				decoder: com.example.SimpleDecoder
+				contract: com.example.SimpleContract
+				capabilities:
+					- com.example.FooCapability
+					- com.example.BarCapability
+				metrics.enabled: false
 ----
 
 Default configurations can be specified in the `@EnableFeignClients` attribute `defaultConfiguration` in a similar manner as described above. The difference is that this configuration will apply to _all_ feign clients.
@@ -200,12 +200,12 @@ application.yml
 [source,yaml]
 ----
 feign:
-  client:
-    config:
-      default:
-        connectTimeout: 5000
-        readTimeout: 5000
-        loggerLevel: basic
+	client:
+		config:
+			default:
+				connectTimeout: 5000
+				readTimeout: 5000
+				loggerLevel: basic
 ----
 
 If we create both `@Configuration` bean and configuration properties, configuration properties will win.
@@ -221,7 +221,7 @@ collision of these configuration beans.
 ----
 @FeignClient(contextId = "fooClient", name = "stores", configuration = FooConfiguration.class)
 public interface FooClient {
-    //..
+	//..
 }
 ----
 
@@ -229,7 +229,7 @@ public interface FooClient {
 ----
 @FeignClient(contextId = "barClient", name = "stores", configuration = BarConfiguration.class)
 public interface BarClient {
-    //..
+	//..
 }
 ----
 
@@ -291,7 +291,7 @@ class FooController {
 				.encoder(encoder)
 				.decoder(decoder)
 				.contract(contract)
-                .addCapability(micrometerCapability)
+				.addCapability(micrometerCapability)
 				.requestInterceptor(new BasicAuthRequestInterceptor("user", "user"))
 				.target(FooClient.class, "https://PROD-SVC");
 
@@ -299,10 +299,10 @@ class FooController {
 				.encoder(encoder)
 				.decoder(decoder)
 				.contract(contract)
-                .addCapability(micrometerCapability)
+				.addCapability(micrometerCapability)
 				.requestInterceptor(new BasicAuthRequestInterceptor("admin", "admin"))
 				.target(FooClient.class, "https://PROD-SVC");
-    }
+	}
 }
 ----
 
@@ -329,7 +329,7 @@ To disable Spring Cloud CircuitBreaker support on a per-client basis create a va
 ----
 @Configuration
 public class FooConfiguration {
-    	@Bean
+	@Bean
 	@Scope("prototype")
 	public Feign.Builder feignBuilder() {
 		return Feign.builder();
@@ -379,8 +379,8 @@ This allows grouping common operations into convenient base interfaces.
 ----
 public interface UserService {
 
-    @RequestMapping(method = RequestMethod.GET, value ="/users/{id}")
-    User getUser(@PathVariable("id") long id);
+	@RequestMapping(method = RequestMethod.GET, value ="/users/{id}")
+	User getUser(@PathVariable("id") long id);
 }
 ----
 
@@ -463,10 +463,10 @@ For example, the following would set the `Logger.Level` to `FULL`:
 ----
 @Configuration
 public class FooConfiguration {
-    @Bean
-    Logger.Level feignLoggerLevel() {
-        return Logger.Level.FULL;
-    }
+	@Bean
+	Logger.Level feignLoggerLevel() {
+		return Logger.Level.FULL;
+	}
 }
 ----
 
@@ -481,10 +481,10 @@ Creating one or more `Capability` beans and placing them in a `@FeignClient` con
 ----
 @Configuration
 public class FooConfiguration {
-    @Bean
-    Capability customCapability() {
-        return new CustomCapability();
-    }
+	@Bean
+	Capability customCapability() {
+		return new CustomCapability();
+	}
 }
 ----
 
@@ -495,8 +495,8 @@ If all of the following conditions are true, a `MicrometerCapability` bean is cr
 * `feign-micrometer` is on the classpath
 * `MeterRegistry` bean is available
 * feign metrics properties are set to `true` (by default)
-    - `feign.metrics.enabled=true` (for all clients)
-    - `feign.client.config.feignName.metrics.enabled=true` (for a single client)
+	- `feign.metrics.enabled=true` (for all clients)
+	- `feign.client.config.feignName.metrics.enabled=true` (for a single client)
 
 NOTE: If your application already uses Micrometer, enabling metrics is as simple as putting `feign-micrometer` onto your classpath.
 
@@ -504,8 +504,8 @@ You can also disable the feature by either:
 
 * excluding `feign-micrometer` from your classpath
 * setting one of the feign metrics properties to `false`
-    - `feign.metrics.enabled=false`
-    - `feign.client.config.feignName.metrics.enabled=false`
+	- `feign.metrics.enabled=false`
+	- `feign.client.config.feignName.metrics.enabled=false`
 
 NOTE: `feign.metrics.enabled=false` disables metrics support for *all* Feign clients regardless of the value of the client-level flags: `feign.client.config.feignName.metrics.enabled`.
 If you want to enable/disable merics per client, simply don't set `feign.metrics.enabled` and use `feign.client.config.feignName.metrics.enabled`.
@@ -516,10 +516,10 @@ You can also customize the `MicrometerCapability` by registering your own bean:
 ----
 @Configuration
 public class FooConfiguration {
-    @Bean
-    public MicrometerCapability micrometerCapability(MeterRegistry meterRegistry) {
-        return new MicrometerCapability(meterRegistry);
-    }
+	@Bean
+	public MicrometerCapability micrometerCapability(MeterRegistry meterRegistry) {
+		return new MicrometerCapability(meterRegistry);
+	}
 }
 ----
 
@@ -538,10 +538,10 @@ For example, the `Params` class defines parameters `param1` and `param2`:
 ----
 // Params.java
 public class Params {
-    private String param1;
-    private String param2;
+	private String param1;
+	private String param2;
 
-    // [Getters and setters omitted for brevity]
+	// [Getters and setters omitted for brevity]
 }
 ----
 
@@ -552,8 +552,8 @@ The following feign client uses the `Params` class by using the `@SpringQueryMap
 @FeignClient("demo")
 public interface DemoTemplate {
 
-    @GetMapping(path = "/demo")
-    String demoEndpoint(@SpringQueryMap Params params);
+	@GetMapping(path = "/demo")
+	String demoEndpoint(@SpringQueryMap Params params);
 }
 ----
 
@@ -574,8 +574,8 @@ and deserialize HATEOAS representation models: https://docs.spring.io/spring-hat
 @FeignClient("demo")
 public interface DemoTemplate {
 
-    @GetMapping(path = "/stores")
-    CollectionModel<Store> getStores();
+	@GetMapping(path = "/stores")
+	CollectionModel<Store> getStores();
 }
 ----
 
@@ -604,8 +604,8 @@ Note that both variable name and the path segment placeholder are called `matrix
 @FeignClient("demo")
 public interface DemoTemplate {
 
-    @GetMapping(path = "/stores")
-    CollectionModel<Store> getStores();
+	@GetMapping(path = "/stores")
+	CollectionModel<Store> getStores();
 }
 ----
 
