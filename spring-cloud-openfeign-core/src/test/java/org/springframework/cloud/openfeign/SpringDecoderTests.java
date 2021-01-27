@@ -149,8 +149,7 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 	// Issue: https://github.com/spring-cloud/spring-cloud-openfeign/issues/456
 	public void testResponseEntityHeaders() {
 		ResponseEntity<String> response = testClient().getContentType();
-		assertThat(response.getHeaders().getContentType())
-				.isEqualTo(MediaType.APPLICATION_JSON);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
 	}
 
 	protected interface TestClient {
@@ -268,9 +267,7 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 
 		@Override
 		public ResponseEntity<String> getContentType() {
-			return ResponseEntity.ok()
-					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-					.body("test");
+			return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).body("test");
 		}
 
 	}
