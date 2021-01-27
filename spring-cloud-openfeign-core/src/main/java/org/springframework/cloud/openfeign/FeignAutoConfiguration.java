@@ -97,7 +97,8 @@ public class FeignAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(PageJacksonModule.class)
 	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
-	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled", havingValue = "true")
+	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled",
+			havingValue = "true")
 	public Module pageJacksonModule() {
 		return new PageJacksonModule();
 	}
@@ -105,7 +106,8 @@ public class FeignAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(SortJacksonModule.class)
 	@ConditionalOnClass(name = "org.springframework.data.domain.Sort")
-	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled", havingValue = "true")
+	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled",
+			havingValue = "true")
 	public Module sortModule() {
 		return new SortJacksonModule();
 	}

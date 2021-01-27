@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,9 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -45,6 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SpringDecoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
@@ -142,6 +145,14 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 		assertThat(response.getBody()).as("response body was not null").isNull();
 	}
 
+	@Test
+	// Issue: https://github.com/spring-cloud/spring-cloud-openfeign/issues/456
+	public void testResponseEntityHeaders() {
+		ResponseEntity<String> response = testClient().getContentType();
+		assertThat(response.getHeaders().getContentType())
+				.isEqualTo(MediaType.APPLICATION_JSON);
+	}
+
 	protected interface TestClient {
 
 		@RequestMapping(method = RequestMethod.GET, value = "/helloresponse")
@@ -164,6 +175,9 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 
 		@GetMapping("/helloWildcard")
 		ResponseEntity<?> getWildcard();
+
+		@GetMapping(path = "/contentType", produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<String> getContentType();
 
 	}
 
@@ -250,6 +264,13 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 		@Override
 		public ResponseEntity<?> getWildcard() {
 			return ResponseEntity.ok(new Hello("wildcard"));
+		}
+
+		@Override
+		public ResponseEntity<String> getContentType() {
+			return ResponseEntity.ok()
+					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+					.body("test");
 		}
 
 	}

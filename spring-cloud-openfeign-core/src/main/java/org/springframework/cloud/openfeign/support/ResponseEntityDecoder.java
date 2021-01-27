@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,16 @@ import feign.Response;
 import feign.codec.Decoder;
 
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 /**
  * Decoder adds compatibility for Spring MVC's ResponseEntity to any other decoder via
  * composition.
  *
  * @author chad jaros
+ * @author Olga Maciaszek-Sharma
  */
 public class ResponseEntityDecoder implements Decoder {
 
@@ -80,7 +80,7 @@ public class ResponseEntityDecoder implements Decoder {
 	@SuppressWarnings("unchecked")
 	private <T> ResponseEntity<T> createResponse(Object instance, Response response) {
 
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+		HttpHeaders headers = new HttpHeaders();
 		for (String key : response.headers().keySet()) {
 			headers.put(key, new LinkedList<>(response.headers().get(key)));
 		}
