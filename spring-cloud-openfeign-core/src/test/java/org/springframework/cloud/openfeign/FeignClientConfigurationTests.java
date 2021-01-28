@@ -29,7 +29,6 @@ import feign.Retryer;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Maps;
 import org.junit.jupiter.api.Test;
@@ -102,11 +101,6 @@ class FeignClientConfigurationTests {
 		assertThat(config.getCapabilities()).isSameAs(capabilities);
 		assertThat(config.getMetrics()).isSameAs(metrics);
 
-	}
-
-	@Test
-	void shouldHaveValidEqualsAndHashCode() {
-		EqualsVerifier.simple().forClass(FeignClientProperties.FeignClientConfiguration.class).verify();
 	}
 
 }

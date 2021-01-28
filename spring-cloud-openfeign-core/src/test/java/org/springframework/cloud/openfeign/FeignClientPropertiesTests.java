@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Map;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.assertj.core.util.Maps;
 import org.junit.jupiter.api.Test;
 
@@ -51,11 +50,6 @@ class FeignClientPropertiesTests {
 		assertThat(properties.getDefaultConfig()).isEqualTo("custom");
 		assertThat(properties.getConfig()).isSameAs(configMap);
 		assertThat(properties.isDecodeSlash()).isFalse();
-	}
-
-	@Test
-	void shouldHaveValidEqualsAndHashCode() {
-		EqualsVerifier.simple().forClass(FeignClientProperties.class).verify();
 	}
 
 }
