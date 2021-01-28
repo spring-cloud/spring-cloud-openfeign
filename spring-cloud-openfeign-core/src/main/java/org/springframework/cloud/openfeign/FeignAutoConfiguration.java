@@ -60,6 +60,8 @@ import org.springframework.cloud.openfeign.support.SortJacksonModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 
 /**
  * @author Spencer Gibb
@@ -91,22 +93,24 @@ public class FeignAutoConfiguration {
 		return context;
 	}
 
-	@Bean
-	@ConditionalOnMissingBean(PageJacksonModule.class)
-	@ConditionalOnClass(name = "org.springframework.data.domain.Page")
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass({ Module.class, Page.class, Sort.class })
 	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled",
 			havingValue = "true")
-	public Module pageJacksonModule() {
-		return new PageJacksonModule();
-	}
+	protected static class FeignJacksonConfiguration {
 
-	@Bean
-	@ConditionalOnMissingBean(SortJacksonModule.class)
-	@ConditionalOnClass(name = "org.springframework.data.domain.Sort")
-	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled",
-			havingValue = "true")
-	public Module sortModule() {
-		return new SortJacksonModule();
+		@Bean
+		@ConditionalOnMissingBean(PageJacksonModule.class)
+		public PageJacksonModule pageJacksonModule() {
+			return new PageJacksonModule();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(SortJacksonModule.class)
+		public SortJacksonModule sortModule() {
+			return new SortJacksonModule();
+		}
+
 	}
 
 	@Configuration(proxyBeanMethods = false)
