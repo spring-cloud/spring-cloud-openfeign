@@ -19,6 +19,12 @@ package org.springframework.cloud.openfeign;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsAndHashCodeConsistency;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsConsistency;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsReflexivity;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsSymmetricity;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsTransitivity;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertHashCodeConsistency;
 
 /**
  * @author Jonatan Ivanov
@@ -36,6 +42,34 @@ class MetricsConfigurationTests {
 		FeignClientProperties.MetricsConfiguration config = new FeignClientProperties.MetricsConfiguration();
 		config.setEnabled(false);
 		assertThat(config.getEnabled()).isFalse();
+	}
+
+	/**
+	 * Sanity-checks equals and hashCode contracts but does not check every variation of
+	 * the fields.
+	 */
+	@Test
+	void shouldHaveSomewhatValidEqualsAndHashCode() {
+		FeignClientProperties.MetricsConfiguration configOne = new FeignClientProperties.MetricsConfiguration();
+		FeignClientProperties.MetricsConfiguration configTwo = new FeignClientProperties.MetricsConfiguration();
+		FeignClientProperties.MetricsConfiguration configThree = new FeignClientProperties.MetricsConfiguration();
+		FeignClientProperties.MetricsConfiguration differentConfig = new FeignClientProperties.MetricsConfiguration();
+		differentConfig.setEnabled(false);
+
+		assertEqualsReflexivity(configOne);
+
+		assertEqualsSymmetricity(configOne, configTwo);
+		assertEqualsSymmetricity(configOne, differentConfig);
+		assertEqualsSymmetricity(configOne, 42);
+
+		assertEqualsTransitivity(configOne, configTwo, configThree);
+
+		assertEqualsConsistency(configOne, configTwo);
+		assertEqualsConsistency(configOne, differentConfig);
+		assertEqualsConsistency(configOne, 42);
+
+		assertHashCodeConsistency(configOne);
+		assertEqualsAndHashCodeConsistency(configOne, configTwo);
 	}
 
 }

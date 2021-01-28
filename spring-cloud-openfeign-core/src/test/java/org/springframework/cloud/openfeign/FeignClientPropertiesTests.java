@@ -22,6 +22,12 @@ import org.assertj.core.util.Maps;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsAndHashCodeConsistency;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsConsistency;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsReflexivity;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsSymmetricity;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertEqualsTransitivity;
+import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertHashCodeConsistency;
 
 /**
  * @author Jonatan Ivanov
@@ -50,6 +56,34 @@ class FeignClientPropertiesTests {
 		assertThat(properties.getDefaultConfig()).isEqualTo("custom");
 		assertThat(properties.getConfig()).isSameAs(configMap);
 		assertThat(properties.isDecodeSlash()).isFalse();
+	}
+
+	/**
+	 * Sanity-checks equals and hashCode contracts but does not check every variation of
+	 * the fields.
+	 */
+	@Test
+	void shouldHaveSomewhatValidEqualsAndHashCode() {
+		FeignClientProperties propsOne = new FeignClientProperties();
+		FeignClientProperties propsTwo = new FeignClientProperties();
+		FeignClientProperties propsThree = new FeignClientProperties();
+		FeignClientProperties differentProps = new FeignClientProperties();
+		differentProps.setDecodeSlash(false);
+
+		assertEqualsReflexivity(propsOne);
+
+		assertEqualsSymmetricity(propsOne, propsTwo);
+		assertEqualsSymmetricity(propsOne, differentProps);
+		assertEqualsSymmetricity(propsOne, 42);
+
+		assertEqualsTransitivity(propsOne, propsTwo, propsThree);
+
+		assertEqualsConsistency(propsOne, propsTwo);
+		assertEqualsConsistency(propsOne, differentProps);
+		assertEqualsConsistency(propsOne, 42);
+
+		assertHashCodeConsistency(propsOne);
+		assertEqualsAndHashCodeConsistency(propsOne, propsTwo);
 	}
 
 }
