@@ -131,6 +131,7 @@ class FeignClientConfigurationTests {
 		assertEqualsConsistency(configOne, configTwo);
 		assertEqualsConsistency(configOne, differentConfig);
 		assertEqualsConsistency(configOne, 42);
+		assertEqualsConsistency(configOne, null);
 
 		assertHashCodeConsistency(configOne);
 		assertEqualsAndHashCodeConsistency(configOne, configTwo);

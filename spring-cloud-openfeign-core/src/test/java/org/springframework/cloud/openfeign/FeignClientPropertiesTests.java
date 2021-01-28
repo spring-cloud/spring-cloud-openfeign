@@ -81,6 +81,7 @@ class FeignClientPropertiesTests {
 		assertEqualsConsistency(propsOne, propsTwo);
 		assertEqualsConsistency(propsOne, differentProps);
 		assertEqualsConsistency(propsOne, 42);
+		assertEqualsConsistency(propsOne, null);
 
 		assertHashCodeConsistency(propsOne);
 		assertEqualsAndHashCodeConsistency(propsOne, propsTwo);
