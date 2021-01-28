@@ -20,6 +20,7 @@
 |feign.httpclient.max-connections-per-route | `50` | 
 |feign.httpclient.time-to-live | `900` | 
 |feign.httpclient.time-to-live-unit |  | 
+|feign.metrics.enabled | `true` | Enables metrics capability for Feign.
 |feign.okhttp.enabled | `false` | Enables the use of the OK HTTP Client by Feign.
 
 |===
