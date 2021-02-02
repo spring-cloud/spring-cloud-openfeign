@@ -43,10 +43,12 @@ public class PageJacksonModuleTests {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"totalElements", "total-elements", "total_elements", "totalelements", "TotalElements"})
+	@ValueSource(strings = { "totalElements", "total-elements", "total_elements",
+			"totalelements", "TotalElements" })
 	public void deserializePage(String totalElements) throws JsonProcessingException {
 		// Given
-		String pageJson = "{\"content\":[\"A name\"], \"number\":1, \"size\":2, \"" + totalElements + "\": 3}";
+		String pageJson = "{\"content\":[\"A name\"], \"number\":1, \"size\":2, \""
+				+ totalElements + "\": 3}";
 		// When
 		Page<?> result = objectMapper.readValue(pageJson, Page.class);
 		// Then
