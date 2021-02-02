@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.Version;
@@ -36,6 +37,7 @@ import org.springframework.data.domain.Sort;
  * This Jackson module provides support to deserialize Spring {@link Page} objects.
  *
  * @author Pascal Büttiker
+ * @author Olga Maciaszek-Sharma
  */
 public class PageJacksonModule extends Module {
 
@@ -65,7 +67,9 @@ public class PageJacksonModule extends Module {
 
 		SimplePageImpl(@JsonProperty("content") List<T> content,
 				@JsonProperty("number") int number, @JsonProperty("size") int size,
-				@JsonProperty("totalElements") long totalElements,
+				@JsonProperty("totalElements") @JsonAlias({ "total-elements",
+						"total_elements", "totalelements",
+						"TotalElements" }) long totalElements,
 				@JsonProperty("sort") Sort sort) {
 			PageRequest pageRequest;
 			if (sort != null) {
