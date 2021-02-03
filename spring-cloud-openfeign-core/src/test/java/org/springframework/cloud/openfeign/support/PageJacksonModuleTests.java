@@ -19,14 +19,18 @@ package org.springframework.cloud.openfeign.support;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.springframework.data.domain.Page;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Test for {@link PageJacksonModule}.
+ *
  * @author Ruben Vervaeke
+ * @author Olga Maciaszek-Sharma
  */
 public class PageJacksonModuleTests {
 
@@ -38,10 +42,11 @@ public class PageJacksonModuleTests {
 		objectMapper.registerModule(new PageJacksonModule());
 	}
 
-	@Test
-	public void deserializePage() throws JsonProcessingException {
+	@ParameterizedTest
+	@ValueSource(strings = { "totalElements", "total-elements", "total_elements", "totalelements", "TotalElements" })
+	public void deserializePage(String totalElements) throws JsonProcessingException {
 		// Given
-		String pageJson = "{\"content\":[\"A name\"], \"number\":1, \"size\":2, \"totalElements\": 3}";
+		String pageJson = "{\"content\":[\"A name\"], \"number\":1, \"size\":2, \"" + totalElements + "\": 3}";
 		// When
 		Page<?> result = objectMapper.readValue(pageJson, Page.class);
 		// Then
