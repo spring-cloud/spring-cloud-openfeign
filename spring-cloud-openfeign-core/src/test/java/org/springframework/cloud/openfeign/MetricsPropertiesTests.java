@@ -29,19 +29,19 @@ import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.a
 /**
  * @author Jonatan Ivanov
  */
-class MetricsConfigurationTests {
+class MetricsPropertiesTests {
 
 	@Test
 	void shouldBeEnabledByDefault() {
-		FeignClientProperties.MetricsConfiguration config = new FeignClientProperties.MetricsConfiguration();
-		assertThat(config.getEnabled()).isTrue();
+		FeignClientProperties.MetricsProperties properties = new FeignClientProperties.MetricsProperties();
+		assertThat(properties.getEnabled()).isTrue();
 	}
 
 	@Test
 	void shouldBeDisabledWhenSet() {
-		FeignClientProperties.MetricsConfiguration config = new FeignClientProperties.MetricsConfiguration();
-		config.setEnabled(false);
-		assertThat(config.getEnabled()).isFalse();
+		FeignClientProperties.MetricsProperties properties = new FeignClientProperties.MetricsProperties();
+		properties.setEnabled(false);
+		assertThat(properties.getEnabled()).isFalse();
 	}
 
 	/**
@@ -50,27 +50,27 @@ class MetricsConfigurationTests {
 	 */
 	@Test
 	void shouldHaveSomewhatValidEqualsAndHashCode() {
-		FeignClientProperties.MetricsConfiguration configOne = new FeignClientProperties.MetricsConfiguration();
-		FeignClientProperties.MetricsConfiguration configTwo = new FeignClientProperties.MetricsConfiguration();
-		FeignClientProperties.MetricsConfiguration configThree = new FeignClientProperties.MetricsConfiguration();
-		FeignClientProperties.MetricsConfiguration differentConfig = new FeignClientProperties.MetricsConfiguration();
-		differentConfig.setEnabled(false);
+		FeignClientProperties.MetricsProperties propertyOne = new FeignClientProperties.MetricsProperties();
+		FeignClientProperties.MetricsProperties propertyTwo = new FeignClientProperties.MetricsProperties();
+		FeignClientProperties.MetricsProperties propertyThree = new FeignClientProperties.MetricsProperties();
+		FeignClientProperties.MetricsProperties differentProperty = new FeignClientProperties.MetricsProperties();
+		differentProperty.setEnabled(false);
 
-		assertEqualsReflexivity(configOne);
+		assertEqualsReflexivity(propertyOne);
 
-		assertEqualsSymmetricity(configOne, configTwo);
-		assertEqualsSymmetricity(configOne, differentConfig);
-		assertEqualsSymmetricity(configOne, 42);
+		assertEqualsSymmetricity(propertyOne, propertyTwo);
+		assertEqualsSymmetricity(propertyOne, differentProperty);
+		assertEqualsSymmetricity(propertyOne, 42);
 
-		assertEqualsTransitivity(configOne, configTwo, configThree);
+		assertEqualsTransitivity(propertyOne, propertyTwo, propertyThree);
 
-		assertEqualsConsistency(configOne, configTwo);
-		assertEqualsConsistency(configOne, differentConfig);
-		assertEqualsConsistency(configOne, 42);
-		assertEqualsConsistency(configOne, null);
+		assertEqualsConsistency(propertyOne, propertyTwo);
+		assertEqualsConsistency(propertyOne, differentProperty);
+		assertEqualsConsistency(propertyOne, 42);
+		assertEqualsConsistency(propertyOne, null);
 
-		assertHashCodeConsistency(configOne);
-		assertEqualsAndHashCodeConsistency(configOne, configTwo);
+		assertHashCodeConsistency(propertyOne);
+		assertEqualsAndHashCodeConsistency(propertyOne, propertyTwo);
 	}
 
 }

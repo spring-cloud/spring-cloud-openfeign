@@ -138,7 +138,7 @@ public class FeignClientProperties {
 
 		private List<Class<Capability>> capabilities;
 
-		private MetricsConfiguration metrics;
+		private MetricsProperties metrics;
 
 		public Logger.Level getLoggerLevel() {
 			return loggerLevel;
@@ -252,11 +252,11 @@ public class FeignClientProperties {
 			this.capabilities = capabilities;
 		}
 
-		public MetricsConfiguration getMetrics() {
+		public MetricsProperties getMetrics() {
 			return metrics;
 		}
 
-		public void setMetrics(MetricsConfiguration metrics) {
+		public void setMetrics(MetricsProperties metrics) {
 			this.metrics = metrics;
 		}
 
@@ -293,7 +293,7 @@ public class FeignClientProperties {
 	/**
 	 * Metrics configuration for Feign Client.
 	 */
-	public static class MetricsConfiguration {
+	public static class MetricsProperties {
 
 		private Boolean enabled = true;
 
@@ -314,7 +314,7 @@ public class FeignClientProperties {
 				return false;
 			}
 
-			MetricsConfiguration that = (MetricsConfiguration) o;
+			MetricsProperties that = (MetricsProperties) o;
 			return Objects.equals(enabled, that.enabled);
 		}
 

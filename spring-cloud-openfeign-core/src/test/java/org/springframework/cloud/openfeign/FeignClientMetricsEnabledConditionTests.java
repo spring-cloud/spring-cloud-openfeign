@@ -165,7 +165,7 @@ class FeignClientMetricsEnabledConditionTests {
 		when(context.getEnvironment()).thenReturn(environment);
 		when(environment.getProperty("feign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
-		when(feignClientConfig.getMetrics()).thenReturn(new FeignClientProperties.MetricsConfiguration());
+		when(feignClientConfig.getMetrics()).thenReturn(new FeignClientProperties.MetricsProperties());
 
 		assertThat(condition.matches(context, metadata)).isTrue();
 		verify(environment).getProperty("feign.client.name");
@@ -180,9 +180,9 @@ class FeignClientMetricsEnabledConditionTests {
 		when(context.getEnvironment()).thenReturn(environment);
 		when(environment.getProperty("feign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
-		FeignClientProperties.MetricsConfiguration metricsConfig = new FeignClientProperties.MetricsConfiguration();
-		metricsConfig.setEnabled(null);
-		when(feignClientConfig.getMetrics()).thenReturn(metricsConfig);
+		FeignClientProperties.MetricsProperties metricsProperties = new FeignClientProperties.MetricsProperties();
+		metricsProperties.setEnabled(null);
+		when(feignClientConfig.getMetrics()).thenReturn(metricsProperties);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
 		verify(environment).getProperty("feign.client.name");
@@ -197,9 +197,9 @@ class FeignClientMetricsEnabledConditionTests {
 		when(context.getEnvironment()).thenReturn(environment);
 		when(environment.getProperty("feign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
-		FeignClientProperties.MetricsConfiguration metricsConfig = new FeignClientProperties.MetricsConfiguration();
-		metricsConfig.setEnabled(true);
-		when(feignClientConfig.getMetrics()).thenReturn(metricsConfig);
+		FeignClientProperties.MetricsProperties metricsProperties = new FeignClientProperties.MetricsProperties();
+		metricsProperties.setEnabled(true);
+		when(feignClientConfig.getMetrics()).thenReturn(metricsProperties);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
 		verify(environment).getProperty("feign.client.name");
@@ -214,9 +214,9 @@ class FeignClientMetricsEnabledConditionTests {
 		when(context.getEnvironment()).thenReturn(environment);
 		when(environment.getProperty("feign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
-		FeignClientProperties.MetricsConfiguration metricsConfig = new FeignClientProperties.MetricsConfiguration();
-		metricsConfig.setEnabled(false);
-		when(feignClientConfig.getMetrics()).thenReturn(metricsConfig);
+		FeignClientProperties.MetricsProperties metricsProperties = new FeignClientProperties.MetricsProperties();
+		metricsProperties.setEnabled(false);
+		when(feignClientConfig.getMetrics()).thenReturn(metricsProperties);
 
 		assertThat(condition.matches(context, metadata)).isFalse();
 		verify(environment).getProperty("feign.client.name");

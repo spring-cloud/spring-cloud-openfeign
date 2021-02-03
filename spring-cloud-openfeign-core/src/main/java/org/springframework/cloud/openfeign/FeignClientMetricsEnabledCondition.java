@@ -38,7 +38,7 @@ class FeignClientMetricsEnabledCondition implements Condition {
 				FeignClientProperties.FeignClientConfiguration feignClientConfig = feignClientConfigMap
 						.get(context.getEnvironment().getProperty("feign.client.name"));
 				if (feignClientConfig != null) {
-					FeignClientProperties.MetricsConfiguration metrics = feignClientConfig.getMetrics();
+					FeignClientProperties.MetricsProperties metrics = feignClientConfig.getMetrics();
 					if (metrics != null && metrics.getEnabled() != null) {
 						return metrics.getEnabled();
 					}

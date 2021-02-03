@@ -88,7 +88,7 @@ class FeignClientConfigurationTests {
 		config.setExceptionPropagationPolicy(ExceptionPropagationPolicy.UNWRAP);
 		List<Class<Capability>> capabilities = Lists.list(Capability.class);
 		config.setCapabilities(capabilities);
-		FeignClientProperties.MetricsConfiguration metrics = new FeignClientProperties.MetricsConfiguration();
+		FeignClientProperties.MetricsProperties metrics = new FeignClientProperties.MetricsProperties();
 		config.setMetrics(metrics);
 
 		assertThat(config.getLoggerLevel()).isSameAs(Logger.Level.FULL);
