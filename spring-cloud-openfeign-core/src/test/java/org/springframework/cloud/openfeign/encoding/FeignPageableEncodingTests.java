@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign.encoding;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import com.netflix.loadbalancer.BaseLoadBalancer;
@@ -54,6 +55,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * Tests the pagination encoding.
  *
  * @author Charlie Mordant.
+ * @author Hyeonmin Park
  */
 @SpringBootTest(classes = FeignPageableEncodingTests.Application.class,
 		webEnvironment = RANDOM_PORT,
@@ -90,6 +92,64 @@ public class FeignPageableEncodingTests {
 			assertThat(order.getDirection()).isEqualTo(Sort.Direction.ASC);
 			assertThat(order.getProperty()).isEqualTo("sortProperty");
 		}
+
+	}
+
+	@Test
+	public void testPageableWithDescDirection() {
+		// given
+		Pageable pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "sortProperty");
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient.getInvoicesPaged(pageable);
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
+
+		Sort sort = response.getBody().getPageable().getSort();
+		assertThat(sort).hasSize(1);
+		assertThat(sort.get()).hasSize(1);
+
+		Optional<Sort.Order> optionalOrder = sort.get().findFirst();
+		assertThat(optionalOrder.isPresent()).isTrue();
+
+		Sort.Order order = optionalOrder.get();
+		assertThat(order.getDirection()).isEqualTo(Sort.Direction.DESC);
+		assertThat(order.getProperty()).isEqualTo("sortProperty");
+
+	}
+
+	@Test
+	public void testPageableWithMultipleSort() {
+		// given
+		Pageable pageable = PageRequest.of(0, 10,
+			Sort.by(Sort.Order.desc("sortProperty1"), Sort.Order.asc("sortProperty2")));
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient.getInvoicesPaged(pageable);
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
+
+		Sort sort = response.getBody().getPageable().getSort();
+		assertThat(sort).hasSize(2);
+
+		List<Sort.Order> orderList = sort.toList();
+		assertThat(orderList).hasSize(2);
+
+		Sort.Order firstOrder = orderList.get(0);
+		assertThat(firstOrder.getDirection()).isEqualTo(Sort.Direction.DESC);
+		assertThat(firstOrder.getProperty()).isEqualTo("sortProperty1");
+
+		Sort.Order secondOrder = orderList.get(1);
+		assertThat(secondOrder.getDirection()).isEqualTo(Sort.Direction.ASC);
+		assertThat(secondOrder.getProperty()).isEqualTo("sortProperty2");
 
 	}
 

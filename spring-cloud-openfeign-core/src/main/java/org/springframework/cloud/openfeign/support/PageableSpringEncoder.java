@@ -120,7 +120,7 @@ public class PageableSpringEncoder implements Encoder {
 			}
 		}
 		for (Sort.Order order : sort) {
-			sortQueries.add(order.getProperty() + "," + order.getDirection());
+			sortQueries.add(order.getProperty() + "%2C" + order.getDirection());
 		}
 		if (!sortQueries.isEmpty()) {
 			template.query(sortParameter, sortQueries);
