@@ -3,6 +3,12 @@
 	],
 	"properties": [
 		{
+			"name": "feign.autoconfiguration.jackson.enabled",
+			"type": "java.lang.Boolean",
+			"description": "If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.",
+			"defaultValue": "false"
+		},
+		{
 			"name": "feign.circuitbreaker.enabled",
 			"type": "java.lang.Boolean",
 			"description": "If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.",
