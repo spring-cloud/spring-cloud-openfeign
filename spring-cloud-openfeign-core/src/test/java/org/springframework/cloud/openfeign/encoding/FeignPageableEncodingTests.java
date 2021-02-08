@@ -108,13 +108,18 @@ public class FeignPageableEncodingTests {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isNotNull();
 		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
-		assertThat(response.getBody().getPageable().getSort()).hasSize(1);
-		Optional<Sort.Order> optionalOrder = response.getBody().getPageable().getSort().get().findFirst();
-		if (optionalOrder.isPresent()) {
-			Sort.Order order = optionalOrder.get();
-			assertThat(order.getDirection()).isEqualTo(Sort.Direction.DESC);
-			assertThat(order.getProperty()).isEqualTo("sortProperty");
-		}
+
+		Sort sort = response.getBody().getPageable().getSort();
+		assertThat(sort).hasSize(1);
+		assertThat(sort.get()).hasSize(1);
+
+		Optional<Sort.Order> optionalOrder = sort.get().findFirst();
+		assertThat(optionalOrder.isPresent()).isTrue();
+
+		Sort.Order order = optionalOrder.get();
+		assertThat(order.getDirection()).isEqualTo(Sort.Direction.DESC);
+		assertThat(order.getProperty()).isEqualTo("sortProperty");
+
 	}
 
 	@Test
@@ -131,17 +136,21 @@ public class FeignPageableEncodingTests {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isNotNull();
 		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
-		assertThat(response.getBody().getPageable().getSort()).hasSize(2);
-		List<Sort.Order> orderList = response.getBody().getPageable().getSort().toList();
-		if (!orderList.isEmpty()) {
-			Sort.Order firstOrder = orderList.get(0);
-			assertThat(firstOrder.getDirection()).isEqualTo(Sort.Direction.DESC);
-			assertThat(firstOrder.getProperty()).isEqualTo("sortProperty1");
 
-			Sort.Order secondOrder = orderList.get(1);
-			assertThat(secondOrder.getDirection()).isEqualTo(Sort.Direction.ASC);
-			assertThat(secondOrder.getProperty()).isEqualTo("sortProperty2");
-		}
+		Sort sort = response.getBody().getPageable().getSort();
+		assertThat(sort).hasSize(2);
+
+		List<Sort.Order> orderList = sort.toList();
+		assertThat(orderList).hasSize(2);
+
+		Sort.Order firstOrder = orderList.get(0);
+		assertThat(firstOrder.getDirection()).isEqualTo(Sort.Direction.DESC);
+		assertThat(firstOrder.getProperty()).isEqualTo("sortProperty1");
+
+		Sort.Order secondOrder = orderList.get(1);
+		assertThat(secondOrder.getDirection()).isEqualTo(Sort.Direction.ASC);
+		assertThat(secondOrder.getProperty()).isEqualTo("sortProperty2");
+
 	}
 
 	@EnableFeignClients(clients = InvoiceClient.class)
