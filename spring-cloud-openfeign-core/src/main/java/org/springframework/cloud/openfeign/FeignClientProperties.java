@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import feign.Capability;
 import feign.Contract;
 import feign.ExceptionPropagationPolicy;
 import feign.Logger;
@@ -37,6 +38,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Eko Kurniawan Khannedy
  * @author Ilia Ilinykh
  * @author Ram Anaswara
+ * @author Jonatan Ivanov
  */
 @ConfigurationProperties("feign.client")
 public class FeignClientProperties {
@@ -133,6 +135,10 @@ public class FeignClientProperties {
 		private Class<Contract> contract;
 
 		private ExceptionPropagationPolicy exceptionPropagationPolicy;
+
+		private List<Class<Capability>> capabilities;
+
+		private MetricsProperties metrics;
 
 		public Logger.Level getLoggerLevel() {
 			return loggerLevel;
@@ -238,6 +244,22 @@ public class FeignClientProperties {
 			this.exceptionPropagationPolicy = exceptionPropagationPolicy;
 		}
 
+		public List<Class<Capability>> getCapabilities() {
+			return capabilities;
+		}
+
+		public void setCapabilities(List<Class<Capability>> capabilities) {
+			this.capabilities = capabilities;
+		}
+
+		public MetricsProperties getMetrics() {
+			return metrics;
+		}
+
+		public void setMetrics(MetricsProperties metrics) {
+			this.metrics = metrics;
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -255,14 +277,50 @@ public class FeignClientProperties {
 					&& Objects.equals(decoder, that.decoder) && Objects.equals(contract, that.contract)
 					&& Objects.equals(exceptionPropagationPolicy, that.exceptionPropagationPolicy)
 					&& Objects.equals(defaultRequestHeaders, that.defaultRequestHeaders)
-					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters);
+					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters)
+					&& Objects.equals(capabilities, that.capabilities) && Objects.equals(metrics, that.metrics);
 		}
 
 		@Override
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
 					decode404, encoder, decoder, contract, exceptionPropagationPolicy, defaultQueryParameters,
-					defaultRequestHeaders);
+					defaultRequestHeaders, capabilities, metrics);
+		}
+
+	}
+
+	/**
+	 * Metrics configuration for Feign Client.
+	 */
+	public static class MetricsProperties {
+
+		private Boolean enabled = true;
+
+		public Boolean getEnabled() {
+			return enabled;
+		}
+
+		public void setEnabled(Boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			MetricsProperties that = (MetricsProperties) o;
+			return Objects.equals(enabled, that.enabled);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(enabled);
 		}
 
 	}

@@ -19,9 +19,11 @@ package org.springframework.cloud.openfeign;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import feign.Capability;
 import feign.Feign;
 import feign.Logger;
 import feign.RequestInterceptor;
+import feign.micrometer.MicrometerCapability;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author matt king
+ * @author Jonatan Ivanov
  */
 @DirtiesContext
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -67,6 +70,10 @@ public class FeignClientUsingConfigurerTest {
 		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder, "requestInterceptors");
 		assertThat(interceptors.size()).as("interceptors not set").isEqualTo(3);
 		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set").isEqualTo(Logger.Level.FULL);
+
+		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
+		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
+				.hasAtLeastOneElementOfType(MicrometerCapability.class);
 	}
 
 	private Object getBuilderValue(Feign.Builder builder, String member) {
@@ -84,9 +91,12 @@ public class FeignClientUsingConfigurerTest {
 		Feign.Builder builder = factoryBean.feign(context);
 
 		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder, "requestInterceptors");
-
 		assertThat(interceptors).as("interceptors not set").isEmpty();
 		assertThat(factoryBean.isInheritParentContext()).as("is inheriting from parent configuration").isFalse();
+
+		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
+		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
+				.hasAtLeastOneElementOfType(MicrometerCapability.class);
 	}
 
 	@Test
@@ -97,6 +107,10 @@ public class FeignClientUsingConfigurerTest {
 		Feign.Builder builder = factoryBean.feign(context);
 
 		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set").isEqualTo(Logger.Level.HEADERS);
+
+		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
+		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
+				.hasAtLeastOneElementOfType(MicrometerCapability.class);
 	}
 
 	@EnableAutoConfiguration
@@ -110,6 +124,11 @@ public class FeignClientUsingConfigurerTest {
 			};
 		}
 
+		@Bean
+		public NoOpCapability noOpCapability() {
+			return new NoOpCapability();
+		}
+
 	}
 
 	public static class NoInheritConfiguration {
@@ -117,6 +136,11 @@ public class FeignClientUsingConfigurerTest {
 		@Bean
 		public Logger.Level logLevel() {
 			return Logger.Level.HEADERS;
+		}
+
+		@Bean
+		public NoOpCapability noOpCapability() {
+			return new NoOpCapability();
 		}
 
 		@Bean
@@ -140,6 +164,10 @@ public class FeignClientUsingConfigurerTest {
 
 	@FeignClient(name = "noInheritFeignClient", configuration = NoInheritConfiguration.class)
 	interface NoInheritFeignClient {
+
+	}
+
+	private static class NoOpCapability implements Capability {
 
 	}
 

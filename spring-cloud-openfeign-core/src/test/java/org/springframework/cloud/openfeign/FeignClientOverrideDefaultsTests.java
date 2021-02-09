@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.Map;
+
+import feign.Capability;
 import feign.Contract;
 import feign.ExceptionPropagationPolicy;
 import feign.Logger;
@@ -28,6 +31,7 @@ import feign.auth.BasicAuthRequestInterceptor;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
+import feign.micrometer.MicrometerCapability;
 import feign.optionals.OptionalDecoder;
 import feign.querymap.BeanQueryMapEncoder;
 import feign.slf4j.Slf4jLogger;
@@ -48,6 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
+ * @author Jonatan Ivanov
  */
 @SpringBootTest(classes = FeignClientOverrideDefaultsTests.TestConfiguration.class)
 @DirtiesContext
@@ -137,6 +142,22 @@ class FeignClientOverrideDefaultsTests {
 				.containsValues(ExceptionPropagationPolicy.UNWRAP);
 	}
 
+	@Test
+	void shouldOverrideMicrometerCapability() {
+		assertThat(context.getInstance("foo", MicrometerCapability.class))
+				.isExactlyInstanceOf(TestMicrometerCapability.class);
+		Map<String, Capability> fooCapabilities = context.getInstances("foo", Capability.class);
+		assertThat(fooCapabilities).hasSize(1);
+		assertThat(fooCapabilities.get("micrometerCapability")).isExactlyInstanceOf(TestMicrometerCapability.class);
+
+		assertThat(context.getInstance("bar", MicrometerCapability.class))
+				.isExactlyInstanceOf(TestMicrometerCapability.class);
+		Map<String, Capability> barCapabilities = context.getInstances("bar", Capability.class);
+		assertThat(barCapabilities).hasSize(2);
+		assertThat(barCapabilities.get("micrometerCapability")).isExactlyInstanceOf(TestMicrometerCapability.class);
+		assertThat(barCapabilities.get("noOpCapability")).isExactlyInstanceOf(NoOpCapability.class);
+	}
+
 	@FeignClient(name = "foo", url = "https://foo", configuration = FooConfiguration.class)
 	interface FooClient {
 
@@ -162,6 +183,11 @@ class FeignClientOverrideDefaultsTests {
 		RequestInterceptor defaultRequestInterceptor() {
 			return template -> {
 			};
+		}
+
+		@Bean
+		MicrometerCapability micrometerCapability() {
+			return new TestMicrometerCapability();
 		}
 
 	}
@@ -231,6 +257,19 @@ class FeignClientOverrideDefaultsTests {
 		public ExceptionPropagationPolicy exceptionPropagationPolicy() {
 			return ExceptionPropagationPolicy.UNWRAP;
 		}
+
+		@Bean
+		public Capability noOpCapability() {
+			return new NoOpCapability();
+		}
+
+	}
+
+	private static class TestMicrometerCapability extends feign.micrometer.MicrometerCapability {
+
+	}
+
+	private static class NoOpCapability implements Capability {
 
 	}
 

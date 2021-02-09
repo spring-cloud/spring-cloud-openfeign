@@ -27,7 +27,9 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.form.MultipartFormContentProcessor;
 import feign.form.spring.SpringFormEncoder;
+import feign.micrometer.MicrometerCapability;
 import feign.optionals.OptionalDecoder;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -62,6 +64,7 @@ import static feign.form.ContentType.MULTIPART;
  * @author Dave Syer
  * @author Venil Noronha
  * @author Darren Foong
+ * @author Jonatan Ivanov
  */
 @Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
@@ -199,6 +202,21 @@ public class FeignClientsConfiguration {
 		@ConditionalOnBean(CircuitBreakerFactory.class)
 		public Feign.Builder circuitBreakerFeignBuilder() {
 			return FeignCircuitBreaker.builder();
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnBean(type = "io.micrometer.core.instrument.MeterRegistry")
+	@ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
+	@ConditionalOnProperty(name = "feign.metrics.enabled", matchIfMissing = true)
+	@Conditional(FeignClientMetricsEnabledCondition.class)
+	protected static class MetricsConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean
+		public MicrometerCapability micrometerCapability(MeterRegistry meterRegistry) {
+			return new MicrometerCapability(meterRegistry);
 		}
 
 	}

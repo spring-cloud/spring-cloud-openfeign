@@ -34,6 +34,8 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import feign.Capability;
+import feign.Feign;
 import feign.InvocationHandlerFactory;
 import feign.Request;
 import feign.RequestInterceptor;
@@ -43,6 +45,7 @@ import feign.Retryer;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
+import feign.micrometer.MicrometerCapability;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -76,6 +79,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Eko Kurniawan Khannedy
  * @author Olga Maciaszek-Sharma
  * @author Ilia Ilinykh
+ * @author Jonatan Ivanov
  */
 @SuppressWarnings("FieldMayBeFinal")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -232,8 +236,22 @@ public class FeignClientUsingPropertiesTests {
 		assertThat(options.readTimeoutMillis()).isEqualTo(5000);
 	}
 
+	@Test
+	public void clientShouldContainCapabilities() {
+		fooFactoryBean.setApplicationContext(applicationContext);
+		Feign.Builder feignBuilder = fooFactoryBean.feign(context);
+		FooClient fooClient = feignBuilder.target(FooClient.class, "http://localhost:" + port);
+
+		String response = fooClient.foo();
+		assertThat(response).isEqualTo("OK");
+		List<Capability> capabilities = (List) ReflectionTestUtils.getField(feignBuilder, "capabilities");
+		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
+				.hasAtLeastOneElementOfType(MicrometerCapability.class);
+	}
+
 	private Request.Options getRequestOptions(Proxy client) {
-		Object invocationHandler = ReflectionTestUtils.getField(client, "h");
+		Object invocationHandlerLambda = ReflectionTestUtils.getField(client, "h");
+		Object invocationHandler = ReflectionTestUtils.getField(invocationHandlerLambda, "arg$2");
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
 				.getField(Objects.requireNonNull(invocationHandler), "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
@@ -382,6 +400,10 @@ public class FeignClientUsingPropertiesTests {
 			requestTemplate.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 			requestTemplate.body(builder.toString());
 		}
+
+	}
+
+	public static class NoOpCapability implements Capability {
 
 	}
 

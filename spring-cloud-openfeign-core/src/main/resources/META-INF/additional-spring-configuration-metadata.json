@@ -43,6 +43,12 @@
 			"type": "java.lang.Boolean",
 			"description": "Enables the request sent by Feign to be compressed.",
 			"defaultValue": "false"
+		},
+		{
+			"name": "feign.metrics.enabled",
+			"type": "java.lang.Boolean",
+			"description": "Enables metrics capability for Feign.",
+			"defaultValue": "true"
 		}
 	]
 }
