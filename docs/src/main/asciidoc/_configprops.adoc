@@ -1,6 +1,7 @@
 |===
 |Name | Default | Description
 
+|feign.autoconfiguration.jackson.enabled | `false` | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
 |feign.circuitbreaker.enabled | `false` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
 |feign.client.config |  | 
 |feign.client.decode-slash | `true` | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
