@@ -22,5 +22,5 @@
 |feign.httpclient.time-to-live-unit |  | 
 |feign.hystrix.enabled | false | If true, an OpenFeign client will be wrapped with a Hystrix circuit breaker.
 |feign.okhttp.enabled | false | Enables the use of the OK HTTP Client by Feign.
-
+|feign.autoconfiguration.jackson.enabled | false | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
 |===
