@@ -16,66 +16,92 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.util.Map;
-
+import feign.hystrix.HystrixFeign;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cloud.netflix.hystrix.HystrixCircuitBreakerFactory;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.FilteredClassLoader;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Tim Peeters
  */
 class FeignAutoConfigurationTests {
 
-	@Test
-	void shouldInstantiateFeignHystrixTargeter() {
-		ConfigurableApplicationContext context = contextBuilder()
-				.sources(FeignAutoConfiguration.class).run();
-		assertThatOneBeanPresent(context, HystrixTargeter.class);
-	}
+	private final ApplicationContextRunner runner = new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class));
 
 	@Test
-	void shouldInstantiateDefaultFeignTargeterWhenHystrixDisabled() {
-		ConfigurableApplicationContext context = contextBuilder()
-				.properties("feign.hystrix.enabled=false")
-				.sources(FeignAutoConfiguration.class).run();
-		assertThatOneBeanPresent(context, DefaultTargeter.class);
+	void shouldInstantiateHystrixTargeterToMaintainBackwardsCompatibility() {
+		runner.run(ctx -> assertOnlyOneTargeterPresent(ctx, HystrixTargeter.class));
 	}
 
 	@Test
-	void shouldInstantiateFeignCircuitBreakerTargeterWhenCircuitBreakerEnabled() {
-		ConfigurableApplicationContext context = contextBuilder()
-				.properties("feign.circuitbreaker.enabled=true")
-				.sources(CircuitBreakerFactoryConfig.class, FeignAutoConfiguration.class)
-				.run();
-		assertThatOneBeanPresent(context, FeignCircuitBreakerTargeter.class);
+	void shouldInstantiateHystrixTargeterWhenExplicitlyEnabled() {
+		runner.withPropertyValues("feign.hystrix.enabled=true")
+				.run(ctx -> assertOnlyOneTargeterPresent(ctx, HystrixTargeter.class));
 	}
 
-	private SpringApplicationBuilder contextBuilder() {
-		return new SpringApplicationBuilder().web(WebApplicationType.NONE);
+	@Test
+	void shouldInstantiateDefaultTargeterWhenHystrixIsDisabled() {
+		runner.withPropertyValues("feign.hystrix.enabled=false")
+				.run(ctx -> assertOnlyOneTargeterPresent(ctx, DefaultTargeter.class));
 	}
 
-	private void assertThatOneBeanPresent(ConfigurableApplicationContext context,
+	@Test
+	void shouldInstantiateDefaultTargeterWhenHystrixFeignClassIsMissing() {
+		runner.withPropertyValues("feign.hystrix.enabled=true")
+				.withClassLoader(new FilteredClassLoader(HystrixFeign.class))
+				.run(ctx -> assertOnlyOneTargeterPresent(ctx, DefaultTargeter.class));
+	}
+
+	@Test
+	void shouldInstantiateDefaultTargeterWhenHystrixFeignAndCircuitBreakerClassesAreMissing() {
+		runner.withPropertyValues("feign.hystrix.enabled=true",
+				"feign.circuitbreaker.enabled=true")
+				.withClassLoader(
+						new FilteredClassLoader(HystrixFeign.class, CircuitBreaker.class))
+				.run(ctx -> assertOnlyOneTargeterPresent(ctx, DefaultTargeter.class));
+	}
+
+	@Test
+	void shouldInstantiateDefaultTargeterWhenHystrixFeignClassIsMissingAndFeignCircuitBreakerIsDisabled() {
+		runner.withClassLoader(new FilteredClassLoader(HystrixFeign.class))
+				.withPropertyValues("feign.circuitbreaker.enabled=false")
+				.run(ctx -> assertOnlyOneTargeterPresent(ctx, DefaultTargeter.class));
+	}
+
+	@Test
+	void shouldInstantiateFeignCircuitBreakerTargeterWhenEnabled() {
+		runner.withBean(CircuitBreakerFactory.class,
+				() -> mock(CircuitBreakerFactory.class))
+				.withPropertyValues("feign.circuitbreaker.enabled=true")
+				.run(ctx -> assertOnlyOneTargeterPresent(ctx,
+						FeignCircuitBreakerTargeter.class));
+	}
+
+	@Test
+	void shouldInstantiateFeignCircuitBreakerTargeterWhenBothHystrixAndCircuitBreakerAreEnabled() {
+		runner.withBean(CircuitBreakerFactory.class,
+				() -> mock(CircuitBreakerFactory.class))
+				.withPropertyValues("feign.hystrix.enabled=true",
+						"feign.circuitbreaker.enabled=true")
+				.run(ctx -> assertOnlyOneTargeterPresent(ctx,
+						FeignCircuitBreakerTargeter.class));
+	}
+
+	private void assertOnlyOneTargeterPresent(ConfigurableApplicationContext ctx,
 			Class<?> beanClass) {
-		Map<String, ?> beans = context.getBeansOfType(beanClass);
-		assertThat(beans).hasSize(1);
-	}
-
-	@Configuration
-	static class CircuitBreakerFactoryConfig {
-
-		@Bean
-		HystrixCircuitBreakerFactory circuitBreakerFactory() {
-			return new HystrixCircuitBreakerFactory();
-		}
-
+		assertThat(ctx.getBeansOfType(Targeter.class)).hasSize(1)
+				.hasValueSatisfying(new Condition<>(beanClass::isInstance, String
+						.format("Targeter should be an instance of %s", beanClass)));
 	}
 
 }

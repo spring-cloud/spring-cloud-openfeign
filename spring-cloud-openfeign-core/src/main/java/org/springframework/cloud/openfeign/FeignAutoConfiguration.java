@@ -40,7 +40,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -59,6 +59,7 @@ import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.SortJacksonModule;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
@@ -116,7 +117,7 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@AutoConfigureAfter(HystrixFeignTargeterConfiguration.class)
+	@Conditional(DefaultFeignTargeterConditions.class)
 	protected static class DefaultFeignTargeterConfiguration {
 
 		@Bean
@@ -128,10 +129,10 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
+	@Conditional(FeignCircuitBreakerDisabledConditions.class)
 	@ConditionalOnClass(name = "feign.hystrix.HystrixFeign")
 	@ConditionalOnProperty(value = "feign.hystrix.enabled", havingValue = "true",
 			matchIfMissing = true)
-	@AutoConfigureAfter(CircuitBreakerPresentFeignTargeterConfiguration.class)
 	protected static class HystrixFeignTargeterConfiguration {
 
 		@Bean
@@ -280,6 +281,24 @@ public class FeignAutoConfiguration {
 		@ConditionalOnMissingBean(Client.class)
 		public Client feignClient(okhttp3.OkHttpClient client) {
 			return new OkHttpClient(client);
+		}
+
+	}
+
+	static class DefaultFeignTargeterConditions extends AllNestedConditions {
+
+		DefaultFeignTargeterConditions() {
+			super(ConfigurationPhase.PARSE_CONFIGURATION);
+		}
+
+		@Conditional(FeignCircuitBreakerDisabledConditions.class)
+		static class FeignCircuitBreakerDisabled {
+
+		}
+
+		@Conditional(HystrixDisabledConditions.class)
+		static class HystrixDisabled {
+
 		}
 
 	}
