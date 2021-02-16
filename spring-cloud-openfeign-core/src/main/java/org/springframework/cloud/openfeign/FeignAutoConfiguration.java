@@ -72,6 +72,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Julien Roy
  * @author Grzegorz Poznachowski
  * @author Nikita Konev
+ * @author Tim Peeters
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -129,7 +130,7 @@ public class FeignAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(CircuitBreaker.class)
-	@ConditionalOnProperty("feign.circuitbreaker.enabled")
+	@ConditionalOnProperty(value = "feign.circuitbreaker.enabled", havingValue = "true")
 	protected static class CircuitBreakerPresentFeignTargeterConfiguration {
 
 		@Bean
@@ -149,7 +150,7 @@ public class FeignAutoConfiguration {
 
 	// the following configuration is for alternate feign clients if
 	// SC loadbalancer is not on the class path.
-	// see corresponding configurations in FeignRibbonClientAutoConfiguration
+	// see corresponding configurations in FeignLoadBalancerAutoConfiguration
 	// for load-balanced clients.
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttpClient.class)
