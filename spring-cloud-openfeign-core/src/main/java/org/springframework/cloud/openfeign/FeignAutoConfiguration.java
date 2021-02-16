@@ -40,6 +40,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -114,8 +115,7 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnMissingClass({ "feign.hystrix.HystrixFeign",
-			"org.springframework.cloud.client.circuitbreaker.CircuitBreaker" })
+	@AutoConfigureAfter(HystrixFeignTargeterConfiguration.class)
 	protected static class DefaultFeignTargeterConfiguration {
 
 		@Bean
@@ -128,6 +128,9 @@ public class FeignAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(name = "feign.hystrix.HystrixFeign")
+	@ConditionalOnProperty(value = "feign.hystrix.enabled", havingValue = "true",
+			matchIfMissing = true)
+	@AutoConfigureAfter(CircuitBreakerPresentFeignTargeterConfiguration.class)
 	protected static class HystrixFeignTargeterConfiguration {
 
 		@Bean
@@ -140,14 +143,8 @@ public class FeignAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(CircuitBreaker.class)
-	@ConditionalOnProperty("feign.circuitbreaker.enabled")
+	@ConditionalOnProperty(value = "feign.circuitbreaker.enabled", havingValue = "true")
 	protected static class CircuitBreakerPresentFeignTargeterConfiguration {
-
-		@Bean
-		@ConditionalOnMissingBean(CircuitBreakerFactory.class)
-		public Targeter defaultFeignTargeter() {
-			return new DefaultTargeter();
-		}
 
 		@Bean
 		@ConditionalOnMissingBean
