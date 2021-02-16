@@ -69,6 +69,7 @@ import org.springframework.data.domain.Sort;
  * @author Julien Roy
  * @author Grzegorz Poznachowski
  * @author Nikita Konev
+ * @author Tim Peeters
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)

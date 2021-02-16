@@ -29,6 +29,9 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * @author Tim Peeters
+ */
 class FeignAutoConfigurationTests {
 
 	@Test
