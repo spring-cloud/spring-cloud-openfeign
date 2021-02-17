@@ -41,6 +41,7 @@ import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.annotation.MatrixVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
+import org.springframework.cloud.openfeign.annotation.RequestBodyParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestParamParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestPartParameterProcessor;
@@ -356,6 +357,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 		annotatedArgumentResolvers.add(new MatrixVariableParameterProcessor());
 		annotatedArgumentResolvers.add(new PathVariableParameterProcessor());
+		annotatedArgumentResolvers.add(new RequestBodyParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestParamParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestHeaderParameterProcessor());
 		annotatedArgumentResolvers.add(new QueryMapParameterProcessor());

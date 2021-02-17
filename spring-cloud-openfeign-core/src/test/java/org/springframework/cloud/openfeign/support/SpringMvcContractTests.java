@@ -63,6 +63,8 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static feign.CollectionFormat.SSV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
+import static org.springframework.cloud.openfeign.support.SpringEncoder.OPTIONAL_REQUEST_BODY;
+import static org.springframework.web.util.UriUtils.encode;
 
 /**
  * @author chadjaros
@@ -523,6 +525,26 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
+	public void testRequestBody_optional() throws Exception {
+		Method method = TestTemplate_RequestBody.class.getDeclaredMethod("requestBody",
+				TestObject.class);
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().bodyTemplate()).isEqualTo(OPTIONAL_REQUEST_BODY);
+	}
+
+	@Test
+	public void testRequestBody_required() throws Exception {
+		Method method = TestTemplate_RequestBody.class
+				.getDeclaredMethod("requestBodyRequired", TestObject.class);
+		MethodMetadata data = contract
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().bodyTemplate()).isNotEqualTo(OPTIONAL_REQUEST_BODY);
+	}
+
+	@Test
 	public void testMatrixVariable_MapParam() throws Exception {
 		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariable", Map.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
@@ -697,6 +719,16 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(path = "/matrixVariable/{params}")
 		String matrixVariableNotNamed(@MatrixVariable Map<String, Object> params);
+
+	}
+
+	public interface TestTemplate_RequestBody {
+
+		@RequestMapping(path = "/requestBody")
+		String requestBody(@RequestBody(required = false) TestObject body);
+
+		@RequestMapping(path = "/requestBody_required")
+		String requestBodyRequired(@RequestBody TestObject body);
 
 	}
 
