@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.core.annotation.AliasFor;
  *
  * @author Spencer Gibb
  * @author Venil Noronha
+ * @author Olga Maciaszek-Sharma
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -73,8 +74,25 @@ public @interface FeignClient {
 
 	/**
 	 * @return the <code>@Qualifier</code> value for the feign client.
+	 * @deprecated in favour of {@link #qualifiers()}.
+	 *
+	 * If both {@link #qualifier()} and {@link #qualifiers()} are present,
+	 * we will use the latter, unless the array returned by {@link #qualifiers()} is empty
+	 * or only contains <code>null</code>  or whitespace values, in which case we'll fall back first to
+	 * {@link #qualifier()} and, if that's also not present, to the default = <code>contextId + "FeignClient"</code>.
 	 */
+	@Deprecated
 	String qualifier() default "";
+
+	/**
+	 * @return the <code>@Qualifiers</code> value for the feign client.
+	 *
+	 * If both {@link #qualifier()} and {@link #qualifiers()} are present,
+	 * we will use the latter, unless the array returned by {@link #qualifiers()} is empty
+	 * or only contains <code>null</code>  or whitespace values, in which case we'll fall back first to
+	 * {@link #qualifier()} and, if that's also not present, to the default = <code>contextId + "FeignClient"</code>.
+	 */
+	String[] qualifiers() default {};
 
 	/**
 	 * @return an absolute URL or resolvable hostname (the protocol is optional).

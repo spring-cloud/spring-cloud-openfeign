@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,8 @@ public class FeignPageableEncodingTests {
 		Pageable pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "sortProperty");
 
 		// when
-		final ResponseEntity<Page<Invoice>> response = this.invoiceClient.getInvoicesPaged(pageable);
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPaged(pageable);
 
 		// then
 		assertThat(response).isNotNull();
@@ -125,11 +126,12 @@ public class FeignPageableEncodingTests {
 	@Test
 	public void testPageableWithMultipleSort() {
 		// given
-		Pageable pageable = PageRequest.of(0, 10,
-			Sort.by(Sort.Order.desc("sortProperty1"), Sort.Order.asc("sortProperty2")));
+		Pageable pageable = PageRequest.of(0, 10, Sort
+				.by(Sort.Order.desc("sortProperty1"), Sort.Order.asc("sortProperty2")));
 
 		// when
-		final ResponseEntity<Page<Invoice>> response = this.invoiceClient.getInvoicesPaged(pageable);
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPaged(pageable);
 
 		// then
 		assertThat(response).isNotNull();

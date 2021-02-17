@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -57,6 +59,7 @@ import org.springframework.util.StringUtils;
  * @author Gang Li
  * @author Michal Domagala
  * @author Marcin Grzejszczak
+ * @author Olga Maciaszek-Sharma
  */
 class FeignClientsRegistrar
 		implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
@@ -243,7 +246,6 @@ class FeignClientsRegistrar
 		definition.setLazyInit(true);
 		validate(attributes);
 
-		String alias = contextId + "FeignClient";
 		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
 		beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, className);
 		beanDefinition.setAttribute("feignClientsRegistrarFactoryBean", factoryBean);
@@ -253,13 +255,13 @@ class FeignClientsRegistrar
 
 		beanDefinition.setPrimary(primary);
 
-		String qualifier = getQualifier(attributes);
-		if (StringUtils.hasText(qualifier)) {
-			alias = qualifier;
+		String[] qualifiers = getQualifiers(attributes);
+		if (ArrayUtils.isEmpty(qualifiers)) {
+			qualifiers = new String[] { contextId + "FeignClient" };
 		}
 
 		BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className,
-				new String[] { alias });
+				qualifiers);
 		BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
 	}
 
@@ -377,6 +379,22 @@ class FeignClientsRegistrar
 			return qualifier;
 		}
 		return null;
+	}
+
+	private String[] getQualifiers(Map<String, Object> client) {
+		if (client == null) {
+			return null;
+		}
+		String[] qualifiers = (String[]) client.get("qualifiers");
+		for (String qualifier : qualifiers) {
+			if (!StringUtils.hasText(qualifier)) {
+				qualifiers = ArrayUtils.removeElement(qualifiers, qualifier);
+			}
+		}
+		if (ArrayUtils.isEmpty(qualifiers) && getQualifier(client) != null) {
+			qualifiers = new String[] { getQualifier(client) };
+		}
+		return ArrayUtils.isNotEmpty(qualifiers) ? qualifiers : null;
 	}
 
 	private String getClientName(Map<String, Object> client) {
