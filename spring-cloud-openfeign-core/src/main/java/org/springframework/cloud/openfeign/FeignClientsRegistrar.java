@@ -20,12 +20,14 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.lang3.ArrayUtils;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -50,6 +52,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -256,7 +259,7 @@ class FeignClientsRegistrar
 		beanDefinition.setPrimary(primary);
 
 		String[] qualifiers = getQualifiers(attributes);
-		if (ArrayUtils.isEmpty(qualifiers)) {
+		if (ObjectUtils.isEmpty(qualifiers)) {
 			qualifiers = new String[] { contextId + "FeignClient" };
 		}
 
@@ -385,16 +388,13 @@ class FeignClientsRegistrar
 		if (client == null) {
 			return null;
 		}
-		String[] qualifiers = (String[]) client.get("qualifiers");
-		for (String qualifier : qualifiers) {
-			if (!StringUtils.hasText(qualifier)) {
-				qualifiers = ArrayUtils.removeElement(qualifiers, qualifier);
-			}
+		List<String> qualifierList = new ArrayList<>(
+				Arrays.asList((String[]) client.get("qualifiers")));
+		qualifierList.removeIf(qualifier -> !StringUtils.hasText(qualifier));
+		if (qualifierList.isEmpty() && getQualifier(client) != null) {
+			qualifierList = Collections.singletonList(getQualifier(client));
 		}
-		if (ArrayUtils.isEmpty(qualifiers) && getQualifier(client) != null) {
-			qualifiers = new String[] { getQualifier(client) };
-		}
-		return ArrayUtils.isNotEmpty(qualifiers) ? qualifiers : null;
+		return !qualifierList.isEmpty() ? qualifierList.toArray(new String[0]) : null;
 	}
 
 	private String getClientName(Map<String, Object> client) {
