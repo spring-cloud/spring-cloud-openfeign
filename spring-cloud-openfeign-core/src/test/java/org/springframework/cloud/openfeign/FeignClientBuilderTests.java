@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,9 +84,9 @@ public class FeignClientBuilderTests {
 		for (final Method method : FeignClient.class.getMethods()) {
 			methodNames.add(method.getName());
 		}
-		methodNames.removeAll(
-				Arrays.asList("annotationType", "value", "serviceId", "qualifier",
-						"configuration", "primary", "equals", "hashCode", "toString"));
+		methodNames.removeAll(Arrays.asList("annotationType", "value", "serviceId",
+				"qualifier", "qualifiers", "configuration", "primary", "equals",
+				"hashCode", "toString"));
 		Collections.sort(methodNames);
 		// If this safety check fails the Builder has to be updated.
 		// (1) Either a field was removed from the FeignClient annotation and so it has to
