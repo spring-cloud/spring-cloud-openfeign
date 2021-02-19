@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import feign.Request;
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
@@ -78,11 +77,11 @@ public class SpringEncoder implements Encoder {
 
 	@Override
 	public void encode(Object requestBody, Type bodyType, RequestTemplate request)
-		throws EncodeException {
+			throws EncodeException {
 		// template.body(conversionService.convert(object, String.class));
 		if (requestBody != null) {
 			Collection<String> contentTypes = request.headers()
-				.get(HttpEncoding.CONTENT_TYPE);
+					.get(HttpEncoding.CONTENT_TYPE);
 
 			MediaType requestContentType = null;
 			if (contentTypes != null && !contentTypes.isEmpty()) {
@@ -97,29 +96,29 @@ public class SpringEncoder implements Encoder {
 			else {
 				if (bodyType == MultipartFile.class) {
 					log.warn(
-						"For MultipartFile to be handled correctly, the 'consumes' parameter of @RequestMapping "
-							+ "should be specified as MediaType.MULTIPART_FORM_DATA_VALUE");
+							"For MultipartFile to be handled correctly, the 'consumes' parameter of @RequestMapping "
+									+ "should be specified as MediaType.MULTIPART_FORM_DATA_VALUE");
 				}
 			}
 			encodeWithMessageConverter(requestBody, bodyType, request,
-				requestContentType);
+					requestContentType);
 		}
 	}
 
 	private void encodeWithMessageConverter(Object requestBody, Type bodyType,
-		RequestTemplate request, MediaType requestContentType) {
+			RequestTemplate request, MediaType requestContentType) {
 		for (HttpMessageConverter messageConverter : this.messageConverters.getObject()
-			.getConverters()) {
+				.getConverters()) {
 			FeignOutputMessage outputMessage;
 			try {
 				if (messageConverter instanceof GenericHttpMessageConverter) {
 					outputMessage = checkAndWrite(requestBody, bodyType,
-						requestContentType,
-						(GenericHttpMessageConverter) messageConverter, request);
+							requestContentType,
+							(GenericHttpMessageConverter) messageConverter, request);
 				}
 				else {
 					outputMessage = checkAndWrite(requestBody, requestContentType,
-						messageConverter, request);
+							messageConverter, request);
 				}
 			}
 			catch (IOException | HttpMessageConversionException ex) {
@@ -142,20 +141,19 @@ public class SpringEncoder implements Encoder {
 					charset = null;
 				}
 				else if (messageConverter instanceof ProtobufHttpMessageConverter
-					&& ProtobufHttpMessageConverter.PROTOBUF.isCompatibleWith(
-					outputMessage.getHeaders().getContentType())) {
+						&& ProtobufHttpMessageConverter.PROTOBUF.isCompatibleWith(
+								outputMessage.getHeaders().getContentType())) {
 					charset = null;
 				}
 				else {
 					charset = StandardCharsets.UTF_8;
 				}
-				request.body(Request.Body
-					.encoded(outputMessage.getOutputStream().toByteArray(), charset));
+				request.body(outputMessage.getOutputStream().toByteArray(), charset);
 				return;
 			}
 		}
 		String message = "Could not write request: no suitable HttpMessageConverter "
-			+ "found for request type [" + requestBody.getClass().getName() + "]";
+				+ "found for request type [" + requestBody.getClass().getName() + "]";
 		if (requestContentType != null) {
 			message += " and content type [" + requestContentType + "]";
 		}
@@ -196,26 +194,26 @@ public class SpringEncoder implements Encoder {
 		if (log.isDebugEnabled()) {
 			if (requestContentType != null) {
 				log.debug("Writing [" + requestBody + "] as \"" + requestContentType
-					+ "\" using [" + messageConverter + "]");
+						+ "\" using [" + messageConverter + "]");
 			}
 			else {
 				log.debug(
-					"Writing [" + requestBody + "] using [" + messageConverter + "]");
+						"Writing [" + requestBody + "] using [" + messageConverter + "]");
 			}
 		}
 	}
 
 	private boolean isMultipartType(MediaType requestContentType) {
 		return Arrays.asList(MediaType.MULTIPART_FORM_DATA, MediaType.MULTIPART_MIXED,
-			MediaType.MULTIPART_RELATED).contains(requestContentType);
+				MediaType.MULTIPART_RELATED).contains(requestContentType);
 	}
 
 	private boolean nonTextType(FeignOutputMessage outputMessage) {
 		MediaType contentType = outputMessage.getHeaders().getContentType();
 		return contentType == null || Stream
-			.of(MediaType.APPLICATION_CBOR, MediaType.APPLICATION_OCTET_STREAM,
-				MediaType.IMAGE_GIF, MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
-			.anyMatch(mediaType -> mediaType.includes(contentType));
+				.of(MediaType.APPLICATION_CBOR, MediaType.APPLICATION_OCTET_STREAM,
+						MediaType.IMAGE_GIF, MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
+				.anyMatch(mediaType -> mediaType.includes(contentType));
 	}
 
 	private final class FeignOutputMessage implements HttpOutputMessage {

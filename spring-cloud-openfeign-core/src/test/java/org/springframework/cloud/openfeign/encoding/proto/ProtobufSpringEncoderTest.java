@@ -109,7 +109,7 @@ public class ProtobufSpringEncoderTest {
 
 	private SpringEncoder newEncoder() {
 		ObjectFactory<HttpMessageConverters> converters = () -> new HttpMessageConverters(
-			new ProtobufHttpMessageConverter());
+				new ProtobufHttpMessageConverter());
 		return new SpringEncoder(converters);
 	}
 
@@ -120,17 +120,17 @@ public class ProtobufSpringEncoderTest {
 	}
 
 	private HttpEntity toApacheHttpEntity(RequestTemplate requestTemplate)
-		throws IOException {
+			throws IOException {
 		final List<HttpUriRequest> request = new ArrayList<>(1);
 		BDDMockito.given(this.httpClient.execute(ArgumentMatchers.any()))
-			.will((Answer<HttpResponse>) invocationOnMock -> {
-				request.add((HttpUriRequest) invocationOnMock.getArguments()[0]);
-				return new BasicHttpResponse(new BasicStatusLine(
-					new ProtocolVersion("http", 1, 1), 200, null));
-			});
+				.will((Answer<HttpResponse>) invocationOnMock -> {
+					request.add((HttpUriRequest) invocationOnMock.getArguments()[0]);
+					return new BasicHttpResponse(new BasicStatusLine(
+							new ProtocolVersion("http", 1, 1), 200, null));
+				});
 		new ApacheHttpClient(this.httpClient).execute(
-			requestTemplate.resolve(new HashMap<>()).request(),
-			new feign.Request.Options());
+				requestTemplate.resolve(new HashMap<>()).request(),
+				new feign.Request.Options());
 		HttpUriRequest httpUriRequest = request.get(0);
 		return ((HttpEntityEnclosingRequestBase) httpUriRequest).getEntity();
 	}
