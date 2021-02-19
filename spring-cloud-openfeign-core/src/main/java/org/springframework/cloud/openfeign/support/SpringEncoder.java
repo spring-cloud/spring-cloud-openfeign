@@ -22,8 +22,9 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.stream.Stream;
 
 import feign.Request;
 import feign.RequestTemplate;
@@ -77,11 +78,11 @@ public class SpringEncoder implements Encoder {
 
 	@Override
 	public void encode(Object requestBody, Type bodyType, RequestTemplate request)
-			throws EncodeException {
+		throws EncodeException {
 		// template.body(conversionService.convert(object, String.class));
 		if (requestBody != null) {
 			Collection<String> contentTypes = request.headers()
-					.get(HttpEncoding.CONTENT_TYPE);
+				.get(HttpEncoding.CONTENT_TYPE);
 
 			MediaType requestContentType = null;
 			if (contentTypes != null && !contentTypes.isEmpty()) {
@@ -89,67 +90,76 @@ public class SpringEncoder implements Encoder {
 				requestContentType = MediaType.valueOf(type);
 			}
 
-			if (Objects.equals(requestContentType, MediaType.MULTIPART_FORM_DATA)) {
+			if (isMultipartType(requestContentType)) {
 				this.springFormEncoder.encode(requestBody, bodyType, request);
 				return;
 			}
 			else {
 				if (bodyType == MultipartFile.class) {
 					log.warn(
-							"For MultipartFile to be handled correctly, the 'consumes' parameter of @RequestMapping "
-									+ "should be specified as MediaType.MULTIPART_FORM_DATA_VALUE");
+						"For MultipartFile to be handled correctly, the 'consumes' parameter of @RequestMapping "
+							+ "should be specified as MediaType.MULTIPART_FORM_DATA_VALUE");
 				}
 			}
-
-			for (HttpMessageConverter messageConverter : this.messageConverters
-					.getObject().getConverters()) {
-				FeignOutputMessage outputMessage;
-				try {
-					if (messageConverter instanceof GenericHttpMessageConverter) {
-						outputMessage = checkAndWrite(requestBody, bodyType,
-								requestContentType,
-								(GenericHttpMessageConverter) messageConverter, request);
-					}
-					else {
-						outputMessage = checkAndWrite(requestBody, requestContentType,
-								messageConverter, request);
-					}
-				}
-				catch (IOException | HttpMessageConversionException ex) {
-					throw new EncodeException("Error converting request body", ex);
-				}
-				if (outputMessage != null) {
-					// clear headers
-					request.headers(null);
-					// converters can modify headers, so update the request
-					// with the modified headers
-					request.headers(getHeaders(outputMessage.getHeaders()));
-
-					// do not use charset for binary data and protobuf
-					Charset charset;
-					if (messageConverter instanceof ByteArrayHttpMessageConverter) {
-						charset = null;
-					}
-					else if (messageConverter instanceof ProtobufHttpMessageConverter
-							&& ProtobufHttpMessageConverter.PROTOBUF.isCompatibleWith(
-									outputMessage.getHeaders().getContentType())) {
-						charset = null;
-					}
-					else {
-						charset = StandardCharsets.UTF_8;
-					}
-					request.body(Request.Body.encoded(
-							outputMessage.getOutputStream().toByteArray(), charset));
-					return;
-				}
-			}
-			String message = "Could not write request: no suitable HttpMessageConverter "
-					+ "found for request type [" + requestBody.getClass().getName() + "]";
-			if (requestContentType != null) {
-				message += " and content type [" + requestContentType + "]";
-			}
-			throw new EncodeException(message);
+			encodeWithMessageConverter(requestBody, bodyType, request,
+				requestContentType);
 		}
+	}
+
+	private void encodeWithMessageConverter(Object requestBody, Type bodyType,
+		RequestTemplate request, MediaType requestContentType) {
+		for (HttpMessageConverter messageConverter : this.messageConverters.getObject()
+			.getConverters()) {
+			FeignOutputMessage outputMessage;
+			try {
+				if (messageConverter instanceof GenericHttpMessageConverter) {
+					outputMessage = checkAndWrite(requestBody, bodyType,
+						requestContentType,
+						(GenericHttpMessageConverter) messageConverter, request);
+				}
+				else {
+					outputMessage = checkAndWrite(requestBody, requestContentType,
+						messageConverter, request);
+				}
+			}
+			catch (IOException | HttpMessageConversionException ex) {
+				throw new EncodeException("Error converting request body", ex);
+			}
+			if (outputMessage != null) {
+				// clear headers
+				request.headers(null);
+				// converters can modify headers, so update the request
+				// with the modified headers
+				request.headers(getHeaders(outputMessage.getHeaders()));
+
+				// do not use charset for binary data and protobuf
+				Charset charset;
+
+				if (nonTextType(outputMessage)) {
+					charset = null;
+				}
+				else if (messageConverter instanceof ByteArrayHttpMessageConverter) {
+					charset = null;
+				}
+				else if (messageConverter instanceof ProtobufHttpMessageConverter
+					&& ProtobufHttpMessageConverter.PROTOBUF.isCompatibleWith(
+					outputMessage.getHeaders().getContentType())) {
+					charset = null;
+				}
+				else {
+					charset = StandardCharsets.UTF_8;
+				}
+				request.body(Request.Body
+					.encoded(outputMessage.getOutputStream().toByteArray(), charset));
+				return;
+			}
+		}
+		String message = "Could not write request: no suitable HttpMessageConverter "
+			+ "found for request type [" + requestBody.getClass().getName() + "]";
+		if (requestContentType != null) {
+			message += " and content type [" + requestContentType + "]";
+		}
+		throw new EncodeException(message);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -186,13 +196,26 @@ public class SpringEncoder implements Encoder {
 		if (log.isDebugEnabled()) {
 			if (requestContentType != null) {
 				log.debug("Writing [" + requestBody + "] as \"" + requestContentType
-						+ "\" using [" + messageConverter + "]");
+					+ "\" using [" + messageConverter + "]");
 			}
 			else {
 				log.debug(
-						"Writing [" + requestBody + "] using [" + messageConverter + "]");
+					"Writing [" + requestBody + "] using [" + messageConverter + "]");
 			}
 		}
+	}
+
+	private boolean isMultipartType(MediaType requestContentType) {
+		return Arrays.asList(MediaType.MULTIPART_FORM_DATA, MediaType.MULTIPART_MIXED,
+			MediaType.MULTIPART_RELATED).contains(requestContentType);
+	}
+
+	private boolean nonTextType(FeignOutputMessage outputMessage) {
+		MediaType contentType = outputMessage.getHeaders().getContentType();
+		return contentType == null || Stream
+			.of(MediaType.APPLICATION_CBOR, MediaType.APPLICATION_OCTET_STREAM,
+				MediaType.IMAGE_GIF, MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
+			.anyMatch(mediaType -> mediaType.includes(contentType));
 	}
 
 	private final class FeignOutputMessage implements HttpOutputMessage {
