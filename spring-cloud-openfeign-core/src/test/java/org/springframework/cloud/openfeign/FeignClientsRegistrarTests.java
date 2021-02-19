@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class FeignClientsRegistrarTests {
 	private String testGetName(String name) {
 		FeignClientsRegistrar registrar = new FeignClientsRegistrar();
 		registrar.setEnvironment(new MockEnvironment());
-		return registrar.getName(Collections.<String, Object>singletonMap("name", name));
+		return registrar.getName(Collections.singletonMap("name", name));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -100,7 +100,6 @@ public class FeignClientsRegistrarTests {
 		assertThatCode(() -> config.refresh())
 				.as("Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
 				.doesNotThrowAnyException();
-
 	}
 
 	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)

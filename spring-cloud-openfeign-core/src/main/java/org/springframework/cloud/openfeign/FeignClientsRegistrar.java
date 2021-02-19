@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,6 +52,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -57,6 +62,7 @@ import org.springframework.util.StringUtils;
  * @author Gang Li
  * @author Michal Domagala
  * @author Marcin Grzejszczak
+ * @author Olga Maciaszek-Sharma
  */
 class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
@@ -227,7 +233,6 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		definition.setLazyInit(true);
 		validate(attributes);
 
-		String alias = contextId + "FeignClient";
 		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
 		beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, className);
 		beanDefinition.setAttribute("feignClientsRegistrarFactoryBean", factoryBean);
@@ -237,12 +242,12 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 
 		beanDefinition.setPrimary(primary);
 
-		String qualifier = getQualifier(attributes);
-		if (StringUtils.hasText(qualifier)) {
-			alias = qualifier;
+		String[] qualifiers = getQualifiers(attributes);
+		if (ObjectUtils.isEmpty(qualifiers)) {
+			qualifiers = new String[] { contextId + "FeignClient" };
 		}
 
-		BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className, new String[] { alias });
+		BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className, qualifiers);
 		BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
 	}
 
@@ -354,6 +359,18 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 			return qualifier;
 		}
 		return null;
+	}
+
+	private String[] getQualifiers(Map<String, Object> client) {
+		if (client == null) {
+			return null;
+		}
+		List<String> qualifierList = new ArrayList<>(Arrays.asList((String[]) client.get("qualifiers")));
+		qualifierList.removeIf(qualifier -> !StringUtils.hasText(qualifier));
+		if (qualifierList.isEmpty() && getQualifier(client) != null) {
+			qualifierList = Collections.singletonList(getQualifier(client));
+		}
+		return !qualifierList.isEmpty() ? qualifierList.toArray(new String[0]) : null;
 	}
 
 	private String getClientName(Map<String, Object> client) {
