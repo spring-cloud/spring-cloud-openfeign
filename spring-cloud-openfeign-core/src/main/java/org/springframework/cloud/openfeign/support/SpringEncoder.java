@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,15 +65,23 @@ public class SpringEncoder implements Encoder {
 
 	private final ObjectFactory<HttpMessageConverters> messageConverters;
 
+	private final FeignEncoderProperties encoderProperties;
+
 	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
-		this.springFormEncoder = new SpringFormEncoder();
-		this.messageConverters = messageConverters;
+		this(new SpringFormEncoder(), messageConverters);
 	}
 
 	public SpringEncoder(SpringFormEncoder springFormEncoder,
 			ObjectFactory<HttpMessageConverters> messageConverters) {
+		this(springFormEncoder, messageConverters, new FeignEncoderProperties());
+	}
+
+	public SpringEncoder(SpringFormEncoder springFormEncoder,
+			ObjectFactory<HttpMessageConverters> messageConverters,
+			FeignEncoderProperties encoderProperties) {
 		this.springFormEncoder = springFormEncoder;
 		this.messageConverters = messageConverters;
+		this.encoderProperties = encoderProperties;
 	}
 
 	@Override
@@ -135,7 +143,17 @@ public class SpringEncoder implements Encoder {
 				// do not use charset for binary data and protobuf
 				Charset charset;
 
-				if (nonTextType(outputMessage)) {
+				MediaType contentType = outputMessage.getHeaders().getContentType();
+				Charset charsetFromContentType = contentType != null
+						? contentType.getCharset() : null;
+
+				if (encoderProperties != null
+						&& encoderProperties.isCharsetFromContentType()
+						&& charsetFromContentType != null) {
+					charset = charsetFromContentType;
+				}
+
+				else if (nonTextType(outputMessage)) {
 					charset = null;
 				}
 				else if (messageConverter instanceof ByteArrayHttpMessageConverter) {
