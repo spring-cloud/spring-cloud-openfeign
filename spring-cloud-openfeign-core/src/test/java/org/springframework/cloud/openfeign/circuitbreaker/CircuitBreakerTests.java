@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.ConfigBuilder;
@@ -71,9 +70,6 @@ public class CircuitBreakerTests {
 
 	@Autowired
 	TestClientWithFactory testClientWithFactory;
-
-	@LocalServerPort
-	private int port = 0;
 
 	@BeforeAll
 	public static void beforeClass() {

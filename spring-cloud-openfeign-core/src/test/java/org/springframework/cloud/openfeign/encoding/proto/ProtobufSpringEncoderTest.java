@@ -71,7 +71,7 @@ public class ProtobufSpringEncoderTest {
 			.build();
 
 	@Test
-	public void testProtobuf() throws IOException, URISyntaxException {
+	public void testProtobuf() throws IOException {
 		// protobuf convert to request by feign and ProtobufHttpMessageConverter
 		RequestTemplate requestTemplate = newRequestTemplate();
 		newEncoder().encode(this.request, Request.class, requestTemplate);

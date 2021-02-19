@@ -55,6 +55,7 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
  * @author Ahmad Mozafarnia
  * @author Aaron Whiteside
  * @author Darren Foong
+ * @author Olga Maciaszek-Sharma
  */
 public class SpringEncoder implements Encoder {
 
@@ -212,7 +213,8 @@ public class SpringEncoder implements Encoder {
 		MediaType contentType = outputMessage.getHeaders().getContentType();
 		return contentType == null || Stream
 				.of(MediaType.APPLICATION_CBOR, MediaType.APPLICATION_OCTET_STREAM,
-						MediaType.IMAGE_GIF, MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
+						MediaType.APPLICATION_PDF, MediaType.IMAGE_GIF,
+						MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
 				.anyMatch(mediaType -> mediaType.includes(contentType));
 	}
 
