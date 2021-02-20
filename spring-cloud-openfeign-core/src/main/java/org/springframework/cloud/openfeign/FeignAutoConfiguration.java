@@ -284,7 +284,7 @@ public class FeignAutoConfiguration {
 	@ConditionalOnClass(AsyncApacheHttp5Client.class)
 	@ConditionalOnMissingBean(CloseableHttpAsyncClient.class)
 	@ConditionalOnProperty("feign.asynchttpclient5.enabled")
-	protected static class AsyncHttpClient5Configuration {
+	protected static class AsyncHttpClient5FeignConfiguration {
 		private CloseableHttpAsyncClient asyncHttpClient5;
 
 		@Bean
