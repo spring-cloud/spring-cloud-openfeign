@@ -51,24 +51,23 @@ public class AsyncHttpClient5FeignConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(AsyncClientConnectionManager.class)
 	public AsyncClientConnectionManager connectionManager(
-		ApacheAsyncHttpClientConnectionManagerFactory httpClientConnectionManagerFactory,
-		FeignHttpClientProperties httpClientProperties, FeignAsyncHttpClientProperties asyncHttpClientProperties) {
+			ApacheAsyncHttpClientConnectionManagerFactory httpClientConnectionManagerFactory,
+			FeignHttpClientProperties httpClientProperties, FeignAsyncHttpClientProperties asyncHttpClientProperties) {
 		return httpClientConnectionManagerFactory.newConnectionManager(
-			asyncHttpClientProperties.getPoolConcurrencyPolicy(), httpClientProperties.getMaxConnections(),
-			httpClientProperties.getMaxConnectionsPerRoute(), httpClientProperties.getTimeToLive(),
-			httpClientProperties.getTimeToLiveUnit());
+				asyncHttpClientProperties.getPoolConcurrencyPolicy(), httpClientProperties.getMaxConnections(),
+				httpClientProperties.getMaxConnectionsPerRoute(), httpClientProperties.getTimeToLive(),
+				httpClientProperties.getTimeToLiveUnit());
 	}
 
 	@Bean
 	public CloseableHttpAsyncClient httpClient(AsyncClientConnectionManager connectionManager,
-		FeignHttpClientProperties httpClientProperties) {
+			FeignHttpClientProperties httpClientProperties) {
 		final RequestConfig defaultRequestConfig = RequestConfig.custom()
-			.setConnectTimeout(Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
-			.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build();
-		this.asyncHttpClient5 = HttpAsyncClients.custom()
-			.disableCookieManagement().useSystemProperties()
-			.setConnectionManager(connectionManager)
-			.setDefaultRequestConfig(defaultRequestConfig).setVersionPolicy(HttpVersionPolicy.NEGOTIATE).build();
+				.setConnectTimeout(Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
+				.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build();
+		this.asyncHttpClient5 = HttpAsyncClients.custom().disableCookieManagement().useSystemProperties()
+				.setConnectionManager(connectionManager).setDefaultRequestConfig(defaultRequestConfig)
+				.setVersionPolicy(HttpVersionPolicy.NEGOTIATE).build();
 		this.asyncHttpClient5.start();
 		return this.asyncHttpClient5;
 	}
