@@ -281,7 +281,7 @@ TIP: By default, Feign clients do not encode slash `/` characters. You can chang
 
 In the `SpringEncoder` that we provide, we set `null` charset for binary content types and `UTF-8` for all the other ones.
 
-You can modify this behaviour to derive the charset from the `Content-Type` charset instead by setting the value of `feign.encoder.charset-from-content-type` to `true`.
+You can modify this behaviour to derive the charset from the `Content-Type` header charset instead by setting the value of `feign.encoder.charset-from-content-type` to `true`.
 
 [[timeout-handling]]
 === Timeout Handling
