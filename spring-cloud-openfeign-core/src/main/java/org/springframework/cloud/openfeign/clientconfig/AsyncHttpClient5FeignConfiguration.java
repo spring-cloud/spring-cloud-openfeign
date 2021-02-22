@@ -25,13 +25,18 @@ import feign.hc5.AsyncApacheHttp5Client;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.nio.AsyncClientConnectionManager;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.http2.HttpVersionPolicy;
 import org.apache.hc.core5.io.CloseMode;
+import org.apache.hc.core5.pool.PoolReusePolicy;
+import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.openfeign.httpclient.ApacheAsyncHttpClientConnectionManagerFactory;
 import org.springframework.cloud.openfeign.support.FeignAsyncHttpClientProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
@@ -50,13 +55,18 @@ public class AsyncHttpClient5FeignConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(AsyncClientConnectionManager.class)
-	public AsyncClientConnectionManager connectionManager(
-			ApacheAsyncHttpClientConnectionManagerFactory httpClientConnectionManagerFactory,
-			FeignHttpClientProperties httpClientProperties, FeignAsyncHttpClientProperties asyncHttpClientProperties) {
-		return httpClientConnectionManagerFactory.newConnectionManager(
-				asyncHttpClientProperties.getPoolConcurrencyPolicy(), httpClientProperties.getMaxConnections(),
-				httpClientProperties.getMaxConnectionsPerRoute(), httpClientProperties.getTimeToLive(),
-				httpClientProperties.getTimeToLiveUnit());
+	public AsyncClientConnectionManager connectionManager(FeignHttpClientProperties httpClientProperties,
+			FeignAsyncHttpClientProperties asyncHttpClientProperties) {
+		return PoolingAsyncClientConnectionManagerBuilder.create()
+				.setMaxConnTotal(httpClientProperties.getMaxConnections())
+				.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
+				.setTlsStrategy(ClientTlsStrategyBuilder.create().setSslContext(SSLContexts.createSystemDefault())
+						.setTlsVersions(TLS.V_1_3, TLS.V_1_2).build())
+				.setPoolConcurrencyPolicy(asyncHttpClientProperties.getPoolConcurrencyPolicy())
+				.setConnPoolPolicy(PoolReusePolicy.LIFO)
+				.setConnectionTimeToLive(
+						TimeValue.of(httpClientProperties.getTimeToLive(), httpClientProperties.getTimeToLiveUnit()))
+				.build();
 	}
 
 	@Bean

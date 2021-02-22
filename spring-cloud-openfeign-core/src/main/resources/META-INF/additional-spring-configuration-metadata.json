@@ -15,6 +15,18 @@
 			"defaultValue": "false"
 		},
 		{
+			"name": "feign.asynchttpclient.enabled",
+			"type": "java.lang.Boolean",
+			"description": "Enables the use of the Apache Async HTTP Client 5 by Feign.",
+			"defaultValue": "false"
+		},
+		{
+			"name": "feign.asynchttpclient.poolConcurrencyPolicy",
+			"type": "java.lang.String",
+			"description": "LAX: Higher concurrency but with lax connection max limit guarantees; STRICT: Strict connection max limit guarantees.",
+			"defaultValue": "STRICT"
+		},
+		{
 			"name": "feign.httpclient.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the use of the Apache HTTP Client by Feign.",
