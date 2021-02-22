@@ -1,26 +1,28 @@
 |===
 |Name | Default | Description
 
-|feign.circuitbreaker.enabled | false | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
+|feign.autoconfiguration.jackson.enabled | `false` | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
+|feign.circuitbreaker.enabled | `false` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
 |feign.client.config |  | 
-|feign.client.decode-slash | true | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
-|feign.client.default-config | default | 
-|feign.client.default-to-properties | true | 
-|feign.compression.request.enabled | false | Enables the request sent by Feign to be compressed.
-|feign.compression.request.mime-types | [text/xml, application/xml, application/json] | The list of supported mime types.
-|feign.compression.request.min-request-size | 2048 | The minimum threshold content size.
-|feign.compression.response.enabled | false | Enables the response from Feign to be compressed.
-|feign.compression.response.useGzipDecoder | false | Enables the default gzip decoder to be used.
-|feign.httpclient.connection-timeout | 2000 | 
-|feign.httpclient.connection-timer-repeat | 3000 | 
-|feign.httpclient.disable-ssl-validation | false | 
-|feign.httpclient.enabled | true | Enables the use of the Apache HTTP Client by Feign.
-|feign.httpclient.follow-redirects | true | 
-|feign.httpclient.max-connections | 200 | 
-|feign.httpclient.max-connections-per-route | 50 | 
-|feign.httpclient.time-to-live | 900 | 
+|feign.client.decode-slash | `true` | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
+|feign.client.default-config | `default` | 
+|feign.client.default-to-properties | `true` | 
+|feign.compression.request.enabled | `false` | Enables the request sent by Feign to be compressed.
+|feign.compression.request.mime-types | `[text/xml, application/xml, application/json]` | The list of supported mime types.
+|feign.compression.request.min-request-size | `2048` | The minimum threshold content size.
+|feign.compression.response.enabled | `false` | Enables the response from Feign to be compressed.
+|feign.compression.response.useGzipDecoder | `false` | Enables the default gzip decoder to be used.
+|feign.encoder.charset-from-content-type | `false` | 
+|feign.httpclient.connection-timeout | `2000` | 
+|feign.httpclient.connection-timer-repeat | `3000` | 
+|feign.httpclient.disable-ssl-validation | `false` | 
+|feign.httpclient.enabled | `true` | Enables the use of the Apache HTTP Client by Feign.
+|feign.httpclient.follow-redirects | `true` | 
+|feign.httpclient.max-connections | `200` | 
+|feign.httpclient.max-connections-per-route | `50` | 
+|feign.httpclient.time-to-live | `900` | 
 |feign.httpclient.time-to-live-unit |  | 
-|feign.hystrix.enabled | false | If true, an OpenFeign client will be wrapped with a Hystrix circuit breaker.
-|feign.okhttp.enabled | false | Enables the use of the OK HTTP Client by Feign.
+|feign.hystrix.enabled | `false` | If true, an OpenFeign client will be wrapped with a Hystrix circuit breaker.
+|feign.okhttp.enabled | `false` | Enables the use of the OK HTTP Client by Feign.
 
 |===

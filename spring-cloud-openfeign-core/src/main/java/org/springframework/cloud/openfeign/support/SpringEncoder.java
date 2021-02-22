@@ -57,6 +57,7 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
  * @author Darren Foong
  * @author Olga Maciaszek-Sharma
  */
+@SuppressWarnings("rawtypes")
 public class SpringEncoder implements Encoder {
 
 	private static final Log log = LogFactory.getLog(SpringEncoder.class);
@@ -152,16 +153,7 @@ public class SpringEncoder implements Encoder {
 						&& charsetFromContentType != null) {
 					charset = charsetFromContentType;
 				}
-
-				else if (nonTextType(outputMessage)) {
-					charset = null;
-				}
-				else if (messageConverter instanceof ByteArrayHttpMessageConverter) {
-					charset = null;
-				}
-				else if (messageConverter instanceof ProtobufHttpMessageConverter
-						&& ProtobufHttpMessageConverter.PROTOBUF.isCompatibleWith(
-								outputMessage.getHeaders().getContentType())) {
+				else if (shouldHaveNullCharset(messageConverter, outputMessage)) {
 					charset = null;
 				}
 				else {
@@ -177,6 +169,15 @@ public class SpringEncoder implements Encoder {
 			message += " and content type [" + requestContentType + "]";
 		}
 		throw new EncodeException(message);
+	}
+
+	private boolean shouldHaveNullCharset(HttpMessageConverter messageConverter,
+			FeignOutputMessage outputMessage) {
+		return binaryContentType(outputMessage)
+				|| messageConverter instanceof ByteArrayHttpMessageConverter
+				|| messageConverter instanceof ProtobufHttpMessageConverter
+						&& ProtobufHttpMessageConverter.PROTOBUF.isCompatibleWith(
+								outputMessage.getHeaders().getContentType());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -227,7 +228,7 @@ public class SpringEncoder implements Encoder {
 				MediaType.MULTIPART_RELATED).contains(requestContentType);
 	}
 
-	private boolean nonTextType(FeignOutputMessage outputMessage) {
+	private boolean binaryContentType(FeignOutputMessage outputMessage) {
 		MediaType contentType = outputMessage.getHeaders().getContentType();
 		return contentType == null || Stream
 				.of(MediaType.APPLICATION_CBOR, MediaType.APPLICATION_OCTET_STREAM,
