@@ -87,8 +87,8 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
-@EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class,
-		FeignAsyncHttpClientProperties.class })
+@EnableConfigurationProperties({FeignClientProperties.class, FeignHttpClientProperties.class,
+	FeignAsyncHttpClientProperties.class})
 @Import(DefaultGzipDecoderConfiguration.class)
 public class FeignAutoConfiguration {
 
@@ -110,7 +110,7 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass({ Module.class, Page.class, Sort.class })
+	@ConditionalOnClass({Module.class, Page.class, Sort.class})
 	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled", havingValue = "true")
 	protected static class FeignJacksonConfiguration {
 
@@ -171,7 +171,7 @@ public class FeignAutoConfiguration {
 	protected static class HttpClientFeignConfiguration {
 
 		private final Timer connectionManagerTimer = new Timer(
-				"FeignApacheHttpClientConfiguration.connectionManagerTimer", true);
+			"FeignApacheHttpClientConfiguration.connectionManagerTimer", true);
 
 		@Autowired(required = false)
 		private RegistryBuilder registryBuilder;
@@ -181,12 +181,12 @@ public class FeignAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean(HttpClientConnectionManager.class)
 		public HttpClientConnectionManager connectionManager(
-				ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
-				FeignHttpClientProperties httpClientProperties) {
+			ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
+			FeignHttpClientProperties httpClientProperties) {
 			final HttpClientConnectionManager connectionManager = connectionManagerFactory.newConnectionManager(
-					httpClientProperties.isDisableSslValidation(), httpClientProperties.getMaxConnections(),
-					httpClientProperties.getMaxConnectionsPerRoute(), httpClientProperties.getTimeToLive(),
-					httpClientProperties.getTimeToLiveUnit(), this.registryBuilder);
+				httpClientProperties.isDisableSslValidation(), httpClientProperties.getMaxConnections(),
+				httpClientProperties.getMaxConnectionsPerRoute(), httpClientProperties.getTimeToLive(),
+				httpClientProperties.getTimeToLiveUnit(), this.registryBuilder);
 			this.connectionManagerTimer.schedule(new TimerTask() {
 				@Override
 				public void run() {
@@ -198,13 +198,13 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		public CloseableHttpClient httpClient(ApacheHttpClientFactory httpClientFactory,
-				HttpClientConnectionManager httpClientConnectionManager,
-				FeignHttpClientProperties httpClientProperties) {
+			HttpClientConnectionManager httpClientConnectionManager,
+			FeignHttpClientProperties httpClientProperties) {
 			RequestConfig defaultRequestConfig = RequestConfig.custom()
-					.setConnectTimeout(httpClientProperties.getConnectionTimeout())
-					.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build();
+				.setConnectTimeout(httpClientProperties.getConnectionTimeout())
+				.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build();
 			this.httpClient = httpClientFactory.createBuilder().setConnectionManager(httpClientConnectionManager)
-					.setDefaultRequestConfig(defaultRequestConfig).build();
+				.setDefaultRequestConfig(defaultRequestConfig).build();
 			return this.httpClient;
 		}
 
@@ -242,7 +242,7 @@ public class FeignAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean(ConnectionPool.class)
 		public ConnectionPool httpClientConnectionPool(FeignHttpClientProperties httpClientProperties,
-				OkHttpClientConnectionPoolFactory connectionPoolFactory) {
+			OkHttpClientConnectionPoolFactory connectionPoolFactory) {
 			Integer maxTotalConnections = httpClientProperties.getMaxConnections();
 			Long timeToLive = httpClientProperties.getTimeToLive();
 			TimeUnit ttlUnit = httpClientProperties.getTimeToLiveUnit();
@@ -251,13 +251,13 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		public okhttp3.OkHttpClient client(OkHttpClientFactory httpClientFactory, ConnectionPool connectionPool,
-				FeignHttpClientProperties httpClientProperties) {
+			FeignHttpClientProperties httpClientProperties) {
 			Boolean followRedirects = httpClientProperties.isFollowRedirects();
 			Integer connectTimeout = httpClientProperties.getConnectionTimeout();
 			Boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
 			this.okHttpClient = httpClientFactory.createBuilder(disableSslValidation)
-					.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS).followRedirects(followRedirects)
-					.connectionPool(connectionPool).build();
+				.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS).followRedirects(followRedirects)
+				.connectionPool(connectionPool).build();
 			return this.okHttpClient;
 		}
 
@@ -288,28 +288,28 @@ public class FeignAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean(AsyncClientConnectionManager.class)
 		public AsyncClientConnectionManager connectionManager(
-				ApacheAsyncHttpClientConnectionManagerFactory httpClientConnectionManagerFactory,
-				FeignHttpClientProperties httpClientProperties,
-				FeignAsyncHttpClientProperties asyncHttpClientProperties) {
+			ApacheAsyncHttpClientConnectionManagerFactory httpClientConnectionManagerFactory,
+			FeignHttpClientProperties httpClientProperties,
+			FeignAsyncHttpClientProperties asyncHttpClientProperties) {
 			return httpClientConnectionManagerFactory.newConnectionManager(
-					asyncHttpClientProperties.getPoolConcurrencyPolicy(), httpClientProperties.getMaxConnections(),
-					httpClientProperties.getMaxConnectionsPerRoute(), httpClientProperties.getTimeToLive(),
-					httpClientProperties.getTimeToLiveUnit());
+				asyncHttpClientProperties.getPoolConcurrencyPolicy(), httpClientProperties.getMaxConnections(),
+				httpClientProperties.getMaxConnectionsPerRoute(), httpClientProperties.getTimeToLive(),
+				httpClientProperties.getTimeToLiveUnit());
 		}
 
 		@Bean
 		public CloseableHttpAsyncClient httpClient(AsyncClientConnectionManager connectionManager,
-				FeignHttpClientProperties httpClientProperties) {
-
-			org.apache.hc.client5.http.config.RequestConfig defaultRequestConfig = org.apache.hc.client5.http.config.RequestConfig
-					.custom()
-					.setConnectTimeout(Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
-					.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build();
-
-			this.asyncHttpClient5 = HttpAsyncClients.custom().setConnectionManager(connectionManager)
-					.setDefaultRequestConfig(defaultRequestConfig).setVersionPolicy(HttpVersionPolicy.NEGOTIATE)
-					.build();
-
+			FeignHttpClientProperties httpClientProperties) {
+			final org.apache.hc.client5.http.config.RequestConfig defaultRequestConfig = org.apache.hc.client5.http.config.RequestConfig
+				.custom()
+				.setConnectTimeout(Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
+				.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build();
+			this.asyncHttpClient5 = HttpAsyncClients.custom()
+				.disableCookieManagement().useSystemProperties()
+				.setConnectionManager(connectionManager)
+				.setDefaultRequestConfig(defaultRequestConfig)
+				.setVersionPolicy(HttpVersionPolicy.NEGOTIATE).build();
+			this.asyncHttpClient5.start();
 			return this.asyncHttpClient5;
 		}
 
@@ -335,9 +335,9 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(OAuth2FeignRequestInterceptor.class)
-		@ConditionalOnBean({ OAuth2ClientContext.class, OAuth2ProtectedResourceDetails.class })
+		@ConditionalOnBean({OAuth2ClientContext.class, OAuth2ProtectedResourceDetails.class})
 		public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2ClientContext oAuth2ClientContext,
-				OAuth2ProtectedResourceDetails resource) {
+			OAuth2ProtectedResourceDetails resource) {
 			return new OAuth2FeignRequestInterceptor(oAuth2ClientContext, resource);
 		}
 
