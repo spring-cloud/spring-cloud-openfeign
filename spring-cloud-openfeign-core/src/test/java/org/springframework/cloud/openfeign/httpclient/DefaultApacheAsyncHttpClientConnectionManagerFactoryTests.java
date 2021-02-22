@@ -46,7 +46,7 @@ public class DefaultApacheAsyncHttpClientConnectionManagerFactoryTests {
 		assertThat(poolingAsyncClientConnectionManager.getDefaultMaxPerRoute()).isEqualTo(2);
 
 		Object pool = getField((connectionManager), "pool");
-		then((Long) getField(pool, "timeToLive")).isEqualTo(TimeValue.of(30, TimeUnit.SECONDS));
+		then((TimeValue) getField(pool, "timeToLive")).isEqualTo(TimeValue.of(30, TimeUnit.SECONDS));
 	}
 
 	@Test
@@ -61,7 +61,7 @@ public class DefaultApacheAsyncHttpClientConnectionManagerFactoryTests {
 		assertThat(poolingAsyncClientConnectionManager.getDefaultMaxPerRoute()).isEqualTo(2);
 
 		Object pool = getField((connectionManager), "pool");
-		then((Long) getField(pool, "timeToLive")).isEqualTo(TimeValue.of(30, TimeUnit.SECONDS));
+		then((TimeValue) getField(pool, "timeToLive")).isEqualTo(TimeValue.of(30, TimeUnit.SECONDS));
 	}
 
 	@SuppressWarnings("unchecked")
