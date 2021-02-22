@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,11 +33,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * @author Ryan Baxter
+ * @author Nguyen Ky Thanh
  */
 @RunWith(SpringRunner.class)
 @DirtiesContext
-public class FeignHttpClientPropertiesTests {
+public class FeignAsyncHttpClientPropertiesTests {
 
 	private AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
@@ -50,32 +51,15 @@ public class FeignHttpClientPropertiesTests {
 	@Test
 	public void testDefaults() {
 		setupContext();
-		assertThat(getProperties().getConnectionTimeout())
-				.isEqualTo(FeignHttpClientProperties.DEFAULT_CONNECTION_TIMEOUT);
-		assertThat(getProperties().getMaxConnections()).isEqualTo(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS);
-		assertThat(getProperties().getMaxConnectionsPerRoute())
-				.isEqualTo(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
-		assertThat(getProperties().getTimeToLive()).isEqualTo(FeignHttpClientProperties.DEFAULT_TIME_TO_LIVE);
-		assertThat(getProperties().isDisableSslValidation())
-				.isEqualTo(FeignHttpClientProperties.DEFAULT_DISABLE_SSL_VALIDATION);
-		assertThat(getProperties().isFollowRedirects()).isEqualTo(FeignHttpClientProperties.DEFAULT_FOLLOW_REDIRECTS);
+		assertThat(getProperties().getPoolConcurrencyPolicy())
+				.isEqualTo(FeignAsyncHttpClientProperties.DEFAULT_POOL_CONCURRENCY_POLICY);
 	}
 
 	@Test
 	public void testCustomization() {
-		TestPropertyValues
-				.of("feign.httpclient.maxConnections=2", "feign.httpclient.connectionTimeout=2",
-						"feign.httpclient.maxConnectionsPerRoute=2", "feign.httpclient.timeToLive=2",
-						"feign.httpclient.disableSslValidation=true", "feign.httpclient.followRedirects=false",
-						"feign.httpclient.poolConcurrencyPolicy=org.apache.hc.core5.pool.PoolConcurrencyPolicy.LAX")
-				.applyTo(this.context);
+		TestPropertyValues.of("feign.asynchttpclient.poolConcurrencyPolicy=LAX").applyTo(this.context);
 		setupContext();
-		assertThat(getProperties().getMaxConnections()).isEqualTo(2);
-		assertThat(getProperties().getConnectionTimeout()).isEqualTo(2);
-		assertThat(getProperties().getMaxConnectionsPerRoute()).isEqualTo(2);
-		assertThat(getProperties().getTimeToLive()).isEqualTo(2L);
-		assertThat(getProperties().isDisableSslValidation()).isTrue();
-		assertThat(getProperties().isFollowRedirects()).isFalse();
+		assertThat(getProperties().getPoolConcurrencyPolicy()).isEqualTo(PoolConcurrencyPolicy.LAX);
 	}
 
 	private void setupContext() {
@@ -83,8 +67,8 @@ public class FeignHttpClientPropertiesTests {
 		this.context.refresh();
 	}
 
-	private FeignHttpClientProperties getProperties() {
-		return this.context.getBean(FeignHttpClientProperties.class);
+	private FeignAsyncHttpClientProperties getProperties() {
+		return this.context.getBean(FeignAsyncHttpClientProperties.class);
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -92,8 +76,8 @@ public class FeignHttpClientPropertiesTests {
 	protected static class TestConfiguration {
 
 		@Bean
-		FeignHttpClientProperties zuulProperties() {
-			return new FeignHttpClientProperties();
+		FeignAsyncHttpClientProperties zuulProperties() {
+			return new FeignAsyncHttpClientProperties();
 		}
 
 	}
