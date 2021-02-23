@@ -18,10 +18,13 @@ package org.springframework.cloud.openfeign.support;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Ryan Baxter
+ * @author Nguyen Ky Thanh
  */
 @ConfigurationProperties(prefix = "feign.httpclient")
 public class FeignHttpClientProperties {
@@ -66,6 +69,21 @@ public class FeignHttpClientProperties {
 	 */
 	public static final int DEFAULT_CONNECTION_TIMER_REPEAT = 3000;
 
+	/**
+	 * Default value for pool concurrency policy (Only applicable for Apache HC5).
+	 */
+	public static final PoolConcurrencyPolicy DEFAULT_POOL_CONCURRENCY_POLICY = PoolConcurrencyPolicy.STRICT;
+
+	/**
+	 * Default value for socket timeout (Only applicable for Apache HC5).
+	 */
+	public static final int DEFAULT_SOCKET_TIMEOUT = 5;
+
+	/**
+	 * Default value for socket timeout unit (Only applicable for Apache HC5).
+	 */
+	public static final TimeUnit DEFAULT_SOCKET_TIMEOUT_UNIT = TimeUnit.SECONDS;
+
 	private boolean disableSslValidation = DEFAULT_DISABLE_SSL_VALIDATION;
 
 	private int maxConnections = DEFAULT_MAX_CONNECTIONS;
@@ -81,6 +99,21 @@ public class FeignHttpClientProperties {
 	private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 
 	private int connectionTimerRepeat = DEFAULT_CONNECTION_TIMER_REPEAT;
+
+	/**
+	 * Only applicable for Apache HC5.
+	 */
+	private PoolConcurrencyPolicy poolConcurrencyPolicy = DEFAULT_POOL_CONCURRENCY_POLICY;
+
+	/**
+	 * Default value for socket timeout (Only applicable for Apache HC5).
+	 */
+	private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
+
+	/**
+	 * Default value for socket timeout unit (Only applicable for Apache HC5).
+	 */
+	private TimeUnit socketTimeoutUnit = DEFAULT_SOCKET_TIMEOUT_UNIT;
 
 	public int getConnectionTimerRepeat() {
 		return this.connectionTimerRepeat;
@@ -144,6 +177,30 @@ public class FeignHttpClientProperties {
 
 	public void setConnectionTimeout(int connectionTimeout) {
 		this.connectionTimeout = connectionTimeout;
+	}
+
+	public PoolConcurrencyPolicy getPoolConcurrencyPolicy() {
+		return this.poolConcurrencyPolicy;
+	}
+
+	public void setPoolConcurrencyPolicy(PoolConcurrencyPolicy poolConcurrencyPolicy) {
+		this.poolConcurrencyPolicy = poolConcurrencyPolicy;
+	}
+
+	public TimeUnit getSocketTimeoutUnit() {
+		return socketTimeoutUnit;
+	}
+
+	public void setSocketTimeoutUnit(TimeUnit socketTimeoutUnit) {
+		this.socketTimeoutUnit = socketTimeoutUnit;
+	}
+
+	public int getSocketTimeout() {
+		return socketTimeout;
+	}
+
+	public void setSocketTimeout(int socketTimeout) {
+		this.socketTimeout = socketTimeout;
 	}
 
 }

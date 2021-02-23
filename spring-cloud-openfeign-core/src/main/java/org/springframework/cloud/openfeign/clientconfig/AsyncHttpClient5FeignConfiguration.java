@@ -16,28 +16,14 @@
 
 package org.springframework.cloud.openfeign.clientconfig;
 
-import java.util.concurrent.TimeUnit;
-
 import javax.annotation.PreDestroy;
 
 import feign.AsyncClient;
 import feign.hc5.AsyncApacheHttp5Client;
-import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
-import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
-import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.nio.AsyncClientConnectionManager;
-import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
-import org.apache.hc.core5.http.ssl.TLS;
-import org.apache.hc.core5.http2.HttpVersionPolicy;
-import org.apache.hc.core5.io.CloseMode;
-import org.apache.hc.core5.pool.PoolReusePolicy;
-import org.apache.hc.core5.ssl.SSLContexts;
-import org.apache.hc.core5.util.TimeValue;
-import org.apache.hc.core5.util.Timeout;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.openfeign.support.FeignAsyncHttpClientProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,29 +41,15 @@ public class AsyncHttpClient5FeignConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(AsyncClientConnectionManager.class)
-	public AsyncClientConnectionManager connectionManager(FeignHttpClientProperties httpClientProperties,
-			FeignAsyncHttpClientProperties asyncHttpClientProperties) {
-		return PoolingAsyncClientConnectionManagerBuilder.create()
-				.setMaxConnTotal(httpClientProperties.getMaxConnections())
-				.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
-				.setTlsStrategy(ClientTlsStrategyBuilder.create().setSslContext(SSLContexts.createSystemDefault())
-						.setTlsVersions(TLS.V_1_3, TLS.V_1_2).build())
-				.setPoolConcurrencyPolicy(asyncHttpClientProperties.getPoolConcurrencyPolicy())
-				.setConnPoolPolicy(PoolReusePolicy.LIFO)
-				.setConnectionTimeToLive(
-						TimeValue.of(httpClientProperties.getTimeToLive(), httpClientProperties.getTimeToLiveUnit()))
-				.build();
+	public AsyncClientConnectionManager connectionManager(FeignHttpClientProperties httpClientProperties) {
+		return AsyncHttpClient5FeignConfigurationHelper.connectionManager(httpClientProperties);
 	}
 
 	@Bean
 	public CloseableHttpAsyncClient httpClient(AsyncClientConnectionManager connectionManager,
 			FeignHttpClientProperties httpClientProperties) {
-		final RequestConfig defaultRequestConfig = RequestConfig.custom()
-				.setConnectTimeout(Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
-				.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build();
-		this.asyncHttpClient5 = HttpAsyncClients.custom().disableCookieManagement().useSystemProperties()
-				.setConnectionManager(connectionManager).setDefaultRequestConfig(defaultRequestConfig)
-				.setVersionPolicy(HttpVersionPolicy.NEGOTIATE).build();
+		this.asyncHttpClient5 = AsyncHttpClient5FeignConfigurationHelper.httpClient(connectionManager,
+				httpClientProperties);
 		this.asyncHttpClient5.start();
 		return this.asyncHttpClient5;
 	}
@@ -90,9 +62,7 @@ public class AsyncHttpClient5FeignConfiguration {
 
 	@PreDestroy
 	public void destroy() {
-		if (this.asyncHttpClient5 != null) {
-			this.asyncHttpClient5.close(CloseMode.GRACEFUL);
-		}
+		AsyncHttpClient5FeignConfigurationHelper.destroy(this.asyncHttpClient5);
 	}
 
 }

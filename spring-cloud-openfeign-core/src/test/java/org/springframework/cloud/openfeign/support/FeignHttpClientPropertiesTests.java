@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import java.util.concurrent.TimeUnit;
+
+import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +33,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.cloud.openfeign.support.FeignHttpClientProperties.DEFAULT_SOCKET_TIMEOUT;
+import static org.springframework.cloud.openfeign.support.FeignHttpClientProperties.DEFAULT_SOCKET_TIMEOUT_UNIT;
 
 /**
  * @author Ryan Baxter
@@ -59,16 +64,18 @@ public class FeignHttpClientPropertiesTests {
 		assertThat(getProperties().isDisableSslValidation())
 				.isEqualTo(FeignHttpClientProperties.DEFAULT_DISABLE_SSL_VALIDATION);
 		assertThat(getProperties().isFollowRedirects()).isEqualTo(FeignHttpClientProperties.DEFAULT_FOLLOW_REDIRECTS);
+		assertThat(getProperties().getPoolConcurrencyPolicy()).isEqualTo(PoolConcurrencyPolicy.STRICT);
+		assertThat(getProperties().getSocketTimeout()).isEqualTo(DEFAULT_SOCKET_TIMEOUT);
+		assertThat(getProperties().getSocketTimeoutUnit()).isEqualTo(DEFAULT_SOCKET_TIMEOUT_UNIT);
 	}
 
 	@Test
 	public void testCustomization() {
-		TestPropertyValues
-				.of("feign.httpclient.maxConnections=2", "feign.httpclient.connectionTimeout=2",
-						"feign.httpclient.maxConnectionsPerRoute=2", "feign.httpclient.timeToLive=2",
-						"feign.httpclient.disableSslValidation=true", "feign.httpclient.followRedirects=false",
-						"feign.httpclient.poolConcurrencyPolicy=org.apache.hc.core5.pool.PoolConcurrencyPolicy.LAX")
-				.applyTo(this.context);
+		TestPropertyValues.of("feign.httpclient.maxConnections=2", "feign.httpclient.connectionTimeout=2",
+				"feign.httpclient.maxConnectionsPerRoute=2", "feign.httpclient.timeToLive=2",
+				"feign.httpclient.disableSslValidation=true", "feign.httpclient.followRedirects=false",
+				"feign.httpclient.poolConcurrencyPolicy=lax", "feign.httpclient.socketTimeout=200",
+				"feign.httpclient.socketTimeoutUnit=milliseconds").applyTo(this.context);
 		setupContext();
 		assertThat(getProperties().getMaxConnections()).isEqualTo(2);
 		assertThat(getProperties().getConnectionTimeout()).isEqualTo(2);
@@ -76,6 +83,9 @@ public class FeignHttpClientPropertiesTests {
 		assertThat(getProperties().getTimeToLive()).isEqualTo(2L);
 		assertThat(getProperties().isDisableSslValidation()).isTrue();
 		assertThat(getProperties().isFollowRedirects()).isFalse();
+		assertThat(getProperties().getPoolConcurrencyPolicy()).isEqualTo(PoolConcurrencyPolicy.LAX);
+		assertThat(getProperties().getSocketTimeout()).isEqualTo(200);
+		assertThat(getProperties().getSocketTimeoutUnit()).isEqualTo(TimeUnit.MILLISECONDS);
 	}
 
 	private void setupContext() {

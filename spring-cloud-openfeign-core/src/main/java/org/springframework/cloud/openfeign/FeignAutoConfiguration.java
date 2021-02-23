@@ -26,28 +26,14 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
 
 import com.fasterxml.jackson.databind.Module;
-import feign.AsyncClient;
 import feign.Client;
 import feign.Feign;
 import feign.RequestInterceptor;
-import feign.hc5.AsyncApacheHttp5Client;
 import feign.httpclient.ApacheHttpClient;
 import feign.okhttp.OkHttpClient;
 import okhttp3.ConnectionPool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
-import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
-import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
-import org.apache.hc.client5.http.nio.AsyncClientConnectionManager;
-import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
-import org.apache.hc.core5.http.ssl.TLS;
-import org.apache.hc.core5.http2.HttpVersionPolicy;
-import org.apache.hc.core5.io.CloseMode;
-import org.apache.hc.core5.pool.PoolReusePolicy;
-import org.apache.hc.core5.ssl.SSLContexts;
-import org.apache.hc.core5.util.TimeValue;
-import org.apache.hc.core5.util.Timeout;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.RegistryBuilder;
@@ -69,7 +55,6 @@ import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFa
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
-import org.springframework.cloud.openfeign.support.FeignAsyncHttpClientProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.SortJacksonModule;
@@ -88,12 +73,10 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Grzegorz Poznachowski
  * @author Nikita Konev
  * @author Tim Peeters
- * @author Nguyen Ky Thanh
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
-@EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class,
-		FeignAsyncHttpClientProperties.class })
+@EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class })
 @Import(DefaultGzipDecoderConfiguration.class)
 public class FeignAutoConfiguration {
 
@@ -278,58 +261,6 @@ public class FeignAutoConfiguration {
 		@ConditionalOnMissingBean(Client.class)
 		public Client feignClient(okhttp3.OkHttpClient client) {
 			return new OkHttpClient(client);
-		}
-
-	}
-
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(AsyncApacheHttp5Client.class)
-	@ConditionalOnMissingBean(CloseableHttpAsyncClient.class)
-	@ConditionalOnProperty("feign.asynchttpclient.enabled")
-	protected static class AsyncHttpClient5FeignConfiguration {
-
-		private CloseableHttpAsyncClient asyncHttpClient5;
-
-		@Bean
-		@ConditionalOnMissingBean(AsyncClientConnectionManager.class)
-		public AsyncClientConnectionManager connectionManager(FeignHttpClientProperties httpClientProperties,
-				FeignAsyncHttpClientProperties asyncHttpClientProperties) {
-			return PoolingAsyncClientConnectionManagerBuilder.create()
-					.setMaxConnTotal(httpClientProperties.getMaxConnections())
-					.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
-					.setTlsStrategy(ClientTlsStrategyBuilder.create().setSslContext(SSLContexts.createSystemDefault())
-							.setTlsVersions(TLS.V_1_3, TLS.V_1_2).build())
-					.setPoolConcurrencyPolicy(asyncHttpClientProperties.getPoolConcurrencyPolicy())
-					.setConnPoolPolicy(PoolReusePolicy.LIFO).setConnectionTimeToLive(TimeValue
-							.of(httpClientProperties.getTimeToLive(), httpClientProperties.getTimeToLiveUnit()))
-					.build();
-		}
-
-		@Bean
-		public CloseableHttpAsyncClient httpClient(AsyncClientConnectionManager connectionManager,
-				FeignHttpClientProperties httpClientProperties) {
-			final org.apache.hc.client5.http.config.RequestConfig defaultRequestConfig = org.apache.hc.client5.http.config.RequestConfig
-					.custom()
-					.setConnectTimeout(Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
-					.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build();
-			this.asyncHttpClient5 = HttpAsyncClients.custom().disableCookieManagement().useSystemProperties()
-					.setConnectionManager(connectionManager).setDefaultRequestConfig(defaultRequestConfig)
-					.setVersionPolicy(HttpVersionPolicy.NEGOTIATE).build();
-			this.asyncHttpClient5.start();
-			return this.asyncHttpClient5;
-		}
-
-		@Bean
-		@ConditionalOnMissingBean(AsyncClient.class)
-		public AsyncClient feignClient(CloseableHttpAsyncClient httpAsyncClient) {
-			return new AsyncApacheHttp5Client(httpAsyncClient);
-		}
-
-		@PreDestroy
-		public void destroy() {
-			if (this.asyncHttpClient5 != null) {
-				this.asyncHttpClient5.close(CloseMode.GRACEFUL);
-			}
 		}
 
 	}
