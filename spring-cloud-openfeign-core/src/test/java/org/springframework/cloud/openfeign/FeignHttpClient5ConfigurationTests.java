@@ -72,9 +72,9 @@ public class FeignHttpClient5ConfigurationTests {
 	@Test
 	public void noMoreHttpClient4Instances() throws Exception {
 		assertThatThrownBy(() -> this.context.getBean(org.apache.http.impl.client.CloseableHttpClient.class))
-			.isInstanceOf(NoSuchBeanDefinitionException.class);
+				.isInstanceOf(NoSuchBeanDefinitionException.class);
 		assertThatThrownBy(() -> this.context.getBean(org.apache.http.conn.HttpClientConnectionManager.class))
-			.isInstanceOf(NoSuchBeanDefinitionException.class);
+				.isInstanceOf(NoSuchBeanDefinitionException.class);
 	}
 
 }

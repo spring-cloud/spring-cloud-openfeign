@@ -49,8 +49,8 @@ public class FeignAsyncHttpClient5ConfigurationTests {
 	public void setUp() {
 		this.context = new SpringApplicationBuilder()
 				.properties("debug=true", "feign.asynchttpclient5.enabled=true", "feign.httpclient.enabled=false",
-					"spring.cloud.httpclientfactories.apache.enabled=false",
-					"spring.cloud.httpclientfactories.ok.enabled=false")
+						"spring.cloud.httpclientfactories.apache.enabled=false",
+						"spring.cloud.httpclientfactories.ok.enabled=false")
 				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
 				.run();
 	}
@@ -74,8 +74,7 @@ public class FeignAsyncHttpClient5ConfigurationTests {
 
 	@Test
 	public void noMoreFeignClientAutoConfig() {
-		assertThatThrownBy(() -> this.context.getBean(Client.class))
-			.isInstanceOf(NoSuchBeanDefinitionException.class);
+		assertThatThrownBy(() -> this.context.getBean(Client.class)).isInstanceOf(NoSuchBeanDefinitionException.class);
 	}
 
 }
