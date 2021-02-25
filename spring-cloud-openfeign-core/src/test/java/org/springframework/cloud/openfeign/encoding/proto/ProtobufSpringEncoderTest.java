@@ -40,11 +40,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
@@ -73,7 +71,7 @@ public class ProtobufSpringEncoderTest {
 			.build();
 
 	@Test
-	public void testProtobuf() throws IOException, URISyntaxException {
+	public void testProtobuf() throws IOException {
 		// protobuf convert to request by feign and ProtobufHttpMessageConverter
 		RequestTemplate requestTemplate = newRequestTemplate();
 		newEncoder().encode(this.request, Request.class, requestTemplate);
@@ -110,12 +108,8 @@ public class ProtobufSpringEncoderTest {
 	}
 
 	private SpringEncoder newEncoder() {
-		ObjectFactory<HttpMessageConverters> converters = new ObjectFactory<HttpMessageConverters>() {
-			@Override
-			public HttpMessageConverters getObject() throws BeansException {
-				return new HttpMessageConverters(new ProtobufHttpMessageConverter());
-			}
-		};
+		ObjectFactory<HttpMessageConverters> converters = () -> new HttpMessageConverters(
+				new ProtobufHttpMessageConverter());
 		return new SpringEncoder(converters);
 	}
 
@@ -126,17 +120,13 @@ public class ProtobufSpringEncoderTest {
 	}
 
 	private HttpEntity toApacheHttpEntity(RequestTemplate requestTemplate)
-			throws IOException, URISyntaxException {
+			throws IOException {
 		final List<HttpUriRequest> request = new ArrayList<>(1);
-		BDDMockito.given(this.httpClient.execute(ArgumentMatchers.<HttpUriRequest>any()))
-				.will(new Answer<HttpResponse>() {
-					@Override
-					public HttpResponse answer(InvocationOnMock invocationOnMock)
-							throws Throwable {
-						request.add((HttpUriRequest) invocationOnMock.getArguments()[0]);
-						return new BasicHttpResponse(new BasicStatusLine(
-								new ProtocolVersion("http", 1, 1), 200, null));
-					}
+		BDDMockito.given(this.httpClient.execute(ArgumentMatchers.any()))
+				.will((Answer<HttpResponse>) invocationOnMock -> {
+					request.add((HttpUriRequest) invocationOnMock.getArguments()[0]);
+					return new BasicHttpResponse(new BasicStatusLine(
+							new ProtocolVersion("http", 1, 1), 200, null));
 				});
 		new ApacheHttpClient(this.httpClient).execute(
 				requestTemplate.resolve(new HashMap<>()).request(),

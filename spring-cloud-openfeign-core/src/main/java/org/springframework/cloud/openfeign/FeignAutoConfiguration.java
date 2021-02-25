@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
+import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.SortJacksonModule;
@@ -71,11 +72,12 @@ import org.springframework.data.domain.Sort;
  * @author Grzegorz Poznachowski
  * @author Nikita Konev
  * @author Tim Peeters
+ * @author Olga Maciaszek-Sharma
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
 @EnableConfigurationProperties({ FeignClientProperties.class,
-		FeignHttpClientProperties.class })
+		FeignHttpClientProperties.class, FeignEncoderProperties.class })
 @Import(DefaultGzipDecoderConfiguration.class)
 public class FeignAutoConfiguration {
 

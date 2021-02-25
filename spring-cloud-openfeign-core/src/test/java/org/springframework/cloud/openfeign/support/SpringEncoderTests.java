@@ -36,9 +36,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.openfeign.FeignContext;
 import org.springframework.cloud.openfeign.encoding.HttpEncoding;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -47,6 +49,7 @@ import org.springframework.http.converter.GenericHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -59,6 +62,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 /**
  * @author Spencer Gibb
@@ -78,6 +82,9 @@ public class SpringEncoderTests {
 	@Autowired
 	@Qualifier("myHttpMessageConverter")
 	private HttpMessageConverter<?> myConverter;
+
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	@Autowired
 	@Qualifier("myGenericHttpMessageConverter")
@@ -185,6 +192,32 @@ public class SpringEncoderTests {
 				.as("Body content cannot be decoded").contains("hi");
 	}
 
+	@Test
+	public void testNoCharsetForBinaryFiles() {
+		Encoder encoder = context.getInstance("test", Encoder.class);
+		assertThat(encoder).isNotNull();
+		RequestTemplate request = new RequestTemplate();
+		request.header(CONTENT_TYPE, APPLICATION_OCTET_STREAM_VALUE);
+		Resource resource = applicationContext.getResource("classpath:dummy.pdf");
+
+		encoder.encode(resource, Resource.class, request);
+
+		assertThat(request.requestBody().getEncoding()).isEmpty();
+	}
+
+	@Test
+	public void testUTF8CharsetForTextFiles() {
+		Encoder encoder = context.getInstance("test", Encoder.class);
+		assertThat(encoder).isNotNull();
+		RequestTemplate request = new RequestTemplate();
+		request.header(CONTENT_TYPE, TEXT_PLAIN_VALUE);
+		String test = "test";
+
+		encoder.encode(test, String.class, request);
+
+		assertThat(request.requestBody().getEncoding().get().name()).isEqualTo("UTF-8");
+	}
+
 	protected interface TestClient {
 
 	}
@@ -211,6 +244,11 @@ public class SpringEncoderTests {
 		@Bean
 		HttpMessageConverter<?> myHttpMessageConverter() {
 			return new MyHttpMessageConverter();
+		}
+
+		@Bean
+		ResourceHttpMessageConverter resourceHttpMessageConverter() {
+			return new ResourceHttpMessageConverter();
 		}
 
 		@Bean

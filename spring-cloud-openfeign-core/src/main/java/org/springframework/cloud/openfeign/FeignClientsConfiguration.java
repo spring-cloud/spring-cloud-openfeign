@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.support.AbstractFormWriter;
+import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
@@ -63,6 +64,7 @@ import static feign.form.ContentType.MULTIPART;
  * @author Dave Syer
  * @author Venil Noronha
  * @author Darren Foong
+ * @author Olga Maciaszek-Sharma
  */
 @Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
@@ -85,6 +87,9 @@ public class FeignClientsConfiguration {
 	@Autowired(required = false)
 	private FeignClientProperties feignClientProperties;
 
+	@Autowired(required = false)
+	private FeignEncoderProperties encoderProperties;
+
 	@Bean
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder() {
@@ -96,7 +101,7 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public Encoder feignEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider) {
-		return springEncoder(formWriterProvider);
+		return springEncoder(formWriterProvider, encoderProperties);
 	}
 
 	@Bean
@@ -105,7 +110,7 @@ public class FeignClientsConfiguration {
 	public Encoder feignEncoderPageable(
 			ObjectProvider<AbstractFormWriter> formWriterProvider) {
 		PageableSpringEncoder encoder = new PageableSpringEncoder(
-				springEncoder(formWriterProvider));
+				springEncoder(formWriterProvider, encoderProperties));
 
 		if (springDataWebProperties != null) {
 			encoder.setPageParameter(
@@ -162,15 +167,17 @@ public class FeignClientsConfiguration {
 		};
 	}
 
-	private Encoder springEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider) {
+	private Encoder springEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider,
+			FeignEncoderProperties encoderProperties) {
 		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
 
 		if (formWriter != null) {
 			return new SpringEncoder(new SpringPojoFormEncoder(formWriter),
-					this.messageConverters);
+					this.messageConverters, encoderProperties);
 		}
 		else {
-			return new SpringEncoder(new SpringFormEncoder(), this.messageConverters);
+			return new SpringEncoder(new SpringFormEncoder(), this.messageConverters,
+					encoderProperties);
 		}
 	}
 
