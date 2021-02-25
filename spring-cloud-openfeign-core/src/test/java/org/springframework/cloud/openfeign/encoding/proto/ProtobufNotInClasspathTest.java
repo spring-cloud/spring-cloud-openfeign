@@ -20,7 +20,6 @@ import feign.RequestTemplate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
@@ -41,12 +40,8 @@ public class ProtobufNotInClasspathTest {
 
 	@Test
 	public void testEncodeWhenProtobufNotInClasspath() {
-		ObjectFactory<HttpMessageConverters> converters = new ObjectFactory<HttpMessageConverters>() {
-			@Override
-			public HttpMessageConverters getObject() throws BeansException {
-				return new HttpMessageConverters(new StringHttpMessageConverter());
-			}
-		};
+		ObjectFactory<HttpMessageConverters> converters = () -> new HttpMessageConverters(
+				new StringHttpMessageConverter());
 		RequestTemplate requestTemplate = new RequestTemplate();
 		requestTemplate.method(POST);
 		new SpringEncoder(converters).encode("a=b", String.class, requestTemplate);
