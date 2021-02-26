@@ -343,7 +343,7 @@ public class FooConfiguration {
 }
 ----
 
-The circuit breaker name follows this pattern `<feignClientName>_<calledMethod>`. When calling a `@FeignClient` with name `foo` and the called interface method is `bar` then the circuit breaker name will be `foo_bar`.
+The circuit breaker name follows this pattern `<feignClientName>#<calledMethod>`. When calling a `@FeignClient` with name `foo` and the called interface method is `bar` then the circuit breaker name will be `foo_bar`.
 
 [[spring-cloud-feign-circuitbreaker-fallback]]
 === Feign Spring Cloud CircuitBreaker Fallbacks
