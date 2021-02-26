@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import feign.Feign;
 import feign.InvocationHandlerFactory;
 import feign.Target;
 
@@ -36,8 +37,6 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 
 	private final CircuitBreakerFactory factory;
 
-	private final String feignClientName;
-
 	private final Target<?> target;
 
 	private final Map<Method, InvocationHandlerFactory.MethodHandler> dispatch;
@@ -46,12 +45,10 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 
 	private final Map<Method, Method> fallbackMethodMap;
 
-	FeignCircuitBreakerInvocationHandler(CircuitBreakerFactory factory,
-			String feignClientName, Target<?> target,
+	FeignCircuitBreakerInvocationHandler(CircuitBreakerFactory factory, Target<?> target,
 			Map<Method, InvocationHandlerFactory.MethodHandler> dispatch,
 			FallbackFactory<?> nullableFallbackFactory) {
 		this.factory = factory;
-		this.feignClientName = feignClientName;
 		this.target = checkNotNull(target, "target");
 		this.dispatch = checkNotNull(dispatch, "dispatch");
 		this.fallbackMethodMap = toFallbackMethod(dispatch);
@@ -79,7 +76,7 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 		else if ("toString".equals(method.getName())) {
 			return toString();
 		}
-		String circuitName = this.feignClientName + "_" + method.getName();
+		String circuitName = Feign.configKey(target.type(), method);
 		CircuitBreaker circuitBreaker = this.factory.create(circuitName);
 		Supplier<Object> supplier = asSupplier(method, args);
 		if (this.nullableFallbackFactory != null) {
