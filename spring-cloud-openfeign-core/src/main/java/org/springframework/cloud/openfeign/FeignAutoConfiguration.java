@@ -64,6 +64,7 @@ import org.springframework.cloud.openfeign.clientconfig.AsyncHttpClient5FeignCon
 import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfigurationHelper;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
+import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.SortJacksonModule;
@@ -83,10 +84,12 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Nikita Konev
  * @author Tim Peeters
  * @author Nguyen Ky Thanh
+ * @author Olga Maciaszek-Sharma
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
-@EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class })
+@EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class,
+		FeignEncoderProperties.class })
 @Import(DefaultGzipDecoderConfiguration.class)
 public class FeignAutoConfiguration {
 
