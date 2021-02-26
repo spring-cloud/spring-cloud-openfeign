@@ -22,14 +22,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Properties for {@link SpringEncoder}.
  *
  * @author Olga Maciaszek-Sharma
- *
  * @since 2.2.8
  */
 @ConfigurationProperties("feign.encoder")
 public class FeignEncoderProperties {
 
 	/**
-	 * Indicates whether the charset should be derived from the {@code Content-Type} header.
+	 * Indicates whether the charset should be derived from the {@code Content-Type}
+	 * header.
 	 */
 	private boolean charsetFromContentType = false;
 
