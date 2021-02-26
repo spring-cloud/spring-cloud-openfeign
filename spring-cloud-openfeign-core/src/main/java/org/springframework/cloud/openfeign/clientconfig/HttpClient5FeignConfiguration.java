@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ public class HttpClient5FeignConfiguration {
 	@Bean
 	public CloseableHttpClient httpClient(HttpClientConnectionManager connectionManager,
 			FeignHttpClientProperties httpClientProperties) {
-		this.httpClient5 = HttpClient5FeignConfigurationHelper.httpClient(connectionManager, httpClientProperties);
-		return this.httpClient5;
+		httpClient5 = HttpClient5FeignConfigurationHelper.httpClient(connectionManager, httpClientProperties);
+		return httpClient5;
 	}
 
 	@Bean
@@ -60,7 +60,7 @@ public class HttpClient5FeignConfiguration {
 
 	@PreDestroy
 	public void destroy() {
-		HttpClient5FeignConfigurationHelper.destroy(this.httpClient5);
+		HttpClient5FeignConfigurationHelper.destroy(httpClient5);
 	}
 
 }

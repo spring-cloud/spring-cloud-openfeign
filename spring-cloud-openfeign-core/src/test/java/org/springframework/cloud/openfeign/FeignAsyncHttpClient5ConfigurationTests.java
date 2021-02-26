@@ -16,17 +16,16 @@
 
 package org.springframework.cloud.openfeign;
 
-import feign.Client;
-import feign.hc5.ApacheHttp5Client;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
-import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import feign.AsyncClient;
+import feign.hc5.AsyncApacheHttp5Client;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
+import org.apache.hc.client5.http.nio.AsyncClientConnectionManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
@@ -34,20 +33,19 @@ import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Thanh Nguyen Ky
  */
 @RunWith(ModifiedClassPathRunner.class)
-public class FeignHttpClient5ConfigurationTests {
+public class FeignAsyncHttpClient5ConfigurationTests {
 
 	private ConfigurableApplicationContext context;
 
 	@Before
 	public void setUp() {
 		this.context = new SpringApplicationBuilder()
-				.properties("debug=true", "feign.httpclient.hc5.enabled=true", "feign.httpclient.enabled=false")
+				.properties("feign.httpclient.hc5.asyncEnabled=true", "feign.httpclient.enabled=false")
 				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
 				.run();
 	}
@@ -60,21 +58,13 @@ public class FeignHttpClient5ConfigurationTests {
 	}
 
 	@Test
-	public void verifyHttpClient5AutoConfig() throws Exception {
-		CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
-		assertThat(httpClient).isNotNull();
-		HttpClientConnectionManager connectionManager = context.getBean(HttpClientConnectionManager.class);
-		assertThat(connectionManager).isInstanceOf(PoolingHttpClientConnectionManager.class);
-		Client client = context.getBean(Client.class);
-		assertThat(client).isInstanceOf(ApacheHttp5Client.class);
-	}
-
-	@Test
-	public void noMoreHttpClient4Instances() throws Exception {
-		assertThatThrownBy(() -> context.getBean(org.apache.http.impl.client.CloseableHttpClient.class))
-				.isInstanceOf(NoSuchBeanDefinitionException.class);
-		assertThatThrownBy(() -> context.getBean(org.apache.http.conn.HttpClientConnectionManager.class))
-				.isInstanceOf(NoSuchBeanDefinitionException.class);
+	public void verifyAsyncHttpClient5AutoConfig() {
+		CloseableHttpAsyncClient httpAsyncClient = context.getBean(CloseableHttpAsyncClient.class);
+		assertThat(httpAsyncClient).isNotNull();
+		AsyncClientConnectionManager connectionManager = context.getBean(AsyncClientConnectionManager.class);
+		assertThat(connectionManager).isInstanceOf(PoolingAsyncClientConnectionManager.class);
+		AsyncClient feignAsyncClient = context.getBean(AsyncClient.class);
+		assertThat(feignAsyncClient).isInstanceOf(AsyncApacheHttp5Client.class);
 	}
 
 }

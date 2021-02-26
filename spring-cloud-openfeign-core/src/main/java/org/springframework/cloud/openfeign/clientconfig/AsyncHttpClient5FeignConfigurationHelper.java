@@ -19,15 +19,14 @@ package org.springframework.cloud.openfeign.clientconfig;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
-import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.nio.AsyncClientConnectionManager;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
 import org.apache.hc.core5.http.ssl.TLS;
+import org.apache.hc.core5.http2.HttpVersionPolicy;
 import org.apache.hc.core5.io.CloseMode;
-import org.apache.hc.core5.pool.PoolReusePolicy;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
@@ -36,46 +35,42 @@ import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 
 /**
- * Provide helper methods for {@link HttpClient5FeignConfiguration} and
+ * Provide helper methods for {@link AsyncHttpClient5FeignConfiguration} and
  * {@link FeignAutoConfiguration}.
  *
  * @author Nguyen Ky Thanh
  */
-public final class HttpClient5FeignConfigurationHelper {
+public final class AsyncHttpClient5FeignConfigurationHelper {
 
-	private HttpClient5FeignConfigurationHelper() {
+	private AsyncHttpClient5FeignConfigurationHelper() {
 	}
 
-	public static HttpClientConnectionManager connectionManager(FeignHttpClientProperties httpClientProperties) {
-		return PoolingHttpClientConnectionManagerBuilder.create()
+	public static AsyncClientConnectionManager connectionManager(FeignHttpClientProperties httpClientProperties) {
+		return PoolingAsyncClientConnectionManagerBuilder.create()
 				.setMaxConnTotal(httpClientProperties.getMaxConnections())
 				.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
-				.setConnPoolPolicy(PoolReusePolicy.LIFO)
+				.setTlsStrategy(ClientTlsStrategyBuilder.create().setSslContext(SSLContexts.createSystemDefault())
+						.setTlsVersions(TLS.V_1_3, TLS.V_1_2).build())
+				.setPoolConcurrencyPolicy(httpClientProperties.getHc5().getPoolConcurrencyPolicy())
+				.setConnPoolPolicy(httpClientProperties.getHc5().getPoolReusePolicy())
 				.setConnectionTimeToLive(
 						TimeValue.of(httpClientProperties.getTimeToLive(), httpClientProperties.getTimeToLiveUnit()))
-				.setPoolConcurrencyPolicy(httpClientProperties.getHc5().getPoolConcurrencyPolicy())
-				.setSSLSocketFactory(SSLConnectionSocketFactoryBuilder.create()
-						.setSslContext(SSLContexts.createSystemDefault()).setTlsVersions(TLS.V_1_3, TLS.V_1_2).build())
-				.setDefaultSocketConfig(
-						SocketConfig.custom().setSoTimeout(Timeout.of(httpClientProperties.getHc5().getSocketTimeout(),
-								httpClientProperties.getHc5().getSocketTimeoutUnit())).build())
 				.build();
 	}
 
-	public static CloseableHttpClient httpClient(HttpClientConnectionManager connectionManager,
+	public static CloseableHttpAsyncClient httpClient(AsyncClientConnectionManager connectionManager,
 			FeignHttpClientProperties httpClientProperties) {
-		return HttpClients.custom().disableCookieManagement().useSystemProperties()
-				.setConnectionManager(connectionManager)
+		return HttpAsyncClients.custom().disableCookieManagement().setConnectionManager(connectionManager)
 				.setDefaultRequestConfig(RequestConfig.custom()
 						.setConnectTimeout(
 								Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
 						.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build())
-				.build();
+				.setVersionPolicy(HttpVersionPolicy.NEGOTIATE).build();
 	}
 
-	public static void destroy(CloseableHttpClient httpClient5) {
-		if (httpClient5 != null) {
-			httpClient5.close(CloseMode.GRACEFUL);
+	public static void destroy(CloseableHttpAsyncClient asyncHttpClient5) {
+		if (asyncHttpClient5 != null) {
+			asyncHttpClient5.close(CloseMode.GRACEFUL);
 		}
 	}
 

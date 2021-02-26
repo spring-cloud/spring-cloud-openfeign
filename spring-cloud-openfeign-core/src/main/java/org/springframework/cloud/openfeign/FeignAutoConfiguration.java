@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,21 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
 
 import com.fasterxml.jackson.databind.Module;
+import feign.AsyncClient;
+import feign.AsyncFeign;
 import feign.Client;
 import feign.Feign;
 import feign.RequestInterceptor;
 import feign.hc5.ApacheHttp5Client;
+import feign.hc5.AsyncApacheHttp5Client;
 import feign.httpclient.ApacheHttpClient;
 import feign.okhttp.OkHttpClient;
 import okhttp3.ConnectionPool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.nio.AsyncClientConnectionManager;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.RegistryBuilder;
@@ -54,6 +60,7 @@ import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionMa
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
+import org.springframework.cloud.openfeign.clientconfig.AsyncHttpClient5FeignConfigurationHelper;
 import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfigurationHelper;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
@@ -75,6 +82,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Grzegorz Poznachowski
  * @author Nikita Konev
  * @author Tim Peeters
+ * @author Nguyen Ky Thanh
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -270,7 +278,7 @@ public class FeignAutoConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttp5Client.class)
 	@ConditionalOnMissingBean(org.apache.hc.client5.http.impl.classic.CloseableHttpClient.class)
-	@ConditionalOnProperty("feign.httpclient5.enabled")
+	@ConditionalOnProperty({ "feign.httpclient.hc5.enabled" })
 	protected static class HttpClient5FeignConfiguration {
 
 		private org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient5;
@@ -286,8 +294,8 @@ public class FeignAutoConfiguration {
 		public org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient(
 				org.apache.hc.client5.http.io.HttpClientConnectionManager connectionManager,
 				FeignHttpClientProperties httpClientProperties) {
-			this.httpClient5 = HttpClient5FeignConfigurationHelper.httpClient(connectionManager, httpClientProperties);
-			return this.httpClient5;
+			httpClient5 = HttpClient5FeignConfigurationHelper.httpClient(connectionManager, httpClientProperties);
+			return httpClient5;
 		}
 
 		@Bean
@@ -298,7 +306,43 @@ public class FeignAutoConfiguration {
 
 		@PreDestroy
 		public void destroy() {
-			HttpClient5FeignConfigurationHelper.destroy(this.httpClient5);
+			HttpClient5FeignConfigurationHelper.destroy(httpClient5);
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass({ AsyncApacheHttp5Client.class, AsyncFeign.class })
+	@ConditionalOnMissingBean(CloseableHttpAsyncClient.class)
+	@ConditionalOnProperty("feign.httpclient.hc5.asyncEnabled")
+	protected static class AsyncHttpClient5FeignConfiguration {
+
+		private CloseableHttpAsyncClient asyncHttpClient5;
+
+		@Bean
+		@ConditionalOnMissingBean(AsyncClientConnectionManager.class)
+		public AsyncClientConnectionManager connectionManager(FeignHttpClientProperties httpClientProperties) {
+			return AsyncHttpClient5FeignConfigurationHelper.connectionManager(httpClientProperties);
+		}
+
+		@Bean
+		public CloseableHttpAsyncClient httpClient(AsyncClientConnectionManager connectionManager,
+				FeignHttpClientProperties httpClientProperties) {
+			asyncHttpClient5 = AsyncHttpClient5FeignConfigurationHelper.httpClient(connectionManager,
+					httpClientProperties);
+			asyncHttpClient5.start();
+			return asyncHttpClient5;
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(AsyncClient.class)
+		public AsyncClient<HttpClientContext> feignClient(CloseableHttpAsyncClient httpAsyncClient) {
+			return new AsyncApacheHttp5Client(httpAsyncClient);
+		}
+
+		@PreDestroy
+		public void destroy() {
+			AsyncHttpClient5FeignConfigurationHelper.destroy(asyncHttpClient5);
 		}
 
 	}
