@@ -720,4 +720,4 @@ feign.autoconfiguration.jackson.enabled=true
 
 == Configuration properties
 
-To see the list of all Sleuth related configuration properties please check link:appendix.html[the Appendix page].
+To see the list of all Spring Cloud OpenFeign related configuration properties please check link:appendix.html[the Appendix page].
