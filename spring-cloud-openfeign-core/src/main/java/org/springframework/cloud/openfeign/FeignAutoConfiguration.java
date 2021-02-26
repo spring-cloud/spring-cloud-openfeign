@@ -28,6 +28,7 @@ import javax.annotation.PreDestroy;
 import com.fasterxml.jackson.databind.Module;
 import feign.Client;
 import feign.Feign;
+import feign.hc5.ApacheHttp5Client;
 import feign.httpclient.ApacheHttpClient;
 import feign.okhttp.OkHttpClient;
 import okhttp3.ConnectionPool;
@@ -54,6 +55,7 @@ import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionMa
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
+import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfigurationHelper;
 import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
@@ -283,6 +285,45 @@ public class FeignAutoConfiguration {
 		@ConditionalOnMissingBean(Client.class)
 		public Client feignClient(okhttp3.OkHttpClient client) {
 			return new OkHttpClient(client);
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(ApacheHttp5Client.class)
+	@ConditionalOnMissingBean(org.apache.hc.client5.http.impl.classic.CloseableHttpClient.class)
+	@ConditionalOnProperty({ "feign.httpclient.hc5.enabled" })
+	protected static class HttpClient5FeignConfiguration {
+
+		private org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient5;
+
+		@Bean
+		@ConditionalOnMissingBean(org.apache.hc.client5.http.io.HttpClientConnectionManager.class)
+		public org.apache.hc.client5.http.io.HttpClientConnectionManager hc5ConnectionManager(
+				FeignHttpClientProperties httpClientProperties) {
+			return HttpClient5FeignConfigurationHelper
+					.connectionManager(httpClientProperties);
+		}
+
+		@Bean
+		public org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient5(
+				org.apache.hc.client5.http.io.HttpClientConnectionManager connectionManager,
+				FeignHttpClientProperties httpClientProperties) {
+			httpClient5 = HttpClient5FeignConfigurationHelper
+					.httpClient(connectionManager, httpClientProperties);
+			return httpClient5;
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(Client.class)
+		public Client feignClient(
+				org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient5) {
+			return new ApacheHttp5Client(httpClient5);
+		}
+
+		@PreDestroy
+		public void destroy() {
+			HttpClient5FeignConfigurationHelper.destroy(httpClient5);
 		}
 
 	}
