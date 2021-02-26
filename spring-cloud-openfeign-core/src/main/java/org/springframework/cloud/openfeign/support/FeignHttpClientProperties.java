@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,14 @@ package org.springframework.cloud.openfeign.support;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
+import org.apache.hc.core5.pool.PoolReusePolicy;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Ryan Baxter
+ * @author Nguyen Ky Thanh
  */
 @ConfigurationProperties(prefix = "feign.httpclient")
 public class FeignHttpClientProperties {
@@ -81,6 +85,8 @@ public class FeignHttpClientProperties {
 	private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 
 	private int connectionTimerRepeat = DEFAULT_CONNECTION_TIMER_REPEAT;
+
+	private Hc5Properties hc5 = new Hc5Properties();
 
 	public int getConnectionTimerRepeat() {
 		return this.connectionTimerRepeat;
@@ -144,6 +150,85 @@ public class FeignHttpClientProperties {
 
 	public void setConnectionTimeout(int connectionTimeout) {
 		this.connectionTimeout = connectionTimeout;
+	}
+
+	public Hc5Properties getHc5() {
+		return hc5;
+	}
+
+	public void setHc5(Hc5Properties hc5) {
+		this.hc5 = hc5;
+	}
+
+	public static class Hc5Properties {
+
+		/**
+		 * Default value for pool concurrency policy.
+		 */
+		public static final PoolConcurrencyPolicy DEFAULT_POOL_CONCURRENCY_POLICY = PoolConcurrencyPolicy.STRICT;
+
+		/**
+		 * Default value for pool reuse policy.
+		 */
+		public static final PoolReusePolicy DEFAULT_POOL_REUSE_POLICY = PoolReusePolicy.FIFO;
+
+		/**
+		 * Default value for socket timeout.
+		 */
+		public static final int DEFAULT_SOCKET_TIMEOUT = 5;
+
+		/**
+		 * Default value for socket timeout unit.
+		 */
+		public static final TimeUnit DEFAULT_SOCKET_TIMEOUT_UNIT = TimeUnit.SECONDS;
+
+		private PoolConcurrencyPolicy poolConcurrencyPolicy = DEFAULT_POOL_CONCURRENCY_POLICY;
+
+		private PoolReusePolicy poolReusePolicy = DEFAULT_POOL_REUSE_POLICY;
+
+		/**
+		 * Default value for socket timeout.
+		 */
+		private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
+
+		/**
+		 * Default value for socket timeout unit.
+		 */
+		private TimeUnit socketTimeoutUnit = DEFAULT_SOCKET_TIMEOUT_UNIT;
+
+		public PoolConcurrencyPolicy getPoolConcurrencyPolicy() {
+			return this.poolConcurrencyPolicy;
+		}
+
+		public void setPoolConcurrencyPolicy(
+				PoolConcurrencyPolicy poolConcurrencyPolicy) {
+			this.poolConcurrencyPolicy = poolConcurrencyPolicy;
+		}
+
+		public PoolReusePolicy getPoolReusePolicy() {
+			return poolReusePolicy;
+		}
+
+		public void setPoolReusePolicy(PoolReusePolicy poolReusePolicy) {
+			this.poolReusePolicy = poolReusePolicy;
+		}
+
+		public TimeUnit getSocketTimeoutUnit() {
+			return socketTimeoutUnit;
+		}
+
+		public void setSocketTimeoutUnit(TimeUnit socketTimeoutUnit) {
+			this.socketTimeoutUnit = socketTimeoutUnit;
+		}
+
+		public int getSocketTimeout() {
+			return socketTimeout;
+		}
+
+		public void setSocketTimeout(int socketTimeout) {
+			this.socketTimeout = socketTimeout;
+		}
+
 	}
 
 }

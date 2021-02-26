@@ -27,6 +27,12 @@
 			"defaultValue": "true"
 		},
 		{
+			"name": "feign.httpclient.hc5.enabled",
+			"type": "java.lang.Boolean",
+			"description": "Enables the use of the Apache HTTP Client 5 by Feign.",
+			"defaultValue": "false"
+		},
+		{
 			"name": "feign.okhttp.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the use of the OK HTTP Client by Feign.",
