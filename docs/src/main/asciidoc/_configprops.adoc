@@ -24,5 +24,9 @@
 |feign.httpclient.time-to-live-unit |  | 
 |feign.hystrix.enabled | `false` | If true, an OpenFeign client will be wrapped with a Hystrix circuit breaker.
 |feign.okhttp.enabled | `false` | Enables the use of the OK HTTP Client by Feign.
-
+|feign.httpclient.hc5.enabled | `false` | Enables the use of the Apache HC5 by Feign.
+|feign.httpclient.hc5.socket-timeout | `5` |
+|feign.httpclient.hc5.socket-timeout-unit | `seconds` |
+|feign.httpclient.hc5.pool-reuse-policy | `fifo` | Pooled connection re-use policies
+|feign.httpclient.hc5.pool-concurrency-policy | `strict` | Pool concurrency policies
 |===
