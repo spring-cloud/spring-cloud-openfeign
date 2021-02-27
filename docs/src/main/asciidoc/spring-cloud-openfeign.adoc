@@ -85,7 +85,7 @@ Spring Cloud lets you take full control of the feign client by declaring additio
 [source,java,indent=0]
 ----
 @FeignClient(name = "stores", configuration = FooConfiguration.class)
-public interface StoreClient {
+public interface StoreClient {The OkHttpClient and ApacheHttpClient
     //..
 }
 ----
@@ -125,8 +125,8 @@ If none of them is in the classpath, the default feign client is used.
 
 NOTE: `spring-cloud-starter-openfeign` supports both `spring-cloud-starter-netflix-ribbon` and `spring-cloud-starter-loadbalancer`. However, as they are optional dependencies, you need to make sure the one you want to use has been added to your project.
 
-The OkHttpClient and ApacheHttpClient feign clients can be used by setting `feign.okhttp.enabled` or `feign.httpclient.enabled` to `true`, respectively, and having them on the classpath.
-You can customize the HTTP client used by providing a bean of either `org.apache.http.impl.client.CloseableHttpClient` when using Apache or `okhttp3.OkHttpClient` when using OK HTTP.
+The OkHttpClient and ApacheHttpClient and ApacheHC5 feign clients can be used by setting `feign.okhttp.enabled` or `feign.httpclient.enabled` or `feign.httpclient.hc5.enabled` to `true`, respectively, and having them on the classpath.
+You can customize the HTTP client used by providing a bean of either `org.apache.http.impl.client.CloseableHttpClient` when using Apache or `okhttp3.OkHttpClient` when using OK HTTP or `org.apache.hc.client5.http.impl.classic.CloseableHttpClient` when using Apache HC5.
 
 Spring Cloud OpenFeign _does not_ provide the following beans by default for feign, but still looks up beans of these types from the application context to create the feign client:
 
