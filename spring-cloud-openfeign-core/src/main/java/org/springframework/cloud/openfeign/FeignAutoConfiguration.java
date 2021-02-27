@@ -55,7 +55,6 @@ import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionMa
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
-import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfigurationHelper;
 import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
@@ -75,6 +74,7 @@ import org.springframework.data.domain.Sort;
  * @author Nikita Konev
  * @author Tim Peeters
  * @author Olga Maciaszek-Sharma
+ * @author Nguyen Ky Thanh
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -293,39 +293,8 @@ public class FeignAutoConfiguration {
 	@ConditionalOnClass(ApacheHttp5Client.class)
 	@ConditionalOnMissingBean(org.apache.hc.client5.http.impl.classic.CloseableHttpClient.class)
 	@ConditionalOnProperty({ "feign.httpclient.hc5.enabled" })
+	@Import(org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.class)
 	protected static class HttpClient5FeignConfiguration {
-
-		private org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient5;
-
-		@Bean
-		@ConditionalOnMissingBean(org.apache.hc.client5.http.io.HttpClientConnectionManager.class)
-		public org.apache.hc.client5.http.io.HttpClientConnectionManager hc5ConnectionManager(
-				FeignHttpClientProperties httpClientProperties) {
-			return HttpClient5FeignConfigurationHelper
-					.connectionManager(httpClientProperties);
-		}
-
-		@Bean
-		public org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient5(
-				org.apache.hc.client5.http.io.HttpClientConnectionManager connectionManager,
-				FeignHttpClientProperties httpClientProperties) {
-			httpClient5 = HttpClient5FeignConfigurationHelper
-					.httpClient(connectionManager, httpClientProperties);
-			return httpClient5;
-		}
-
-		@Bean
-		@ConditionalOnMissingBean(Client.class)
-		public Client feignClient(
-				org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient5) {
-			return new ApacheHttp5Client(httpClient5);
-		}
-
-		@PreDestroy
-		public void destroy() {
-			HttpClient5FeignConfigurationHelper.destroy(httpClient5);
-		}
-
 	}
 
 	static class DefaultFeignTargeterConditions extends AllNestedConditions {
