@@ -295,6 +295,7 @@ public class FeignAutoConfiguration {
 	@ConditionalOnProperty({ "feign.httpclient.hc5.enabled" })
 	@Import(org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.class)
 	protected static class HttpClient5FeignConfiguration {
+
 	}
 
 	static class DefaultFeignTargeterConditions extends AllNestedConditions {
