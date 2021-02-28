@@ -38,13 +38,10 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.LayeredConnectionSocketFactory;
-import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.io.CloseMode;
-import org.apache.hc.core5.pool.PoolReusePolicy;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
@@ -76,12 +73,12 @@ public class HttpClient5FeignConfiguration {
 						httpClientProperties.isDisableSslValidation()))
 				.setMaxConnTotal(httpClientProperties.getMaxConnections())
 				.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
-				.setConnPoolPolicy(PoolReusePolicy.LIFO)
+				.setConnPoolPolicy(httpClientProperties.getHc5().getPoolReusePolicy())
+				.setPoolConcurrencyPolicy(
+						httpClientProperties.getHc5().getPoolConcurrencyPolicy())
 				.setConnectionTimeToLive(
 						TimeValue.of(httpClientProperties.getTimeToLive(),
 								httpClientProperties.getTimeToLiveUnit()))
-				.setPoolConcurrencyPolicy(
-						httpClientProperties.getHc5().getPoolConcurrencyPolicy())
 				.setDefaultSocketConfig(SocketConfig.custom()
 						.setSoTimeout(Timeout.of(
 								httpClientProperties.getHc5().getSocketTimeout(),
@@ -122,14 +119,16 @@ public class HttpClient5FeignConfiguration {
 
 	private LayeredConnectionSocketFactory httpsSSLConnectionSocketFactory(
 			boolean isDisableSslValidation) {
+		final SSLConnectionSocketFactoryBuilder sslConnectionSocketFactoryBuilder = SSLConnectionSocketFactoryBuilder
+				.create().setTlsVersions(TLS.V_1_3, TLS.V_1_2);
+
 		if (isDisableSslValidation) {
 			try {
 				final SSLContext sslContext = SSLContext.getInstance("SSL");
 				sslContext.init(null,
 						new TrustManager[] { new DisabledValidationTrustManager() },
 						new SecureRandom());
-				return new SSLConnectionSocketFactory(sslContext,
-						NoopHostnameVerifier.INSTANCE);
+				sslConnectionSocketFactoryBuilder.setSslContext(sslContext);
 			}
 			catch (NoSuchAlgorithmException e) {
 				LOG.warn("Error creating SSLContext", e);
@@ -138,10 +137,12 @@ public class HttpClient5FeignConfiguration {
 				LOG.warn("Error creating SSLContext", e);
 			}
 		}
+		else {
+			sslConnectionSocketFactoryBuilder
+					.setSslContext(SSLContexts.createSystemDefault());
+		}
 
-		return SSLConnectionSocketFactoryBuilder.create()
-				.setSslContext(SSLContexts.createSystemDefault())
-				.setTlsVersions(TLS.V_1_3, TLS.V_1_2).build();
+		return sslConnectionSocketFactoryBuilder.build();
 	}
 
 	static class DisabledValidationTrustManager implements X509TrustManager {
