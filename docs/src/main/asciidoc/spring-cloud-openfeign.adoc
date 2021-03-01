@@ -85,7 +85,7 @@ Spring Cloud lets you take full control of the feign client by declaring additio
 [source,java,indent=0]
 ----
 @FeignClient(name = "stores", configuration = FooConfiguration.class)
-public interface StoreClient {The OkHttpClient and ApacheHttpClient
+public interface StoreClient {
     //..
 }
 ----
