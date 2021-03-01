@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer.RibbonReques
 import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer.RibbonResponse;
 
 import static com.netflix.client.config.CommonClientConfigKey.ConnectTimeout;
+import static com.netflix.client.config.CommonClientConfigKey.FollowRedirects;
 import static com.netflix.client.config.CommonClientConfigKey.IsSecure;
 import static com.netflix.client.config.CommonClientConfigKey.MaxAutoRetries;
 import static com.netflix.client.config.CommonClientConfigKey.MaxAutoRetriesNextServer;
@@ -71,53 +72,47 @@ public class FeignLoadBalancerTests {
 
 	private FeignLoadBalancer feignLoadBalancer;
 
-	private ServerIntrospector inspector = new DefaultServerIntrospector();
-
-	private Integer defaultConnectTimeout = 10000;
-
-	private Integer defaultReadTimeout = 10000;
+	private final ServerIntrospector inspector = new DefaultServerIntrospector();
 
 	@Before
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		when(this.config.get(MaxAutoRetries, DEFAULT_MAX_AUTO_RETRIES)).thenReturn(1);
-		when(this.config.get(MaxAutoRetriesNextServer,
-				DEFAULT_MAX_AUTO_RETRIES_NEXT_SERVER)).thenReturn(1);
-		when(this.config.get(OkToRetryOnAllOperations, eq(anyBoolean())))
-				.thenReturn(true);
-		when(this.config.get(ConnectTimeout)).thenReturn(this.defaultConnectTimeout);
-		when(this.config.get(ReadTimeout)).thenReturn(this.defaultReadTimeout);
-		when(this.config.get(OkToRetryOnAllOperations, false)).thenReturn(true);
+		when(config.get(MaxAutoRetries, DEFAULT_MAX_AUTO_RETRIES)).thenReturn(1);
+		when(config.get(MaxAutoRetriesNextServer, DEFAULT_MAX_AUTO_RETRIES_NEXT_SERVER))
+				.thenReturn(1);
+		when(config.get(OkToRetryOnAllOperations, eq(anyBoolean()))).thenReturn(true);
+		when(config.get(ConnectTimeout)).thenReturn(10000);
+		when(config.get(ReadTimeout)).thenReturn(10000);
+		when(config.get(eq(FollowRedirects), any())).thenReturn(true);
+		when(config.get(OkToRetryOnAllOperations, false)).thenReturn(true);
 	}
 
 	@Test
 	public void testUriInsecure() throws Exception {
-		when(this.config.get(IsSecure)).thenReturn(false);
+		when(config.get(IsSecure)).thenReturn(false);
 
-		this.feignLoadBalancer = new FeignLoadBalancer(this.lb, this.config,
-				this.inspector);
+		feignLoadBalancer = new FeignLoadBalancer(lb, config, inspector);
 		Request request = new RequestTemplate().method(GET).target("https://foo/")
 				.resolve(new HashMap<>()).request();
-		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate, request,
+		RibbonRequest ribbonRequest = new RibbonRequest(delegate, request,
 				new URI(request.url()));
 
 		Response response = Response.builder().request(request).status(200).reason("Test")
 				.headers(Collections.emptyMap()).body(new byte[0]).build();
-		when(this.delegate.execute(any(Request.class), any(Options.class)))
+		when(delegate.execute(any(Request.class), any(Options.class)))
 				.thenReturn(response);
 
-		RibbonResponse resp = this.feignLoadBalancer.execute(ribbonRequest, null);
+		RibbonResponse resp = feignLoadBalancer.execute(ribbonRequest, null);
 
 		assertThat(resp.getRequestedURI()).isEqualTo(new URI("https://foo"));
 	}
 
 	@Test
 	public void testSecureUriFromClientConfig() throws Exception {
-		when(this.config.get(IsSecure)).thenReturn(true);
-		this.feignLoadBalancer = new FeignLoadBalancer(this.lb, this.config,
-				this.inspector);
+		when(config.get(IsSecure)).thenReturn(true);
+		feignLoadBalancer = new FeignLoadBalancer(lb, config, inspector);
 		Server server = new Server("foo", 7777);
-		URI uri = this.feignLoadBalancer.reconstructURIWithServer(server,
+		URI uri = feignLoadBalancer.reconstructURIWithServer(server,
 				new URI("https://foo/"));
 		assertThat(uri).isEqualTo(new URI("https://foo:7777/"));
 	}
@@ -125,33 +120,31 @@ public class FeignLoadBalancerTests {
 	@Test
 	public void testInsecureUriFromInsecureClientConfigToSecureServerIntrospector()
 			throws Exception {
-		when(this.config.get(IsSecure)).thenReturn(false);
-		this.feignLoadBalancer = new FeignLoadBalancer(this.lb, this.config,
-				new ServerIntrospector() {
-					@Override
-					public boolean isSecure(Server server) {
-						return true;
-					}
+		when(config.get(IsSecure)).thenReturn(false);
+		feignLoadBalancer = new FeignLoadBalancer(lb, config, new ServerIntrospector() {
+			@Override
+			public boolean isSecure(Server server) {
+				return true;
+			}
 
-					@Override
-					public Map<String, String> getMetadata(Server server) {
-						return null;
-					}
-				});
+			@Override
+			public Map<String, String> getMetadata(Server server) {
+				return null;
+			}
+		});
 		Server server = new Server("foo", 7777);
-		URI uri = this.feignLoadBalancer.reconstructURIWithServer(server,
+		URI uri = feignLoadBalancer.reconstructURIWithServer(server,
 				new URI("https://foo/"));
 		assertThat(uri).isEqualTo(new URI("https://foo:7777/"));
 	}
 
 	@Test
 	public void testSecureUriFromClientConfigOverride() throws Exception {
-		this.feignLoadBalancer = new FeignLoadBalancer(this.lb, this.config,
-				this.inspector);
+		feignLoadBalancer = new FeignLoadBalancer(lb, config, inspector);
 		Server server = Mockito.mock(Server.class);
 		when(server.getPort()).thenReturn(443);
 		when(server.getHost()).thenReturn("foo");
-		URI uri = this.feignLoadBalancer.reconstructURIWithServer(server,
+		URI uri = feignLoadBalancer.reconstructURIWithServer(server,
 				new URI("https://bar/"));
 		assertThat(uri).isEqualTo(new URI("https://foo:443/"));
 	}
@@ -163,7 +156,7 @@ public class FeignLoadBalancerTests {
 
 		assertThat(request.url()).isEqualTo(url);
 
-		RibbonRequest ribbonRequest = new RibbonRequest(this.delegate, request,
+		RibbonRequest ribbonRequest = new RibbonRequest(delegate, request,
 				new URI(request.url()));
 
 		Request cloneRequest = ribbonRequest.toRequest();
@@ -174,7 +167,7 @@ public class FeignLoadBalancerTests {
 
 	@Test
 	public void testOverrideFeignLoadBalancer() throws Exception {
-		when(this.config.get(IsSecure)).thenReturn(false);
+		when(config.get(IsSecure)).thenReturn(false);
 		Server server1 = new Server("foo", 6666);
 		Server server2 = new Server("foo", 7777);
 		BaseLoadBalancer baseLoadBalancer = new BaseLoadBalancer();
@@ -185,8 +178,7 @@ public class FeignLoadBalancerTests {
 			}
 		});
 
-		this.feignLoadBalancer = new FeignLoadBalancer(baseLoadBalancer, this.config,
-				this.inspector) {
+		feignLoadBalancer = new FeignLoadBalancer(baseLoadBalancer, config, inspector) {
 			protected void customizeLoadBalancerCommandBuilder(
 					final FeignLoadBalancer.RibbonRequest request,
 					final IClientConfig config,
@@ -196,13 +188,13 @@ public class FeignLoadBalancerTests {
 		};
 		Request request = new RequestTemplate().method(GET).resolve(new HashMap<>())
 				.request();
-		RibbonResponse resp = this.feignLoadBalancer.executeWithLoadBalancer(
-				new RibbonRequest(this.delegate, request, new URI(request.url())), null);
+		RibbonResponse resp = feignLoadBalancer.executeWithLoadBalancer(
+				new RibbonRequest(delegate, request, new URI(request.url())), null);
 		assertThat(resp.getRequestedURI().getPort()).isEqualTo(7777);
 		request = new RequestTemplate().method(GET).header("c_ip", "666")
 				.resolve(new HashMap<>()).request();
-		resp = this.feignLoadBalancer.executeWithLoadBalancer(
-				new RibbonRequest(this.delegate, request, new URI(request.url())), null);
+		resp = feignLoadBalancer.executeWithLoadBalancer(
+				new RibbonRequest(delegate, request, new URI(request.url())), null);
 		assertThat(resp.getRequestedURI().getPort()).isEqualTo(6666);
 	}
 

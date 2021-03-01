@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.netflix.client.AbstractLoadBalancerAwareClient;
 import com.netflix.client.ClientRequest;
@@ -65,16 +66,19 @@ public class FeignLoadBalancer extends
 
 	protected ServerIntrospector serverIntrospector;
 
+	protected boolean followRedirects;
+
 	public FeignLoadBalancer(ILoadBalancer lb, IClientConfig clientConfig,
 			ServerIntrospector serverIntrospector) {
 		super(lb, clientConfig);
-		this.setRetryHandler(RetryHandler.DEFAULT);
+		setRetryHandler(RetryHandler.DEFAULT);
 		this.clientConfig = clientConfig;
 		this.ribbon = RibbonProperties.from(clientConfig);
 		RibbonProperties ribbon = this.ribbon;
-		this.connectTimeout = ribbon.getConnectTimeout();
-		this.readTimeout = ribbon.getReadTimeout();
+		connectTimeout = ribbon.getConnectTimeout();
+		readTimeout = ribbon.getReadTimeout();
 		this.serverIntrospector = serverIntrospector;
+		followRedirects = ribbon.isFollowRedirects();
 	}
 
 	@Override
@@ -83,11 +87,13 @@ public class FeignLoadBalancer extends
 		Request.Options options;
 		if (configOverride != null) {
 			RibbonProperties override = RibbonProperties.from(configOverride);
-			options = new Request.Options(override.connectTimeout(this.connectTimeout),
-					override.readTimeout(this.readTimeout));
+			options = new Request.Options(override.connectTimeout(connectTimeout),
+					TimeUnit.MILLISECONDS, override.readTimeout(readTimeout),
+					TimeUnit.MILLISECONDS, override.isFollowRedirects(followRedirects));
 		}
 		else {
-			options = new Request.Options(this.connectTimeout, this.readTimeout);
+			options = new Request.Options(connectTimeout, TimeUnit.MILLISECONDS,
+					readTimeout, TimeUnit.MILLISECONDS, followRedirects);
 		}
 		Response response = request.client().execute(request.toRequest(), options);
 		return new RibbonResponse(request.getUri(), response);
@@ -96,24 +102,24 @@ public class FeignLoadBalancer extends
 	@Override
 	public RequestSpecificRetryHandler getRequestSpecificRetryHandler(
 			RibbonRequest request, IClientConfig requestConfig) {
-		if (this.ribbon.isOkToRetryOnAllOperations()) {
-			return new RequestSpecificRetryHandler(true, true, this.getRetryHandler(),
+		if (ribbon.isOkToRetryOnAllOperations()) {
+			return new RequestSpecificRetryHandler(true, true, getRetryHandler(),
 					requestConfig);
 		}
 		if (!request.toRequest().httpMethod().name().equals("GET")) {
-			return new RequestSpecificRetryHandler(true, false, this.getRetryHandler(),
+			return new RequestSpecificRetryHandler(true, false, getRetryHandler(),
 					requestConfig);
 		}
 		else {
-			return new RequestSpecificRetryHandler(true, true, this.getRetryHandler(),
+			return new RequestSpecificRetryHandler(true, true, getRetryHandler(),
 					requestConfig);
 		}
 	}
 
 	@Override
 	public URI reconstructURIWithServer(Server server, URI original) {
-		URI uri = updateToSecureConnectionIfNeeded(original, this.clientConfig,
-				this.serverIntrospector, server);
+		URI uri = updateToSecureConnectionIfNeeded(original, clientConfig,
+				serverIntrospector, server);
 		return super.reconstructURIWithServer(server, uri);
 	}
 
@@ -137,11 +143,11 @@ public class FeignLoadBalancer extends
 		}
 
 		Request toRequest() {
-			return toRequest(this.request);
+			return toRequest(request);
 		}
 
 		Client client() {
-			return this.client;
+			return client;
 		}
 
 		HttpRequest toHttpRequest() {
@@ -179,16 +185,16 @@ public class FeignLoadBalancer extends
 		}
 
 		public Request getRequest() {
-			return this.request;
+			return request;
 		}
 
 		public Client getClient() {
-			return this.client;
+			return client;
 		}
 
 		@Override
 		public Object clone() {
-			return new RibbonRequest(this.client, this.request, getUri());
+			return new RibbonRequest(client, request, getUri());
 		}
 
 	}
@@ -206,37 +212,37 @@ public class FeignLoadBalancer extends
 
 		@Override
 		public Object getPayload() {
-			return this.response.body();
+			return response.body();
 		}
 
 		@Override
 		public boolean hasPayload() {
-			return this.response.body() != null;
+			return response.body() != null;
 		}
 
 		@Override
 		public boolean isSuccess() {
-			return this.response.status() == 200;
+			return response.status() == 200;
 		}
 
 		@Override
 		public URI getRequestedURI() {
-			return this.uri;
+			return uri;
 		}
 
 		@Override
 		public Map<String, Collection<String>> getHeaders() {
-			return this.response.headers();
+			return response.headers();
 		}
 
 		Response toResponse() {
-			return this.response;
+			return response;
 		}
 
 		@Override
 		public void close() throws IOException {
-			if (this.response != null && this.response.body() != null) {
-				this.response.body().close();
+			if (response != null && response.body() != null) {
+				response.body().close();
 			}
 		}
 
