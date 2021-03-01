@@ -79,8 +79,8 @@ class FeignHttpClientUrlTests {
 
 	@Test
 	void testUrlHttpClient() {
-		assertThat(this.urlClient).as("UrlClient was null").isNotNull();
-		Hello hello = this.urlClient.getHello();
+		assertThat(urlClient).as("UrlClient was null").isNotNull();
+		Hello hello = urlClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match")
 				.isEqualTo(new Hello("hello world 1"));
@@ -88,7 +88,7 @@ class FeignHttpClientUrlTests {
 
 	@Test
 	void testBeanUrl() {
-		Hello hello = this.beanClient.getHello();
+		Hello hello = beanClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match")
 				.isEqualTo(new Hello("hello world 1"));
@@ -96,7 +96,7 @@ class FeignHttpClientUrlTests {
 
 	@Test
 	void testBeanUrlNoProtocol() {
-		Hello hello = this.beanClientNoProtocol.getHello();
+		Hello hello = beanClientNoProtocol.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match")
 				.isEqualTo(new Hello("hello world 1"));
@@ -180,16 +180,16 @@ class FeignHttpClientUrlTests {
 
 		private String message;
 
-		public Hello() {
+		Hello() {
 
 		}
 
-		public Hello(String message) {
+		Hello(String message) {
 			this.message = message;
 		}
 
 		public String getMessage() {
-			return this.message;
+			return message;
 		}
 
 		public void setMessage(String message) {
@@ -205,12 +205,12 @@ class FeignHttpClientUrlTests {
 				return false;
 			}
 			Hello that = (Hello) o;
-			return Objects.equals(this.message, that.message);
+			return Objects.equals(message, that.message);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(this.message);
+			return Objects.hash(message);
 		}
 
 	}
