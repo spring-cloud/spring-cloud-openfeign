@@ -37,6 +37,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.SocketUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,11 +49,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  */
-@SpringBootTest(classes = FeignHttpClientUrlTests.TestConfig.class, webEnvironment = DEFINED_PORT,
-		value = { "spring.application.name=feignclienturltest", "feign.circuitbreaker.enabled=false",
-				"feign.okhttp.enabled=false", "spring.cloud.loadbalancer.retry.enabled=false" })
+@SpringBootTest(classes = FeignHttpClientUrlTestsWithRetryableLoadBalancer.TestConfig.class,
+		webEnvironment = DEFINED_PORT,
+		value = { "spring.application.name=feignclienturlwithretryableloadbalancertest", "feign.hystrix.enabled=false",
+				"feign.okhttp.enabled=false", "spring.cloud.loadbalancer.ribbon.enabled=false" })
 @DirtiesContext
-class FeignHttpClientUrlTests {
+class FeignHttpClientUrlTestsWithRetryableLoadBalancer {
 
 	static int port;
 
@@ -130,12 +132,12 @@ class FeignHttpClientUrlTests {
 	@Import(NoSecurityConfiguration.class)
 	protected static class TestConfig {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		public Hello getHello() {
 			return new Hello("hello world 1");
 		}
 
-		@RequestMapping(method = RequestMethod.GET, value = "/path/hello")
+		@GetMapping("/path/hello")
 		public Hello getHelloWithPath() {
 			return getHello();
 		}
@@ -174,6 +176,7 @@ class FeignHttpClientUrlTests {
 		private String message;
 
 		Hello() {
+
 		}
 
 		Hello(String message) {
