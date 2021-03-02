@@ -393,9 +393,7 @@ public class FeignClientUsingPropertiesTests {
 		public void encode(Object o, Type type, RequestTemplate requestTemplate) throws EncodeException {
 			Map<String, String> form = (Map<String, String>) o;
 			StringBuilder builder = new StringBuilder();
-			form.forEach((key, value) -> {
-				builder.append(key + "=" + value + "&");
-			});
+			form.forEach((key, value) -> builder.append(key + "=" + value + "&"));
 
 			requestTemplate.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 			requestTemplate.body(builder.toString());

@@ -97,7 +97,7 @@ public class FeignClientsRegistrarTests {
 		AnnotationConfigApplicationContext config = new AnnotationConfigApplicationContext();
 		((DefaultListableBeanFactory) config.getBeanFactory()).setAllowBeanDefinitionOverriding(false);
 		config.register(TopLevelSubLevelTestConfig.class);
-		assertThatCode(() -> config.refresh())
+		assertThatCode(config::refresh)
 				.as("Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
 				.doesNotThrowAnyException();
 	}

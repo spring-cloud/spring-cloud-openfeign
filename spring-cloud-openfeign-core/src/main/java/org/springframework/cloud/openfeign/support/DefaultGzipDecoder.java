@@ -46,8 +46,7 @@ public class DefaultGzipDecoder implements Decoder {
 
 	@Override
 	public Object decode(final Response response, Type type) throws IOException, FeignException {
-		Collection<String> encoding = response.headers().containsKey(HttpEncoding.CONTENT_ENCODING_HEADER)
-				? response.headers().get(HttpEncoding.CONTENT_ENCODING_HEADER) : null;
+		Collection<String> encoding = response.headers().getOrDefault(HttpEncoding.CONTENT_ENCODING_HEADER, null);
 
 		if (encoding != null) {
 			if (encoding.contains(HttpEncoding.GZIP_ENCODING)) {

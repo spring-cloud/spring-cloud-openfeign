@@ -526,22 +526,12 @@ class ValidFeignClientTests {
 
 		@Bean
 		public RequestInterceptor interceptor1() {
-			return new RequestInterceptor() {
-				@Override
-				public void apply(RequestTemplate template) {
-					template.header(MYHEADER1, "myheader1value");
-				}
-			};
+			return template -> template.header(MYHEADER1, "myheader1value");
 		}
 
 		@Bean
 		public RequestInterceptor interceptor2() {
-			return new RequestInterceptor() {
-				@Override
-				public void apply(RequestTemplate template) {
-					template.header(MYHEADER2, "myheader2value");
-				}
-			};
+			return template -> template.header(MYHEADER2, "myheader2value");
 		}
 
 	}
@@ -570,27 +560,21 @@ class ValidFeignClientTests {
 
 		@Bean
 		FeignFormatterRegistrar feignFormatterRegistrar() {
-			return new FeignFormatterRegistrar() {
+			return registry -> registry.addFormatter(new Formatter<OtherArg>() {
 
 				@Override
-				public void registerFormatters(FormatterRegistry registry) {
-					registry.addFormatter(new Formatter<OtherArg>() {
-
-						@Override
-						public String print(OtherArg object, Locale locale) {
-							if ("foo".equals(object.value)) {
-								return "bar";
-							}
-							return object.value;
-						}
-
-						@Override
-						public OtherArg parse(String text, Locale locale) throws ParseException {
-							return new OtherArg(text);
-						}
-					});
+				public String print(OtherArg object, Locale locale) {
+					if ("foo".equals(object.value)) {
+						return "bar";
+					}
+					return object.value;
 				}
-			};
+
+				@Override
+				public OtherArg parse(String text, Locale locale) throws ParseException {
+					return new OtherArg(text);
+				}
+			});
 		}
 
 		@Bean
@@ -610,8 +594,7 @@ class ValidFeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hellos")
 		public List<Hello> getHellos() {
-			ArrayList<Hello> hellos = getHelloList();
-			return hellos;
+			return getHelloList();
 		}
 
 		@RequestMapping(method = RequestMethod.GET, path = "/hellostrings")

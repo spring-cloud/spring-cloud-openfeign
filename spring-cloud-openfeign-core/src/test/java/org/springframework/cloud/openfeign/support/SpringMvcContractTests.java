@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import feign.MethodMetadata;
@@ -776,10 +777,10 @@ public class SpringMvcContractTests {
 
 			TestObject that = (TestObject) o;
 
-			if (number != null ? !number.equals(that.number) : that.number != null) {
+			if (!Objects.equals(number, that.number)) {
 				return false;
 			}
-			if (something != null ? !something.equals(that.something) : that.something != null) {
+			if (!Objects.equals(something, that.something)) {
 				return false;
 			}
 
