@@ -37,7 +37,7 @@ import javax.servlet.http.Part;
 
 import feign.Client;
 import feign.Logger;
-import feign.RequestInterceptor;git 
+import feign.RequestInterceptor;
 import feign.codec.EncodeException;
 import org.junit.jupiter.api.Test;
 
