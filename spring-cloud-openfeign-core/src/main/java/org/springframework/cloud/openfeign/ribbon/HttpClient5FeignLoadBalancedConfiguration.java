@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(ApacheHttpClient.class)
-@ConditionalOnProperty("feign.httpclient.hc5.enabled")
+@ConditionalOnProperty(value = "feign.httpclient.hc5.enabled", havingValue = "true")
 @Import(HttpClient5FeignConfiguration.class)
 class HttpClient5FeignLoadBalancedConfiguration {
 

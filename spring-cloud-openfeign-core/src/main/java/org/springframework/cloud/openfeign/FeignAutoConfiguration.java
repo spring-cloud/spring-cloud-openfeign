@@ -291,10 +291,18 @@ public class FeignAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttp5Client.class)
+	@ConditionalOnMissingClass("com.netflix.loadbalancer.ILoadBalancer")
 	@ConditionalOnMissingBean(org.apache.hc.client5.http.impl.classic.CloseableHttpClient.class)
-	@ConditionalOnProperty({ "feign.httpclient.hc5.enabled" })
+	@ConditionalOnProperty(value = "feign.httpclient.hc5.enabled", havingValue = "true")
 	@Import(org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.class)
 	protected static class HttpClient5FeignConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean(Client.class)
+		public Client feignClient(
+				org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient5) {
+			return new ApacheHttp5Client(httpClient5);
+		}
 
 	}
 

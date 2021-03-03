@@ -18,30 +18,33 @@ package org.springframework.cloud.openfeign;
 
 import feign.Client;
 import feign.hc5.ApacheHttp5Client;
+import feign.httpclient.ApacheHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
+import org.springframework.cloud.test.ClassPathExclusions;
+import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * @author Thanh Nguyen Ky
+ * @author Nguyen Ky Thanh
  */
-@ExtendWith({ SpringExtension.class })
+@RunWith(ModifiedClassPathRunner.class)
+@ClassPathExclusions("ribbon-loadbalancer-{version:\\d.*}.jar")
 public class FeignHttpClient5ConfigurationTests {
 
 	@Test
 	public void verifyHttpClient5AutoConfig() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.properties("feign.httpclient.hc5.enabled=true",
+				.properties("debug=true", "feign.httpclient.hc5.enabled=true",
 						"feign.httpclient.enabled=false")
 				.web(WebApplicationType.NONE)
 				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
@@ -72,6 +75,30 @@ public class FeignHttpClient5ConfigurationTests {
 
 		Client client = context.getBean(Client.class);
 		assertThat(client).isInstanceOf(ApacheHttp5Client.class);
+
+		if (context != null) {
+			context.close();
+		}
+	}
+
+	@Test
+	public void hc4ShouldBeTheDefaultIfHc5NotEnabled() {
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
+				.properties("feign.httpclient.hc5.enabled=false",
+						"feign.httpclient.enabled=true")
+				.web(WebApplicationType.NONE)
+				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
+				.run();
+
+		org.apache.http.impl.client.CloseableHttpClient httpClient4 = context
+				.getBean(org.apache.http.impl.client.CloseableHttpClient.class);
+		assertThat(httpClient4).isNotNull();
+		org.apache.http.conn.HttpClientConnectionManager connectionManager4 = context
+				.getBean(org.apache.http.conn.HttpClientConnectionManager.class);
+		assertThat(connectionManager4).isInstanceOf(
+				org.apache.http.impl.conn.PoolingHttpClientConnectionManager.class);
+		Client client = context.getBean(Client.class);
+		assertThat(client).isInstanceOf(ApacheHttpClient.class);
 
 		if (context != null) {
 			context.close();

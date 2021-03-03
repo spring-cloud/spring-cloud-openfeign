@@ -28,8 +28,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import feign.Client;
-import feign.hc5.ApacheHttp5Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -102,12 +100,6 @@ public class HttpClient5FeignConfiguration {
 								.build())
 				.build();
 		return httpClient5;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(Client.class)
-	public Client feignClient(CloseableHttpClient httpClient5) {
-		return new ApacheHttp5Client(httpClient5);
 	}
 
 	@PreDestroy
