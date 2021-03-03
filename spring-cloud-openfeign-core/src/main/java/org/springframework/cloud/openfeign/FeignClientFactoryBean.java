@@ -98,6 +98,8 @@ public class FeignClientFactoryBean
 
 	private int connectTimeoutMillis = new Request.Options().connectTimeoutMillis();
 
+	private boolean followRedirects = new Request.Options().isFollowRedirects();
+
 	@Override
 	public void afterPropertiesSet() {
 		Assert.hasText(contextId, "Context id must be set");
@@ -182,6 +184,7 @@ public class FeignClientFactoryBean
 			builder.options(options);
 			readTimeoutMillis = options.readTimeoutMillis();
 			connectTimeoutMillis = options.connectTimeoutMillis();
+			followRedirects = options.isFollowRedirects();
 		}
 		Map<String, RequestInterceptor> requestInterceptors = getInheritedAwareInstances(context,
 				RequestInterceptor.class);
@@ -222,9 +225,10 @@ public class FeignClientFactoryBean
 
 		connectTimeoutMillis = config.getConnectTimeout() != null ? config.getConnectTimeout() : connectTimeoutMillis;
 		readTimeoutMillis = config.getReadTimeout() != null ? config.getReadTimeout() : readTimeoutMillis;
+		followRedirects = config.isFollowRedirects() != null ? config.isFollowRedirects() : followRedirects;
 
 		builder.options(new Request.Options(connectTimeoutMillis, TimeUnit.MILLISECONDS, readTimeoutMillis,
-				TimeUnit.MILLISECONDS, true));
+				TimeUnit.MILLISECONDS, followRedirects));
 
 		if (config.getRetryer() != null) {
 			Retryer retryer = getOrInstantiate(config.getRetryer());
@@ -495,13 +499,16 @@ public class FeignClientFactoryBean
 				&& Objects.equals(beanFactory, that.beanFactory) && decode404 == that.decode404
 				&& inheritParentContext == that.inheritParentContext && Objects.equals(fallback, that.fallback)
 				&& Objects.equals(fallbackFactory, that.fallbackFactory) && Objects.equals(name, that.name)
-				&& Objects.equals(path, that.path) && Objects.equals(type, that.type) && Objects.equals(url, that.url);
+				&& Objects.equals(path, that.path) && Objects.equals(type, that.type) && Objects.equals(url, that.url)
+				&& Objects.equals(connectTimeoutMillis, that.connectTimeoutMillis)
+				&& Objects.equals(readTimeoutMillis, that.readTimeoutMillis)
+				&& Objects.equals(followRedirects, that.followRedirects);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(applicationContext, beanFactory, decode404, inheritParentContext, fallback, fallbackFactory,
-				name, path, type, url);
+				name, path, type, url, readTimeoutMillis, connectTimeoutMillis, followRedirects);
 	}
 
 	@Override
@@ -512,6 +519,8 @@ public class FeignClientFactoryBean
 				.append(inheritParentContext).append(", ").append("applicationContext=").append(applicationContext)
 				.append(", ").append("beanFactory=").append(beanFactory).append(", ").append("fallback=")
 				.append(fallback).append(", ").append("fallbackFactory=").append(fallbackFactory).append("}")
+				.append("connectTimeoutMillis=").append(connectTimeoutMillis).append("}").append("readTimeoutMillis=")
+				.append(readTimeoutMillis).append("}").append("followRedirects=").append(followRedirects).append("}")
 				.toString();
 	}
 
