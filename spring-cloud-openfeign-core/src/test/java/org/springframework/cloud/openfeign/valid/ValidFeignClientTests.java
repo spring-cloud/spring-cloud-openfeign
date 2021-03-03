@@ -37,8 +37,7 @@ import javax.servlet.http.Part;
 
 import feign.Client;
 import feign.Logger;
-import feign.RequestInterceptor;
-import feign.RequestTemplate;
+import feign.RequestInterceptor;git 
 import feign.codec.EncodeException;
 import org.junit.jupiter.api.Test;
 
@@ -65,7 +64,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.format.Formatter;
-import org.springframework.format.FormatterRegistry;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;

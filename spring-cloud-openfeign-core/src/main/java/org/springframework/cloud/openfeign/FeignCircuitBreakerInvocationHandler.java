@@ -63,7 +63,8 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 				try {
 					Object otherHandler = args.length > 0 && args[0] != null ? Proxy.getInvocationHandler(args[0]) : null;
 					return equals(otherHandler);
-				} catch (IllegalArgumentException e) {
+				}
+				catch (IllegalArgumentException e) {
 					return false;
 				}
 			case "hashCode":
