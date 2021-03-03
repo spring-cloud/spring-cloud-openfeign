@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Eko Kurniawan Khannedy
  * @author Ilia Ilinykh
  * @author Ram Anaswara
+ * @author Olga Maciaszek-Sharma
  */
 @ConfigurationProperties("feign.client")
 public class FeignClientProperties {
@@ -135,6 +136,8 @@ public class FeignClientProperties {
 		private Class<Contract> contract;
 
 		private ExceptionPropagationPolicy exceptionPropagationPolicy;
+
+		private Boolean followRedirects;
 
 		public Logger.Level getLoggerLevel() {
 			return loggerLevel;
@@ -244,6 +247,14 @@ public class FeignClientProperties {
 			this.exceptionPropagationPolicy = exceptionPropagationPolicy;
 		}
 
+		public Boolean isFollowRedirects() {
+			return followRedirects;
+		}
+
+		public void setFollowRedirects(Boolean followRedirects) {
+			this.followRedirects = followRedirects;
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -266,8 +277,8 @@ public class FeignClientProperties {
 					&& Objects.equals(exceptionPropagationPolicy,
 							that.exceptionPropagationPolicy)
 					&& Objects.equals(defaultRequestHeaders, that.defaultRequestHeaders)
-					&& Objects.equals(defaultQueryParameters,
-							that.defaultQueryParameters);
+					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters)
+					&& Objects.equals(followRedirects, that.followRedirects);
 		}
 
 		@Override
@@ -275,7 +286,7 @@ public class FeignClientProperties {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer,
 					errorDecoder, requestInterceptors, decode404, encoder, decoder,
 					contract, exceptionPropagationPolicy, defaultQueryParameters,
-					defaultRequestHeaders);
+					defaultRequestHeaders, followRedirects);
 		}
 
 	}
