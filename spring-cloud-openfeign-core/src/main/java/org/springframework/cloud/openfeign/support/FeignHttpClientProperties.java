@@ -182,8 +182,14 @@ public class FeignHttpClientProperties {
 		 */
 		public static final TimeUnit DEFAULT_SOCKET_TIMEOUT_UNIT = TimeUnit.SECONDS;
 
+		/**
+		 * Pool concurrency policies.
+		 */
 		private PoolConcurrencyPolicy poolConcurrencyPolicy = DEFAULT_POOL_CONCURRENCY_POLICY;
 
+		/**
+		 * Pool connection re-use policies.
+		 */
 		private PoolReusePolicy poolReusePolicy = DEFAULT_POOL_REUSE_POLICY;
 
 		/**
