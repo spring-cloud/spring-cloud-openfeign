@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign.ribbon;
 
 import feign.Client;
 import feign.hc5.ApacheHttp5Client;
-import feign.httpclient.ApacheHttpClient;
 import org.apache.hc.client5.http.classic.HttpClient;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -31,10 +30,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
+ * Configuration instantiating a {@link LoadBalancerFeignClient}-based {@link Client}
+ * object that uses {@link ApacheHttp5Client} under the hood.
+ *
  * @author Nguyen Ky Thanh
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass(ApacheHttpClient.class)
+@ConditionalOnClass(ApacheHttp5Client.class)
 @ConditionalOnProperty(value = "feign.httpclient.hc5.enabled", havingValue = "true")
 @Import(HttpClient5FeignConfiguration.class)
 class HttpClient5FeignLoadBalancedConfiguration {
