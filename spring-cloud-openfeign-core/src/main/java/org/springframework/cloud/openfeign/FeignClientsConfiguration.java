@@ -23,6 +23,7 @@ import com.netflix.hystrix.HystrixCommand;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
+import feign.QueryMapEncoder;
 import feign.Retryer;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
@@ -47,6 +48,7 @@ import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.support.AbstractFormWriter;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
+import org.springframework.cloud.openfeign.support.PageableSpringQueryMapEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
@@ -65,6 +67,7 @@ import static feign.form.ContentType.MULTIPART;
  * @author Venil Noronha
  * @author Darren Foong
  * @author Olga Maciaszek-Sharma
+ * @author Hyeonmin Park
  */
 @Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
@@ -121,6 +124,13 @@ public class FeignClientsConfiguration {
 					springDataWebProperties.getSort().getSortParameter());
 		}
 		return encoder;
+	}
+
+	@Bean
+	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
+	@ConditionalOnMissingBean
+	public QueryMapEncoder feignQueryMapEncoderPageable() {
+		return new PageableSpringQueryMapEncoder();
 	}
 
 	@Bean

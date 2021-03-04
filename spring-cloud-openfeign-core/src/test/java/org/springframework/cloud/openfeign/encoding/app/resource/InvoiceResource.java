@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  * An sample REST controller, that potentially returns large response - used for testing.
  *
  * @author Jakub Narloch
+ * @author Hyeonmin Park
  */
 @RestController
 public class InvoiceResource {
@@ -63,11 +64,30 @@ public class InvoiceResource {
 		return ResponseEntity.ok(page);
 	}
 
+	@RequestMapping(value = "invoicesPagedWithBody", method = RequestMethod.POST,
+			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<Invoice>> getInvoicesPagedWithBody(org.springframework.data.domain.Pageable pageable,
+			@RequestBody String titlePrefix) {
+		Page<Invoice> page = new PageImpl<>(createInvoiceList(titlePrefix, pageable.getPageSize()), pageable, 100);
+		return ResponseEntity.ok(page);
+	}
+
+	@RequestMapping(value = "invoicesSortedWithBody", method = RequestMethod.POST,
+			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<Invoice>> getInvoicesSortedWithBody(org.springframework.data.domain.Sort sort,
+			@RequestBody String titlePrefix) {
+		return ResponseEntity.ok(createInvoiceList(titlePrefix, 100));
+	}
+
 	private List<Invoice> createInvoiceList(int count) {
+		return createInvoiceList("Invoice", count);
+	}
+
+	private List<Invoice> createInvoiceList(String titlePrefix, int count) {
 		final List<Invoice> invoices = new ArrayList<>();
 		for (int ind = 0; ind < count; ind++) {
 			final Invoice invoice = new Invoice();
-			invoice.setTitle("Invoice " + (ind + 1));
+			invoice.setTitle(titlePrefix + " " + (ind + 1));
 			invoice.setAmount(new BigDecimal(
 					String.format(Locale.US, "%.2f", Math.random() * 1000)));
 			invoices.add(invoice);
