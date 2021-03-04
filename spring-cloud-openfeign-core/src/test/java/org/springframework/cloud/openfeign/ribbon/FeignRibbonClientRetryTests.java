@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=feignclientretrytest",
 				"feign.okhttp.enabled=false", "feign.httpclient.enabled=false",
-				"feign.hystrix.enabled=false", "localapp.ribbon.MaxAutoRetries=2",
+				"feign.hystrix.enabled=false", "feign.httpclient.hc5.enabled=false",
+				"localapp.ribbon.MaxAutoRetries=2",
 				"localapp.ribbon.MaxAutoRetriesNextServer=3" })
 @DirtiesContext
 public class FeignRibbonClientRetryTests {

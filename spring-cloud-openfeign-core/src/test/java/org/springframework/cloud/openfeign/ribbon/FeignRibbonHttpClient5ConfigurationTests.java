@@ -22,6 +22,8 @@ import javax.net.ssl.SSLContextSpi;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
+import feign.Client;
+import feign.hc5.ApacheHttp5Client;
 import org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
@@ -53,6 +55,9 @@ class FeignRibbonHttpClient5ConfigurationTests {
 	@Autowired
 	private HttpClientConnectionManager connectionManager;
 
+	@Autowired
+	private Client client;
+
 	@Test
 	void disableSslTest() throws Exception {
 		Lookup<ConnectionSocketFactory> socketFactoryRegistry = getConnectionSocketFactoryLookup(
@@ -60,6 +65,13 @@ class FeignRibbonHttpClient5ConfigurationTests {
 		assertThat(socketFactoryRegistry.lookup(URIScheme.HTTPS.id)).isNotNull();
 		assertThat(getX509TrustManager(socketFactoryRegistry).getAcceptedIssuers())
 				.isNull();
+	}
+
+	@Test
+	void verifyHttpClient5IsPickedUp() {
+		assertThat(client).isInstanceOf(LoadBalancerFeignClient.class);
+		Client delegate = (Client) getField(client, "delegate");
+		assertThat(delegate).isInstanceOf(ApacheHttp5Client.class);
 	}
 
 	private Lookup<ConnectionSocketFactory> getConnectionSocketFactoryLookup(

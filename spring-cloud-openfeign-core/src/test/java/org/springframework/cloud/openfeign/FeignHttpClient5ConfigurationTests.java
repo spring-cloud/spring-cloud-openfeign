@@ -44,7 +44,7 @@ public class FeignHttpClient5ConfigurationTests {
 	@Test
 	public void verifyHttpClient5AutoConfig() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.properties("debug=true", "feign.httpclient.hc5.enabled=true",
+				.properties("feign.httpclient.hc5.enabled=true",
 						"feign.httpclient.enabled=false")
 				.web(WebApplicationType.NONE)
 				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
