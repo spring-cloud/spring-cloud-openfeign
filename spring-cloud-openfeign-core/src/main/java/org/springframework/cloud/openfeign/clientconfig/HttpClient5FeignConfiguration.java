@@ -40,6 +40,8 @@ import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.io.CloseMode;
+import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
+import org.apache.hc.core5.pool.PoolReusePolicy;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
@@ -71,9 +73,10 @@ public class HttpClient5FeignConfiguration {
 						httpClientProperties.isDisableSslValidation()))
 				.setMaxConnTotal(httpClientProperties.getMaxConnections())
 				.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
-				.setConnPoolPolicy(httpClientProperties.getHc5().getPoolReusePolicy())
-				.setPoolConcurrencyPolicy(
-						httpClientProperties.getHc5().getPoolConcurrencyPolicy())
+				.setConnPoolPolicy(PoolReusePolicy.valueOf(
+						httpClientProperties.getHc5().getPoolReusePolicy().name()))
+				.setPoolConcurrencyPolicy(PoolConcurrencyPolicy.valueOf(
+						httpClientProperties.getHc5().getPoolConcurrencyPolicy().name()))
 				.setConnectionTimeToLive(
 						TimeValue.of(httpClientProperties.getTimeToLive(),
 								httpClientProperties.getTimeToLiveUnit()))
@@ -89,12 +92,12 @@ public class HttpClient5FeignConfiguration {
 	public CloseableHttpClient httpClient5(HttpClientConnectionManager connectionManager,
 			FeignHttpClientProperties httpClientProperties) {
 		httpClient5 = HttpClients.custom().disableCookieManagement().useSystemProperties()
-				.setConnectionManager(connectionManager)
+				.setConnectionManager(connectionManager).evictExpiredConnections()
 				.setDefaultRequestConfig(
 						RequestConfig.custom()
-								.setConnectTimeout(Timeout
-										.of(httpClientProperties.getConnectionTimeout(),
-												TimeUnit.MILLISECONDS))
+								.setConnectTimeout(Timeout.of(
+										httpClientProperties.getConnectionTimeout(),
+										TimeUnit.MILLISECONDS))
 								.setRedirectsEnabled(
 										httpClientProperties.isFollowRedirects())
 								.build())

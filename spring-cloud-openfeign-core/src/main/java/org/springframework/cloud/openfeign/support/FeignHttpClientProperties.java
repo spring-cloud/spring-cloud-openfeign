@@ -18,9 +18,6 @@ package org.springframework.cloud.openfeign.support;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
-import org.apache.hc.core5.pool.PoolReusePolicy;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -233,6 +230,42 @@ public class FeignHttpClientProperties {
 
 		public void setSocketTimeout(int socketTimeout) {
 			this.socketTimeout = socketTimeout;
+		}
+
+		/**
+		 * Enumeration of pool concurrency policies.
+		 */
+		public enum PoolConcurrencyPolicy {
+
+			/**
+			 * Higher concurrency but with lax connection max limit guarantees.
+			 */
+			LAX,
+
+			/**
+			 * Strict connection max limit guarantees.
+			 */
+			STRICT
+
+		}
+
+		/**
+		 * Enumeration of pooled connection re-use policies.
+		 */
+		public enum PoolReusePolicy {
+
+			/**
+			 * Re-use as few connections as possible making it possible for connections to
+			 * become idle and expire.
+			 */
+			LIFO,
+
+			/**
+			 * Re-use all connections equally preventing them from becoming idle and
+			 * expiring.
+			 */
+			FIFO
+
 		}
 
 	}
