@@ -121,7 +121,7 @@ public class FeignHttpClient5ConfigurationTests {
 	@ClassPathExclusions({ "ribbon-loadbalancer-{version:\\d.*}.jar",
 			"feign-hc5-{version:\\d.*}.jar", "httpclient5-{version:\\d.*}.jar",
 			"httpcore5-{version:\\d.*}.jar", "httpcore5-h2-{version:\\d.*}.jar" })
-	public static class WithoutWithoutLoadBalancerAndHc5InClasspath {
+	public static class WithoutLoadBalancerAndHc5InClasspath {
 
 		@Test
 		public void hc4ShouldWinEvenHc5ConfigEnabled() {
