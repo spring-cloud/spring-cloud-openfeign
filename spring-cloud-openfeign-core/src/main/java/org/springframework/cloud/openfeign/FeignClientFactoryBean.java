@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
+import org.springframework.cloud.openfeign.loadbalancer.RetryableFeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -95,6 +96,8 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 	private int readTimeoutMillis = new Request.Options().readTimeoutMillis();
 
 	private int connectTimeoutMillis = new Request.Options().connectTimeoutMillis();
+
+	private boolean followRedirects = new Request.Options().isFollowRedirects();
 
 	@Override
 	public void afterPropertiesSet() {
@@ -192,6 +195,7 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 			builder.options(options);
 			readTimeoutMillis = options.readTimeoutMillis();
 			connectTimeoutMillis = options.connectTimeoutMillis();
+			followRedirects = options.isFollowRedirects();
 		}
 		Map<String, RequestInterceptor> requestInterceptors = getInheritedAwareInstances(
 				context, RequestInterceptor.class);
@@ -231,9 +235,11 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 				? config.getConnectTimeout() : connectTimeoutMillis;
 		readTimeoutMillis = config.getReadTimeout() != null ? config.getReadTimeout()
 				: readTimeoutMillis;
+		followRedirects = config.isFollowRedirects() != null ? config.isFollowRedirects()
+				: followRedirects;
 
 		builder.options(new Request.Options(connectTimeoutMillis, TimeUnit.MILLISECONDS,
-				readTimeoutMillis, TimeUnit.MILLISECONDS, true));
+				readTimeoutMillis, TimeUnit.MILLISECONDS, followRedirects));
 
 		if (config.getRetryer() != null) {
 			Retryer retryer = getOrInstantiate(config.getRetryer());
@@ -385,6 +391,12 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
 				client = ((FeignBlockingLoadBalancerClient) client).getDelegate();
 			}
+			if (client instanceof RetryableFeignBlockingLoadBalancerClient) {
+				// not load balancing because we have a url,
+				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
+				client = ((RetryableFeignBlockingLoadBalancerClient) client)
+						.getDelegate();
+			}
 			builder.client(client);
 		}
 		Targeter targeter = get(context, Targeter.class);
@@ -513,13 +525,17 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 				&& Objects.equals(fallback, that.fallback)
 				&& Objects.equals(fallbackFactory, that.fallbackFactory)
 				&& Objects.equals(name, that.name) && Objects.equals(path, that.path)
-				&& Objects.equals(type, that.type) && Objects.equals(url, that.url);
+				&& Objects.equals(type, that.type) && Objects.equals(url, that.url)
+				&& Objects.equals(connectTimeoutMillis, that.connectTimeoutMillis)
+				&& Objects.equals(readTimeoutMillis, that.readTimeoutMillis)
+				&& Objects.equals(followRedirects, that.followRedirects);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(applicationContext, beanFactory, decode404,
-				inheritParentContext, fallback, fallbackFactory, name, path, type, url);
+				inheritParentContext, fallback, fallbackFactory, name, path, type, url,
+				readTimeoutMillis, connectTimeoutMillis, followRedirects);
 	}
 
 	@Override
@@ -533,6 +549,9 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 				.append("beanFactory=").append(beanFactory).append(", ")
 				.append("fallback=").append(fallback).append(", ")
 				.append("fallbackFactory=").append(fallbackFactory).append("}")
+				.append("connectTimeoutMillis=").append(connectTimeoutMillis).append("}")
+				.append("readTimeoutMillis=").append(readTimeoutMillis).append("}")
+				.append("followRedirects=").append(followRedirects).append("}")
 				.toString();
 	}
 

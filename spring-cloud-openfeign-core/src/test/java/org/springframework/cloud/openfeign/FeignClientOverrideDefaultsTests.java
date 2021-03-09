@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 package org.springframework.cloud.openfeign;
+
+import java.util.concurrent.TimeUnit;
 
 import feign.Contract;
 import feign.ExceptionPropagationPolicy;
@@ -45,13 +47,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
 @SpringBootTest(classes = FeignClientOverrideDefaultsTests.TestConfiguration.class)
 @DirtiesContext
@@ -128,6 +130,7 @@ class FeignClientOverrideDefaultsTests {
 		Request.Options options = context.getInstance("bar", Request.Options.class);
 		assertThat(options.connectTimeoutMillis()).isEqualTo(1);
 		assertThat(options.readTimeoutMillis()).isEqualTo(1);
+		assertThat(options.isFollowRedirects()).isFalse();
 	}
 
 	@Test
@@ -166,7 +169,7 @@ class FeignClientOverrideDefaultsTests {
 			configuration = BarConfiguration.class)
 	interface BarClient {
 
-		@RequestMapping(value = "/", method = RequestMethod.GET)
+		@GetMapping("/")
 		String get();
 
 	}
@@ -238,7 +241,8 @@ class FeignClientOverrideDefaultsTests {
 
 		@Bean
 		Request.Options feignRequestOptions() {
-			return new Request.Options(1, 1);
+			return new Request.Options(1, TimeUnit.MILLISECONDS, 1, TimeUnit.MILLISECONDS,
+					false);
 		}
 
 		@Bean
