@@ -71,7 +71,6 @@ public class FeignPageableEncodingTests {
 
 	@Test
 	public void testPageable() {
-
 		// given
 		Pageable pageable = PageRequest.of(0, 10, Sort.Direction.ASC, "sortProperty");
 
@@ -92,7 +91,6 @@ public class FeignPageableEncodingTests {
 			assertThat(order.getDirection()).isEqualTo(Sort.Direction.ASC);
 			assertThat(order.getProperty()).isEqualTo("sortProperty");
 		}
-
 	}
 
 	@Test
@@ -120,7 +118,6 @@ public class FeignPageableEncodingTests {
 		Sort.Order order = optionalOrder.get();
 		assertThat(order.getDirection()).isEqualTo(Sort.Direction.DESC);
 		assertThat(order.getProperty()).isEqualTo("sortProperty");
-
 	}
 
 	@Test
@@ -152,7 +149,133 @@ public class FeignPageableEncodingTests {
 		Sort.Order secondOrder = orderList.get(1);
 		assertThat(secondOrder.getDirection()).isEqualTo(Sort.Direction.ASC);
 		assertThat(secondOrder.getProperty()).isEqualTo("sortProperty2");
+	}
 
+	@Test
+	public void testPageableWithoutSort() {
+		// given
+		Pageable pageable = PageRequest.of(0, 10);
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPaged(pageable);
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
+		assertThat(response.getBody().getPageable().getSort().isSorted()).isFalse();
+
+		List<Invoice> invoiceList = response.getBody().getContent();
+		assertThat(invoiceList).hasSizeGreaterThanOrEqualTo(1);
+	}
+
+	@Test
+	public void testPageableWithoutSortWithBody() {
+		// given
+		Pageable pageable = PageRequest.of(0, 10);
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPagedWithBody(pageable, "InvoiceTitleFromBody");
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
+
+		List<Invoice> invoiceList = response.getBody().getContent();
+		assertThat(invoiceList).hasSizeGreaterThanOrEqualTo(1);
+
+		Invoice firstInvoice = invoiceList.get(0);
+		assertThat(firstInvoice.getTitle()).startsWith("InvoiceTitleFromBody");
+	}
+
+	@Test
+	public void testPageableWithBody() {
+		// given
+		Pageable pageable = PageRequest.of(0, 10, Sort
+				.by(Sort.Order.desc("sortProperty1"), Sort.Order.asc("sortProperty2")));
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPagedWithBody(pageable, "InvoiceTitleFromBody");
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
+
+		List<Invoice> invoiceList = response.getBody().getContent();
+		assertThat(invoiceList).hasSizeGreaterThanOrEqualTo(1);
+
+		Invoice firstInvoice = invoiceList.get(0);
+		assertThat(firstInvoice.getTitle()).startsWith("InvoiceTitleFromBody");
+
+		Sort sort = response.getBody().getPageable().getSort();
+		assertThat(sort).hasSize(2);
+
+		List<Sort.Order> orderList = sort.toList();
+		assertThat(orderList).hasSize(2);
+
+		Sort.Order firstOrder = orderList.get(0);
+		assertThat(firstOrder.getDirection()).isEqualTo(Sort.Direction.DESC);
+		assertThat(firstOrder.getProperty()).isEqualTo("sortProperty1");
+
+		Sort.Order secondOrder = orderList.get(1);
+		assertThat(secondOrder.getDirection()).isEqualTo(Sort.Direction.ASC);
+		assertThat(secondOrder.getProperty()).isEqualTo("sortProperty2");
+	}
+
+	@Test
+	public void testUnpagedWithBody() {
+		// given
+		Pageable unpaged = Pageable.unpaged();
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPagedWithBody(unpaged, "InvoiceTitleFromBody");
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+
+		List<Invoice> invoiceList = response.getBody().getContent();
+		assertThat(invoiceList).hasSizeGreaterThanOrEqualTo(1);
+
+		Invoice firstInvoice = invoiceList.get(0);
+		assertThat(firstInvoice.getTitle()).startsWith("InvoiceTitleFromBody");
+	}
+
+	@Test
+	public void testSortWithBody() {
+		// given
+		Sort sort = Sort.by(Sort.Order.desc("amount"));
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesSortedWithBody(sort, "InvoiceTitleFromBody");
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(sort).isEqualTo(response.getBody().getSort());
+
+		List<Invoice> invoiceList = response.getBody().getContent();
+		assertThat(invoiceList).hasSizeGreaterThanOrEqualTo(1);
+
+		Invoice firstInvoice = invoiceList.get(0);
+		assertThat(firstInvoice.getTitle()).startsWith("InvoiceTitleFromBody");
+
+		for (int ind = 0; ind < invoiceList.size() - 1; ind++) {
+			assertThat(invoiceList.get(ind).getAmount())
+					.isGreaterThanOrEqualTo(invoiceList.get(ind + 1).getAmount());
+		}
 	}
 
 	@EnableFeignClients(clients = InvoiceClient.class)
