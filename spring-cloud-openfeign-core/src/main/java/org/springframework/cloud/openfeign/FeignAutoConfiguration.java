@@ -171,6 +171,7 @@ public class FeignAutoConfiguration {
 	@ConditionalOnMissingClass("com.netflix.loadbalancer.ILoadBalancer")
 	@ConditionalOnMissingBean(CloseableHttpClient.class)
 	@ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
+	@Conditional(HttpClient5DisabledConditions.class)
 	protected static class HttpClientFeignConfiguration {
 
 		private final Timer connectionManagerTimer = new Timer(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,22 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
+import org.springframework.cloud.openfeign.HttpClient5DisabledConditions;
 import org.springframework.cloud.openfeign.clientconfig.HttpClientFeignConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
+ * @author Nguyen Ky Thanh
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(ApacheHttpClient.class)
 @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
+@Conditional(HttpClient5DisabledConditions.class)
 @Import(HttpClientFeignConfiguration.class)
 class HttpClientFeignLoadBalancedConfiguration {
 
