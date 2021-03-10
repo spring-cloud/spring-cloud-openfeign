@@ -46,7 +46,7 @@ public class InvoiceResource {
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<Invoice>> getInvoices() {
 
-		return ResponseEntity.ok(createInvoiceList(100));
+		return ResponseEntity.ok(createInvoiceList(null, 100, null));
 	}
 
 	@RequestMapping(value = "invoices", method = RequestMethod.POST,
@@ -61,7 +61,8 @@ public class InvoiceResource {
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<Invoice>> getInvoicesPaged(
 			org.springframework.data.domain.Pageable pageable) {
-		Page<Invoice> page = new PageImpl<>(createInvoiceList(pageable.getPageSize()),
+		Page<Invoice> page = new PageImpl<>(
+				createInvoiceList(null, pageable.getPageSize(), pageable.getSort()),
 				pageable, 100);
 		return ResponseEntity.ok(page);
 	}
@@ -87,12 +88,11 @@ public class InvoiceResource {
 		return ResponseEntity.ok(page);
 	}
 
-	private List<Invoice> createInvoiceList(int count) {
-		return createInvoiceList("Invoice", count, null);
-	}
-
 	private List<Invoice> createInvoiceList(String titlePrefix, int count,
 			org.springframework.data.domain.Sort sort) {
+		if (titlePrefix == null) {
+			titlePrefix = "Invoice";
+		}
 		final List<Invoice> invoices = new ArrayList<>();
 		for (int ind = 0; ind < count; ind++) {
 			final Invoice invoice = new Invoice();

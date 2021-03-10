@@ -152,6 +152,26 @@ public class FeignPageableEncodingTests {
 	}
 
 	@Test
+	public void testPageableWithoutSort() {
+		// given
+		Pageable pageable = PageRequest.of(0, 10);
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPaged(pageable);
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
+		assertThat(response.getBody().getPageable().getSort().isSorted()).isFalse();
+
+		List<Invoice> invoiceList = response.getBody().getContent();
+		assertThat(invoiceList).hasSizeGreaterThanOrEqualTo(1);
+	}
+
+	@Test
 	public void testPageableWithoutSortWithBody() {
 		// given
 		Pageable pageable = PageRequest.of(0, 10);
