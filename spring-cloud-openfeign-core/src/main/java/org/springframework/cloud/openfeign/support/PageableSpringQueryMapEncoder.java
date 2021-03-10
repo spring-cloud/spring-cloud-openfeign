@@ -27,9 +27,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
- * Provides support for encoding Pageable annotated as SpringQueryMap.
+ * Provides support for encoding Pageable annotated as
+ * {@link org.springframework.cloud.openfeign.SpringQueryMap}.
  *
  * @author Hyeonmin Park
+ * @since 2.2.8
  */
 public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 
