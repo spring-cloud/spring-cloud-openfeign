@@ -18,12 +18,14 @@ package org.springframework.cloud.openfeign.encoding.app.resource;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
 import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -65,25 +67,32 @@ public class InvoiceResource {
 	}
 
 	@RequestMapping(value = "invoicesPagedWithBody", method = RequestMethod.POST,
-			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Page<Invoice>> getInvoicesPagedWithBody(org.springframework.data.domain.Pageable pageable,
+			consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<Invoice>> getInvoicesPagedWithBody(
+			org.springframework.data.domain.Pageable pageable,
 			@RequestBody String titlePrefix) {
-		Page<Invoice> page = new PageImpl<>(createInvoiceList(titlePrefix, pageable.getPageSize()), pageable, 100);
+		Page<Invoice> page = new PageImpl<>(createInvoiceList(titlePrefix,
+				pageable.getPageSize(), pageable.getSort()), pageable, 100);
 		return ResponseEntity.ok(page);
 	}
 
 	@RequestMapping(value = "invoicesSortedWithBody", method = RequestMethod.POST,
-			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<Invoice>> getInvoicesSortedWithBody(org.springframework.data.domain.Sort sort,
-			@RequestBody String titlePrefix) {
-		return ResponseEntity.ok(createInvoiceList(titlePrefix, 100));
+			consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<Invoice>> getInvoicesSortedWithBody(
+			org.springframework.data.domain.Sort sort, @RequestBody String titlePrefix) {
+		Page<Invoice> page = new PageImpl<>(createInvoiceList(titlePrefix, 100, sort),
+				PageRequest.of(0, 100, sort), 100);
+		return ResponseEntity.ok(page);
 	}
 
 	private List<Invoice> createInvoiceList(int count) {
-		return createInvoiceList("Invoice", count);
+		return createInvoiceList("Invoice", count, null);
 	}
 
-	private List<Invoice> createInvoiceList(String titlePrefix, int count) {
+	private List<Invoice> createInvoiceList(String titlePrefix, int count,
+			org.springframework.data.domain.Sort sort) {
 		final List<Invoice> invoices = new ArrayList<>();
 		for (int ind = 0; ind < count; ind++) {
 			final Invoice invoice = new Invoice();
@@ -91,6 +100,36 @@ public class InvoiceResource {
 			invoice.setAmount(new BigDecimal(
 					String.format(Locale.US, "%.2f", Math.random() * 1000)));
 			invoices.add(invoice);
+		}
+		if (sort != null) {
+			Comparator<Invoice> comparatorForSort = null;
+			for (org.springframework.data.domain.Sort.Order order : sort) {
+				Comparator<Invoice> comparatorForOrder;
+				if (order.getProperty().equals("title")) {
+					comparatorForOrder = Comparator.comparing(Invoice::getTitle);
+				}
+				else if (order.getProperty().equals("amount")) {
+					comparatorForOrder = Comparator.comparing(Invoice::getAmount);
+				}
+				else {
+					continue;
+				}
+
+				if (order.isDescending()) {
+					comparatorForOrder = comparatorForOrder.reversed();
+				}
+
+				if (comparatorForSort == null) {
+					comparatorForSort = comparatorForOrder;
+				}
+				else {
+					comparatorForSort = comparatorForSort
+							.thenComparing(comparatorForOrder);
+				}
+			}
+			if (comparatorForSort != null) {
+				invoices.sort(comparatorForSort);
+			}
 		}
 		return invoices;
 	}

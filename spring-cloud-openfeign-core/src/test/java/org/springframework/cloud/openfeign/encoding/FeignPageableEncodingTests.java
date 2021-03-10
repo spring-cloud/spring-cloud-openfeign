@@ -62,9 +62,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		value = { "feign.compression.request.enabled=true",
 				"feign.autoconfiguration.jackson.enabled=true",
 				"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
-				"ribbon.OkToRetryOnAllOperations=false",
-				"feign.client.config.default.loggerLevel=full",
-				"logging.level.org.springframework.cloud.openfeign=DEBUG" })
+				"ribbon.OkToRetryOnAllOperations=false" })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FeignPageableEncodingTests {
 
@@ -159,8 +157,8 @@ public class FeignPageableEncodingTests {
 		Pageable pageable = PageRequest.of(0, 10);
 
 		// when
-		final ResponseEntity<Page<Invoice>> response =
-				this.invoiceClient.getInvoicesPagedWithBody(pageable, "InvoiceTitleFromBody");
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPagedWithBody(pageable, "InvoiceTitleFromBody");
 
 		// then
 		assertThat(response).isNotNull();
@@ -178,12 +176,12 @@ public class FeignPageableEncodingTests {
 	@Test
 	public void testPageableWithBody() {
 		// given
-		Pageable pageable = PageRequest.of(0, 10,
-				Sort.by(Sort.Order.desc("sortProperty1"), Sort.Order.asc("sortProperty2")));
+		Pageable pageable = PageRequest.of(0, 10, Sort
+				.by(Sort.Order.desc("sortProperty1"), Sort.Order.asc("sortProperty2")));
 
 		// when
-		final ResponseEntity<Page<Invoice>> response =
-				this.invoiceClient.getInvoicesPagedWithBody(pageable, "InvoiceTitleFromBody");
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPagedWithBody(pageable, "InvoiceTitleFromBody");
 
 		// then
 		assertThat(response).isNotNull();
@@ -218,8 +216,8 @@ public class FeignPageableEncodingTests {
 		Pageable unpaged = Pageable.unpaged();
 
 		// when
-		final ResponseEntity<Page<Invoice>> response =
-				this.invoiceClient.getInvoicesPagedWithBody(unpaged, "InvoiceTitleFromBody");
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesPagedWithBody(unpaged, "InvoiceTitleFromBody");
 
 		// then
 		assertThat(response).isNotNull();
@@ -236,22 +234,28 @@ public class FeignPageableEncodingTests {
 	@Test
 	public void testSortWithBody() {
 		// given
-		Sort sort = Sort.by(Sort.Order.desc("sortProperty"));
+		Sort sort = Sort.by(Sort.Order.desc("amount"));
 
 		// when
-		final ResponseEntity<List<Invoice>> response =
-				this.invoiceClient.getInvoicesSortedWithBody(sort, "InvoiceTitleFromBody");
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient
+				.getInvoicesSortedWithBody(sort, "InvoiceTitleFromBody");
 
 		// then
 		assertThat(response).isNotNull();
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getBody()).isNotNull();
+		assertThat(sort).isEqualTo(response.getBody().getSort());
 
-		List<Invoice> invoiceList = response.getBody();
+		List<Invoice> invoiceList = response.getBody().getContent();
 		assertThat(invoiceList).hasSizeGreaterThanOrEqualTo(1);
 
 		Invoice firstInvoice = invoiceList.get(0);
 		assertThat(firstInvoice.getTitle()).startsWith("InvoiceTitleFromBody");
+
+		for (int ind = 0; ind < invoiceList.size() - 1; ind++) {
+			assertThat(invoiceList.get(ind).getAmount())
+					.isGreaterThanOrEqualTo(invoiceList.get(ind + 1).getAmount());
+		}
 	}
 
 	@EnableFeignClients(clients = InvoiceClient.class)

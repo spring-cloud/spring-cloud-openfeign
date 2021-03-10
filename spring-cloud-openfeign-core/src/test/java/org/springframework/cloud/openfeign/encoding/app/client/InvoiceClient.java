@@ -43,14 +43,18 @@ public interface InvoiceClient {
 			org.springframework.data.domain.Pageable pageable);
 
 	@RequestMapping(value = "invoicesPagedWithBody", method = RequestMethod.POST,
-			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+			consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<Page<Invoice>> getInvoicesPagedWithBody(
-			@SpringQueryMap org.springframework.data.domain.Pageable pageable, @RequestBody String titlePrefix);
+			@SpringQueryMap org.springframework.data.domain.Pageable pageable,
+			@RequestBody String titlePrefix);
 
 	@RequestMapping(value = "invoicesSortedWithBody", method = RequestMethod.POST,
-			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	ResponseEntity<List<Invoice>> getInvoicesSortedWithBody(
-			@SpringQueryMap org.springframework.data.domain.Sort sort, @RequestBody String titlePrefix);
+			consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	ResponseEntity<Page<Invoice>> getInvoicesSortedWithBody(
+			@SpringQueryMap org.springframework.data.domain.Sort sort,
+			@RequestBody String titlePrefix);
 
 	@RequestMapping(value = "invoices", method = RequestMethod.GET,
 			produces = MediaType.APPLICATION_JSON_VALUE)

@@ -54,7 +54,7 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 			}
 			else if (object instanceof Sort) {
 				Sort sort = (Sort) object;
-				applySort(new HashMap<>(), sort);
+				applySort(queryMap, sort);
 			}
 			return queryMap;
 		}
