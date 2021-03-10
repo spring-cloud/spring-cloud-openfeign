@@ -83,6 +83,9 @@ public class FeignHttpClientProperties {
 
 	private int connectionTimerRepeat = DEFAULT_CONNECTION_TIMER_REPEAT;
 
+	/**
+	 * Apache HttpClient5 additional properties.
+	 */
 	private Hc5Properties hc5 = new Hc5Properties();
 
 	public int getConnectionTimerRepeat() {
