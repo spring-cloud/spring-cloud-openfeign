@@ -18,12 +18,14 @@ package org.springframework.cloud.openfeign.encoding.app.resource;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
 import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  * An sample REST controller, that potentially returns large response - used for testing.
  *
  * @author Jakub Narloch
+ * @author Hyeonmin Park
  */
 @RestController
 public class InvoiceResource {
@@ -42,7 +45,7 @@ public class InvoiceResource {
 	@RequestMapping(value = "invoices", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<Invoice>> getInvoices() {
 
-		return ResponseEntity.ok(createInvoiceList(100));
+		return ResponseEntity.ok(createInvoiceList(null, 100, null));
 	}
 
 	@RequestMapping(value = "invoices", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -54,17 +57,68 @@ public class InvoiceResource {
 
 	@RequestMapping(value = "invoicesPaged", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<Invoice>> getInvoicesPaged(org.springframework.data.domain.Pageable pageable) {
-		Page<Invoice> page = new PageImpl<>(createInvoiceList(pageable.getPageSize()), pageable, 100);
+		Page<Invoice> page = new PageImpl<>(createInvoiceList(null, pageable.getPageSize(), pageable.getSort()),
+				pageable, 100);
 		return ResponseEntity.ok(page);
 	}
 
-	private List<Invoice> createInvoiceList(int count) {
+	@RequestMapping(value = "invoicesPagedWithBody", method = RequestMethod.POST,
+			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<Invoice>> getInvoicesPagedWithBody(org.springframework.data.domain.Pageable pageable,
+			@RequestBody String titlePrefix) {
+		Page<Invoice> page = new PageImpl<>(createInvoiceList(titlePrefix, pageable.getPageSize(), pageable.getSort()),
+				pageable, 100);
+		return ResponseEntity.ok(page);
+	}
+
+	@RequestMapping(value = "invoicesSortedWithBody", method = RequestMethod.POST,
+			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<Invoice>> getInvoicesSortedWithBody(org.springframework.data.domain.Sort sort,
+			@RequestBody String titlePrefix) {
+		Page<Invoice> page = new PageImpl<>(createInvoiceList(titlePrefix, 100, sort), PageRequest.of(0, 100, sort),
+				100);
+		return ResponseEntity.ok(page);
+	}
+
+	private List<Invoice> createInvoiceList(String titlePrefix, int count, org.springframework.data.domain.Sort sort) {
+		if (titlePrefix == null) {
+			titlePrefix = "Invoice";
+		}
 		final List<Invoice> invoices = new ArrayList<>();
 		for (int ind = 0; ind < count; ind++) {
 			final Invoice invoice = new Invoice();
-			invoice.setTitle("Invoice " + (ind + 1));
+			invoice.setTitle(titlePrefix + " " + (ind + 1));
 			invoice.setAmount(new BigDecimal(String.format(Locale.US, "%.2f", Math.random() * 1000)));
 			invoices.add(invoice);
+		}
+		if (sort != null) {
+			Comparator<Invoice> comparatorForSort = null;
+			for (org.springframework.data.domain.Sort.Order order : sort) {
+				Comparator<Invoice> comparatorForOrder;
+				if (order.getProperty().equals("title")) {
+					comparatorForOrder = Comparator.comparing(Invoice::getTitle);
+				}
+				else if (order.getProperty().equals("amount")) {
+					comparatorForOrder = Comparator.comparing(Invoice::getAmount);
+				}
+				else {
+					continue;
+				}
+
+				if (order.isDescending()) {
+					comparatorForOrder = comparatorForOrder.reversed();
+				}
+
+				if (comparatorForSort == null) {
+					comparatorForSort = comparatorForOrder;
+				}
+				else {
+					comparatorForSort = comparatorForSort.thenComparing(comparatorForOrder);
+				}
+			}
+			if (comparatorForSort != null) {
+				invoices.sort(comparatorForSort);
+			}
 		}
 		return invoices;
 	}

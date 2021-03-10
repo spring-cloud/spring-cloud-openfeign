@@ -19,10 +19,12 @@ package org.springframework.cloud.openfeign.encoding.app.client;
 import java.util.List;
 
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -30,12 +32,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * Simple Feign client for retrieving the invoice list.
  *
  * @author Jakub Narloch
+ * @author Hyeonmin Park
  */
 @FeignClient("local")
 public interface InvoiceClient {
 
 	@RequestMapping(value = "invoicesPaged", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<Page<Invoice>> getInvoicesPaged(org.springframework.data.domain.Pageable pageable);
+
+	@RequestMapping(value = "invoicesPagedWithBody", method = RequestMethod.POST,
+			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	ResponseEntity<Page<Invoice>> getInvoicesPagedWithBody(
+			@SpringQueryMap org.springframework.data.domain.Pageable pageable, @RequestBody String titlePrefix);
+
+	@RequestMapping(value = "invoicesSortedWithBody", method = RequestMethod.POST,
+			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	ResponseEntity<Page<Invoice>> getInvoicesSortedWithBody(@SpringQueryMap org.springframework.data.domain.Sort sort,
+			@RequestBody String titlePrefix);
 
 	@RequestMapping(value = "invoices", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<List<Invoice>> getInvoices();
