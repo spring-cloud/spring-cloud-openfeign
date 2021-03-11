@@ -17,37 +17,35 @@
 package org.springframework.cloud.openfeign.ribbon;
 
 import feign.Client;
-import feign.httpclient.ApacheHttpClient;
-import org.apache.http.client.HttpClient;
+import feign.hc5.ApacheHttp5Client;
+import org.apache.hc.client5.http.classic.HttpClient;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-import org.springframework.cloud.openfeign.HttpClient5DisabledConditions;
-import org.springframework.cloud.openfeign.clientconfig.HttpClientFeignConfiguration;
+import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * @author Spencer Gibb
- * @author Olga Maciaszek-Sharma
+ * Configuration instantiating a {@link LoadBalancerFeignClient}-based {@link Client}
+ * object that uses {@link ApacheHttp5Client} under the hood.
+ *
  * @author Nguyen Ky Thanh
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass(ApacheHttpClient.class)
-@ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
-@Conditional(HttpClient5DisabledConditions.class)
-@Import(HttpClientFeignConfiguration.class)
-class HttpClientFeignLoadBalancedConfiguration {
+@ConditionalOnClass(ApacheHttp5Client.class)
+@ConditionalOnProperty(value = "feign.httpclient.hc5.enabled", havingValue = "true")
+@Import(HttpClient5FeignConfiguration.class)
+class HttpClient5FeignLoadBalancedConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(Client.class)
 	public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
-			SpringClientFactory clientFactory, HttpClient httpClient) {
-		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
+			SpringClientFactory clientFactory, HttpClient httpClient5) {
+		Client delegate = new ApacheHttp5Client(httpClient5);
 		return new LoadBalancerFeignClient(delegate, cachingFactory, clientFactory);
 	}
 

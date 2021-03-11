@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=feignribbonclientpathtest",
 				"feign.okhttp.enabled=false", "feign.httpclient.enabled=false",
-				"feign.hystrix.enabled=false", "test.path.prefix=/base/path" // For
-																				// pathWithPlaceholder
-																				// test
+				"feign.hystrix.enabled=false", "feign.httpclient.hc5.enabled=false",
+				"test.path.prefix=/base/path" // For pathWithPlaceholder test
 		})
 @DirtiesContext
 public class FeignRibbonClientPathTests {
