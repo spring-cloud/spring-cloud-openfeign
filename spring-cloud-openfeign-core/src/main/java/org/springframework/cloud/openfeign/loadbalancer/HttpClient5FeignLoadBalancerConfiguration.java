@@ -17,8 +17,8 @@
 package org.springframework.cloud.openfeign.loadbalancer;
 
 import feign.Client;
-import feign.httpclient.ApacheHttpClient;
-import org.apache.http.client.HttpClient;
+import feign.hc5.ApacheHttp5Client;
+import org.apache.hc.client5.http.classic.HttpClient;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -28,37 +28,34 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
+import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
-import org.springframework.cloud.openfeign.HttpClient5DisabledConditions;
-import org.springframework.cloud.openfeign.clientconfig.HttpClientFeignConfiguration;
+import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * Configuration instantiating a {@link LoadBalancerClient}-based {@link Client} object
- * that uses {@link ApacheHttpClient} under the hood.
+ * Configuration instantiating a {@link BlockingLoadBalancerClient}-based {@link Client}
+ * object that uses {@link ApacheHttp5Client} under the hood.
  *
- * @author Olga Maciaszek-Sharma
  * @author Nguyen Ky Thanh
- * @since 2.2.0
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass(ApacheHttpClient.class)
+@ConditionalOnClass(ApacheHttp5Client.class)
 @ConditionalOnBean({ LoadBalancerClient.class, LoadBalancerClientFactory.class })
-@ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
-@Conditional(HttpClient5DisabledConditions.class)
-@Import(HttpClientFeignConfiguration.class)
+@ConditionalOnProperty(value = "feign.httpclient.hc5.enabled", havingValue = "true")
+@Import(HttpClient5FeignConfiguration.class)
 @EnableConfigurationProperties(LoadBalancerProperties.class)
-class HttpClientFeignLoadBalancerConfiguration {
+class HttpClient5FeignLoadBalancerConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
 	@Conditional(OnRetryNotEnabledCondition.class)
-	public Client feignClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient,
+	public Client feignClient(BlockingLoadBalancerClient loadBalancerClient, HttpClient httpClient5,
 			LoadBalancerProperties properties, LoadBalancerClientFactory loadBalancerClientFactory) {
-		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
+		Client delegate = new ApacheHttp5Client(httpClient5);
 		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, properties, loadBalancerClientFactory);
 	}
 
@@ -68,10 +65,10 @@ class HttpClientFeignLoadBalancerConfiguration {
 	@ConditionalOnBean(LoadBalancedRetryFactory.class)
 	@ConditionalOnProperty(value = "spring.cloud.loadbalancer.retry.enabled", havingValue = "true",
 			matchIfMissing = true)
-	public Client feignRetryClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient,
+	public Client feignRetryClient(BlockingLoadBalancerClient loadBalancerClient, HttpClient httpClient5,
 			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties,
 			LoadBalancerClientFactory loadBalancerClientFactory) {
-		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
+		Client delegate = new ApacheHttp5Client(httpClient5);
 		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory,
 				properties, loadBalancerClientFactory);
 	}
