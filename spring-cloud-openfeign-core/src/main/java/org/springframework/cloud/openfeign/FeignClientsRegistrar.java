@@ -219,11 +219,13 @@ class FeignClientsRegistrar
 				? (ConfigurableBeanFactory) registry : null;
 		String contextId = getContextId(beanFactory, attributes);
 		String name = getName(attributes);
+		boolean asynchronous = (Boolean) attributes.get("asynchronous");
 		FeignClientFactoryBean factoryBean = new FeignClientFactoryBean();
 		factoryBean.setBeanFactory(beanFactory);
 		factoryBean.setName(name);
 		factoryBean.setContextId(contextId);
 		factoryBean.setType(clazz);
+		factoryBean.setAsynchronous(asynchronous);
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder
 				.genericBeanDefinition(clazz, () -> {
 					factoryBean.setUrl(getUrl(beanFactory, attributes));
@@ -255,7 +257,6 @@ class FeignClientsRegistrar
 
 		// has a default, won't be null
 		boolean primary = (Boolean) attributes.get("primary");
-
 		beanDefinition.setPrimary(primary);
 
 		String[] qualifiers = getQualifiers(attributes);
