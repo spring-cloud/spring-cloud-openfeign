@@ -112,7 +112,6 @@ public class CircuitBreakerTests {
 		assertThat(testClientWithFactory.getException()).isEqualTo("Fixed response");
 	}
 
-	// tag::client_with_fallback[]
 	@FeignClient(name = "test", url = "http://localhost:${server.port}/", fallback = Fallback.class)
 	protected interface TestClient {
 
@@ -138,9 +137,7 @@ public class CircuitBreakerTests {
 		}
 
 	}
-	// end::client_with_fallback[]
 
-	// tag::client_with_fallback_factory[]
 	@FeignClient(name = "testClientWithFactory", url = "http://localhost:${server.port}/",
 			fallbackFactory = TestFallbackFactory.class)
 	protected interface TestClientWithFactory {
@@ -176,7 +173,6 @@ public class CircuitBreakerTests {
 		}
 
 	}
-	// end::client_with_fallback_factory[]
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration

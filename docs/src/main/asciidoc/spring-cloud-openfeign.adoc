@@ -352,14 +352,72 @@ Spring Cloud CircuitBreaker supports the notion of a fallback: a default code pa
 
 [source,java,indent=0]
 ----
-include::{core_path}/src/test/java/org/springframework/cloud/openfeign/circuitbreaker/CircuitBreakerTests.java[tags=client_with_fallback, indent=0]
+@FeignClient(name = "test", url = "http://localhost:${server.port}/", fallback = Fallback.class)
+	protected interface TestClient {
+
+		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		Hello getHello();
+
+		@RequestMapping(method = RequestMethod.GET, value = "/hellonotfound")
+		String getException();
+
+	}
+
+	@Component
+	static class Fallback implements TestClient {
+
+		@Override
+		public Hello getHello() {
+			throw new NoFallbackAvailableException("Boom!", new RuntimeException());
+		}
+
+		@Override
+		public String getException() {
+			return "Fixed response";
+		}
+
+	}
 ----
 
 If one needs access to the cause that made the fallback trigger, one can use the `fallbackFactory` attribute inside `@FeignClient`.
 
 [source,java,indent=0]
 ----
-include::{core_path}/src/test/java/org/springframework/cloud/openfeign/circuitbreaker/CircuitBreakerTests.java[tags=client_with_fallback_factory, indent=0]
+@FeignClient(name = "testClientWithFactory", url = "http://localhost:${server.port}/",
+			fallbackFactory = TestFallbackFactory.class)
+	protected interface TestClientWithFactory {
+
+		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		Hello getHello();
+
+		@RequestMapping(method = RequestMethod.GET, value = "/hellonotfound")
+		String getException();
+
+	}
+
+	@Component
+	static class TestFallbackFactory implements FallbackFactory<FallbackWithFactory> {
+
+		@Override
+		public FallbackWithFactory create(Throwable cause) {
+			return new FallbackWithFactory();
+		}
+
+	}
+
+	static class FallbackWithFactory implements TestClientWithFactory {
+
+		@Override
+		public Hello getHello() {
+			throw new NoFallbackAvailableException("Boom!", new RuntimeException());
+		}
+
+		@Override
+		public String getException() {
+			return "Fixed response";
+		}
+
+	}
 ----
 
 === Feign and `@Primary`
