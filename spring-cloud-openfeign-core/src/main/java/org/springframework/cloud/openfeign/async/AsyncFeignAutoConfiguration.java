@@ -16,34 +16,23 @@
 
 package org.springframework.cloud.openfeign.async;
 
+import feign.AsyncClient;
 import feign.AsyncFeign;
 
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.openfeign.FeignClientProperties;
-import org.springframework.cloud.openfeign.FeignClientsConfiguration;
-import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
-import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Scope;
 
+/**
+ * An autoconfiguration that instantiates implementations of {@link AsyncClient} and
+ * implementations of {@link AsyncTargeter}.
+ *
+ * @author Nguyen Ky Thanh
+ */
 @ConditionalOnClass(AsyncFeign.class)
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties({ FeignClientProperties.class,
-		FeignHttpClientProperties.class, FeignEncoderProperties.class })
-@Import(FeignClientsConfiguration.class)
 public class AsyncFeignAutoConfiguration {
-
-	@Bean
-	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	@ConditionalOnMissingBean
-	public AsyncFeign.AsyncBuilder asyncFeignBuilder() {
-		return AsyncFeign.asyncBuilder();
-	}
 
 	@Configuration(proxyBeanMethods = false)
 	protected static class DefaultAsyncFeignTargeterConfiguration {
