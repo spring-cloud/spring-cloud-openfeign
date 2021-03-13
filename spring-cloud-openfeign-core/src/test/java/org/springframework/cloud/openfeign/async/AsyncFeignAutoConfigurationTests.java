@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.openfeign.async;
 
 import java.util.Map;
@@ -29,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Nguyen Ky Thanh
  */
 public class AsyncFeignAutoConfigurationTests {
+
 	@Test
 	void shouldInstantiateDefaultAsyncTargeter() {
 		ConfigurableApplicationContext context = initContext();
@@ -37,14 +39,13 @@ public class AsyncFeignAutoConfigurationTests {
 
 	private ConfigurableApplicationContext initContext(String... properties) {
 		return new SpringApplicationBuilder().web(WebApplicationType.NONE)
-			.properties(properties)
-			.sources(AsyncFeignAutoConfiguration.class)
-			.run();
+				.properties(properties).sources(AsyncFeignAutoConfiguration.class).run();
 	}
 
 	private void assertThatOneBeanPresent(ConfigurableApplicationContext context,
-		Class<?> beanClass) {
+			Class<?> beanClass) {
 		Map<String, ?> beans = context.getBeansOfType(beanClass);
 		assertThat(beans).hasSize(1);
 	}
+
 }
