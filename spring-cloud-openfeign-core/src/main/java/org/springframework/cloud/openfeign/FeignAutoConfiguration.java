@@ -77,11 +77,12 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Tim Peeters
  * @author Olga Maciaszek-Sharma
  * @author Nguyen Ky Thanh
+ * @author Roman Kvasnytskyi
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
 @EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class,
-		FeignEncoderProperties.class })
+		FeignEncoderProperties.class, FeignEagerLoadProperties.class })
 @Import(DefaultGzipDecoderConfiguration.class)
 public class FeignAutoConfiguration {
 
@@ -297,6 +298,20 @@ public class FeignAutoConfiguration {
 		public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2ClientContext oAuth2ClientContext,
 				OAuth2ProtectedResourceDetails resource) {
 			return new OAuth2FeignRequestInterceptor(oAuth2ClientContext, resource);
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnProperty(value = "feign.eager-load.enabled", havingValue = "true")
+	protected static class FeignEagerLoadConfiguration {
+
+		@Autowired(required = false)
+		private FeignEagerLoadProperties feignEagerLoadProperties;
+
+		@Bean
+		public FeignApplicationContextInitializer feignApplicationContextInitializer(FeignContext feignContext) {
+			return new FeignApplicationContextInitializer(feignContext, feignEagerLoadProperties.getClients());
 		}
 
 	}

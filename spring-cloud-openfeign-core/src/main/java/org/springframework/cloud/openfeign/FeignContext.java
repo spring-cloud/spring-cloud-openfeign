@@ -21,6 +21,7 @@ import java.util.Map;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.cloud.context.named.NamedContextFactory;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.lang.Nullable;
 
 /**
@@ -50,6 +51,11 @@ public class FeignContext extends NamedContextFactory<FeignClientSpecification> 
 	@Nullable
 	public <T> Map<String, T> getInstancesWithoutAncestors(String name, Class<T> type) {
 		return getContext(name).getBeansOfType(type);
+	}
+
+	@Override
+	protected AnnotationConfigApplicationContext getContext(String name) {
+		return super.getContext(name);
 	}
 
 }

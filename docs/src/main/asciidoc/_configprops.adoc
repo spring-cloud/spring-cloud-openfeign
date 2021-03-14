@@ -29,5 +29,7 @@
 |feign.httpclient.time-to-live-unit |  | 
 |feign.metrics.enabled | `true` | Enables metrics capability for Feign.
 |feign.okhttp.enabled | `false` | Enables the use of the OK HTTP Client by Feign.
+|feign.eager-load.enabled | `false` | Enables eager load for Feign clients.
+|feign.eager-load.clients | | Comma separated list with client names, which should be instantiated eagerly
 
 |===
