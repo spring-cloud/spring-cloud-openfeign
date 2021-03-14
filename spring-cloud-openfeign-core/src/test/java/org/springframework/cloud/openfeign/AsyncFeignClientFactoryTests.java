@@ -69,7 +69,8 @@ class AsyncFeignClientFactoryTests {
 	@Test
 	void asyncHc5ClientShouldBeUsed() {
 		new ApplicationContextRunner().withUserConfiguration(TestConfig.class)
-				.withUserConfiguration(AsyncHc5Config.class)
+				.withUserConfiguration(AsyncHc5Config.class,
+						FeignClientsConfiguration.class)
 				.run(context -> checkClientUsed(context, AsyncApacheHttp5Client.class));
 	}
 
@@ -81,7 +82,9 @@ class AsyncFeignClientFactoryTests {
 
 	private void checkClientUsed(AssertableApplicationContext context, Class clientClass)
 			throws Exception {
-		Proxy target = context.getBean(FeignClientFactoryBean.class).getAsyncTarget();
+		Object targetObject = context.getBean(FeignClientFactoryBean.class).getObject();
+		assertThat(targetObject).isNotNull();
+		Proxy target = (Proxy) targetObject;
 		Object asyncInvocationHandler = ReflectionTestUtils.getField(target, "h");
 
 		Field field = asyncInvocationHandler.getClass().getDeclaredField("this$0");
@@ -140,6 +143,7 @@ class AsyncFeignClientFactoryTests {
 			feignClientFactoryBean.setType(TestType.class);
 			feignClientFactoryBean.setPath("");
 			feignClientFactoryBean.setUrl("http://some.absolute.url");
+			feignClientFactoryBean.setAsynchronous(true);
 			return feignClientFactoryBean;
 		}
 

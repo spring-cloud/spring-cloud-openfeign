@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.util.concurrent.TimeUnit;
 
+import feign.AsyncFeign.AsyncBuilder;
 import feign.Contract;
 import feign.ExceptionPropagationPolicy;
 import feign.Feign;
@@ -41,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration;
+import org.springframework.cloud.openfeign.async.AsyncFeignAutoConfiguration;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +56,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
+ * @author Nguyen Ky Thanh
  */
 @SpringBootTest(classes = FeignClientOverrideDefaultsTests.TestConfiguration.class)
 @DirtiesContext
@@ -68,40 +71,59 @@ class FeignClientOverrideDefaultsTests {
 	@Autowired
 	private BarClient bar;
 
+	@Autowired
+	private FooAsyncClient fooAsync;
+
+	@Autowired
+	private BarAsyncClient barAsync;
+
 	@Test
 	void clientsAvailable() {
 		assertThat(foo).isNotNull();
 		assertThat(bar).isNotNull();
+		assertThat(fooAsync).isNotNull();
+		assertThat(barAsync).isNotNull();
 	}
 
 	@Test
 	void overrideDecoder() {
 		Decoder.Default.class.cast(context.getInstance("foo", Decoder.class));
 		OptionalDecoder.class.cast(context.getInstance("bar", Decoder.class));
+		Decoder.Default.class.cast(context.getInstance("fooAsync", Decoder.class));
+		OptionalDecoder.class.cast(context.getInstance("barAsync", Decoder.class));
 	}
 
 	@Test
 	void overrideEncoder() {
 		Encoder.Default.class.cast(context.getInstance("foo", Encoder.class));
 		PageableSpringEncoder.class.cast(context.getInstance("bar", Encoder.class));
+		Encoder.Default.class.cast(context.getInstance("fooAsync", Encoder.class));
+		PageableSpringEncoder.class.cast(context.getInstance("barAsync", Encoder.class));
 	}
 
 	@Test
 	void overrideLogger() {
 		Logger.JavaLogger.class.cast(context.getInstance("foo", Logger.class));
 		Slf4jLogger.class.cast(context.getInstance("bar", Logger.class));
+		Logger.JavaLogger.class.cast(context.getInstance("fooAsync", Logger.class));
+		Slf4jLogger.class.cast(context.getInstance("barAsync", Logger.class));
 	}
 
 	@Test
 	void overrideContract() {
 		Contract.Default.class.cast(context.getInstance("foo", Contract.class));
 		SpringMvcContract.class.cast(context.getInstance("bar", Contract.class));
+		Contract.Default.class.cast(context.getInstance("fooAsync", Contract.class));
+		SpringMvcContract.class.cast(context.getInstance("barAsync", Contract.class));
 	}
 
 	@Test
 	void overrideLoggerLevel() {
 		assertThat(context.getInstance("foo", Logger.Level.class)).isNull();
 		assertThat(context.getInstance("bar", Logger.Level.class))
+				.isEqualTo(Logger.Level.HEADERS);
+		assertThat(context.getInstance("fooAsync", Logger.Level.class)).isNull();
+		assertThat(context.getInstance("barAsync", Logger.Level.class))
 				.isEqualTo(Logger.Level.HEADERS);
 	}
 
@@ -116,21 +138,32 @@ class FeignClientOverrideDefaultsTests {
 	void overrideErrorDecoder() {
 		assertThat(context.getInstance("foo", ErrorDecoder.class)).isNull();
 		ErrorDecoder.Default.class.cast(context.getInstance("bar", ErrorDecoder.class));
+		assertThat(context.getInstance("fooAsync", ErrorDecoder.class)).isNull();
+		ErrorDecoder.Default.class
+				.cast(context.getInstance("barAsync", ErrorDecoder.class));
 	}
 
 	@Test
 	void overrideBuilder() {
 		HystrixFeign.Builder.class.cast(context.getInstance("foo", Feign.Builder.class));
 		Feign.Builder.class.cast(context.getInstance("bar", Feign.Builder.class));
+		AsyncBuilder.class.cast(context.getInstance("fooAsync", AsyncBuilder.class));
+		AsyncBuilder.class.cast(context.getInstance("barAsync", AsyncBuilder.class));
 	}
 
 	@Test
 	void overrideRequestOptions() {
 		assertThat(context.getInstance("foo", Request.Options.class)).isNull();
-		Request.Options options = context.getInstance("bar", Request.Options.class);
-		assertThat(options.connectTimeoutMillis()).isEqualTo(1);
-		assertThat(options.readTimeoutMillis()).isEqualTo(1);
-		assertThat(options.isFollowRedirects()).isFalse();
+		assertThat(context.getInstance("fooAsync", Request.Options.class)).isNull();
+		Request.Options barOptions = context.getInstance("bar", Request.Options.class);
+		assertThat(barOptions.connectTimeoutMillis()).isEqualTo(1);
+		assertThat(barOptions.readTimeoutMillis()).isEqualTo(1);
+		assertThat(barOptions.isFollowRedirects()).isFalse();
+		Request.Options barAsyncOptions = context.getInstance("barAsync",
+				Request.Options.class);
+		assertThat(barAsyncOptions.connectTimeoutMillis()).isEqualTo(1);
+		assertThat(barAsyncOptions.readTimeoutMillis()).isEqualTo(1);
+		assertThat(barAsyncOptions.isFollowRedirects()).isFalse();
 	}
 
 	@Test
@@ -138,6 +171,10 @@ class FeignClientOverrideDefaultsTests {
 		QueryMapEncoder.Default.class
 				.cast(context.getInstance("foo", QueryMapEncoder.class));
 		BeanQueryMapEncoder.class.cast(context.getInstance("bar", QueryMapEncoder.class));
+		QueryMapEncoder.Default.class
+				.cast(context.getInstance("fooAsync", QueryMapEncoder.class));
+		BeanQueryMapEncoder.class
+				.cast(context.getInstance("barAsync", QueryMapEncoder.class));
 	}
 
 	@Test
@@ -145,6 +182,10 @@ class FeignClientOverrideDefaultsTests {
 		assertThat(context.getInstances("foo", RequestInterceptor.class).size())
 				.isEqualTo(1);
 		assertThat(context.getInstances("bar", RequestInterceptor.class).size())
+				.isEqualTo(2);
+		assertThat(context.getInstances("fooAsync", RequestInterceptor.class).size())
+				.isEqualTo(1);
+		assertThat(context.getInstances("barAsync", RequestInterceptor.class).size())
 				.isEqualTo(2);
 	}
 
@@ -174,10 +215,29 @@ class FeignClientOverrideDefaultsTests {
 
 	}
 
+	@FeignClient(name = "fooAsync", url = "https://fooAsync",
+			configuration = FooAsyncConfiguration.class, asynchronous = true)
+	interface FooAsyncClient {
+
+		@RequestLine("GET /")
+		String get();
+
+	}
+
+	@FeignClient(name = "barAsync", url = "https://barAsync",
+			configuration = BarAsyncConfiguration.class, asynchronous = true)
+	interface BarAsyncClient {
+
+		@GetMapping("/")
+		String get();
+
+	}
+
 	@Configuration(proxyBeanMethods = false)
-	@EnableFeignClients(clients = { FooClient.class, BarClient.class })
+	@EnableFeignClients(clients = { FooClient.class, BarClient.class,
+			FooAsyncClient.class, BarAsyncClient.class })
 	@Import({ PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
-			FeignAutoConfiguration.class })
+			FeignAutoConfiguration.class, AsyncFeignAutoConfiguration.class })
 	protected static class TestConfiguration {
 
 		@Bean
@@ -258,6 +318,65 @@ class FeignClientOverrideDefaultsTests {
 		@Bean
 		public ExceptionPropagationPolicy exceptionPropagationPolicy() {
 			return ExceptionPropagationPolicy.UNWRAP;
+		}
+
+	}
+
+	public static class FooAsyncConfiguration {
+
+		@Bean
+		public Decoder feignDecoder() {
+			return new Decoder.Default();
+		}
+
+		@Bean
+		public Encoder feignEncoder() {
+			return new Encoder.Default();
+		}
+
+		@Bean
+		public Logger feignLogger() {
+			return new Logger.JavaLogger();
+		}
+
+		@Bean
+		public Contract feignContract() {
+			return new Contract.Default();
+		}
+
+		@Bean
+		public QueryMapEncoder queryMapEncoder() {
+			return new feign.QueryMapEncoder.Default();
+		}
+
+	}
+
+	public static class BarAsyncConfiguration {
+
+		@Bean
+		Logger.Level feignLevel() {
+			return Logger.Level.HEADERS;
+		}
+
+		@Bean
+		ErrorDecoder feignErrorDecoder() {
+			return new ErrorDecoder.Default();
+		}
+
+		@Bean
+		Request.Options feignRequestOptions() {
+			return new Request.Options(1, TimeUnit.MILLISECONDS, 1, TimeUnit.MILLISECONDS,
+					false);
+		}
+
+		@Bean
+		RequestInterceptor feignRequestInterceptor() {
+			return new BasicAuthRequestInterceptor("user", "pass");
+		}
+
+		@Bean
+		public QueryMapEncoder queryMapEncoder() {
+			return new BeanQueryMapEncoder();
 		}
 
 	}
