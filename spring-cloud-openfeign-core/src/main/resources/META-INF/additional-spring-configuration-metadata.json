@@ -39,6 +39,12 @@
 			"defaultValue": "false"
 		},
 		{
+			"name": "feign.httpclient.asyncHc5.enabled",
+			"type": "java.lang.Boolean",
+			"description": "Enables the use of the Apache Async HTTP Client 5 by Feign for all @FeignClient with asynchronous=true.",
+			"defaultValue": "false"
+		},
+		{
 			"name": "feign.compression.response.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the response from Feign to be compressed.",

@@ -18,6 +18,10 @@ package org.springframework.cloud.openfeign.async;
 
 import java.util.Map;
 
+import feign.AsyncClient;
+import feign.hc5.AsyncApacheHttp5Client;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.nio.AsyncClientConnectionManager;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
@@ -32,9 +36,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AsyncFeignAutoConfigurationTests {
 
 	@Test
-	void shouldInstantiateDefaultAsyncTargeter() {
+	void shouldInstantiateAsyncHc5FeignWhenAsyncHc5Enabled() {
+		ConfigurableApplicationContext context = initContext(
+				"feign.httpclient.asyncHc5.enabled=true");
+		assertThatOneBeanPresent(context, AsyncApacheHttp5Client.class);
+		assertThatOneBeanPresent(context, CloseableHttpAsyncClient.class);
+		assertThatOneBeanPresent(context, AsyncClientConnectionManager.class);
+	}
+
+	@Test
+	void shouldInstantiateDefaultAsyncTargeterAndNoAnyAsyncClient() {
 		ConfigurableApplicationContext context = initContext();
 		assertThatOneBeanPresent(context, DefaultAsyncTargeter.class);
+		assertThatBeanNotPresent(context, AsyncClient.class);
 	}
 
 	private ConfigurableApplicationContext initContext(String... properties) {
@@ -46,6 +60,12 @@ public class AsyncFeignAutoConfigurationTests {
 			Class<?> beanClass) {
 		Map<String, ?> beans = context.getBeansOfType(beanClass);
 		assertThat(beans).hasSize(1);
+	}
+
+	private void assertThatBeanNotPresent(ConfigurableApplicationContext context,
+			Class<?> beanClass) {
+		Map<String, ?> beans = context.getBeansOfType(beanClass);
+		assertThat(beans).isEmpty();
 	}
 
 }

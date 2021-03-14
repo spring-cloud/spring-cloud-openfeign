@@ -25,8 +25,8 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.cloud.openfeign.support.FeignHttpClientProperties.Hc5Properties.PoolConcurrencyPolicy;
-import org.springframework.cloud.openfeign.support.FeignHttpClientProperties.Hc5Properties.PoolReusePolicy;
+import org.springframework.cloud.openfeign.support.FeignHttpClientProperties.PoolConcurrencyPolicy;
+import org.springframework.cloud.openfeign.support.FeignHttpClientProperties.PoolReusePolicy;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +34,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.cloud.openfeign.support.FeignHttpClientProperties.AsyncHc5Properties.DEFAULT_RESPONSE_TIMEOUT;
+import static org.springframework.cloud.openfeign.support.FeignHttpClientProperties.AsyncHc5Properties.DEFAULT_RESPONSE_TIMEOUT_UNIT;
 import static org.springframework.cloud.openfeign.support.FeignHttpClientProperties.Hc5Properties.DEFAULT_SOCKET_TIMEOUT;
 import static org.springframework.cloud.openfeign.support.FeignHttpClientProperties.Hc5Properties.DEFAULT_SOCKET_TIMEOUT_UNIT;
 
@@ -69,6 +71,7 @@ public class FeignHttpClientPropertiesTests {
 				.isEqualTo(FeignHttpClientProperties.DEFAULT_DISABLE_SSL_VALIDATION);
 		assertThat(getProperties().isFollowRedirects())
 				.isEqualTo(FeignHttpClientProperties.DEFAULT_FOLLOW_REDIRECTS);
+
 		assertThat(getProperties().getHc5().getPoolConcurrencyPolicy())
 				.isEqualTo(PoolConcurrencyPolicy.STRICT);
 		assertThat(getProperties().getHc5().getPoolReusePolicy())
@@ -77,6 +80,15 @@ public class FeignHttpClientPropertiesTests {
 				.isEqualTo(DEFAULT_SOCKET_TIMEOUT);
 		assertThat(getProperties().getHc5().getSocketTimeoutUnit())
 				.isEqualTo(DEFAULT_SOCKET_TIMEOUT_UNIT);
+
+		assertThat(getProperties().getAsyncHc5().getPoolConcurrencyPolicy())
+				.isEqualTo(PoolConcurrencyPolicy.STRICT);
+		assertThat(getProperties().getAsyncHc5().getPoolReusePolicy())
+				.isEqualTo(PoolReusePolicy.FIFO);
+		assertThat(getProperties().getAsyncHc5().getResponseTimeout())
+				.isEqualTo(DEFAULT_RESPONSE_TIMEOUT);
+		assertThat(getProperties().getAsyncHc5().getResponseTimeoutUnit())
+				.isEqualTo(DEFAULT_RESPONSE_TIMEOUT_UNIT);
 	}
 
 	@Test
@@ -93,7 +105,11 @@ public class FeignHttpClientPropertiesTests {
 						"feign.httpclient.hc5.poolConcurrencyPolicy=lax",
 						"feign.httpclient.hc5.poolReusePolicy=lifo",
 						"feign.httpclient.hc5.socketTimeout=200",
-						"feign.httpclient.hc5.socketTimeoutUnit=milliseconds")
+						"feign.httpclient.hc5.socketTimeoutUnit=milliseconds",
+						"feign.httpclient.asyncHc5.poolConcurrencyPolicy=lax",
+						"feign.httpclient.asyncHc5.poolReusePolicy=lifo",
+						"feign.httpclient.asyncHc5.responseTimeout=60",
+						"feign.httpclient.asyncHc5.responseTimeoutUnit=seconds")
 				.applyTo(this.context);
 		setupContext();
 		assertThat(getProperties().getMaxConnections()).isEqualTo(2);
@@ -102,6 +118,7 @@ public class FeignHttpClientPropertiesTests {
 		assertThat(getProperties().getTimeToLive()).isEqualTo(2L);
 		assertThat(getProperties().isDisableSslValidation()).isTrue();
 		assertThat(getProperties().isFollowRedirects()).isFalse();
+
 		assertThat(getProperties().getHc5().getPoolConcurrencyPolicy())
 				.isEqualTo(PoolConcurrencyPolicy.LAX);
 		assertThat(getProperties().getHc5().getPoolReusePolicy())
@@ -109,6 +126,14 @@ public class FeignHttpClientPropertiesTests {
 		assertThat(getProperties().getHc5().getSocketTimeout()).isEqualTo(200);
 		assertThat(getProperties().getHc5().getSocketTimeoutUnit())
 				.isEqualTo(TimeUnit.MILLISECONDS);
+
+		assertThat(getProperties().getAsyncHc5().getPoolConcurrencyPolicy())
+				.isEqualTo(PoolConcurrencyPolicy.LAX);
+		assertThat(getProperties().getAsyncHc5().getPoolReusePolicy())
+				.isEqualTo(PoolReusePolicy.LIFO);
+		assertThat(getProperties().getAsyncHc5().getResponseTimeout()).isEqualTo(60);
+		assertThat(getProperties().getAsyncHc5().getResponseTimeoutUnit())
+				.isEqualTo(TimeUnit.SECONDS);
 	}
 
 	private void setupContext() {

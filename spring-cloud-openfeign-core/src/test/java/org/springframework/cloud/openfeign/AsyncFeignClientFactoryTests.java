@@ -23,16 +23,19 @@ import java.util.Collections;
 
 import feign.AsyncClient;
 import feign.ReflectiveAsyncFeign;
+import feign.hc5.AsyncApacheHttp5Client;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.openfeign.async.AsyncFeignAutoConfiguration;
-import org.springframework.cloud.openfeign.async.AsyncTargeter;
-import org.springframework.cloud.openfeign.async.DefaultAsyncTargeter;
+import org.springframework.cloud.openfeign.async.AsyncHttpClient5FeignConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -64,13 +67,19 @@ class AsyncFeignClientFactoryTests {
 	}
 
 	@Test
-	void shouldRedirectToDelegateWhenUrlSet() {
+	void asyncHc5ClientShouldBeUsed() {
 		new ApplicationContextRunner().withUserConfiguration(TestConfig.class)
-				.run(this::defaultClientUsed);
+				.withUserConfiguration(AsyncHc5Config.class)
+				.run(context -> checkClientUsed(context, AsyncApacheHttp5Client.class));
 	}
 
-	@SuppressWarnings({ "unchecked", "ConstantConditions" })
-	private void defaultClientUsed(AssertableApplicationContext context)
+	@Test
+	void defaultClientShouldBeUsed() {
+		new ApplicationContextRunner().withUserConfiguration(TestConfig.class)
+				.run(context -> checkClientUsed(context, AsyncClient.Default.class));
+	}
+
+	private void checkClientUsed(AssertableApplicationContext context, Class clientClass)
 			throws Exception {
 		Proxy target = context.getBean(FeignClientFactoryBean.class).getAsyncTarget();
 		Object asyncInvocationHandler = ReflectionTestUtils.getField(target, "h");
@@ -80,7 +89,7 @@ class AsyncFeignClientFactoryTests {
 		ReflectiveAsyncFeign reflectiveAsyncFeign = (ReflectiveAsyncFeign) field
 				.get(asyncInvocationHandler);
 		Object client = ReflectionTestUtils.getField(reflectiveAsyncFeign, "client");
-		assertThat(client).isInstanceOf(AsyncClient.Default.class);
+		assertThat(client).isInstanceOf(clientClass);
 	}
 
 	private FeignClientSpecification getSpec(String name, Class<?> configClass) {
@@ -91,6 +100,18 @@ class AsyncFeignClientFactoryTests {
 
 		@RequestMapping(value = "/", method = GET)
 		String hello();
+
+	}
+
+	@Configuration
+	@Import(AsyncHttpClient5FeignConfiguration.class)
+	static class AsyncHc5Config {
+
+		@Bean
+		public AsyncClient<HttpClientContext> asyncClient(
+				CloseableHttpAsyncClient httpAsyncClient) {
+			return new AsyncApacheHttp5Client(httpAsyncClient);
+		}
 
 	}
 
@@ -109,11 +130,6 @@ class AsyncFeignClientFactoryTests {
 		@Bean
 		FeignClientProperties feignClientProperties() {
 			return new FeignClientProperties();
-		}
-
-		@Bean
-		AsyncTargeter targeter() {
-			return new DefaultAsyncTargeter();
 		}
 
 		@Bean

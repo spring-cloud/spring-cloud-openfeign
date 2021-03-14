@@ -18,11 +18,16 @@ package org.springframework.cloud.openfeign.async;
 
 import feign.AsyncClient;
 import feign.AsyncFeign;
+import feign.hc5.AsyncApacheHttp5Client;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 /**
  * An autoconfiguration that instantiates implementations of {@link AsyncClient} and
@@ -33,6 +38,21 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass(AsyncFeign.class)
 @Configuration(proxyBeanMethods = false)
 public class AsyncFeignAutoConfiguration {
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(AsyncApacheHttp5Client.class)
+	@ConditionalOnProperty(value = "feign.httpclient.asyncHc5.enabled",
+			havingValue = "true")
+	@Import(org.springframework.cloud.openfeign.async.AsyncHttpClient5FeignConfiguration.class)
+	protected static class AsyncHttpClient5FeignConfiguration {
+
+		@Bean
+		public AsyncClient<HttpClientContext> asyncClient(
+				CloseableHttpAsyncClient httpAsyncClient) {
+			return new AsyncApacheHttp5Client(httpAsyncClient);
+		}
+
+	}
 
 	@Configuration(proxyBeanMethods = false)
 	protected static class DefaultAsyncFeignTargeterConfiguration {
