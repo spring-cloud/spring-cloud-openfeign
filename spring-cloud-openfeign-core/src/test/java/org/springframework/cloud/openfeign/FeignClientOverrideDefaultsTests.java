@@ -224,7 +224,7 @@ class FeignClientOverrideDefaultsTests {
 
 	}
 
-	@FeignClient(name = "barAsync", url = "https://barAsync",
+	@FeignClient(name = "barAsync", url = "https://barAsync", decode404 = true,
 			configuration = BarAsyncConfiguration.class, asynchronous = true)
 	interface BarAsyncClient {
 
