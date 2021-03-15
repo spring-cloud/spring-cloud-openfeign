@@ -94,8 +94,8 @@ public class FeignClientBuilderTests {
 		// on this builder class.
 		// (2) Or a new field was added and the builder class has to be extended with this
 		// new field.
-		assertThat(methodNames).containsExactly("contextId", "decode404", "fallback",
-				"fallbackFactory", "name", "path", "url");
+		assertThat(methodNames).containsExactly("asynchronous", "contextId", "decode404",
+				"fallback", "fallbackFactory", "name", "path", "url");
 	}
 
 	@Test

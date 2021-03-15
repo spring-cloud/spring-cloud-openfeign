@@ -145,4 +145,9 @@ public @interface FeignClient {
 	 */
 	boolean primary() default true;
 
+	/**
+	 * @return whether Feign will use an underlying async Http client.
+	 */
+	boolean asynchronous() default false;
+
 }

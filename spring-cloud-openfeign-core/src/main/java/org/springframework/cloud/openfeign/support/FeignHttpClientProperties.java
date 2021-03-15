@@ -88,6 +88,11 @@ public class FeignHttpClientProperties {
 	 */
 	private Hc5Properties hc5 = new Hc5Properties();
 
+	/**
+	 * Apache Async HttpClient5 additional properties.
+	 */
+	private AsyncHc5Properties asyncHc5 = new AsyncHc5Properties();
+
 	public int getConnectionTimerRepeat() {
 		return this.connectionTimerRepeat;
 	}
@@ -158,6 +163,14 @@ public class FeignHttpClientProperties {
 
 	public void setHc5(Hc5Properties hc5) {
 		this.hc5 = hc5;
+	}
+
+	public AsyncHc5Properties getAsyncHc5() {
+		return asyncHc5;
+	}
+
+	public void setAsyncHc5(AsyncHc5Properties asyncHc5) {
+		this.asyncHc5 = asyncHc5;
 	}
 
 	public static class Hc5Properties {
@@ -235,41 +248,160 @@ public class FeignHttpClientProperties {
 			this.socketTimeout = socketTimeout;
 		}
 
-		/**
-		 * Enumeration of pool concurrency policies.
-		 */
-		public enum PoolConcurrencyPolicy {
+	}
 
-			/**
-			 * Higher concurrency but with lax connection max limit guarantees.
-			 */
-			LAX,
-
-			/**
-			 * Strict connection max limit guarantees.
-			 */
-			STRICT
-
-		}
+	public static class AsyncHc5Properties {
 
 		/**
-		 * Enumeration of pooled connection re-use policies.
+		 * Default value for pool concurrency policy.
 		 */
-		public enum PoolReusePolicy {
+		public static final PoolConcurrencyPolicy DEFAULT_POOL_CONCURRENCY_POLICY = PoolConcurrencyPolicy.STRICT;
 
-			/**
-			 * Re-use as few connections as possible making it possible for connections to
-			 * become idle and expire.
-			 */
-			LIFO,
+		/**
+		 * Default value for pool reuse policy.
+		 */
+		public static final PoolReusePolicy DEFAULT_POOL_REUSE_POLICY = PoolReusePolicy.FIFO;
 
-			/**
-			 * Re-use all connections equally preventing them from becoming idle and
-			 * expiring.
-			 */
-			FIFO
+		/**
+		 * Default value for response timeout.
+		 */
+		public static final int DEFAULT_RESPONSE_TIMEOUT = 0;
 
+		/**
+		 * Default value for response timeout unit.
+		 */
+		public static final TimeUnit DEFAULT_RESPONSE_TIMEOUT_UNIT = TimeUnit.SECONDS;
+
+		/**
+		 * Default HTTP protocol version policy.
+		 */
+		private static final HttpVersionPolicy DEFAULT_HTTP_VERSION_POLICY = HttpVersionPolicy.FORCE_HTTP_1;
+
+		/**
+		 * Pool concurrency policies.
+		 */
+		private PoolConcurrencyPolicy poolConcurrencyPolicy = DEFAULT_POOL_CONCURRENCY_POLICY;
+
+		/**
+		 * Pool connection re-use policies.
+		 */
+		private PoolReusePolicy poolReusePolicy = DEFAULT_POOL_REUSE_POLICY;
+
+		/**
+		 * Determines the timeout until arrival of a response from the opposite endpoint.
+		 * A timeout value of zero is interpreted as an infinite timeout. Please note that
+		 * response timeout may be unsupported by HTTP transports with message
+		 * multiplexing.
+		 */
+		private int responseTimeout = DEFAULT_RESPONSE_TIMEOUT;
+
+		/**
+		 * Default value for response timeout unit.
+		 */
+		private TimeUnit responseTimeoutUnit = DEFAULT_RESPONSE_TIMEOUT_UNIT;
+
+		/**
+		 * HTTP protocol version policy.
+		 */
+		private HttpVersionPolicy httpVersionPolicy = DEFAULT_HTTP_VERSION_POLICY;
+
+		public PoolConcurrencyPolicy getPoolConcurrencyPolicy() {
+			return this.poolConcurrencyPolicy;
 		}
+
+		public void setPoolConcurrencyPolicy(
+				PoolConcurrencyPolicy poolConcurrencyPolicy) {
+			this.poolConcurrencyPolicy = poolConcurrencyPolicy;
+		}
+
+		public PoolReusePolicy getPoolReusePolicy() {
+			return poolReusePolicy;
+		}
+
+		public void setPoolReusePolicy(PoolReusePolicy poolReusePolicy) {
+			this.poolReusePolicy = poolReusePolicy;
+		}
+
+		public int getResponseTimeout() {
+			return responseTimeout;
+		}
+
+		public void setResponseTimeout(int responseTimeout) {
+			this.responseTimeout = responseTimeout;
+		}
+
+		public TimeUnit getResponseTimeoutUnit() {
+			return responseTimeoutUnit;
+		}
+
+		public void setResponseTimeoutUnit(TimeUnit responseTimeoutUnit) {
+			this.responseTimeoutUnit = responseTimeoutUnit;
+		}
+
+		public HttpVersionPolicy getHttpVersionPolicy() {
+			return httpVersionPolicy;
+		}
+
+		public void setHttpVersionPolicy(HttpVersionPolicy httpVersionPolicy) {
+			this.httpVersionPolicy = httpVersionPolicy;
+		}
+
+	}
+
+	/**
+	 * HTTP protocol version policy.
+	 */
+	public enum HttpVersionPolicy {
+
+		/**
+		 * Force to use HTTP v1.
+		 */
+		FORCE_HTTP_1,
+
+		/**
+		 * Force to use HTTP v2.
+		 */
+		FORCE_HTTP_2,
+
+		/**
+		 * Try to use HTTP v2 otherwise fallback to HTTP v1.
+		 */
+		NEGOTIATE
+
+	}
+
+	/**
+	 * Enumeration of pool concurrency policies.
+	 */
+	public enum PoolConcurrencyPolicy {
+
+		/**
+		 * Higher concurrency but with lax connection max limit guarantees.
+		 */
+		LAX,
+
+		/**
+		 * Strict connection max limit guarantees.
+		 */
+		STRICT
+
+	}
+
+	/**
+	 * Enumeration of pooled connection re-use policies.
+	 */
+	public enum PoolReusePolicy {
+
+		/**
+		 * Re-use as few connections as possible making it possible for connections to
+		 * become idle and expire.
+		 */
+		LIFO,
+
+		/**
+		 * Re-use all connections equally preventing them from becoming idle and expiring.
+		 */
+		FIFO
 
 	}
 
