@@ -28,7 +28,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
-import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -37,8 +36,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * Configuration instantiating a {@link BlockingLoadBalancerClient}-based {@link Client}
- * object that uses {@link ApacheHttp5Client} under the hood.
+ * Configuration instantiating a {@link LoadBalancerClient}-based {@link Client} object
+ * that uses {@link ApacheHttp5Client} under the hood.
  *
  * @author Nguyen Ky Thanh
  */
@@ -53,7 +52,7 @@ class HttpClient5FeignLoadBalancerConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	@Conditional(OnRetryNotEnabledCondition.class)
-	public Client feignClient(BlockingLoadBalancerClient loadBalancerClient, HttpClient httpClient5,
+	public Client feignClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient5,
 			LoadBalancerProperties properties, LoadBalancerClientFactory loadBalancerClientFactory) {
 		Client delegate = new ApacheHttp5Client(httpClient5);
 		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, properties, loadBalancerClientFactory);
@@ -65,7 +64,7 @@ class HttpClient5FeignLoadBalancerConfiguration {
 	@ConditionalOnBean(LoadBalancedRetryFactory.class)
 	@ConditionalOnProperty(value = "spring.cloud.loadbalancer.retry.enabled", havingValue = "true",
 			matchIfMissing = true)
-	public Client feignRetryClient(BlockingLoadBalancerClient loadBalancerClient, HttpClient httpClient5,
+	public Client feignRetryClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient5,
 			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties,
 			LoadBalancerClientFactory loadBalancerClientFactory) {
 		Client delegate = new ApacheHttp5Client(httpClient5);
