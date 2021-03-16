@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -31,7 +32,7 @@ public class FeignEagerLoadProperties {
 
 	private boolean enabled = false;
 
-	private List<String> clients;
+	private List<String> clients = new LinkedList<>();
 
 	public boolean isEnabled() {
 		return enabled;

@@ -39,9 +39,7 @@ public class FeignApplicationContextInitializer implements ApplicationListener<A
 
 	@Override
 	public void onApplicationEvent(ApplicationReadyEvent event) {
-		if (clients != null) {
-			clients.forEach(this.feignContext::getContext);
-		}
+		clients.forEach(feignContext::getContext);
 	}
 
 }

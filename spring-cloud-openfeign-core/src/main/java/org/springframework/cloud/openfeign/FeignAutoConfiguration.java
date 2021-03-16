@@ -306,11 +306,9 @@ public class FeignAutoConfiguration {
 	@ConditionalOnProperty(value = "feign.eager-load.enabled", havingValue = "true")
 	protected static class FeignEagerLoadConfiguration {
 
-		@Autowired(required = false)
-		private FeignEagerLoadProperties feignEagerLoadProperties;
-
 		@Bean
-		public FeignApplicationContextInitializer feignApplicationContextInitializer(FeignContext feignContext) {
+		public FeignApplicationContextInitializer feignApplicationContextInitializer(FeignContext feignContext,
+				FeignEagerLoadProperties feignEagerLoadProperties) {
 			return new FeignApplicationContextInitializer(feignContext, feignEagerLoadProperties.getClients());
 		}
 

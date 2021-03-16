@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -93,7 +92,6 @@ public class FeignClientEagerInitializationTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
-	@EnableConfigurationProperties(FeignEagerLoadProperties.class)
 	@EnableFeignClients(clients = { FeignClientEagerInitializationTests.EagerFeignClient1.class,
 			FeignClientEagerInitializationTests.EagerFeignClient2.class,
 			FeignClientEagerInitializationTests.LazyFeignClient.class })
