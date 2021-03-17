@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
+import feign.Feign;
 import feign.hystrix.FallbackFactory;
 
 import org.springframework.context.ApplicationContext;
@@ -28,6 +29,7 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Sven Döring
  * @author Matt King
+ * @author Sam Kruglov
  */
 public class FeignClientBuilder {
 
@@ -66,6 +68,19 @@ public class FeignClientBuilder {
 
 		public Builder<T> url(final String url) {
 			this.feignClientFactoryBean.setUrl(FeignClientsRegistrar.getUrl(url));
+			return this;
+		}
+
+		/**
+		 * Applies a {@link FeignBuilderCustomizer} to the underlying {@link Feign.Builder}.
+		 * May be called multiple times.
+		 *
+		 * @param customizer applied in the same order as supplied here
+		 *                   after applying customizers found in the context.
+		 * @return the {@link Builder} with the customizer added
+		 */
+		public Builder<T> customize(final FeignBuilderCustomizer customizer) {
+			this.feignClientFactoryBean.addCustomizer(customizer);
 			return this;
 		}
 

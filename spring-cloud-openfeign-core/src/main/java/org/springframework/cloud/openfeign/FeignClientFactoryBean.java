@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,6 +63,7 @@ import org.springframework.util.StringUtils;
  * @author Olga Maciaszek-Sharma
  * @author Ilia Ilinykh
  * @author Marcin Grzejszczak
+ * @author Sam Kruglov
  */
 public class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 		ApplicationContextAware, BeanFactoryAware {
@@ -99,6 +101,8 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 
 	private boolean followRedirects = new Request.Options().isFollowRedirects();
 
+	private List<FeignBuilderCustomizer> additionalCustomizers = new ArrayList<>();
+
 	@Override
 	public void afterPropertiesSet() {
 		Assert.hasText(contextId, "Context id must be set");
@@ -134,6 +138,7 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 					.forEach(feignBuilderCustomizer -> feignBuilderCustomizer
 							.customize(builder));
 		}
+		additionalCustomizers.forEach(customizer -> customizer.customize(builder));
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
@@ -481,6 +486,10 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 
 	public void setInheritParentContext(boolean inheritParentContext) {
 		this.inheritParentContext = inheritParentContext;
+	}
+
+	public void addCustomizer(FeignBuilderCustomizer customizer) {
+		additionalCustomizers.add(customizer);
 	}
 
 	public ApplicationContext getApplicationContext() {
