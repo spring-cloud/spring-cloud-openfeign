@@ -46,8 +46,9 @@ import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import feign.micrometer.MicrometerCapability;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,7 +62,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -72,7 +72,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
@@ -82,7 +82,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Jonatan Ivanov
  */
 @SuppressWarnings("FieldMayBeFinal")
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class, webEnvironment = RANDOM_PORT)
 @TestPropertySource("classpath:feign-properties.properties")
 @DirtiesContext
@@ -161,16 +160,14 @@ public class FeignClientUsingPropertiesTests {
 		assertThat(response).isEqualTo("OK");
 	}
 
-	@Test(expected = RetryableException.class)
+	@Test
 	public void testBar() {
-		barClient().bar();
-		fail("it should timeout");
+		assertThatThrownBy(() -> barClient().bar()).isInstanceOf(RetryableException.class);
 	}
 
-	@Test(expected = SocketTimeoutException.class)
+	@Test
 	public void testUnwrap() throws Exception {
-		unwrapClient().unwrap();
-		fail("it should timeout");
+		assertThatThrownBy(() -> unwrapClient().unwrap()).isInstanceOf(SocketTimeoutException.class);
 	}
 
 	@Test
@@ -205,6 +202,7 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	@Test
+	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void readTimeoutShouldWorkWhenConnectTimeoutNotSet() {
 		FeignClientFactoryBean readTimeoutFactoryBean = new FeignClientFactoryBean();
 		readTimeoutFactoryBean.setContextId("readTimeout");
@@ -221,6 +219,7 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	@Test
+	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void connectTimeoutShouldWorkWhenReadTimeoutNotSet() {
 		FeignClientFactoryBean readTimeoutFactoryBean = new FeignClientFactoryBean();
 		readTimeoutFactoryBean.setContextId("connectTimeout");
@@ -250,6 +249,7 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	@Test
+	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void shouldSetFollowRedirects() {
 		FeignClientFactoryBean testFactoryBean = new FeignClientFactoryBean();
 		testFactoryBean.setContextId("test");

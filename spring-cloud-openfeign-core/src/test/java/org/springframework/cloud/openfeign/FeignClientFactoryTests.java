@@ -25,7 +25,9 @@ import java.util.Map;
 
 import feign.Client;
 import feign.InvocationHandlerFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -66,6 +68,7 @@ public class FeignClientFactoryTests {
 	}
 
 	@Test
+	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void shouldRedirectToDelegateWhenUrlSet() {
 		new ApplicationContextRunner().withUserConfiguration(TestConfig.class).run(this::defaultClientUsed);
 	}

@@ -25,8 +25,9 @@ import feign.InvocationHandlerFactory;
 import feign.RequestLine;
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -35,7 +36,6 @@ import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -46,7 +46,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Michael Cramer
  * @author Jonatan Ivanov
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientErrorDecoderTests.TestConfiguration.class)
 @DirtiesContext
 public class FeignClientErrorDecoderTests {
@@ -73,12 +72,14 @@ public class FeignClientErrorDecoderTests {
 	}
 
 	@Test
+	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void useConfiguredErrorDecoderWhenAlsoErrorDecoderFactoryIsAvailable() {
 		Object errorDecoder = getErrorDecoderFromClient(this.foo);
 		assertThat(errorDecoder).isInstanceOf(ErrorDecoder.Default.class);
 	}
 
 	@Test
+	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void useErrorDecoderFromErrorDecoderFactory() {
 		Object errorDecoder = getErrorDecoderFromClient(this.bar);
 		assertThat(errorDecoder).isInstanceOf(ErrorDecoderImpl.class);
