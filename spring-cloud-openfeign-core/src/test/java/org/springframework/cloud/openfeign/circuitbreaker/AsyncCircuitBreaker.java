@@ -29,7 +29,7 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 /**
  * Asynchronous circuit breaker.
  *
- * @author johnniang
+ * @author John Niang
  */
 class AsyncCircuitBreaker implements CircuitBreaker {
 
@@ -38,8 +38,7 @@ class AsyncCircuitBreaker implements CircuitBreaker {
 	final ExecutorService executorService;
 
 	AsyncCircuitBreaker(Duration timeout) {
-		this.timeout = timeout;
-		executorService = Executors.newCachedThreadPool();
+		this(timeout, Executors.newCachedThreadPool());
 	}
 
 	AsyncCircuitBreaker(Duration timeout, ExecutorService executorService) {

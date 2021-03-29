@@ -77,7 +77,7 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 		}
 		String circuitName = Feign.configKey(target.type(), method);
 		CircuitBreaker circuitBreaker = this.factory.create(circuitName);
-		Supplier<Object> supplier = decorateRequestContext(asSupplier(method, args));
+		Supplier<Object> supplier = asSupplier(method, args);
 		if (this.nullableFallbackFactory != null) {
 			Function<Throwable, Object> fallbackFunction = throwable -> {
 				Object fallback = this.nullableFallbackFactory.create(throwable);
@@ -94,8 +94,10 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 	}
 
 	private Supplier<Object> asSupplier(final Method method, final Object[] args) {
+		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
 		return () -> {
 			try {
+				RequestContextHolder.setRequestAttributes(requestAttributes);
 				return this.dispatch.get(method).invoke(args);
 			}
 			catch (RuntimeException throwable) {
@@ -103,16 +105,6 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 			}
 			catch (Throwable throwable) {
 				throw new RuntimeException(throwable);
-			}
-		};
-	}
-
-	private <T> Supplier<T> decorateRequestContext(Supplier<T> supplier) {
-		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		return () -> {
-			RequestContextHolder.setRequestAttributes(requestAttributes);
-			try {
-				return supplier.get();
 			}
 			finally {
 				RequestContextHolder.resetRequestAttributes();

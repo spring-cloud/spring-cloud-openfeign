@@ -57,7 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Tests for asynchronous circuit breaker.
  *
- * @author johnniang
+ * @author John Niang
  */
 @SpringBootTest(classes = AsyncCircuitBreakerTest.Application.class,
 		webEnvironment = RANDOM_PORT,
