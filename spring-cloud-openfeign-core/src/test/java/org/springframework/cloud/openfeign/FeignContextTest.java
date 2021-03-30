@@ -16,12 +16,13 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import feign.Logger;
 import feign.RequestInterceptor;
 import org.assertj.core.util.Lists;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,24 @@ import org.springframework.context.annotation.Import;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FeignContextTest {
+
+	@Test
+	public void testChildContexts() {
+		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
+		parent.refresh();
+		FeignContext context = new FeignContext();
+		context.setApplicationContext(parent);
+		context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class), getSpec("bar", BarConfig.class)));
+
+		Foo foo = context.getInstance("foo", Foo.class);
+		assertThat(foo).as("foo was null").isNotNull();
+
+		Bar bar = context.getInstance("bar", Bar.class);
+		assertThat(bar).as("bar was null").isNotNull();
+
+		Bar foobar = context.getInstance("foo", Bar.class);
+		assertThat(foobar).as("bar was not null").isNull();
+	}
 
 	@Test
 	public void getInstanceWithoutAncestors_verifyNullForMissing() {
@@ -114,6 +133,32 @@ public class FeignContextTest {
 			return (requestTemplate) -> {
 			};
 		}
+
+	}
+
+	static class FooConfig {
+
+		@Bean
+		Foo foo() {
+			return new Foo();
+		}
+
+	}
+
+	static class Foo {
+
+	}
+
+	static class BarConfig {
+
+		@Bean
+		Bar bar() {
+			return new Bar();
+		}
+
+	}
+
+	static class Bar {
 
 	}
 

@@ -78,7 +78,7 @@ public class FeignBuilderCustomizerTests {
 		FeignClientFactoryBean feignClientFactoryBean = new FeignClientFactoryBean();
 		feignClientFactoryBean.setContextId("test");
 		feignClientFactoryBean.setName("test");
-		feignClientFactoryBean.setType(FeignClientFactoryTests.TestType.class);
+		feignClientFactoryBean.setType(FeignClientFactoryBeanTests.TestType.class);
 		feignClientFactoryBean.setPath("");
 		feignClientFactoryBean.setUrl("http://some.absolute.url");
 		return feignClientFactoryBean;
