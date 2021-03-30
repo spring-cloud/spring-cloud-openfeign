@@ -59,8 +59,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author John Niang
  */
-@SpringBootTest(classes = AsyncCircuitBreakerTest.Application.class,
-		webEnvironment = RANDOM_PORT,
+@SpringBootTest(classes = AsyncCircuitBreakerTest.Application.class, webEnvironment = RANDOM_PORT,
 		properties = "feign.circuitbreaker.enabled=true")
 @AutoConfigureMockMvc
 class AsyncCircuitBreakerTest {
@@ -70,34 +69,27 @@ class AsyncCircuitBreakerTest {
 
 	@Test
 	void shouldWorkNormally() throws Exception {
-		mvc.perform(get("/hello/proxy"))
-				.andDo(print())
-				.andExpect(status().isOk())
+		mvc.perform(get("/hello/proxy")).andDo(print()).andExpect(status().isOk())
 				.andExpect(content().string("openfeign"));
 	}
 
 	@Test
 	void shouldNotProxyAnyHeadersWithoutHeaderSet() throws Exception {
-		mvc.perform(get("/headers/" + HttpHeaders.AUTHORIZATION + "/proxy"))
-				.andDo(print())
-				.andExpect(status().isOk())
+		mvc.perform(get("/headers/" + HttpHeaders.AUTHORIZATION + "/proxy")).andDo(print()).andExpect(status().isOk())
 				.andExpect(content().string(""));
 	}
 
 	@Test
 	void shouldProxyHeaderWhenHeaderSet() throws Exception {
 		String authorization = UUID.randomUUID().toString();
-		mvc.perform(get("/headers/" + HttpHeaders.AUTHORIZATION + "/proxy")
-				.header(HttpHeaders.AUTHORIZATION, authorization))
-				.andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(content().string(authorization));
+		mvc.perform(get("/headers/" + HttpHeaders.AUTHORIZATION + "/proxy").header(HttpHeaders.AUTHORIZATION,
+				authorization)).andDo(print()).andExpect(status().isOk()).andExpect(content().string(authorization));
 	}
 
 	@EnableAutoConfiguration
 	@Configuration(proxyBeanMethods = false)
-	@EnableFeignClients(clients = {TestClient.class})
-	@Import({NoSecurityConfiguration.class, TestController.class})
+	@EnableFeignClients(clients = { TestClient.class })
+	@Import({ NoSecurityConfiguration.class, TestController.class })
 	static class Application {
 
 		@Bean
@@ -127,8 +119,8 @@ class AsyncCircuitBreakerTest {
 		@Bean
 		RequestInterceptor proxyHeaderRequestInterceptor() {
 			return template -> {
-				ServletRequestAttributes requestAttributes =
-						(ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+				ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
+						.getRequestAttributes();
 				String authorization = Objects.requireNonNull(requestAttributes).getRequest()
 						.getHeader(HttpHeaders.AUTHORIZATION);
 				if (authorization != null) {
@@ -137,6 +129,7 @@ class AsyncCircuitBreakerTest {
 				}
 			};
 		}
+
 	}
 
 	@RestController
@@ -167,6 +160,7 @@ class AsyncCircuitBreakerTest {
 		String headerProxy(@PathVariable String headerName) {
 			return testClient.getObject().header(headerName);
 		}
+
 	}
 
 	@FeignClient(name = "async-circuit-breaker-test", url = "http://localhost:${local.server.port}")
@@ -179,4 +173,5 @@ class AsyncCircuitBreakerTest {
 		String header(@PathVariable String headerName);
 
 	}
+
 }

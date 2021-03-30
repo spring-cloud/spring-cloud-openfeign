@@ -56,4 +56,5 @@ class AsyncCircuitBreaker implements CircuitBreaker {
 			return fallback.apply(t);
 		}
 	}
+
 }
