@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import feign.Capability;
@@ -322,18 +323,6 @@ public class FeignClientFactoryBean
 		}
 	}
 
-	protected <T> T loadBalance(Feign.Builder builder, FeignContext context, HardCodedTarget<T> target) {
-		Client client = getOptional(context, Client.class);
-		if (client != null) {
-			builder.client(client);
-			Targeter targeter = get(context, Targeter.class);
-			return targeter.target(this, builder, context, target);
-		}
-
-		throw new IllegalStateException(
-				"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-loadbalancer?");
-	}
-
 	@Override
 	public Object getObject() {
 		return getTarget();
@@ -344,27 +333,27 @@ public class FeignClientFactoryBean
 	 * @return a {@link Feign} client created with the specified data and the context
 	 * information
 	 */
+	@SuppressWarnings("unchecked")
 	<T> T getTarget() {
 		FeignContext context = beanFactory != null ? beanFactory.getBean(FeignContext.class)
 				: applicationContext.getBean(FeignContext.class);
 		Feign.Builder builder = feign(context);
+		configureClient(context, builder);
+		String targetUrl = targetUrl();
+		Targeter targeter = get(context, Targeter.class);
+		return (T) targeter.target(this, builder, context, new HardCodedTarget<>(type, name, targetUrl + cleanPath()));
+	}
 
-		if (!StringUtils.hasText(url)) {
-			if (!name.startsWith("http")) {
-				url = "http://" + name;
-			}
-			else {
-				url = name;
-			}
-			url += cleanPath();
-			return (T) loadBalance(builder, context, new HardCodedTarget<>(type, name, url));
-		}
-		if (StringUtils.hasText(url) && !url.startsWith("http")) {
-			url = "http://" + url;
-		}
-		String url = this.url + cleanPath();
+	private void configureClient(FeignContext context, Feign.Builder builder) {
 		Client client = getOptional(context, Client.class);
-		if (client != null) {
+		if (client == null) {
+			if (loadBalanceRequired()) {
+				throw new IllegalStateException(
+						"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-loadbalancer?");
+			}
+			return;
+		}
+		if (!loadBalanceRequired()) {
 			if (client instanceof FeignBlockingLoadBalancerClient) {
 				// not load balancing because we have a url,
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
@@ -375,10 +364,21 @@ public class FeignClientFactoryBean
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
 				client = ((RetryableFeignBlockingLoadBalancerClient) client).getDelegate();
 			}
-			builder.client(client);
 		}
-		Targeter targeter = get(context, Targeter.class);
-		return (T) targeter.target(this, builder, context, new HardCodedTarget<>(type, name, url));
+		builder.client(client);
+	}
+
+	private boolean loadBalanceRequired() {
+		return !StringUtils.hasText(url);
+	}
+
+	private String targetUrl() {
+		return Optional.ofNullable(url).filter(StringUtils::hasText).map(this::enforceProtocol)
+				.orElseGet(() -> enforceProtocol(name));
+	}
+
+	private String enforceProtocol(String url) {
+		return url.startsWith("http") ? url : "http://" + url;
 	}
 
 	private String cleanPath() {
