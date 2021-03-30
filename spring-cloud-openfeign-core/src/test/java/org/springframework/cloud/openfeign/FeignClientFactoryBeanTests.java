@@ -87,11 +87,12 @@ public class FeignClientFactoryBeanTests {
 				});
 	}
 
-	@Test
+	@ParameterizedTest
+	@ValueSource(strings = { "", "lb://some-service-name", "lbs://some-secured-service-name" })
 	@DisabledForJreRange(min = JRE.JAVA_16)
-	public void shouldFailWhenNoLoadBalanceClientProvidedAndUrlNotSet() {
+	public void shouldFailWhenNoLoadBalanceClientProvidedAndLoadBalanceRequired(String configuredUrl) {
 		new ApplicationContextRunner().withUserConfiguration(NoClientTestConfig.class)
-				.withBean(FeignClientFactoryBean.class, () -> feignClientFactoryBean("", ""))
+				.withBean(FeignClientFactoryBean.class, () -> feignClientFactoryBean(configuredUrl, ""))
 				.run(context -> assertThatExceptionOfType(IllegalStateException.class)
 						.isThrownBy(() -> context.getBean(FeignClientFactoryBean.class).getTarget())
 						.withMessageContaining("No Feign Client for loadBalancing defined"));
@@ -105,6 +106,18 @@ public class FeignClientFactoryBeanTests {
 		new ApplicationContextRunner().withUserConfiguration(NoClientTestConfig.class)
 				.withBean(FeignClientFactoryBean.class, () -> feignClientFactoryBean(targetUrl, ""))
 				.run(context -> assertThat(target(buildMethodHandler(context)).url()).isEqualTo("http://" + targetUrl));
+	}
+
+	@Test
+	@DisabledForJreRange(min = JRE.JAVA_16)
+	public void shouldUseLoadBalanceClientWhenUrlUsesLoadBalanceProtocolAndOverrideUrl() {
+		new ApplicationContextRunner().withUserConfiguration(LoadBalancerTestConfig.class)
+				.withBean(FeignClientFactoryBean.class, () -> feignClientFactoryBean("lb://some-service-name", ""))
+				.run(context -> {
+					final MethodHandler methodHandler = buildMethodHandler(context);
+					assertThat(target(methodHandler).url()).isEqualTo("http://some-service-name");
+					assertThat(client(methodHandler)).isInstanceOf(FeignBlockingLoadBalancerClient.class);
+				});
 	}
 
 	@Test

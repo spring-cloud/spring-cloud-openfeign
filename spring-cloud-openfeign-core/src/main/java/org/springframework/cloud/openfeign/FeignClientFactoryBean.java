@@ -64,6 +64,7 @@ import org.springframework.util.StringUtils;
  * @author Ilia Ilinykh
  * @author Marcin Grzejszczak
  * @author Jonatan Ivanov
+ * @author Benjamin Einaudi
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -369,16 +370,16 @@ public class FeignClientFactoryBean
 	}
 
 	private boolean loadBalanceRequired() {
-		return !StringUtils.hasText(url);
+		return !StringUtils.hasText(url) || url.matches("^lb[s]?://.*");
 	}
 
 	private String targetUrl() {
-		return Optional.ofNullable(url).filter(StringUtils::hasText).map(this::enforceProtocol)
-				.orElseGet(() -> enforceProtocol(name));
+		return normalizeProtocol(Optional.ofNullable(url).filter(StringUtils::hasText).orElse(name));
 	}
 
-	private String enforceProtocol(String url) {
-		return url.startsWith("http") ? url : "http://" + url;
+	private String normalizeProtocol(String url) {
+		String unbalancedUrl = url.replaceAll("^lb([s]?)://", "http$1://");
+		return unbalancedUrl.startsWith("http") ? unbalancedUrl : "http://" + unbalancedUrl;
 	}
 
 	private String cleanPath() {
