@@ -30,6 +30,8 @@ import feign.Target;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import static feign.Util.checkNotNull;
 
@@ -92,8 +94,10 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 	}
 
 	private Supplier<Object> asSupplier(final Method method, final Object[] args) {
+		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
 		return () -> {
 			try {
+				RequestContextHolder.setRequestAttributes(requestAttributes);
 				return this.dispatch.get(method).invoke(args);
 			}
 			catch (RuntimeException throwable) {
@@ -101,6 +105,9 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 			}
 			catch (Throwable throwable) {
 				throw new RuntimeException(throwable);
+			}
+			finally {
+				RequestContextHolder.resetRequestAttributes();
 			}
 		};
 	}
