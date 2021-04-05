@@ -15,6 +15,12 @@
 			"defaultValue": "false"
 		},
 		{
+			"name": "feign.circuitbreaker.group.enabled",
+			"type": "java.lang.Boolean",
+			"description": "If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with with group.",
+			"defaultValue": "false"
+		},
+		{
 			"name": "feign.httpclient.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the use of the Apache HTTP Client by Feign.",

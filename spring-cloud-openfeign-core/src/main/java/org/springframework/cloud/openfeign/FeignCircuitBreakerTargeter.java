@@ -27,8 +27,11 @@ class FeignCircuitBreakerTargeter implements Targeter {
 
 	private final CircuitBreakerFactory circuitBreakerFactory;
 
-	FeignCircuitBreakerTargeter(CircuitBreakerFactory circuitBreakerFactory) {
+	private final boolean circuitBreakerGroupEnabled;
+
+	FeignCircuitBreakerTargeter(CircuitBreakerFactory circuitBreakerFactory, boolean circuitBreakerGroupEnabled) {
 		this.circuitBreakerFactory = circuitBreakerFactory;
+		this.circuitBreakerGroupEnabled = circuitBreakerGroupEnabled;
 	}
 
 	@Override
@@ -81,7 +84,8 @@ class FeignCircuitBreakerTargeter implements Targeter {
 	}
 
 	private FeignCircuitBreaker.Builder builder(String feignClientName, FeignCircuitBreaker.Builder builder) {
-		return builder.circuitBreakerFactory(this.circuitBreakerFactory).feignClientName(feignClientName);
+		return builder.circuitBreakerFactory(circuitBreakerFactory).feignClientName(feignClientName)
+				.circuitBreakerGroupEnabled(circuitBreakerGroupEnabled);
 	}
 
 }

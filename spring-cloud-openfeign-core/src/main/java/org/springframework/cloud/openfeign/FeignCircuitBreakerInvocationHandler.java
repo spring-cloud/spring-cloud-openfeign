@@ -39,6 +39,8 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 
 	private final CircuitBreakerFactory factory;
 
+	private final String feignClientName;
+
 	private final Target<?> target;
 
 	private final Map<Method, InvocationHandlerFactory.MethodHandler> dispatch;
@@ -47,13 +49,18 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 
 	private final Map<Method, Method> fallbackMethodMap;
 
-	FeignCircuitBreakerInvocationHandler(CircuitBreakerFactory factory, Target<?> target,
-			Map<Method, InvocationHandlerFactory.MethodHandler> dispatch, FallbackFactory<?> nullableFallbackFactory) {
+	private final boolean circuitBreakerGroupEnabled;
+
+	FeignCircuitBreakerInvocationHandler(CircuitBreakerFactory factory, String feignClientName, Target<?> target,
+			Map<Method, InvocationHandlerFactory.MethodHandler> dispatch, FallbackFactory<?> nullableFallbackFactory,
+			boolean circuitBreakerGroupEnabled) {
 		this.factory = factory;
+		this.feignClientName = feignClientName;
 		this.target = checkNotNull(target, "target");
 		this.dispatch = checkNotNull(dispatch, "dispatch");
 		this.fallbackMethodMap = toFallbackMethod(dispatch);
 		this.nullableFallbackFactory = nullableFallbackFactory;
+		this.circuitBreakerGroupEnabled = circuitBreakerGroupEnabled;
 	}
 
 	@Override
@@ -76,7 +83,8 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 			return toString();
 		}
 		String circuitName = Feign.configKey(target.type(), method);
-		CircuitBreaker circuitBreaker = this.factory.create(circuitName);
+		CircuitBreaker circuitBreaker = circuitBreakerGroupEnabled ? factory.create(circuitName, feignClientName)
+			: factory.create(circuitName);
 		Supplier<Object> supplier = asSupplier(method, args);
 		if (this.nullableFallbackFactory != null) {
 			Function<Throwable, Object> fallbackFunction = throwable -> {
