@@ -35,6 +35,8 @@ import feign.Target.HardCodedTarget;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -70,6 +72,8 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 	 * WARNING! Nothing in this class should be @Autowired. It causes NPEs because of some
 	 * lifecycle race condition.
 	 ***********************************/
+
+	private static Log LOG = LogFactory.getLog(FeignClientFactoryBean.class);
 
 	private Class<?> type;
 
@@ -345,7 +349,7 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 		}
 
 		throw new IllegalStateException(
-				"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-netflix-ribbon?");
+				"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-netflix-ribbon or spring-cloud-starter-loadbalancer?");
 	}
 
 	@Override
@@ -365,6 +369,13 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 		Feign.Builder builder = feign(context);
 
 		if (!StringUtils.hasText(url)) {
+			if (url != null && LOG.isWarnEnabled()) {
+				LOG.warn(
+						"The provided URL is empty. Will try picking an instance via load-balancing.");
+			}
+			else if (LOG.isDebugEnabled()) {
+				LOG.debug("URL not provided. Will use LoadBalancer.");
+			}
 			if (!name.startsWith("http")) {
 				url = "http://" + name;
 			}
