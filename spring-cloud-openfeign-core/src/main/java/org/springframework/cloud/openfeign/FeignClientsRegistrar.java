@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import feign.Request;
+
+import org.springframework.aop.scope.ScopedProxyUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
@@ -63,6 +66,7 @@ import org.springframework.util.StringUtils;
  * @author Michal Domagala
  * @author Marcin Grzejszczak
  * @author Olga Maciaszek-Sharma
+ * @author Jasbir Singh
  */
 class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
@@ -213,6 +217,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		factoryBean.setName(name);
 		factoryBean.setContextId(contextId);
 		factoryBean.setType(clazz);
+		factoryBean.setRefreshableClient(isClientRefreshEnabled());
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(clazz, () -> {
 			factoryBean.setUrl(getUrl(beanFactory, attributes));
 			factoryBean.setPath(getPath(beanFactory, attributes));
@@ -249,6 +254,8 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 
 		BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className, qualifiers);
 		BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
+
+		registerOptionsBeanDefinition(registry, contextId);
 	}
 
 	private void validate(Map<String, Object> attributes) {
@@ -406,6 +413,30 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	@Override
 	public void setEnvironment(Environment environment) {
 		this.environment = environment;
+	}
+
+	/**
+	 * This method is meant to create {@link Request.Options} beans definition with
+	 * refreshScope.
+	 * @param registry spring bean definition registry
+	 * @param contextId name of feign client
+	 */
+	private void registerOptionsBeanDefinition(BeanDefinitionRegistry registry, String contextId) {
+		if (isClientRefreshEnabled()) {
+			String beanName = Request.Options.class.getCanonicalName() + "-" + contextId;
+			BeanDefinitionBuilder definitionBuilder = BeanDefinitionBuilder
+					.genericBeanDefinition(OptionsFactoryBean.class);
+			definitionBuilder.setScope("refresh");
+			definitionBuilder.addPropertyValue("contextId", contextId);
+			BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(definitionBuilder.getBeanDefinition(),
+					beanName);
+			definitionHolder = ScopedProxyUtils.createScopedProxy(definitionHolder, registry, true);
+			BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
+		}
+	}
+
+	private boolean isClientRefreshEnabled() {
+		return environment.getProperty("feign.client.refresh-enabled", Boolean.class, false);
 	}
 
 }
