@@ -57,7 +57,7 @@ public class FeignClientBuilderTests {
 	}
 
 	private static void assertFactoryBeanField(final FeignClientBuilder.Builder builder, final String fieldName,
-			final Object expectedValue) {
+		final Object expectedValue) {
 		final Object value = getFactoryBeanField(builder, fieldName);
 		assertThat(value).as("Expected value for the field '" + fieldName + "':").isEqualTo(expectedValue);
 	}
@@ -65,7 +65,7 @@ public class FeignClientBuilderTests {
 	@SuppressWarnings("unchecked")
 	private static <T> T getFactoryBeanField(final FeignClientBuilder.Builder builder, final String fieldName) {
 		final Field factoryBeanField = ReflectionUtils.findField(FeignClientBuilder.Builder.class,
-				"feignClientFactoryBean");
+			"feignClientFactoryBean");
 		ReflectionUtils.makeAccessible(factoryBeanField);
 		final FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) ReflectionUtils.getField(factoryBeanField,
 				builder);
