@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import feign.Feign;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Sven Döring
+ * @author Sam Kruglov
  */
 public class FeignClientBuilderTests {
 
@@ -56,6 +58,12 @@ public class FeignClientBuilderTests {
 
 	private static void assertFactoryBeanField(final FeignClientBuilder.Builder builder, final String fieldName,
 			final Object expectedValue) {
+		final Object value = getFactoryBeanField(builder, fieldName);
+		assertThat(value).as("Expected value for the field '" + fieldName + "':").isEqualTo(expectedValue);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T getFactoryBeanField(final FeignClientBuilder.Builder builder, final String fieldName) {
 		final Field factoryBeanField = ReflectionUtils.findField(FeignClientBuilder.Builder.class,
 				"feignClientFactoryBean");
 		ReflectionUtils.makeAccessible(factoryBeanField);
@@ -64,8 +72,7 @@ public class FeignClientBuilderTests {
 
 		final Field field = ReflectionUtils.findField(FeignClientFactoryBean.class, fieldName);
 		ReflectionUtils.makeAccessible(field);
-		final Object value = ReflectionUtils.getField(field, factoryBean);
-		assertThat(value).as("Expected value for the field '" + fieldName + "':").isEqualTo(expectedValue);
+		return (T) ReflectionUtils.getField(field, factoryBean);
 	}
 
 	@Before
@@ -136,7 +143,7 @@ public class FeignClientBuilderTests {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
 				.forType(TestFeignClient.class, new FeignClientFactoryBean(), "TestClient").decode404(true)
-				.path("Path/").url("Url/").contextId("TestContext");
+				.path("Path/").url("Url/").contextId("TestContext").customize(Feign.Builder::doNotCloseAfterDecode);
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
@@ -148,6 +155,8 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "url", "http://Url/");
 		assertFactoryBeanField(builder, "path", "/Path");
 		assertFactoryBeanField(builder, "decode404", true);
+		List<FeignBuilderCustomizer> additionalCustomizers = getFactoryBeanField(builder, "additionalCustomizers");
+		assertThat(additionalCustomizers).hasSize(1);
 	}
 
 	@Test

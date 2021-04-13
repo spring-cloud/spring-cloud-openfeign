@@ -65,6 +65,7 @@ import org.springframework.util.StringUtils;
  * @author Ilia Ilinykh
  * @author Marcin Grzejszczak
  * @author Jonatan Ivanov
+ * @author Sam Kruglov
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -104,6 +105,8 @@ public class FeignClientFactoryBean
 
 	private boolean followRedirects = new Request.Options().isFollowRedirects();
 
+	private final List<FeignBuilderCustomizer> additionalCustomizers = new ArrayList<>();
+
 	@Override
 	public void afterPropertiesSet() {
 		Assert.hasText(contextId, "Context id must be set");
@@ -137,6 +140,7 @@ public class FeignClientFactoryBean
 			customizerMap.values().stream().sorted(AnnotationAwareOrderComparator.INSTANCE)
 					.forEach(feignBuilderCustomizer -> feignBuilderCustomizer.customize(builder));
 		}
+		additionalCustomizers.forEach(customizer -> customizer.customize(builder));
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
@@ -468,6 +472,10 @@ public class FeignClientFactoryBean
 
 	public void setInheritParentContext(boolean inheritParentContext) {
 		this.inheritParentContext = inheritParentContext;
+	}
+
+	public void addCustomizer(FeignBuilderCustomizer customizer) {
+		additionalCustomizers.add(customizer);
 	}
 
 	public ApplicationContext getApplicationContext() {
