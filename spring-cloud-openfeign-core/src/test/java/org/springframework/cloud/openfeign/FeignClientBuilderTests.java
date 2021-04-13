@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import feign.Feign;
 import feign.hystrix.FallbackFactory;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -40,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Sven Döring
+ * @author Sam Kruglov
  */
 public class FeignClientBuilderTests {
 
@@ -56,10 +58,16 @@ public class FeignClientBuilderTests {
 		return method.getDefaultValue();
 	}
 
-	private static void assertFactoryBeanField(final FeignClientBuilder.Builder builder,
-			final String fieldName, final Object expectedValue) {
-		final Field factoryBeanField = ReflectionUtils
-				.findField(FeignClientBuilder.Builder.class, "feignClientFactoryBean");
+	private static void assertFactoryBeanField(final FeignClientBuilder.Builder builder, final String fieldName,
+		final Object expectedValue) {
+		final Object value = getFactoryBeanField(builder, fieldName);
+		assertThat(value).as("Expected value for the field '" + fieldName + "':").isEqualTo(expectedValue);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T getFactoryBeanField(final FeignClientBuilder.Builder builder, final String fieldName) {
+		final Field factoryBeanField = ReflectionUtils.findField(FeignClientBuilder.Builder.class,
+			"feignClientFactoryBean");
 		ReflectionUtils.makeAccessible(factoryBeanField);
 		final FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) ReflectionUtils
 				.getField(factoryBeanField, builder);
@@ -67,9 +75,7 @@ public class FeignClientBuilderTests {
 		final Field field = ReflectionUtils.findField(FeignClientFactoryBean.class,
 				fieldName);
 		ReflectionUtils.makeAccessible(field);
-		final Object value = ReflectionUtils.getField(field, factoryBean);
-		assertThat(value).as("Expected value for the field '" + fieldName + "':")
-				.isEqualTo(expectedValue);
+		return (T) ReflectionUtils.getField(field, factoryBean);
 	}
 
 	@Before
@@ -131,7 +137,8 @@ public class FeignClientBuilderTests {
 				.forType(TestFeignClient.class, "TestClient").inheritParentContext(false)
 				.fallback(TestFeignClientFallback.class)
 				.fallbackFactory(TestFeignClientFallbackFactory.class).decode404(true)
-				.url("Url/").path("/Path").contextId("TestContext");
+				.url("Url/").path("/Path").contextId("TestContext")
+			    .customize(Feign.Builder::doNotCloseAfterDecode);;
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
@@ -147,6 +154,8 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "fallback", TestFeignClientFallback.class);
 		assertFactoryBeanField(builder, "fallbackFactory",
 				TestFeignClientFallbackFactory.class);
+		List<FeignBuilderCustomizer> additionalCustomizers = getFactoryBeanField(builder, "additionalCustomizers");
+		assertThat(additionalCustomizers).hasSize(1);
 	}
 
 	@Test
