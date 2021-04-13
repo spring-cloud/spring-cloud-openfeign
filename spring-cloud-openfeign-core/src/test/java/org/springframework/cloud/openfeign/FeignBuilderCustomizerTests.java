@@ -80,8 +80,7 @@ public class FeignBuilderCustomizerTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				FeignBuilderCustomizerTests.SampleConfiguration3.class);
 
-		FeignClientFactoryBean clientFactoryBean = context
-				.getBean(FeignClientFactoryBean.class);
+		FeignClientFactoryBean clientFactoryBean = context.getBean(FeignClientFactoryBean.class);
 		clientFactoryBean.addCustomizer(builder -> builder.logLevel(Logger.Level.BASIC));
 		clientFactoryBean.addCustomizer(Feign.Builder::doNotCloseAfterDecode);
 		FeignContext feignContext = context.getBean(FeignContext.class);
