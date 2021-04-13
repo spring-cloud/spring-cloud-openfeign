@@ -58,16 +58,18 @@ public class FeignClientBuilderTests {
 		return method.getDefaultValue();
 	}
 
-	private static void assertFactoryBeanField(final FeignClientBuilder.Builder builder, final String fieldName,
-		final Object expectedValue) {
+	private static void assertFactoryBeanField(final FeignClientBuilder.Builder builder,
+			final String fieldName, final Object expectedValue) {
 		final Object value = getFactoryBeanField(builder, fieldName);
-		assertThat(value).as("Expected value for the field '" + fieldName + "':").isEqualTo(expectedValue);
+		assertThat(value).as("Expected value for the field '" + fieldName + "':")
+				.isEqualTo(expectedValue);
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> T getFactoryBeanField(final FeignClientBuilder.Builder builder, final String fieldName) {
-		final Field factoryBeanField = ReflectionUtils.findField(FeignClientBuilder.Builder.class,
-			"feignClientFactoryBean");
+	private static <T> T getFactoryBeanField(final FeignClientBuilder.Builder builder,
+			final String fieldName) {
+		final Field factoryBeanField = ReflectionUtils
+				.findField(FeignClientBuilder.Builder.class, "feignClientFactoryBean");
 		ReflectionUtils.makeAccessible(factoryBeanField);
 		final FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) ReflectionUtils
 				.getField(factoryBeanField, builder);
@@ -138,7 +140,7 @@ public class FeignClientBuilderTests {
 				.fallback(TestFeignClientFallback.class)
 				.fallbackFactory(TestFeignClientFallbackFactory.class).decode404(true)
 				.url("Url/").path("/Path").contextId("TestContext")
-			    .customize(Feign.Builder::doNotCloseAfterDecode);;
+				.customize(Feign.Builder::doNotCloseAfterDecode);
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
@@ -154,7 +156,8 @@ public class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "fallback", TestFeignClientFallback.class);
 		assertFactoryBeanField(builder, "fallbackFactory",
 				TestFeignClientFallbackFactory.class);
-		List<FeignBuilderCustomizer> additionalCustomizers = getFactoryBeanField(builder, "additionalCustomizers");
+		List<FeignBuilderCustomizer> additionalCustomizers = getFactoryBeanField(builder,
+				"additionalCustomizers");
 		assertThat(additionalCustomizers).hasSize(1);
 	}
 
@@ -162,8 +165,12 @@ public class FeignClientBuilderTests {
 	public void forType_build() {
 		// given:
 		Mockito.when(this.applicationContext.getBean(FeignContext.class))
-				.thenThrow(new ClosedFileSystemException()); // throw an unusual exception
-																// in the
+				.thenThrow(new ClosedFileSystemException()); // throw
+																// an
+																// unusual
+																// exception
+																// in
+																// the
 																// FeignClientFactoryBean
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
 				.forType(TestClient.class, "TestClient");

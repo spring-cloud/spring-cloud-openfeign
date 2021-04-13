@@ -72,11 +72,10 @@ public class FeignClientBuilder {
 		}
 
 		/**
-		 * Applies a {@link FeignBuilderCustomizer} to the underlying {@link Feign.Builder}.
-		 * May be called multiple times.
-		 *
-		 * @param customizer applied in the same order as supplied here
-		 *                   after applying customizers found in the context.
+		 * Applies a {@link FeignBuilderCustomizer} to the underlying
+		 * {@link Feign.Builder}. May be called multiple times.
+		 * @param customizer applied in the same order as supplied here after applying
+		 * customizers found in the context.
 		 * @return the {@link Builder} with the customizer added
 		 */
 		public Builder<T> customize(final FeignBuilderCustomizer customizer) {
