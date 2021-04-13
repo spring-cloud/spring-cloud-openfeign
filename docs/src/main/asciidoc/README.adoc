@@ -1,4 +1,4 @@
-image::https://github.com/spring-cloud/spring-cloud-openfeign/workflows/Build/badge.svg?branch=2.2.x&style=svg["Build",link="https://github.com/spring-cloud/spring-cloud-openfeign/actions"]
+image::https://github.com/spring-cloud/spring-cloud-openfeign/workflows/Build/badge.svg?branch=master&style=svg["Build",link="https://github.com/spring-cloud/spring-cloud-openfeign/actions"]
 
 image:https://codecov.io/gh/spring-cloud/spring-cloud-openfeign/branch/master/graph/badge.svg["Codecov", link="https://codecov.io/gh/spring-cloud/spring-cloud-openfeign"]
 
