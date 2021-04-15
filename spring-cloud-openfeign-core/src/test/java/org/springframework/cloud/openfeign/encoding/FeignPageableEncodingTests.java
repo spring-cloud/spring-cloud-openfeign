@@ -57,7 +57,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Hyeonmin Park
  */
 @SpringBootTest(classes = FeignPageableEncodingTests.Application.class, webEnvironment = RANDOM_PORT,
-		value = { "feign.compression.request.enabled=true", "feign.autoconfiguration.jackson.enabled=true" })
+		value = { "feign.compression.request.enabled=true" })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FeignPageableEncodingTests {
 

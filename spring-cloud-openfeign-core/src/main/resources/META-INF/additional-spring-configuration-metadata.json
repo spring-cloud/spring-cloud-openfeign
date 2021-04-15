@@ -6,7 +6,7 @@
 			"name": "feign.autoconfiguration.jackson.enabled",
 			"type": "java.lang.Boolean",
 			"description": "If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.",
-			"defaultValue": "false"
+			"defaultValue": "true"
 		},
 		{
 			"name": "feign.circuitbreaker.enabled",
