@@ -345,17 +345,16 @@ public class FeignClientFactoryBean
 	}
 
 	/**
-	 * meant to get Options bean from context with bean name.
+	 * Meant to get Options bean from context with bean name.
 	 * @param context context of Feign client
 	 * @param contextId name of feign client
-	 * @return
+	 * @return returns Options found in context
 	 */
 	protected Request.Options getOptionsByName(FeignContext context, String contextId) {
 		if (refreshableClient) {
 			return context.getInstance(contextId, Request.Options.class.getCanonicalName() + "-" + contextId,
 					Request.Options.class);
 		}
-
 		return null;
 	}
 
@@ -511,7 +510,7 @@ public class FeignClientFactoryBean
 		this.fallbackFactory = fallbackFactory;
 	}
 
-	void setRefreshableClient(boolean refreshableClient) {
+	public void setRefreshableClient(boolean refreshableClient) {
 		this.refreshableClient = refreshableClient;
 	}
 
@@ -531,13 +530,14 @@ public class FeignClientFactoryBean
 				&& Objects.equals(path, that.path) && Objects.equals(type, that.type) && Objects.equals(url, that.url)
 				&& Objects.equals(connectTimeoutMillis, that.connectTimeoutMillis)
 				&& Objects.equals(readTimeoutMillis, that.readTimeoutMillis)
-				&& Objects.equals(followRedirects, that.followRedirects);
+				&& Objects.equals(followRedirects, that.followRedirects)
+				&& Objects.equals(refreshableClient, that.refreshableClient);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(applicationContext, beanFactory, decode404, inheritParentContext, fallback, fallbackFactory,
-				name, path, type, url, readTimeoutMillis, connectTimeoutMillis, followRedirects);
+				name, path, type, url, readTimeoutMillis, connectTimeoutMillis, followRedirects, refreshableClient);
 	}
 
 	@Override
@@ -549,7 +549,8 @@ public class FeignClientFactoryBean
 				.append(", ").append("beanFactory=").append(beanFactory).append(", ").append("fallback=")
 				.append(fallback).append(", ").append("fallbackFactory=").append(fallbackFactory).append("}")
 				.append("connectTimeoutMillis=").append(connectTimeoutMillis).append("}").append("readTimeoutMillis=")
-				.append(readTimeoutMillis).append("}").append("followRedirects=").append(followRedirects).append("}")
+				.append(readTimeoutMillis).append("}").append("followRedirects=").append(followRedirects)
+				.append("refreshableClient=").append(refreshableClient).append("}")
 				.toString();
 	}
 

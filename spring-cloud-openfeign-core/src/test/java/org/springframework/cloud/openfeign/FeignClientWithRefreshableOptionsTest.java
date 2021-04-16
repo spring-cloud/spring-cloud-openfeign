@@ -26,8 +26,6 @@ import java.util.concurrent.TimeUnit;
 import feign.InvocationHandlerFactory;
 import feign.Request;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -76,7 +74,6 @@ public class FeignClientWithRefreshableOptionsTest {
 	private FeignClientProperties clientProperties;
 
 	@Test
-	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void overridedOptionsBeanShouldBePresentInsteadOfRefreshable() {
 		Request.Options options = getRequestOptions((Proxy) overrideOptionsClient);
 		assertConnectionAndReadTimeout(options, 1, 1);
@@ -85,35 +82,31 @@ public class FeignClientWithRefreshableOptionsTest {
 	@Test
 	public void refreshScopeBeanDefinitionShouldBePresent() {
 		BeanDefinition beanDefinition = ((GenericWebApplicationContext) applicationContext)
-				.getBeanDefinition(Request.Options.class.getCanonicalName() + "-" + "refreshableClient");
+			.getBeanDefinition(Request.Options.class.getCanonicalName() + "-" + "refreshableClient");
 		BeanDefinition originBeanDefinition = beanDefinition.getOriginatingBeanDefinition();
 		assertThat(originBeanDefinition.getBeanClassName()).isEqualTo(OptionsFactoryBean.class.getCanonicalName());
 		assertThat(originBeanDefinition.getScope()).isEqualTo("refresh");
 	}
 
 	@Test
-	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void withConfigDefaultConnectTimeoutAndReadTimeout() {
 		Request.Options options = getRequestOptions((Proxy) refreshableClient);
 		assertOptions(options, 5000, 5000);
 	}
 
 	@Test
-	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void readTimeoutShouldWorkWhenConnectTimeoutNotSet() {
 		Request.Options options = getRequestOptions((Proxy) readTimeoutClient);
 		assertOptions(options, 5000, 2000);
 	}
 
 	@Test
-	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void connectTimeoutShouldWorkWhenReadTimeoutNotSet() {
 		Request.Options options = getRequestOptions((Proxy) connectTimeoutClient);
 		assertOptions(options, 2000, 5000);
 	}
 
 	@Test
-	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void connectTimeoutShouldNotChangeWithoutContextRefresh() {
 		Request.Options options = getRequestOptions((Proxy) connectTimeoutClient);
 		assertConnectionAndReadTimeout(options, 2000, 5000);
@@ -123,7 +116,6 @@ public class FeignClientWithRefreshableOptionsTest {
 	}
 
 	@Test
-	@DisabledForJreRange(min = JRE.JAVA_16)
 	public void connectTimeoutShouldChangeAfterContextRefresh() {
 		Request.Options options = getRequestOptions((Proxy) connectTimeoutClient);
 		assertConnectionAndReadTimeout(options, 2000, 5000);
@@ -137,19 +129,19 @@ public class FeignClientWithRefreshableOptionsTest {
 		Object invocationHandlerLambda = ReflectionTestUtils.getField(client, "h");
 		Object invocationHandler = ReflectionTestUtils.getField(invocationHandlerLambda, "arg$2");
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
-				.getField(Objects.requireNonNull(invocationHandler), "dispatch");
+			.getField(Objects.requireNonNull(invocationHandler), "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
 		return (Request.Options) ReflectionTestUtils.getField(dispatch.get(key), "options");
 	}
 
 	private void assertOptions(Request.Options options, int expectedConnectTimeoutInMillis,
-			int expectedReadTimeoutInMillis) {
+		int expectedReadTimeoutInMillis) {
 		assertThat(options.getClass().getSimpleName().startsWith("Request$Options$$EnhancerBySpringCGLIB"));
 		assertConnectionAndReadTimeout(options, expectedConnectTimeoutInMillis, expectedReadTimeoutInMillis);
 	}
 
 	private void assertConnectionAndReadTimeout(Request.Options options, int expectedConnectTimeoutInMillis,
-			int expectedReadTimeoutInMillis) {
+		int expectedReadTimeoutInMillis) {
 		assertThat(options.connectTimeoutMillis()).isEqualTo(expectedConnectTimeoutInMillis);
 		assertThat(options.readTimeoutMillis()).isEqualTo(expectedReadTimeoutInMillis);
 	}
