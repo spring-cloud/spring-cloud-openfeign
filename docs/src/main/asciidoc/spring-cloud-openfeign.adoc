@@ -717,6 +717,28 @@ You may consider enabling Jackson Modules for the support `org.springframework.d
 feign.autoconfiguration.jackson.enabled=true
 ----
 
+=== Feign client eager initialization
+
+Each Feign named client has a corresponding child Application Context that Spring Cloud maintains, this application context is lazily loaded up on the first request to the named client.
+This lazy loading behavior can be changed to instead eagerly load up these child Application contexts at startup by enabling eager-load and specifying the names of the Feign clients.
+
+NOTE: `feign.eager-load.enabled=false` disables eager load for *all* Feign clients regardless of the presence and/or value of `feign.eager-load.clients` .
+If you want to enable eager initialization for a client, explicitly set client name in `feign.eager-load.clients` as part of comma-separated list. If client is not mentioned in `feign.eager-load.clients` lazy init mechanism would be applied.
+
+.application.yml
+----
+feign:
+  eager-load:
+    enabled: true
+    clients: client1,client2,client3
+----
+
+.application.properties
+----
+feign.eager-load.enabled: true
+feign.eager-load.clients: client1,client2,client3
+----
+
 == Configuration properties
 
 To see the list of all Spring Cloud OpenFeign related configuration properties please check link:appendix.html[the Appendix page].
