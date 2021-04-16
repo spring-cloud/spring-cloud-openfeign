@@ -550,8 +550,7 @@ public class FeignClientFactoryBean
 				.append(fallback).append(", ").append("fallbackFactory=").append(fallbackFactory).append("}")
 				.append("connectTimeoutMillis=").append(connectTimeoutMillis).append("}").append("readTimeoutMillis=")
 				.append(readTimeoutMillis).append("}").append("followRedirects=").append(followRedirects)
-				.append("refreshableClient=").append(refreshableClient).append("}")
-				.toString();
+				.append("refreshableClient=").append(refreshableClient).append("}").toString();
 	}
 
 	@Override

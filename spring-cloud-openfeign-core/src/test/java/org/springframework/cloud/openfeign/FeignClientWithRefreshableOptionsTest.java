@@ -82,7 +82,7 @@ public class FeignClientWithRefreshableOptionsTest {
 	@Test
 	public void refreshScopeBeanDefinitionShouldBePresent() {
 		BeanDefinition beanDefinition = ((GenericWebApplicationContext) applicationContext)
-			.getBeanDefinition(Request.Options.class.getCanonicalName() + "-" + "refreshableClient");
+				.getBeanDefinition(Request.Options.class.getCanonicalName() + "-" + "refreshableClient");
 		BeanDefinition originBeanDefinition = beanDefinition.getOriginatingBeanDefinition();
 		assertThat(originBeanDefinition.getBeanClassName()).isEqualTo(OptionsFactoryBean.class.getCanonicalName());
 		assertThat(originBeanDefinition.getScope()).isEqualTo("refresh");
@@ -129,19 +129,19 @@ public class FeignClientWithRefreshableOptionsTest {
 		Object invocationHandlerLambda = ReflectionTestUtils.getField(client, "h");
 		Object invocationHandler = ReflectionTestUtils.getField(invocationHandlerLambda, "arg$2");
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
-			.getField(Objects.requireNonNull(invocationHandler), "dispatch");
+				.getField(Objects.requireNonNull(invocationHandler), "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
 		return (Request.Options) ReflectionTestUtils.getField(dispatch.get(key), "options");
 	}
 
 	private void assertOptions(Request.Options options, int expectedConnectTimeoutInMillis,
-		int expectedReadTimeoutInMillis) {
+			int expectedReadTimeoutInMillis) {
 		assertThat(options.getClass().getSimpleName().startsWith("Request$Options$$EnhancerBySpringCGLIB"));
 		assertConnectionAndReadTimeout(options, expectedConnectTimeoutInMillis, expectedReadTimeoutInMillis);
 	}
 
 	private void assertConnectionAndReadTimeout(Request.Options options, int expectedConnectTimeoutInMillis,
-		int expectedReadTimeoutInMillis) {
+			int expectedReadTimeoutInMillis) {
 		assertThat(options.connectTimeoutMillis()).isEqualTo(expectedConnectTimeoutInMillis);
 		assertThat(options.readTimeoutMillis()).isEqualTo(expectedReadTimeoutInMillis);
 	}
