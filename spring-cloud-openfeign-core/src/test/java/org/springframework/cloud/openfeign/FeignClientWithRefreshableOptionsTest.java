@@ -16,14 +16,8 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import feign.InvocationHandlerFactory;
 import feign.Request;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +32,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
@@ -75,7 +68,7 @@ public class FeignClientWithRefreshableOptionsTest {
 
 	@Test
 	public void overridedOptionsBeanShouldBePresentInsteadOfRefreshable() {
-		Request.Options options = getRequestOptions((Proxy) overrideOptionsClient);
+		OptionsTestClient.OptionsResponseForTests options = overrideOptionsClient.override();
 		assertConnectionAndReadTimeout(options, 1, 1);
 	}
 
@@ -90,60 +83,47 @@ public class FeignClientWithRefreshableOptionsTest {
 
 	@Test
 	public void withConfigDefaultConnectTimeoutAndReadTimeout() {
-		Request.Options options = getRequestOptions((Proxy) refreshableClient);
-		assertOptions(options, 5000, 5000);
+		OptionsTestClient.OptionsResponseForTests options = refreshableClient.refreshable();
+		assertConnectionAndReadTimeout(options, 5000, 5000);
 	}
 
 	@Test
 	public void readTimeoutShouldWorkWhenConnectTimeoutNotSet() {
-		Request.Options options = getRequestOptions((Proxy) readTimeoutClient);
-		assertOptions(options, 5000, 2000);
+		OptionsTestClient.OptionsResponseForTests options = readTimeoutClient.readTimeout();
+		assertConnectionAndReadTimeout(options, 5000, 2000);
 	}
 
 	@Test
 	public void connectTimeoutShouldWorkWhenReadTimeoutNotSet() {
-		Request.Options options = getRequestOptions((Proxy) connectTimeoutClient);
-		assertOptions(options, 2000, 5000);
+		OptionsTestClient.OptionsResponseForTests options = connectTimeoutClient.connectTimeout();
+		assertConnectionAndReadTimeout(options, 2000, 5000);
 	}
 
 	@Test
 	public void connectTimeoutShouldNotChangeWithoutContextRefresh() {
-		Request.Options options = getRequestOptions((Proxy) connectTimeoutClient);
+		OptionsTestClient.OptionsResponseForTests options = connectTimeoutClient.connectTimeout();
 		assertConnectionAndReadTimeout(options, 2000, 5000);
 
 		clientProperties.getConfig().get("connectTimeout").setConnectTimeout(5000);
+		options = connectTimeoutClient.connectTimeout();
 		assertConnectionAndReadTimeout(options, 2000, 5000);
 	}
 
 	@Test
 	public void connectTimeoutShouldChangeAfterContextRefresh() {
-		Request.Options options = getRequestOptions((Proxy) connectTimeoutClient);
+		OptionsTestClient.OptionsResponseForTests options = connectTimeoutClient.connectTimeout();
 		assertConnectionAndReadTimeout(options, 2000, 5000);
 
 		clientProperties.getConfig().get("connectTimeout").setConnectTimeout(5000);
 		refreshScope.refreshAll();
+		options = connectTimeoutClient.connectTimeout();
 		assertConnectionAndReadTimeout(options, 5000, 5000);
 	}
 
-	private Request.Options getRequestOptions(Proxy client) {
-		Object invocationHandlerLambda = ReflectionTestUtils.getField(client, "h");
-		Object invocationHandler = ReflectionTestUtils.getField(invocationHandlerLambda, "arg$2");
-		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
-				.getField(Objects.requireNonNull(invocationHandler), "dispatch");
-		Method key = new ArrayList<>(dispatch.keySet()).get(0);
-		return (Request.Options) ReflectionTestUtils.getField(dispatch.get(key), "options");
-	}
-
-	private void assertOptions(Request.Options options, int expectedConnectTimeoutInMillis,
-			int expectedReadTimeoutInMillis) {
-		assertThat(options.getClass().getSimpleName().startsWith("Request$Options$$EnhancerBySpringCGLIB"));
-		assertConnectionAndReadTimeout(options, expectedConnectTimeoutInMillis, expectedReadTimeoutInMillis);
-	}
-
-	private void assertConnectionAndReadTimeout(Request.Options options, int expectedConnectTimeoutInMillis,
-			int expectedReadTimeoutInMillis) {
-		assertThat(options.connectTimeoutMillis()).isEqualTo(expectedConnectTimeoutInMillis);
-		assertThat(options.readTimeoutMillis()).isEqualTo(expectedReadTimeoutInMillis);
+	private void assertConnectionAndReadTimeout(OptionsTestClient.OptionsResponseForTests options,
+			int expectedConnectTimeoutInMillis, int expectedReadTimeoutInMillis) {
+		assertThat(options.getConnectTimeout()).isEqualTo(expectedConnectTimeoutInMillis);
+		assertThat(options.getReadTimeout()).isEqualTo(expectedReadTimeoutInMillis);
 	}
 
 	@Configuration
@@ -153,11 +133,16 @@ public class FeignClientWithRefreshableOptionsTest {
 			Application.ReadTimeoutClient.class, Application.ConnectTimeoutClient.class })
 	protected static class Application {
 
+		@Bean
+		OptionsTestClient client() {
+			return new OptionsTestClient();
+		}
+
 		@FeignClient(name = "overrideOptionsClient", configuration = OverrideConfig.class)
 		protected interface OverrideOptionsClient {
 
 			@GetMapping("/override")
-			boolean override();
+			OptionsTestClient.OptionsResponseForTests override();
 
 		}
 
@@ -165,7 +150,7 @@ public class FeignClientWithRefreshableOptionsTest {
 		protected interface RefreshableClient {
 
 			@GetMapping("/refreshable")
-			boolean refreshable();
+			OptionsTestClient.OptionsResponseForTests refreshable();
 
 		}
 
@@ -173,7 +158,7 @@ public class FeignClientWithRefreshableOptionsTest {
 		protected interface ReadTimeoutClient {
 
 			@GetMapping("/readTimeout")
-			boolean readTimeout();
+			OptionsTestClient.OptionsResponseForTests readTimeout();
 
 		}
 
@@ -181,7 +166,7 @@ public class FeignClientWithRefreshableOptionsTest {
 		protected interface ConnectTimeoutClient {
 
 			@GetMapping("/connectTimeout")
-			boolean connectTimeout();
+			OptionsTestClient.OptionsResponseForTests connectTimeout();
 
 		}
 
