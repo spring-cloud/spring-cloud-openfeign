@@ -66,6 +66,7 @@ import org.springframework.util.StringUtils;
  * @author Marcin Grzejszczak
  * @author Jonatan Ivanov
  * @author Sam Kruglov
+ * @author Jasbir Singh
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -104,6 +105,8 @@ public class FeignClientFactoryBean
 	private int connectTimeoutMillis = new Request.Options().connectTimeoutMillis();
 
 	private boolean followRedirects = new Request.Options().isFollowRedirects();
+
+	private boolean refreshableClient = false;
 
 	private final List<FeignBuilderCustomizer> additionalCustomizers = new ArrayList<>();
 
@@ -188,6 +191,10 @@ public class FeignClientFactoryBean
 			}
 		}
 		Request.Options options = getInheritedAwareOptional(context, Request.Options.class);
+		if (options == null) {
+			options = getOptionsByName(context, contextId);
+		}
+
 		if (options != null) {
 			builder.options(options);
 			readTimeoutMillis = options.readTimeoutMillis();
@@ -231,12 +238,15 @@ public class FeignClientFactoryBean
 			builder.logLevel(config.getLoggerLevel());
 		}
 
-		connectTimeoutMillis = config.getConnectTimeout() != null ? config.getConnectTimeout() : connectTimeoutMillis;
-		readTimeoutMillis = config.getReadTimeout() != null ? config.getReadTimeout() : readTimeoutMillis;
-		followRedirects = config.isFollowRedirects() != null ? config.isFollowRedirects() : followRedirects;
+		if (!refreshableClient) {
+			connectTimeoutMillis = config.getConnectTimeout() != null ? config.getConnectTimeout()
+					: connectTimeoutMillis;
+			readTimeoutMillis = config.getReadTimeout() != null ? config.getReadTimeout() : readTimeoutMillis;
+			followRedirects = config.isFollowRedirects() != null ? config.isFollowRedirects() : followRedirects;
 
-		builder.options(new Request.Options(connectTimeoutMillis, TimeUnit.MILLISECONDS, readTimeoutMillis,
-				TimeUnit.MILLISECONDS, followRedirects));
+			builder.options(new Request.Options(connectTimeoutMillis, TimeUnit.MILLISECONDS, readTimeoutMillis,
+					TimeUnit.MILLISECONDS, followRedirects));
+		}
 
 		if (config.getRetryer() != null) {
 			Retryer retryer = getOrInstantiate(config.getRetryer());
@@ -340,6 +350,20 @@ public class FeignClientFactoryBean
 
 		throw new IllegalStateException(
 				"No Feign Client for loadBalancing defined. Did you forget to include spring-cloud-starter-loadbalancer?");
+	}
+
+	/**
+	 * Meant to get Options bean from context with bean name.
+	 * @param context context of Feign client
+	 * @param contextId name of feign client
+	 * @return returns Options found in context
+	 */
+	protected Request.Options getOptionsByName(FeignContext context, String contextId) {
+		if (refreshableClient) {
+			return context.getInstance(contextId, Request.Options.class.getCanonicalName() + "-" + contextId,
+					Request.Options.class);
+		}
+		return null;
 	}
 
 	@Override
@@ -504,6 +528,10 @@ public class FeignClientFactoryBean
 		this.fallbackFactory = fallbackFactory;
 	}
 
+	public void setRefreshableClient(boolean refreshableClient) {
+		this.refreshableClient = refreshableClient;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -520,13 +548,14 @@ public class FeignClientFactoryBean
 				&& Objects.equals(path, that.path) && Objects.equals(type, that.type) && Objects.equals(url, that.url)
 				&& Objects.equals(connectTimeoutMillis, that.connectTimeoutMillis)
 				&& Objects.equals(readTimeoutMillis, that.readTimeoutMillis)
-				&& Objects.equals(followRedirects, that.followRedirects);
+				&& Objects.equals(followRedirects, that.followRedirects)
+				&& Objects.equals(refreshableClient, that.refreshableClient);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(applicationContext, beanFactory, decode404, inheritParentContext, fallback, fallbackFactory,
-				name, path, type, url, readTimeoutMillis, connectTimeoutMillis, followRedirects);
+				name, path, type, url, readTimeoutMillis, connectTimeoutMillis, followRedirects, refreshableClient);
 	}
 
 	@Override
@@ -538,8 +567,8 @@ public class FeignClientFactoryBean
 				.append(", ").append("beanFactory=").append(beanFactory).append(", ").append("fallback=")
 				.append(fallback).append(", ").append("fallbackFactory=").append(fallbackFactory).append("}")
 				.append("connectTimeoutMillis=").append(connectTimeoutMillis).append("}").append("readTimeoutMillis=")
-				.append(readTimeoutMillis).append("}").append("followRedirects=").append(followRedirects).append("}")
-				.toString();
+				.append(readTimeoutMillis).append("}").append("followRedirects=").append(followRedirects)
+				.append("refreshableClient=").append(refreshableClient).append("}").toString();
 	}
 
 	@Override

@@ -55,6 +55,12 @@
 			"type": "java.lang.Boolean",
 			"description": "Enables metrics capability for Feign.",
 			"defaultValue": "true"
+		},
+		{
+			"name": "feign.client.refresh-enabled",
+			"type": "java.lang.Boolean",
+			"description": "Enables options value refresh capability for Feign.",
+			"defaultValue": "false"
 		}
 	]
 }

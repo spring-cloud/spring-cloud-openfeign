@@ -30,6 +30,7 @@ import org.springframework.lang.Nullable;
  * @author Spencer Gibb
  * @author Dave Syer
  * @author Matt King
+ * @author Jasbir Singh
  */
 public class FeignContext extends NamedContextFactory<FeignClientSpecification> {
 
@@ -50,6 +51,10 @@ public class FeignContext extends NamedContextFactory<FeignClientSpecification> 
 	@Nullable
 	public <T> Map<String, T> getInstancesWithoutAncestors(String name, Class<T> type) {
 		return getContext(name).getBeansOfType(type);
+	}
+
+	public <T> T getInstance(String contextName, String beanName, Class<T> type) {
+		return getContext(contextName).getBean(beanName, type);
 	}
 
 }
