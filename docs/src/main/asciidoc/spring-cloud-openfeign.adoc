@@ -727,6 +727,7 @@ feign.client.refresh-enabled=true
 ----
 TIP: DO NOT annotate `@FeignClient` interface with `@RefreshScope` annotation.
 
+
 == Configuration properties
 
 To see the list of all Spring Cloud OpenFeign related configuration properties please check link:appendix.html[the Appendix page].
