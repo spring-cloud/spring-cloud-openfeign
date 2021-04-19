@@ -717,7 +717,7 @@ You may consider enabling Jackson Modules for the support `org.springframework.d
 feign.autoconfiguration.jackson.enabled=true
 ----
 
-=== Spring RefreshScope Support
+=== Spring `@RefreshScope` Support
 If Feign client refresh is enabled, each feign client is created with `feign.Request.Options` as a refresh-scoped bean. This means properties such as `connectTimeout` and `readTimeout` can be refreshed against any Feign client instance through `POST /actuator/refresh`.
 
 By default, refresh behavior in Feign clients is disabled. Use the following property to enable refresh behavior:
