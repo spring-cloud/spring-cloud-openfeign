@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Matt King
+ * @author Sam Kruglov
  */
 public class FeignBuilderCustomizerTests {
 
@@ -70,6 +71,24 @@ public class FeignBuilderCustomizerTests {
 		Feign.Builder builder = clientFactoryBean.feign(feignContext);
 		assertFeignBuilderField(builder, "logLevel", Logger.Level.FULL);
 		assertFeignBuilderField(builder, "decode404", true);
+
+		context.close();
+	}
+
+	@Test
+	public void testBuildCustomizerOrderedWithAdditional() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				FeignBuilderCustomizerTests.SampleConfiguration3.class);
+
+		FeignClientFactoryBean clientFactoryBean = context.getBean(FeignClientFactoryBean.class);
+		clientFactoryBean.addCustomizer(builder -> builder.logLevel(Logger.Level.BASIC));
+		clientFactoryBean.addCustomizer(Feign.Builder::doNotCloseAfterDecode);
+		FeignContext feignContext = context.getBean(FeignContext.class);
+
+		Feign.Builder builder = clientFactoryBean.feign(feignContext);
+		assertFeignBuilderField(builder, "logLevel", Logger.Level.BASIC);
+		assertFeignBuilderField(builder, "decode404", true);
+		assertFeignBuilderField(builder, "closeAfterDecode", false);
 
 		context.close();
 	}

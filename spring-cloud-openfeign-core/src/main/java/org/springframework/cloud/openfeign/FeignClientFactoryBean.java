@@ -36,6 +36,8 @@ import feign.Target.HardCodedTarget;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -63,6 +65,7 @@ import org.springframework.util.StringUtils;
  * @author Ilia Ilinykh
  * @author Marcin Grzejszczak
  * @author Jonatan Ivanov
+ * @author Sam Kruglov
  * @author Jasbir Singh
  */
 public class FeignClientFactoryBean
@@ -72,6 +75,8 @@ public class FeignClientFactoryBean
 	 * WARNING! Nothing in this class should be @Autowired. It causes NPEs because of some
 	 * lifecycle race condition.
 	 ***********************************/
+
+	private static Log LOG = LogFactory.getLog(FeignClientFactoryBean.class);
 
 	private Class<?> type;
 
@@ -102,6 +107,8 @@ public class FeignClientFactoryBean
 	private boolean followRedirects = new Request.Options().isFollowRedirects();
 
 	private boolean refreshableClient = false;
+
+	private final List<FeignBuilderCustomizer> additionalCustomizers = new ArrayList<>();
 
 	@Override
 	public void afterPropertiesSet() {
@@ -136,6 +143,7 @@ public class FeignClientFactoryBean
 			customizerMap.values().stream().sorted(AnnotationAwareOrderComparator.INSTANCE)
 					.forEach(feignBuilderCustomizer -> feignBuilderCustomizer.customize(builder));
 		}
+		additionalCustomizers.forEach(customizer -> customizer.customize(builder));
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
@@ -374,6 +382,12 @@ public class FeignClientFactoryBean
 		Feign.Builder builder = feign(context);
 
 		if (!StringUtils.hasText(url)) {
+			if (url != null && LOG.isWarnEnabled()) {
+				LOG.warn("The provided URL is empty. Will try picking an instance via load-balancing.");
+			}
+			else if (LOG.isDebugEnabled()) {
+				LOG.debug("URL not provided. Will use LoadBalancer.");
+			}
 			if (!name.startsWith("http")) {
 				url = "http://" + name;
 			}
@@ -482,6 +496,10 @@ public class FeignClientFactoryBean
 
 	public void setInheritParentContext(boolean inheritParentContext) {
 		this.inheritParentContext = inheritParentContext;
+	}
+
+	public void addCustomizer(FeignBuilderCustomizer customizer) {
+		additionalCustomizers.add(customizer);
 	}
 
 	public ApplicationContext getApplicationContext() {
