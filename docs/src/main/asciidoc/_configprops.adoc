@@ -7,6 +7,7 @@
 |feign.client.decode-slash | `true` | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
 |feign.client.default-config | `default` | 
 |feign.client.default-to-properties | `true` | 
+|feign.client.refresh-enabled | `false` | Enables options value refresh capability for Feign.
 |feign.compression.request.enabled | `false` | Enables the request sent by Feign to be compressed.
 |feign.compression.request.mime-types | `[text/xml, application/xml, application/json]` | The list of supported mime types.
 |feign.compression.request.min-request-size | `2048` | The minimum threshold content size.
