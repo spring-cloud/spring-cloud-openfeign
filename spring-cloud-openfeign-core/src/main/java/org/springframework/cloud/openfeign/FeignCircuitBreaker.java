@@ -26,6 +26,7 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
  * Allows Feign interfaces to work with {@link CircuitBreaker}.
  *
  * @author Marcin Grzejszczak
+ * @author Andrii Bohutskyi
  * @since 3.0.0
  */
 public final class FeignCircuitBreaker {
@@ -50,6 +51,8 @@ public final class FeignCircuitBreaker {
 
 		private String feignClientName;
 
+		private boolean circuitBreakerGroupEnabled;
+
 		Builder circuitBreakerFactory(CircuitBreakerFactory circuitBreakerFactory) {
 			this.circuitBreakerFactory = circuitBreakerFactory;
 			return this;
@@ -57,6 +60,11 @@ public final class FeignCircuitBreaker {
 
 		Builder feignClientName(String feignClientName) {
 			this.feignClientName = feignClientName;
+			return this;
+		}
+
+		Builder circuitBreakerGroupEnabled(boolean circuitBreakerGroupEnabled) {
+			this.circuitBreakerGroupEnabled = circuitBreakerGroupEnabled;
 			return this;
 		}
 
@@ -75,7 +83,7 @@ public final class FeignCircuitBreaker {
 
 		public Feign build(final FallbackFactory<?> nullableFallbackFactory) {
 			super.invocationHandlerFactory((target, dispatch) -> new FeignCircuitBreakerInvocationHandler(
-					circuitBreakerFactory, target, dispatch, nullableFallbackFactory));
+					circuitBreakerFactory, feignClientName, target, dispatch, nullableFallbackFactory, circuitBreakerGroupEnabled));
 			return super.build();
 		}
 

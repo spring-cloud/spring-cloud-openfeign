@@ -30,6 +30,7 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Tim Peeters
  * @author Olga Maciaszek-Sharma
+ * @author Andrii Bohutskyi
  */
 class FeignAutoConfigurationTests {
 
@@ -46,13 +47,32 @@ class FeignAutoConfigurationTests {
 	@Test
 	void shouldInstantiateFeignCircuitBreakerTargeterWhenEnabled() {
 		runner.withBean(CircuitBreakerFactory.class, () -> mock(CircuitBreakerFactory.class))
+				.withPropertyValues("feign.circuitbreaker.enabled=true").run(ctx -> {
+					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
+					assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(ctx, false);
+				});
+	}
+
+	@Test
+	void shouldInstantiateFeignCircuitBreakerTargeterWithEnabledGroup() {
+		runner.withBean(CircuitBreakerFactory.class, () -> mock(CircuitBreakerFactory.class))
 				.withPropertyValues("feign.circuitbreaker.enabled=true")
-				.run(ctx -> assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class));
+				.withPropertyValues("feign.circuitbreaker.group.enabled=true").run(ctx -> {
+					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
+					assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(ctx, true);
+				});
 	}
 
 	private void assertOnlyOneTargeterPresent(ConfigurableApplicationContext ctx, Class<?> beanClass) {
 		assertThat(ctx.getBeansOfType(Targeter.class)).hasSize(1).hasValueSatisfying(new Condition<>(
 				beanClass::isInstance, String.format("Targeter should be an instance of %s", beanClass)));
+
+	}
+
+	private void assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(
+			ConfigurableApplicationContext ctx, boolean expectedValue) {
+		final FeignCircuitBreakerTargeter bean = ctx.getBean(FeignCircuitBreakerTargeter.class);
+		assertThat(bean).hasFieldOrPropertyWithValue("circuitBreakerGroupEnabled", expectedValue);
 	}
 
 }

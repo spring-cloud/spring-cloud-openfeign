@@ -42,6 +42,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -77,6 +78,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Tim Peeters
  * @author Olga Maciaszek-Sharma
  * @author Nguyen Ky Thanh
+ * @author Andrii Bohutskyi
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -147,8 +149,9 @@ public class FeignAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		@ConditionalOnBean(CircuitBreakerFactory.class)
-		public Targeter circuitBreakerFeignTargeter(CircuitBreakerFactory circuitBreakerFactory) {
-			return new FeignCircuitBreakerTargeter(circuitBreakerFactory);
+		public Targeter circuitBreakerFeignTargeter(CircuitBreakerFactory circuitBreakerFactory,
+				@Value("${feign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled) {
+			return new FeignCircuitBreakerTargeter(circuitBreakerFactory, circuitBreakerGroupEnabled);
 		}
 
 	}
