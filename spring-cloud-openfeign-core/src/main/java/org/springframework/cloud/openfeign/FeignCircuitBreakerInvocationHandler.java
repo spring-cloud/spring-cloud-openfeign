@@ -84,7 +84,7 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 		}
 		String circuitName = Feign.configKey(target.type(), method);
 		CircuitBreaker circuitBreaker = circuitBreakerGroupEnabled ? factory.create(circuitName, feignClientName)
-			: factory.create(circuitName);
+				: factory.create(circuitName);
 		Supplier<Object> supplier = asSupplier(method, args);
 		if (this.nullableFallbackFactory != null) {
 			Function<Throwable, Object> fallbackFunction = throwable -> {
