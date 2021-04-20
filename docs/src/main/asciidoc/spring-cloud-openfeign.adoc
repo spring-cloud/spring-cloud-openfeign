@@ -351,7 +351,7 @@ To enable Spring Cloud CircuitBreaker group set the `feign.circuitbreaker.group.
 [[spring-cloud-feign-circuitbreaker-fallback]]
 === Feign Spring Cloud CircuitBreaker Fallbacks
 
-Spring Cloud CircuitBreaker supports the notion of a fallback: a default code path that is executed when they circuit is open or there is an error. To enable fallbacks for a given `@FeignClient` set the `fallback` attribute to the class name that implements the fallback. You also need to declare your implementation as a Spring bean.
+Spring Cloud CircuitBreaker supports the notion of a fallback: a default code path that is executed when the circuit is open or there is an error. To enable fallbacks for a given `@FeignClient` set the `fallback` attribute to the class name that implements the fallback. You also need to declare your implementation as a Spring bean.
 
 [source,java,indent=0]
 ----
