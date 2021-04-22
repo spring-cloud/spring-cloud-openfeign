@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.openfeign.loadbalancer;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -105,8 +107,15 @@ class FeignBlockingLoadBalancerClientTests {
 		Response response = feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
 		assertThat(response.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE.value());
-		assertThat(response.body().toString())
-				.isEqualTo("Load balancer does not contain an instance for the service test");
+		// TODO: should be handled by converter?
+		BufferedReader reader = new BufferedReader(
+				new InputStreamReader(response.body().asInputStream(), StandardCharsets.UTF_8));
+		String outputString = "";
+		String line;
+		while ((line = reader.readLine()) != null) {
+			outputString += line;
+		}
+		assertThat(outputString).isEqualTo("Load balancer does not contain an instance for the service test");
 	}
 
 	@Test
