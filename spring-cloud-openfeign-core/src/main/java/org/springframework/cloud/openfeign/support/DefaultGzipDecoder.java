@@ -46,14 +46,15 @@ public class DefaultGzipDecoder implements Decoder {
 
 	@Override
 	public Object decode(final Response response, Type type) throws IOException, FeignException {
-		Collection<String> encoding = response.headers().containsKey(HttpEncoding.CONTENT_ENCODING_HEADER)
-				? response.headers().get(HttpEncoding.CONTENT_ENCODING_HEADER) : null;
+		Collection<String> encoding = response.headers()
+			.getOrDefault(HttpEncoding.CONTENT_ENCODING_HEADER, null);
 
 		if (encoding != null) {
 			if (encoding.contains(HttpEncoding.GZIP_ENCODING)) {
 				String decompressedBody = decompress(response);
 				if (decompressedBody != null) {
-					Response decompressedResponse = response.toBuilder().body(decompressedBody.getBytes()).build();
+					Response decompressedResponse = response.toBuilder()
+						.body(decompressedBody.getBytes()).build();
 					return decoder.decode(decompressedResponse, type);
 				}
 			}
@@ -65,9 +66,12 @@ public class DefaultGzipDecoder implements Decoder {
 		if (response.body() == null) {
 			return null;
 		}
-		try (GZIPInputStream gzipInputStream = new GZIPInputStream(response.body().asInputStream());
-				BufferedReader reader = new BufferedReader(
-						new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8))) {
+		try (GZIPInputStream gzipInputStream = response.body()
+			.asInputStream() instanceof GZIPInputStream ?
+			(GZIPInputStream) response.body()
+				.asInputStream() : new GZIPInputStream(response.body().asInputStream());
+			 BufferedReader reader = new BufferedReader(
+				 new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8))) {
 			String outputString = "";
 			String line;
 			while ((line = reader.readLine()) != null) {

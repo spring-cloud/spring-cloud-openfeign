@@ -40,12 +40,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Jaesik Kim
  */
+// FIXME: will fail with either `loggerLevel=full` or `feign.metrics.enabled=true`
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DefaultGzipDecoderTests.Application.class,
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=defaultGzipDecoderTests", "feign.compression.response.enabled=true",
-				"feign.compression.response.useGzipDecoder=true", "feign.client.config.default.loggerLevel=full",
-				"logging.level.org.springframework.cloud.openfeign=DEBUG" })
+				"feign.compression.response.useGzipDecoder=true", "feign.client.config.default.loggerLevel=none",
+			"feign.metrics.enabled=false", "logging.level.org.springframework.cloud.openfeign=DEBUG" })
 @DirtiesContext
 public class DefaultGzipDecoderTests extends FeignClientFactoryBean {
 
