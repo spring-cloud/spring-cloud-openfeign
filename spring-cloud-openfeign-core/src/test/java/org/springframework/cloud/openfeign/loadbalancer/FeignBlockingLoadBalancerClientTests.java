@@ -63,7 +63,7 @@ import static org.mockito.Mockito.when;
  * {@link FeignBlockingLoadBalancerClient} and its delegates.
  *
  * @see <a href=
- * "https://github.com/spring-cloud/spring-cloud-commons/blob/master/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
+ * "https://github.com/spring-cloud/spring-cloud-commons/blob/main/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
  * @author Olga Maciaszek-Sharma
  */
 @ExtendWith(MockitoExtension.class)
