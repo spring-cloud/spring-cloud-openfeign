@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -73,7 +74,7 @@ public class FeignHalAutoConfiguration {
 
 		Jackson2HalModule.HalHandlerInstantiator halHandlerInstantiator = new Jackson2HalModule.HalHandlerInstantiator(
 				linkRelationProvider.getIfAvailable(), curieProviderInstance, messageResolver.getIfAvailable(),
-				configuration);
+				configuration, new DefaultListableBeanFactory());
 
 		mapper.setHandlerInstantiator(halHandlerInstantiator);
 
