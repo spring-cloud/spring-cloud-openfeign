@@ -56,7 +56,6 @@ import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
-import org.springframework.cloud.openfeign.support.DefaultGzipDecoderConfiguration;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
@@ -84,7 +83,6 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 @ConditionalOnClass(Feign.class)
 @EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class,
 		FeignEncoderProperties.class })
-@Import(DefaultGzipDecoderConfiguration.class)
 public class FeignAutoConfiguration {
 
 	private static final Log LOG = LogFactory.getLog(FeignAutoConfiguration.class);
