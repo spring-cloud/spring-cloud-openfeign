@@ -107,15 +107,7 @@ class FeignBlockingLoadBalancerClientTests {
 		Response response = feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
 		assertThat(response.status()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE.value());
-		// TODO: should be handled by converter?
-		BufferedReader reader = new BufferedReader(
-				new InputStreamReader(response.body().asInputStream(), StandardCharsets.UTF_8));
-		String outputString = "";
-		String line;
-		while ((line = reader.readLine()) != null) {
-			outputString += line;
-		}
-		assertThat(outputString).isEqualTo("Load balancer does not contain an instance for the service test");
+		assertThat(read(response)).isEqualTo("Load balancer does not contain an instance for the service test");
 	}
 
 	@Test
@@ -174,6 +166,17 @@ class FeignBlockingLoadBalancerClientTests {
 		assertThat(anotherLifecycleLogRequests)
 				.extracting(completionContext -> completionContext.getClientResponse().getHttpStatus())
 				.contains(HttpStatus.OK);
+	}
+
+	private String read(Response response) throws IOException {
+		BufferedReader reader = new BufferedReader(
+				new InputStreamReader(response.body().asInputStream(), StandardCharsets.UTF_8));
+		String outputString = "";
+		String line;
+		while ((line = reader.readLine()) != null) {
+			outputString += line;
+		}
+		return outputString;
 	}
 
 	private Request testRequest() {
