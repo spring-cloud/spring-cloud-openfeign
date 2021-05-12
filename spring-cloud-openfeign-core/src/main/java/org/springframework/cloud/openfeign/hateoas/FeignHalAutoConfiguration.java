@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 the original author or authors.
+ * Copyright 2016-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,76 +16,48 @@
 
 package org.springframework.cloud.openfeign.hateoas;
 
-import java.util.Arrays;
 import java.util.Collections;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
-import org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.mediatype.MessageResolver;
-import org.springframework.hateoas.mediatype.hal.CurieProvider;
-import org.springframework.hateoas.mediatype.hal.DefaultCurieProvider;
-import org.springframework.hateoas.mediatype.hal.HalConfiguration;
-import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
-import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.hateoas.mediatype.hal.HalMediaTypeConfiguration;
 import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 /**
  * @author Hector Espert
+ * @author Olga Maciaszek-Sharma
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnWebApplication
 @ConditionalOnClass(RepresentationModel.class)
 @AutoConfigureAfter({ JacksonAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class,
 		RepositoryRestMvcAutoConfiguration.class })
-@AutoConfigureBefore(HypermediaAutoConfiguration.class)
 public class FeignHalAutoConfiguration {
 
 	@Bean
+	@ConditionalOnBean(HalMediaTypeConfiguration.class)
 	@ConditionalOnMissingBean
 	public TypeConstrainedMappingJackson2HttpMessageConverter halJacksonHttpMessageConverter(
-			ObjectProvider<ObjectMapper> objectMapper, ObjectProvider<HalConfiguration> halConfiguration,
-			ObjectProvider<MessageResolver> messageResolver, ObjectProvider<CurieProvider> curieProvider,
-			ObjectProvider<LinkRelationProvider> linkRelationProvider) {
-
+			ObjectProvider<ObjectMapper> objectMapper, HalMediaTypeConfiguration halConfiguration) {
 		ObjectMapper mapper = objectMapper.getIfAvailable(ObjectMapper::new).copy();
-		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-		HalConfiguration configuration = halConfiguration.getIfAvailable(HalConfiguration::new);
-
-		CurieProvider curieProviderInstance = curieProvider
-				.getIfAvailable(() -> new DefaultCurieProvider(Collections.emptyMap()));
-
-		Jackson2HalModule.HalHandlerInstantiator halHandlerInstantiator = new Jackson2HalModule.HalHandlerInstantiator(
-				linkRelationProvider.getIfAvailable(), curieProviderInstance, messageResolver.getIfAvailable(),
-				configuration, new DefaultListableBeanFactory());
-
-		mapper.setHandlerInstantiator(halHandlerInstantiator);
-
-		if (!Jackson2HalModule.isAlreadyRegisteredIn(mapper)) {
-			Jackson2HalModule halModule = new Jackson2HalModule();
-			mapper.registerModule(halModule);
-		}
-
+		halConfiguration.configureObjectMapper(mapper);
 		TypeConstrainedMappingJackson2HttpMessageConverter converter = new TypeConstrainedMappingJackson2HttpMessageConverter(
 				RepresentationModel.class);
-		converter.setSupportedMediaTypes(Arrays.asList(HAL_JSON));
+		converter.setSupportedMediaTypes(Collections.singletonList(HAL_JSON));
 		converter.setObjectMapper(mapper);
 		return converter;
 	}
