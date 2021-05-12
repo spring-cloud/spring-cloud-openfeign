@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.openfeign.hateoas;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -26,9 +26,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.hateoas.mediatype.MessageResolver;
 import org.springframework.hateoas.mediatype.hal.CurieProvider;
 import org.springframework.hateoas.mediatype.hal.HalConfiguration;
+import org.springframework.hateoas.mediatype.hal.HalMediaTypeConfiguration;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 import org.springframework.hateoas.server.LinkRelationProvider;
 import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
@@ -46,19 +48,19 @@ import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 public class FeignHalAutoConfigurationTests {
 
 	@Mock
-	private ObjectProvider<ObjectMapper> objectMapper;
-
-	@Mock
 	private ObjectProvider<HalConfiguration> halConfiguration;
 
 	@Mock
-	private ObjectProvider<LinkRelationProvider> relProvider;
+	private ObjectProvider<ObjectMapper> objectMapper;
+
+	@Mock
+	private LinkRelationProvider relProvider;
 
 	@Mock
 	private ObjectProvider<CurieProvider> curieProvider;
 
 	@Mock
-	private ObjectProvider<MessageResolver> messageResolver;
+	private MessageResolver messageResolver;
 
 	@InjectMocks
 	private FeignHalAutoConfiguration feignHalAutoConfiguration;
@@ -70,17 +72,19 @@ public class FeignHalAutoConfigurationTests {
 
 		when(halConfiguration.getIfAvailable(any()))
 				.thenReturn(mock(HalConfiguration.class));
-		when(relProvider.getIfAvailable()).thenReturn(mock(LinkRelationProvider.class));
 		when(curieProvider.getIfAvailable(any())).thenReturn(mock(CurieProvider.class));
-		when(messageResolver.getIfAvailable()).thenReturn(mock(MessageResolver.class));
+
+		HalMediaTypeConfiguration halMediaTypeConfiguration = new HalMediaTypeConfiguration(
+				relProvider, curieProvider, halConfiguration, messageResolver,
+				new DefaultListableBeanFactory());
 
 		TypeConstrainedMappingJackson2HttpMessageConverter converter = feignHalAutoConfiguration
-				.halJacksonHttpMessageConverter(objectMapper, halConfiguration,
-						messageResolver, curieProvider, relProvider);
+				.halJacksonHttpMessageConverter(objectMapper, halMediaTypeConfiguration);
 
 		assertThat(converter).isNotNull();
 		assertThat(converter.getObjectMapper()).isNotNull();
-		assertThat(converter.getSupportedMediaTypes()).isEqualTo(Arrays.asList(HAL_JSON));
+		assertThat(converter.getSupportedMediaTypes())
+				.isEqualTo(Collections.singletonList(HAL_JSON));
 
 		assertThat(Jackson2HalModule.isAlreadyRegisteredIn(converter.getObjectMapper()))
 				.isTrue();
