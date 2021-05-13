@@ -76,10 +76,18 @@ public class SpringEncoder implements Encoder {
 		this(new SpringFormEncoder(), messageConverters);
 	}
 
+	/**
+	 * @deprecated in favour of {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
+	 */
+	@Deprecated
 	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters) {
 		this(springFormEncoder, messageConverters, new FeignEncoderProperties());
 	}
 
+	/**
+	 * @deprecated in favour of {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
+	 */
+	@Deprecated
 	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters,
 		FeignEncoderProperties encoderProperties) {
 		this(springFormEncoder, messageConverters, encoderProperties, null);
