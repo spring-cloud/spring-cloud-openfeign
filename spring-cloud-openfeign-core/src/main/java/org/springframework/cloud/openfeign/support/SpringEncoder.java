@@ -77,7 +77,8 @@ public class SpringEncoder implements Encoder {
 	}
 
 	/**
-	 * @deprecated in favour of {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
+	 * @deprecated in favour of
+	 * {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
 	 */
 	@Deprecated
 	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters) {
@@ -85,16 +86,17 @@ public class SpringEncoder implements Encoder {
 	}
 
 	/**
-	 * @deprecated in favour of {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
+	 * @deprecated in favour of
+	 * {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
 	 */
 	@Deprecated
 	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters,
-		FeignEncoderProperties encoderProperties) {
-		this(springFormEncoder, messageConverters, encoderProperties, null);
+			FeignEncoderProperties encoderProperties) {
+		this(springFormEncoder, messageConverters, encoderProperties, new EmptyObjectProvider<>());
 	}
 
 	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters,
-		FeignEncoderProperties encoderProperties, ObjectProvider<HttpMessageConverterCustomizer> customizers) {
+			FeignEncoderProperties encoderProperties, ObjectProvider<HttpMessageConverterCustomizer> customizers) {
 		this.springFormEncoder = springFormEncoder;
 		this.messageConverters = messageConverters;
 		this.encoderProperties = encoderProperties;
@@ -129,17 +131,14 @@ public class SpringEncoder implements Encoder {
 
 	private void encodeWithMessageConverter(Object requestBody, Type bodyType, RequestTemplate request,
 			MediaType requestContentType) {
-		List<HttpMessageConverter<?>> converters = messageConverters.getObject()
-			.getConverters();
-		if (customizers != null) {
-			customizers.forEach(customizer -> customizer.accept(converters));
-		}
+		List<HttpMessageConverter<?>> converters = messageConverters.getObject().getConverters();
+		customizers.forEach(customizer -> customizer.accept(converters));
 		for (HttpMessageConverter messageConverter : converters) {
 			FeignOutputMessage outputMessage;
 			try {
 				if (messageConverter instanceof GenericHttpMessageConverter) {
 					outputMessage = checkAndWrite(requestBody, bodyType, requestContentType,
-						(GenericHttpMessageConverter) messageConverter, request);
+							(GenericHttpMessageConverter) messageConverter, request);
 				}
 				else {
 					outputMessage = checkAndWrite(requestBody, requestContentType, messageConverter, request);

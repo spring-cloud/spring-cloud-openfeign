@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021 the original author or authors.
+ * Copyright 2013-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,39 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import java.util.List;
 import java.util.function.Consumer;
 
-import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectProvider;
 
 /**
- * Allows customising {@link HttpMessageConverter} objects passed via {@link Consumer}
- * parameter.
- *
  * @author Olga Maciaszek-Sharma
- * @since 3.1.0
  */
-public interface HttpMessageConverterCustomizer extends Consumer<List<HttpMessageConverter<?>>> {
+class EmptyObjectProvider<T> implements ObjectProvider<T> {
+
+	@Override
+	public T getObject(Object... args) throws BeansException {
+		return null;
+	}
+
+	@Override
+	public T getIfAvailable() throws BeansException {
+		return null;
+	}
+
+	@Override
+	public T getIfUnique() throws BeansException {
+		return null;
+	}
+
+	@Override
+	public T getObject() throws BeansException {
+		return null;
+	}
+
+	@Override
+	public void forEach(Consumer action) {
+		// do nothing
+	}
 
 }
