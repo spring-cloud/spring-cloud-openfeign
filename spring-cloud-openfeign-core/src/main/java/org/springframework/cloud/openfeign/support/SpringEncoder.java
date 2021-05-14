@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 
 import feign.RequestTemplate;
@@ -34,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.http.HttpHeaders;
@@ -68,19 +70,37 @@ public class SpringEncoder implements Encoder {
 
 	private final FeignEncoderProperties encoderProperties;
 
+	private final ObjectProvider<HttpMessageConverterCustomizer> customizers;
+
 	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
 		this(new SpringFormEncoder(), messageConverters);
 	}
 
+	/**
+	 * @deprecated in favour of
+	 * {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
+	 */
+	@Deprecated
 	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters) {
 		this(springFormEncoder, messageConverters, new FeignEncoderProperties());
 	}
 
+	/**
+	 * @deprecated in favour of
+	 * {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
+	 */
+	@Deprecated
 	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters,
 			FeignEncoderProperties encoderProperties) {
+		this(springFormEncoder, messageConverters, encoderProperties, new EmptyObjectProvider<>());
+	}
+
+	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters,
+			FeignEncoderProperties encoderProperties, ObjectProvider<HttpMessageConverterCustomizer> customizers) {
 		this.springFormEncoder = springFormEncoder;
 		this.messageConverters = messageConverters;
 		this.encoderProperties = encoderProperties;
+		this.customizers = customizers;
 	}
 
 	@Override
@@ -96,7 +116,7 @@ public class SpringEncoder implements Encoder {
 			}
 
 			if (isMultipartType(requestContentType)) {
-				this.springFormEncoder.encode(requestBody, bodyType, request);
+				springFormEncoder.encode(requestBody, bodyType, request);
 				return;
 			}
 			else {
@@ -111,7 +131,9 @@ public class SpringEncoder implements Encoder {
 
 	private void encodeWithMessageConverter(Object requestBody, Type bodyType, RequestTemplate request,
 			MediaType requestContentType) {
-		for (HttpMessageConverter messageConverter : this.messageConverters.getObject().getConverters()) {
+		List<HttpMessageConverter<?>> converters = messageConverters.getObject().getConverters();
+		customizers.forEach(customizer -> customizer.accept(converters));
+		for (HttpMessageConverter messageConverter : converters) {
 			FeignOutputMessage outputMessage;
 			try {
 				if (messageConverter instanceof GenericHttpMessageConverter) {
@@ -227,21 +249,21 @@ public class SpringEncoder implements Encoder {
 		private final HttpHeaders httpHeaders;
 
 		private FeignOutputMessage(RequestTemplate request) {
-			this.httpHeaders = getHttpHeaders(request.headers());
+			httpHeaders = getHttpHeaders(request.headers());
 		}
 
 		@Override
 		public OutputStream getBody() throws IOException {
-			return this.outputStream;
+			return outputStream;
 		}
 
 		@Override
 		public HttpHeaders getHeaders() {
-			return this.httpHeaders;
+			return httpHeaders;
 		}
 
 		public ByteArrayOutputStream getOutputStream() {
-			return this.outputStream;
+			return outputStream;
 		}
 
 	}
