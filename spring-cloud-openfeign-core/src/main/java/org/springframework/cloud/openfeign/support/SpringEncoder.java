@@ -115,7 +115,7 @@ public class SpringEncoder implements Encoder {
 				requestContentType = MediaType.valueOf(type);
 			}
 
-			if (isMultipartType(requestContentType)) {
+			if (isFormRelatedContentType(requestContentType)) {
 				springFormEncoder.encode(requestBody, bodyType, request);
 				return;
 			}
@@ -229,9 +229,17 @@ public class SpringEncoder implements Encoder {
 		}
 	}
 
+	private boolean isFormRelatedContentType(MediaType requestContentType) {
+		return isMultipartType(requestContentType) || isFormUrlEncoded(requestContentType);
+	}
+
 	private boolean isMultipartType(MediaType requestContentType) {
 		return Arrays.asList(MediaType.MULTIPART_FORM_DATA, MediaType.MULTIPART_MIXED, MediaType.MULTIPART_RELATED)
 				.contains(requestContentType);
+	}
+
+	private boolean isFormUrlEncoded(MediaType requestContentType) {
+		return Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED).contains(requestContentType);
 	}
 
 	private boolean binaryContentType(FeignOutputMessage outputMessage) {

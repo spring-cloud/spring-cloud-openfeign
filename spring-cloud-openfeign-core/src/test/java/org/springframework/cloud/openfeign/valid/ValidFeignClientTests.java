@@ -278,6 +278,13 @@ class ValidFeignClientTests {
 	}
 
 	@Test
+	void testFormURLEncoded() {
+		Hello hello = new Hello(HELLO_WORLD_1);
+		Hello response = testClient.getFormUrlEncoded(hello);
+		assertThat(response).isEqualTo(hello);
+	}
+
+	@Test
 	void namedFeignClientWorks() {
 		assertThat(namedFeignClient).as("namedFeignClient was null").isNotNull();
 	}
@@ -485,6 +492,10 @@ class ValidFeignClientTests {
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostringcollection")
 		Collection<String> getToString(@RequestParam("arg") Collection<OtherArg> args);
+
+		@RequestMapping(method = RequestMethod.POST, path = "/form-urlencoded",
+				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		Hello getFormUrlEncoded(Hello hello);
 
 	}
 
@@ -749,6 +760,12 @@ class ValidFeignClientTests {
 			}
 
 			return result.toString();
+		}
+
+		@RequestMapping(method = RequestMethod.POST, path = "/form-urlencoded",
+				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+		Hello getFormUrlEncoded(Hello hello) {
+			return hello;
 		}
 
 	}
