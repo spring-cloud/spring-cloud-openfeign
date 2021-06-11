@@ -99,8 +99,8 @@ public class SpringEncoder implements Encoder {
 				requestContentType = MediaType.valueOf(type);
 			}
 
-			if (isMultipartType(requestContentType)) {
-				this.springFormEncoder.encode(requestBody, bodyType, request);
+			if (isFormRelatedContentType(requestContentType)) {
+				springFormEncoder.encode(requestBody, bodyType, request);
 				return;
 			}
 			else {
@@ -117,7 +117,7 @@ public class SpringEncoder implements Encoder {
 
 	private void encodeWithMessageConverter(Object requestBody, Type bodyType,
 			RequestTemplate request, MediaType requestContentType) {
-		for (HttpMessageConverter messageConverter : this.messageConverters.getObject()
+		for (HttpMessageConverter messageConverter : messageConverters.getObject()
 				.getConverters()) {
 			FeignOutputMessage outputMessage;
 			try {
@@ -223,9 +223,19 @@ public class SpringEncoder implements Encoder {
 		}
 	}
 
+	private boolean isFormRelatedContentType(MediaType requestContentType) {
+		return isMultipartType(requestContentType)
+				|| isFormUrlEncoded(requestContentType);
+	}
+
 	private boolean isMultipartType(MediaType requestContentType) {
 		return Arrays.asList(MediaType.MULTIPART_FORM_DATA, MediaType.MULTIPART_MIXED,
 				MediaType.MULTIPART_RELATED).contains(requestContentType);
+	}
+
+	private boolean isFormUrlEncoded(MediaType requestContentType) {
+		return Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED)
+				.contains(requestContentType);
 	}
 
 	private boolean binaryContentType(FeignOutputMessage outputMessage) {
@@ -244,21 +254,21 @@ public class SpringEncoder implements Encoder {
 		private final HttpHeaders httpHeaders;
 
 		private FeignOutputMessage(RequestTemplate request) {
-			this.httpHeaders = getHttpHeaders(request.headers());
+			httpHeaders = getHttpHeaders(request.headers());
 		}
 
 		@Override
 		public OutputStream getBody() throws IOException {
-			return this.outputStream;
+			return outputStream;
 		}
 
 		@Override
 		public HttpHeaders getHeaders() {
-			return this.httpHeaders;
+			return httpHeaders;
 		}
 
 		public ByteArrayOutputStream getOutputStream() {
-			return this.outputStream;
+			return outputStream;
 		}
 
 	}

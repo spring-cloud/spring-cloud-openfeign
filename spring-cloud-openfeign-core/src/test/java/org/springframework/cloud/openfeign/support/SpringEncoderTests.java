@@ -60,6 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
@@ -190,6 +191,18 @@ public class SpringEncoderTests {
 				.as("Request Content-Length is not equal to 186").isEqualTo("186");
 		assertThat(new String(request.requestBody().asBytes()))
 				.as("Body content cannot be decoded").contains("hi");
+	}
+
+	@Test
+	public void testFromURLEncodedValue() {
+		Encoder encoder = context.getInstance("can", Encoder.class);
+		assertThat(encoder).isNotNull();
+		RequestTemplate request = new RequestTemplate();
+		request.header(CONTENT_TYPE, APPLICATION_FORM_URLENCODED_VALUE);
+		String body = "test";
+		encoder.encode(body, String.class, request);
+		assertThat(new String(request.requestBody().asBytes()))
+				.as("Body content cannot be decoded").contains(body);
 	}
 
 	@Test
