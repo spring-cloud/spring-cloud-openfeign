@@ -373,12 +373,9 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 		Feign.Builder builder = feign(context);
 
 		if (!StringUtils.hasText(url)) {
-			if (url != null && LOG.isInfoEnabled()) {
-				LOG.info(
-						"The provided URL is empty. Will try picking an instance via load-balancing.");
-			}
-			else if (LOG.isDebugEnabled()) {
-				LOG.debug("URL not provided. Will use LoadBalancer.");
+
+			if (LOG.isInfoEnabled()) {
+				LOG.info("For '" + name + "' URL not provided. Will try picking an instance via load-balancing.");
 			}
 			if (!name.startsWith("http")) {
 				url = "http://" + name;
