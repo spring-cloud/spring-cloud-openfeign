@@ -24,9 +24,9 @@ import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Simple Feign client for retrieving the invoice list.
@@ -37,23 +37,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @FeignClient("local")
 public interface InvoiceClient {
 
-	@RequestMapping(value = "invoicesPaged", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "invoicesPaged", produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<Page<Invoice>> getInvoicesPaged(org.springframework.data.domain.Pageable pageable);
 
-	@RequestMapping(value = "invoicesPagedWithBody", method = RequestMethod.POST,
-			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "invoicesPagedWithBody", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<Page<Invoice>> getInvoicesPagedWithBody(
 			@SpringQueryMap org.springframework.data.domain.Pageable pageable, @RequestBody String titlePrefix);
 
-	@RequestMapping(value = "invoicesSortedWithBody", method = RequestMethod.POST,
-			consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "invoicesSortedWithBody", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<Page<Invoice>> getInvoicesSortedWithBody(@SpringQueryMap org.springframework.data.domain.Sort sort,
 			@RequestBody String titlePrefix);
 
-	@RequestMapping(value = "invoices", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "invoices", produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<List<Invoice>> getInvoices();
 
-	@RequestMapping(value = "invoices", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+	@PostMapping(value = "invoices", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	ResponseEntity<List<Invoice>> saveInvoices(List<Invoice> invoices);
 

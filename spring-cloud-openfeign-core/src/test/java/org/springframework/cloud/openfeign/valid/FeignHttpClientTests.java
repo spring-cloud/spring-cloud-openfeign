@@ -41,11 +41,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,17 +107,17 @@ class FeignHttpClientTests {
 
 	protected interface BaseTestClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello", produces = MediaType.APPLICATION_JSON_VALUE)
+		@GetMapping(value = "/hello", produces = MediaType.APPLICATION_JSON_VALUE)
 		Hello getHello();
 
-		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop", consumes = "application/json")
+		@PatchMapping(value = "/hellop", consumes = "application/json")
 		ResponseEntity<Void> patchHello(Hello hello);
 
 	}
 
 	protected interface UserService {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+		@GetMapping(value = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 		User getUser(@PathVariable("id") long id);
 
 	}
@@ -136,12 +136,12 @@ class FeignHttpClientTests {
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application implements UserService {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		public Hello getHello() {
 			return new Hello("hello world 1");
 		}
 
-		@RequestMapping(method = RequestMethod.PATCH, value = "/hellop")
+		@PatchMapping("/hellop")
 		public ResponseEntity<Void> patchHello(@RequestBody Hello hello,
 				@RequestHeader("Content-Length") int contentLength) {
 			if (contentLength <= 0) {

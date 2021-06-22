@@ -37,8 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,7 +82,7 @@ public class FeignClientNotPrimaryTests {
 	@FeignClient(name = "localapp", primary = false)
 	protected interface TestClient {
 
-		@RequestMapping(method = RequestMethod.GET, path = "/hello")
+		@GetMapping("/hello")
 		Hello getHello();
 
 	}
@@ -101,7 +100,7 @@ public class FeignClientNotPrimaryTests {
 			return new PrimaryTestClient();
 		}
 
-		@RequestMapping(method = RequestMethod.GET, path = "/hello")
+		@GetMapping("/hello")
 		public Hello getHello() {
 			return new Hello(HELLO_WORLD_1);
 		}

@@ -27,8 +27,7 @@ import org.springframework.cloud.openfeign.loadbalancer.FeignLoadBalancerAutoCon
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -70,7 +69,7 @@ public class FeignClientValidationTests {
 		@FeignClient(name = "example", url = "https://example.com")
 		interface Client {
 
-			@RequestMapping(method = RequestMethod.GET, value = "/")
+			@GetMapping("/")
 			@Deprecated
 			String get();
 
@@ -86,7 +85,7 @@ public class FeignClientValidationTests {
 		@FeignClient(name = "example", url = "${feignClient.url:https://example.com}")
 		interface Client {
 
-			@RequestMapping(method = RequestMethod.GET, value = "/")
+			@GetMapping("/")
 			@Deprecated
 			String get();
 
@@ -102,7 +101,7 @@ public class FeignClientValidationTests {
 		@FeignClient("foo")
 		interface Client {
 
-			@RequestMapping(method = RequestMethod.GET, value = "/")
+			@GetMapping("/")
 			@Deprecated
 			String get();
 
