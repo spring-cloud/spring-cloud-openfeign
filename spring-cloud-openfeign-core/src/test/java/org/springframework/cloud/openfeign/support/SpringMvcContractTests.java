@@ -50,6 +50,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.MatrixVariable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -587,13 +588,13 @@ public class SpringMvcContractTests {
 		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
 
-		@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+		@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();
 
 		@GetMapping(value = "/test/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getMappingTest(@PathVariable("id") String id);
 
-		@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject postTest(@RequestBody TestObject object);
 
 		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -604,7 +605,7 @@ public class SpringMvcContractTests {
 	@RequestMapping("/prepend/{classId}")
 	public interface TestTemplate_Class_Annotations {
 
-		@RequestMapping(value = "/test/{testId}", method = RequestMethod.GET)
+		@GetMapping("/test/{testId}")
 		TestObject getSpecificTest(@PathVariable("classId") String classId, @PathVariable("testId") String testId);
 
 		@RequestMapping(method = RequestMethod.GET)
@@ -618,47 +619,46 @@ public class SpringMvcContractTests {
 
 	public interface TestTemplate_Headers {
 
-		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, headers = "X-Foo=bar")
+		@GetMapping(value = "/test/{id}", headers = "X-Foo=bar")
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
 
 	}
 
 	public interface TestTemplate_HeadersWithoutValues {
 
-		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET,
-				headers = { "X-Foo", "!X-Bar", "X-Baz!=fooBar" })
+		@GetMapping(value = "/test/{id}", headers = { "X-Foo", "!X-Bar", "X-Baz!=fooBar" })
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
 
 	}
 
 	public interface TestTemplate_ListParams {
 
-		@RequestMapping(value = "/test", method = RequestMethod.GET)
+		@GetMapping("/test")
 		ResponseEntity<TestObject> getTest(@RequestParam("id") List<String> id);
 
 	}
 
 	public interface TestTemplate_ListParamsWithoutName {
 
-		@RequestMapping(value = "/test", method = RequestMethod.GET)
+		@GetMapping("/test")
 		ResponseEntity<TestObject> getTest(@RequestParam List<String> id);
 
 	}
 
 	public interface TestTemplate_MapParams {
 
-		@RequestMapping(value = "/test", method = RequestMethod.GET)
+		@GetMapping("/test")
 		ResponseEntity<TestObject> getTest(@RequestParam Map<String, String> params);
 
 	}
 
 	public interface TestTemplate_HeaderMap {
 
-		@RequestMapping(path = "/headerMap")
+		@GetMapping("/headerMap")
 		String headerMap(@RequestHeader MultiValueMap<String, String> headerMap,
 				@RequestHeader(name = "aHeader") String aHeader);
 
-		@RequestMapping(path = "/headerMapMoreThanOnce")
+		@GetMapping("/headerMapMoreThanOnce")
 		String headerMapMoreThanOnce(@RequestHeader MultiValueMap<String, String> headerMap1,
 				@RequestHeader MultiValueMap<String, String> headerMap2);
 
@@ -666,36 +666,35 @@ public class SpringMvcContractTests {
 
 	public interface TestTemplate_QueryMap {
 
-		@RequestMapping(path = "/queryMap")
+		@GetMapping("/queryMap")
 		String queryMap(@RequestParam MultiValueMap<String, String> queryMap,
 				@RequestParam(name = "aParam") String aParam);
 
-		@RequestMapping(path = "/queryMapMoreThanOnce")
+		@GetMapping("/queryMapMoreThanOnce")
 		String queryMapMoreThanOnce(@RequestParam MultiValueMap<String, String> queryMap1,
 				@RequestParam MultiValueMap<String, String> queryMap2);
 
-		@RequestMapping(path = "/queryMapObject")
+		@GetMapping("/queryMapObject")
 		String queryMapObject(@SpringQueryMap TestObject queryMap, @RequestParam(name = "aParam") String aParam);
 
 	}
 
 	public interface TestTemplate_RequestPart {
 
-		@RequestMapping(path = "/requestPart", method = RequestMethod.POST,
-				consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+		@PostMapping(path = "/requestPart", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 		void requestWithMultipleParts(@RequestPart("file") MultipartFile file, @RequestPart("id") String identifier);
 
 	}
 
 	public interface TestTemplate_MatrixVariable {
 
-		@RequestMapping(path = "/matrixVariable/{params}")
+		@GetMapping("/matrixVariable/{params}")
 		String matrixVariable(@MatrixVariable("params") Map<String, Object> params);
 
-		@RequestMapping(path = "/matrixVariableObject/{param}")
+		@GetMapping("/matrixVariableObject/{param}")
 		String matrixVariableObject(@MatrixVariable("param") Object object);
 
-		@RequestMapping(path = "/matrixVariable/{params}")
+		@GetMapping("/matrixVariable/{params}")
 		String matrixVariableNotNamed(@MatrixVariable Map<String, Object> params);
 
 	}
@@ -709,21 +708,20 @@ public class SpringMvcContractTests {
 		ResponseEntity<TestObject> getWithCollectionFormat();
 
 		@ExceptionHandler
-		@RequestMapping(path = "/test/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+		@PutMapping(path = "/test/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTest(@RequestHeader("Authorization") String auth, @PathVariable("id") String id,
 				@RequestParam("amount") Integer amount);
 
-		@RequestMapping(path = "/test2", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+		@PutMapping(path = "/test2", produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTest2(@RequestHeader(name = "Authorization") String auth,
 				@RequestParam(name = "amount") Integer amount);
 
 		@ExceptionHandler
-		@RequestMapping(path = "/testfallback/{id}", method = RequestMethod.PUT,
-				produces = MediaType.APPLICATION_JSON_VALUE)
+		@PutMapping(path = "/testfallback/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTestFallback(@RequestHeader String Authorization, @PathVariable String id,
 				@RequestParam Integer amount);
 
-		@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+		@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();
 
 		@GetMapping(produces = "application/json")
@@ -735,7 +733,7 @@ public class SpringMvcContractTests {
 
 		String CUSTOM_PATTERN = "dd-MM-yyyy HH:mm";
 
-		@RequestMapping(method = RequestMethod.GET)
+		@GetMapping
 		String getTest(@RequestParam(name = "localDateTime") @DateTimeFormat(
 				pattern = CUSTOM_PATTERN) LocalDateTime localDateTime);
 
@@ -745,7 +743,7 @@ public class SpringMvcContractTests {
 
 		String CUSTOM_PATTERN = "$###,###.###";
 
-		@RequestMapping(method = RequestMethod.GET)
+		@GetMapping
 		String getTest(@RequestParam("amount") @NumberFormat(pattern = CUSTOM_PATTERN) BigDecimal amount);
 
 	}

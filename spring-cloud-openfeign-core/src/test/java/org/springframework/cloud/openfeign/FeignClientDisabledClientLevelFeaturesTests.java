@@ -32,8 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -83,7 +82,7 @@ class FeignClientDisabledClientLevelFeaturesTests {
 	@FeignClient(name = "bar", url = "https://bar", configuration = BarConfiguration.class)
 	interface BarClient {
 
-		@RequestMapping(value = "/", method = RequestMethod.GET)
+		@GetMapping("/")
 		String get();
 
 	}
