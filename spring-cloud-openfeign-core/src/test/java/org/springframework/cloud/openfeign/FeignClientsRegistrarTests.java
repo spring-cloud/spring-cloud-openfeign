@@ -25,8 +25,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.env.MockEnvironment;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -105,7 +104,7 @@ public class FeignClientsRegistrarTests {
 	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)
 	protected interface FallbackClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		String fallbackTest();
 
 	}
@@ -114,7 +113,7 @@ public class FeignClientsRegistrarTests {
 			fallbackFactory = FallbackFactoryClient.class)
 	protected interface FallbackFactoryClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		String fallbackFactoryTest();
 
 	}

@@ -40,8 +40,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.SocketUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,10 +96,10 @@ public class CircuitBreakerWithNoFallbackTests {
 	@FeignClient(name = "test", url = "http://localhost:${server.port}/")
 	protected interface CircuitBreakerTestClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		Hello getHello();
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hellonotfound")
+		@GetMapping("/hellonotfound")
 		String getException();
 
 	}

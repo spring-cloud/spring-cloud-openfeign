@@ -17,8 +17,7 @@
 package org.springframework.cloud.openfeign.testclients;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * @author Ryan Baxter
@@ -26,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @FeignClient(name = "localapp")
 public interface TestClient {
 
-	@RequestMapping(method = RequestMethod.GET, value = "/hello")
+	@GetMapping("/hello")
 	String getHello();
 
 }
