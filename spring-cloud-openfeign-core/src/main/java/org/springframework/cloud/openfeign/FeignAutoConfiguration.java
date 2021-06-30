@@ -47,6 +47,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.web.reactive.WebFluxRegistrations;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.actuator.HasFeatures;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -65,10 +68,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
  * @author Spencer Gibb
@@ -79,6 +84,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Olga Maciaszek-Sharma
  * @author Nguyen Ky Thanh
  * @author Andrii Bohutskyi
+ * @author Guirong Hu
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -302,6 +308,50 @@ public class FeignAutoConfiguration {
 			return new OAuth2FeignRequestInterceptor(oAuth2ClientContext, resource);
 		}
 
+	}
+
+	//If the interface has the @FeignClient annotation, there is no need to register it as Handler
+	@Configuration
+	@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+	public static class ServletFeignClientFilterWebConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean(WebMvcRegistrations.class)
+		public WebMvcRegistrations feignClientFilterWebMvcRegistrations() {
+			return new WebMvcRegistrations() {
+				@Override
+				public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
+					return new RequestMappingHandlerMapping() {
+						@Override
+						protected boolean isHandler(Class<?> beanType) {
+							return super.isHandler(beanType) && !AnnotatedElementUtils.hasAnnotation(beanType, FeignClient.class);
+						}
+					};
+				}
+			};
+		}
+	}
+
+	//If the interface has the @FeignClient annotation, there is no need to register it as Handler
+	@Configuration
+	@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+	public static class ReactiveFeignClientFilterWebConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean(WebFluxRegistrations.class)
+		public WebFluxRegistrations feignClientFilterWebFluxRegistrations() {
+			return new WebFluxRegistrations() {
+				@Override
+				public org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
+					return new org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping() {
+						@Override
+						protected boolean isHandler(Class<?> beanType) {
+							return super.isHandler(beanType) && !AnnotatedElementUtils.hasAnnotation(beanType, FeignClient.class);
+						}
+					};
+				}
+			};
+		}
 	}
 
 }
