@@ -16,11 +16,12 @@
 
 package org.springframework.cloud.openfeign.loadbalancer;
 
-import feign.Response;
-import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
-
 import java.io.ByteArrayInputStream;
 import java.net.URI;
+
+import feign.Response;
+
+import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
 
 /**
  * A {@link RetryableStatusCodeException} for {@link Response}s.
@@ -31,8 +32,7 @@ public class LoadBalancerResponseStatusCodeException extends RetryableStatusCode
 
 	private final Response response;
 
-	public LoadBalancerResponseStatusCodeException(String serviceId, Response response,
-												   byte[] body, URI uri) {
+	public LoadBalancerResponseStatusCodeException(String serviceId, Response response, byte[] body, URI uri) {
 		super(serviceId, response.status(), response, uri);
 		this.response = Response.builder()
 				.body(new ByteArrayInputStream(body), body.length)
