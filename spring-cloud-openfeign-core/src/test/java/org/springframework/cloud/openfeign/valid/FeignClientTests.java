@@ -91,6 +91,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -102,6 +103,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 
 /**
  * @author Spencer Gibb
@@ -110,6 +112,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
  * @author Halvdan Hoem Grelland
  * @author Aaron Whiteside
  * @author Darren Foong
+ * @author Can Bezmen
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientTests.Application.class,
@@ -426,7 +429,7 @@ public class FeignClientTests {
 	@Test
 	public void testFormURLEncoded() {
 		Hello hello = new Hello(HELLO_WORLD_1);
-		Hello response = testClient.getFormUrlEncoded(hello);
+		Hello response = testClient.postToUrlEncoded(hello);
 		assertThat(response).isEqualTo(hello);
 	}
 
@@ -622,9 +625,9 @@ public class FeignClientTests {
 		@RequestMapping(method = RequestMethod.GET, path = "/tostring")
 		String getToString(@RequestParam("arg") Arg arg);
 
-		@RequestMapping(method = RequestMethod.POST, path = "/form-urlencoded",
-				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-		Hello getFormUrlEncoded(Hello hello);
+		@PostMapping(path = "/form-urlencoded",
+				consumes = APPLICATION_FORM_URLENCODED_VALUE)
+		Hello postToUrlEncoded(Hello hello);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostring2")
 		String getToString(@RequestParam("arg") OtherArg arg);
@@ -1165,9 +1168,9 @@ public class FeignClientTests {
 			return result.toString();
 		}
 
-		@RequestMapping(method = RequestMethod.POST, path = "/form-urlencoded",
-				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-		Hello getFormUrlEncoded(Hello hello) {
+		@PostMapping(path = "/form-urlencoded",
+				consumes = APPLICATION_FORM_URLENCODED_VALUE)
+		Hello postToFormUrlEncoded(Hello hello) {
 			return hello;
 		}
 

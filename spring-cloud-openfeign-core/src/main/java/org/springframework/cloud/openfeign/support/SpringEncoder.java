@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import feign.RequestTemplate;
@@ -48,6 +49,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHeaders;
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
+import static org.springframework.http.MediaType.MULTIPART_MIXED;
+import static org.springframework.http.MediaType.MULTIPART_RELATED;
 
 /**
  * @author Spencer Gibb
@@ -56,6 +61,7 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
  * @author Aaron Whiteside
  * @author Darren Foong
  * @author Olga Maciaszek-Sharma
+ * @author Can Bezmen
  */
 @SuppressWarnings("rawtypes")
 public class SpringEncoder implements Encoder {
@@ -229,13 +235,12 @@ public class SpringEncoder implements Encoder {
 	}
 
 	private boolean isMultipartType(MediaType requestContentType) {
-		return Arrays.asList(MediaType.MULTIPART_FORM_DATA, MediaType.MULTIPART_MIXED,
-				MediaType.MULTIPART_RELATED).contains(requestContentType);
+		return Arrays.asList(MULTIPART_FORM_DATA, MULTIPART_MIXED, MULTIPART_RELATED)
+				.contains(requestContentType);
 	}
 
 	private boolean isFormUrlEncoded(MediaType requestContentType) {
-		return Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED)
-				.contains(requestContentType);
+		return Objects.equals(APPLICATION_FORM_URLENCODED, requestContentType);
 	}
 
 	private boolean binaryContentType(FeignOutputMessage outputMessage) {
