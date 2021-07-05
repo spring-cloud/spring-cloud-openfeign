@@ -36,7 +36,6 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancedRecoveryCallbac
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryContext;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryPolicy;
-import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -46,6 +45,7 @@ import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.util.StreamUtils;
 
 /**
  * A {@link Client} implementation that provides Spring Retry support for requests
@@ -112,9 +112,11 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 					LOG.debug(
 							String.format("Retrying on status code: %d", responseStatus));
 				}
+				byte[] byteArray = response.body() == null ? new byte[] {}
+					: StreamUtils.copyToByteArray(response.body().asInputStream());
 				response.close();
-				throw new RetryableStatusCodeException(serviceId, responseStatus,
-						response, URI.create(request.url()));
+				throw new LoadBalancerResponseStatusCodeException(serviceId, response,
+					byteArray, URI.create(request.url()));
 			}
 			return response;
 		}, new LoadBalancedRecoveryCallback<Response, Response>() {
