@@ -28,13 +28,11 @@ import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeExceptio
  *
  * @author Ryan Baxter
  */
-public class LoadBalancerResponseStatusCodeException
-		extends RetryableStatusCodeException {
+public class LoadBalancerResponseStatusCodeException extends RetryableStatusCodeException {
 
 	private final Response response;
 
-	public LoadBalancerResponseStatusCodeException(String serviceId, Response response,
-			byte[] body, URI uri) {
+	public LoadBalancerResponseStatusCodeException(String serviceId, Response response, byte[] body, URI uri) {
 		super(serviceId, response.status(), response, uri);
 		this.response = Response.builder()
 				.body(new ByteArrayInputStream(body), body.length)

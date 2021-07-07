@@ -375,8 +375,7 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 		if (!StringUtils.hasText(url)) {
 
 			if (LOG.isInfoEnabled()) {
-				LOG.info("For '" + name
-						+ "' URL not provided. Will try picking an instance via load-balancing.");
+				LOG.info("For '" + name + "' URL not provided. Will try picking an instance via load-balancing.");
 			}
 			if (!name.startsWith("http")) {
 				url = "http://" + name;

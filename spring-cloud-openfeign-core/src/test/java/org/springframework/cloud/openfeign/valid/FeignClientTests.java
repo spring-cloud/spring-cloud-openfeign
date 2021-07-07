@@ -181,7 +181,7 @@ public class FeignClientTests {
 	public void testClient() {
 		assertThat(testClient).as("testClient was null").isNotNull();
 		assertThat(Proxy.isProxyClass(testClient.getClass()))
-				.as("testClient is not a java Proxy").isTrue();
+			.as("testClient is not a java Proxy").isTrue();
 		InvocationHandler invocationHandler = Proxy.getInvocationHandler(testClient);
 		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
 	}
@@ -198,7 +198,7 @@ public class FeignClientTests {
 		Hello hello = testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello(HELLO_WORLD_1));
+			.isEqualTo(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
@@ -219,9 +219,9 @@ public class FeignClientTests {
 		List<String> headers = testClient.getHelloHeaders();
 		assertThat(headers).as("headers was null").isNotNull();
 		assertThat(headers.contains("myheader1value"))
-				.as("headers didn't contain myheader1value").isTrue();
+			.as("headers didn't contain myheader1value").isTrue();
 		assertThat(headers.contains("myheader2value"))
-				.as("headers didn't contain myheader2value").isTrue();
+			.as("headers didn't contain myheader2value").isTrue();
 	}
 
 	@Test
@@ -241,11 +241,12 @@ public class FeignClientTests {
 
 	@Test
 	public void testServiceId() {
-		assertThat(testClientServiceId).as("testClientServiceId was null").isNotNull();
+		assertThat(testClientServiceId).as("testClientServiceId was null")
+			.isNotNull();
 		final Hello hello = testClientServiceId.getHello();
 		assertThat(hello).as("The hello response was null").isNotNull();
 		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello(HELLO_WORLD_1));
+			.isEqualTo(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
@@ -259,7 +260,7 @@ public class FeignClientTests {
 	@Test
 	public void testFormattedParams() {
 		List<LocalDate> list = Arrays.asList(LocalDate.of(2001, 1, 1),
-				LocalDate.of(2018, 6, 10));
+			LocalDate.of(2018, 6, 10));
 		List<LocalDate> params = testClient.getFormattedParams(list);
 		assertThat(params).as("params was null").isNotNull();
 		assertThat(params).as("params not converted correctly").isEqualTo(list);
@@ -270,13 +271,13 @@ public class FeignClientTests {
 		HystrixCommand<List<Hello>> command = testClient.getHellosHystrix();
 		assertThat(command).as("command was null").isNotNull();
 		assertThat(command.getCommandGroup().name()).as(
-				"Hystrix command group name should match the name of the feign client")
-				.isEqualTo("localapp");
+			"Hystrix command group name should match the name of the feign client")
+			.isEqualTo("localapp");
 		String configKey = Feign.configKey(TestClient.class,
-				TestClient.class.getMethod("getHellosHystrix", (Class<?>[]) null));
+			TestClient.class.getMethod("getHellosHystrix", (Class<?>[]) null));
 		assertThat(command.getCommandKey().name())
-				.as("Hystrix command key name should match the feign config key")
-				.isEqualTo(configKey);
+			.as("Hystrix command key name should match the feign config key")
+			.isEqualTo(configKey);
 		List<Hello> hellos = command.execute();
 		assertThat(hellos).as("hellos was null").isNotNull();
 		assertThat(getHelloList()).as("hellos didn't match").isEqualTo(hellos);
@@ -289,7 +290,7 @@ public class FeignClientTests {
 		Hello hello = single.toBlocking().value();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello(HELLO_WORLD_1));
+			.isEqualTo(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
@@ -297,7 +298,7 @@ public class FeignClientTests {
 		ResponseEntity<Void> response = testClient.noContent();
 		assertThat(response).as("response was null").isNotNull();
 		assertThat(response.getStatusCode()).as("status code was wrong")
-				.isEqualTo(HttpStatus.NO_CONTENT);
+			.isEqualTo(HttpStatus.NO_CONTENT);
 	}
 
 	@Test
@@ -305,7 +306,7 @@ public class FeignClientTests {
 		ResponseEntity<Void> response = testClient.head();
 		assertThat(response).as("response was null").isNotNull();
 		assertThat(response.getStatusCode()).as("status code was wrong")
-				.isEqualTo(HttpStatus.OK);
+			.isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
@@ -315,7 +316,7 @@ public class FeignClientTests {
 		Hello hello = entity.getBody();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match")
-				.isEqualTo(new Hello(HELLO_WORLD_1));
+			.isEqualTo(new Hello(HELLO_WORLD_1));
 	}
 
 	@Test
@@ -323,7 +324,7 @@ public class FeignClientTests {
 		String response = testClient.moreComplexContentType("{\"value\":\"OK\"}");
 		assertThat(response).as("response was null").isNotNull();
 		assertThat(response).as("didn't respond with {\"value\":\"OK\"}")
-				.isEqualTo("{\"value\":\"OK\"}");
+			.isEqualTo("{\"value\":\"OK\"}");
 	}
 
 	@Test
@@ -331,7 +332,7 @@ public class FeignClientTests {
 		ResponseEntity<String> response = decodingTestClient.notFound();
 		assertThat(response).as("response was null").isNotNull();
 		assertThat(response.getStatusCode()).as("status code was wrong")
-				.isEqualTo(HttpStatus.NOT_FOUND);
+			.isEqualTo(HttpStatus.NOT_FOUND);
 		assertThat(response.getBody()).as("response body was not null").isNull();
 	}
 
@@ -370,7 +371,7 @@ public class FeignClientTests {
 		Hello hello = single.toBlocking().value();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello.getMessage()).as("message was wrong")
-				.isEqualTo("fallbacksingle");
+			.isEqualTo("fallbacksingle");
 	}
 
 	@Test
@@ -380,7 +381,7 @@ public class FeignClientTests {
 		Hello hello = command.execute();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello.getMessage()).as("message was wrong")
-				.isEqualTo("fallbackcommand");
+			.isEqualTo("fallbackcommand");
 	}
 
 	@Test
@@ -390,7 +391,7 @@ public class FeignClientTests {
 		Hello hello = observable.toBlocking().first();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello.getMessage()).as("message was wrong")
-				.isEqualTo("fallbackobservable");
+			.isEqualTo("fallbackobservable");
 	}
 
 	@Test
@@ -400,7 +401,7 @@ public class FeignClientTests {
 		Hello hello = future.get(1, TimeUnit.SECONDS);
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello.getMessage()).as("message was wrong")
-				.isEqualTo("fallbackfuture");
+			.isEqualTo("fallbackfuture");
 	}
 
 	@Test
@@ -409,8 +410,8 @@ public class FeignClientTests {
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello.getMessage()).as("hello#message was null").isNotNull();
 		assertThat(hello.getMessage().contains("500")).as(
-				"hello#message did not contain the cause (status code) of the fallback invocation")
-				.isTrue();
+			"hello#message did not contain the cause (status code) of the fallback invocation")
+			.isTrue();
 	}
 
 	@Test(expected = HystrixRuntimeException.class)
@@ -438,17 +439,17 @@ public class FeignClientTests {
 	@Test
 	public void testHystrixSetterFactory() {
 		HystrixCommand<List<Hello>> command = hystrixSetterFactoryClient
-				.getHellosHystrix();
+			.getHellosHystrix();
 		assertThat(command).as("command was null").isNotNull();
 		String setterPrefix = TestHystrixSetterFactoryClientConfig.SETTER_PREFIX;
 		assertThat(command.getCommandGroup().name()).as(
-				"Hystrix command group name should match the name of the feign client with a prefix of "
-						+ setterPrefix)
-				.isEqualTo(setterPrefix + "localapp5");
+			"Hystrix command group name should match the name of the feign client with a prefix of "
+				+ setterPrefix)
+			.isEqualTo(setterPrefix + "localapp5");
 		assertThat(command.getCommandKey().name()).as(
-				"Hystrix command key name should match the request method (space) request path with a prefix of "
-						+ setterPrefix)
-				.isEqualTo(setterPrefix + "GET /hellos");
+			"Hystrix command key name should match the request method (space) request path with a prefix of "
+				+ setterPrefix)
+			.isEqualTo(setterPrefix + "GET /hellos");
 		List<Hello> hellos = command.execute();
 		assertThat(hellos).as("hellos was null").isNotNull();
 		assertThat(getHelloList()).as("hellos didn't match").isEqualTo(hellos);
@@ -480,7 +481,8 @@ public class FeignClientTests {
 		Hello pojo2 = new Hello(OI_TERRA_2);
 		MockMultipartFile file = new MockMultipartFile("file", "hello.bin", null,
 				"hello".getBytes());
-		String response = multipartClient.multipartPojo("abc", "123", pojo1, pojo2, file);
+		String response = multipartClient.multipartPojo("abc", "123", pojo1, pojo2,
+				file);
 		assertThat(response).isEqualTo("abc123hello world 1oi terra 2hello.bin");
 	}
 
@@ -505,8 +507,9 @@ public class FeignClientTests {
 				"hello".getBytes());
 		MockMultipartFile file2 = new MockMultipartFile("file2", "hello2.bin", null,
 				"hello".getBytes());
-		String response = multipartClient.requestPartListOfPojosAndListOfMultipartFiles(
-				Arrays.asList(pojo1, pojo2), Arrays.asList(file1, file2));
+		String response = multipartClient
+				.requestPartListOfPojosAndListOfMultipartFiles(
+						Arrays.asList(pojo1, pojo2), Arrays.asList(file1, file2));
 		assertThat(response).isEqualTo("hello world 1oi terra 2hello1.binhello2.bin");
 	}
 
@@ -621,7 +624,7 @@ public class FeignClientTests {
 		String getToString(@RequestParam("arg") Arg arg);
 
 		@PostMapping(path = "/form-urlencoded",
-				consumes = APPLICATION_FORM_URLENCODED_VALUE)
+			consumes = APPLICATION_FORM_URLENCODED_VALUE)
 		Hello postFormUrlEncoded(Hello hello);
 
 		@RequestMapping(method = RequestMethod.GET, path = "/tostring2")
@@ -821,7 +824,8 @@ public class FeignClientTests {
 		public HystrixClientWithFallBackFactory create(final Throwable cause) {
 			return () -> {
 				assertThat(cause).isNotNull().as("Cause was null");
-				return new Hello("Hello from the fallback side: " + cause.getMessage());
+				return new Hello(
+					"Hello from the fallback side: " + cause.getMessage());
 			};
 		}
 
@@ -884,12 +888,12 @@ public class FeignClientTests {
 			return (target, method) -> {
 				String groupKey = SETTER_PREFIX + target.name();
 				RequestMapping requestMapping = method
-						.getAnnotation(RequestMapping.class);
+					.getAnnotation(RequestMapping.class);
 				String commandKey = SETTER_PREFIX + requestMapping.method()[0] + " "
-						+ requestMapping.path()[0];
+					+ requestMapping.path()[0];
 				return HystrixCommand.Setter
-						.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
-						.andCommandKey(HystrixCommandKey.Factory.asKey(commandKey));
+					.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
+					.andCommandKey(HystrixCommandKey.Factory.asKey(commandKey));
 			};
 		}
 
@@ -1157,7 +1161,7 @@ public class FeignClientTests {
 		}
 
 		@PostMapping(path = "/form-urlencoded",
-				consumes = APPLICATION_FORM_URLENCODED_VALUE)
+			consumes = APPLICATION_FORM_URLENCODED_VALUE)
 		Hello postFormUrlEncoded(Hello hello) {
 			return hello;
 		}
