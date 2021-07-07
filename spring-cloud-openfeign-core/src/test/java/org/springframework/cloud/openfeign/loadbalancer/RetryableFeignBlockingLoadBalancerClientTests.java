@@ -119,8 +119,10 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 
 	private Response testResponse(int status, String body) {
 		// ByteArrayInputStream ignores close() and must be wrapped
-		InputStream reallyCloseable = new BufferedInputStream(new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
-		return Response.builder().request(testRequest()).status(status).body(reallyCloseable, null).build();
+		InputStream reallyCloseable = new BufferedInputStream(
+				new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
+		return Response.builder().request(testRequest()).status(status)
+				.body(reallyCloseable, null).build();
 
 	}
 
@@ -163,22 +165,22 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 	void shouldExposeResponseBodyOnRetry() throws IOException {
 		properties.getRetryableStatusCodes().add(503);
 		Request request = testRequest();
-		when(delegate.execute(any(), any()))
-			.thenReturn(testResponse(503, "foo"), testResponse(503, "foo"));
+		when(delegate.execute(any(), any())).thenReturn(testResponse(503, "foo"),
+				testResponse(503, "foo"));
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-			.thenReturn(new BlockingLoadBalancedRetryPolicy("test",
-				loadBalancerClient, properties));
+				.thenReturn(new BlockingLoadBalancedRetryPolicy("test",
+						loadBalancerClient, properties));
 		when(loadBalancerClient.reconstructURI(serviceInstance,
-			URI.create("http://test/path")))
-			.thenReturn(URI.create("http://testhost:80/path"));
+				URI.create("http://test/path")))
+						.thenReturn(URI.create("http://testhost:80/path"));
 
-		Response response = feignBlockingLoadBalancerClient.execute(request, new Request.Options());
+		Response response = feignBlockingLoadBalancerClient.execute(request,
+				new Request.Options());
 
-		String bodyContent = IOUtils.toString(response.body().asReader(StandardCharsets.UTF_8));
+		String bodyContent = IOUtils
+				.toString(response.body().asReader(StandardCharsets.UTF_8));
 		assertThat(bodyContent).isEqualTo("foo");
 	}
-
-
 
 	@Test
 	void shouldPassCorrectRequestToDelegate() throws IOException {
