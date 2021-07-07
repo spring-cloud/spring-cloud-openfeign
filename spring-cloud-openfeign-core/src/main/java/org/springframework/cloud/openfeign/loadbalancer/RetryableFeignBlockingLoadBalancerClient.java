@@ -113,10 +113,10 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 							String.format("Retrying on status code: %d", responseStatus));
 				}
 				byte[] byteArray = response.body() == null ? new byte[] {}
-					: StreamUtils.copyToByteArray(response.body().asInputStream());
+						: StreamUtils.copyToByteArray(response.body().asInputStream());
 				response.close();
 				throw new LoadBalancerResponseStatusCodeException(serviceId, response,
-					byteArray, URI.create(request.url()));
+						byteArray, URI.create(request.url()));
 			}
 			return response;
 		}, new LoadBalancedRecoveryCallback<Response, Response>() {
