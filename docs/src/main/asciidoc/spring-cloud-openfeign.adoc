@@ -498,14 +498,6 @@ feign.compression.request.min-request-size=2048
 
 These properties allow you to be selective about the compressed media types and minimum request threshold length.
 
-For http clients except OkHttpClient, default gzip decoder can be enabled to decode gzip response in UTF-8 encoding:
-
-[source,java]
-----
-feign.compression.response.enabled=true
-feign.compression.response.useGzipDecoder=true
-----
-
 === Feign logging
 
 A logger is created for each Feign client created. By default the name of the logger is the full class name of the interface used to create the Feign client. Feign logging only responds to the `DEBUG` level.

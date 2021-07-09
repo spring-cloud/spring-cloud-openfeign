@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
+import java.util.List;
 
 import feign.FeignException;
 import feign.Response;
@@ -28,31 +29,48 @@ import feign.codec.DecodeException;
 import feign.codec.Decoder;
 
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.client.HttpMessageConverterExtractor;
 
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
 
 /**
  * @author Spencer Gibb
+ * @author Olga Maciaszek-Sharma
  */
 public class SpringDecoder implements Decoder {
 
-	private ObjectFactory<HttpMessageConverters> messageConverters;
+	private final ObjectFactory<HttpMessageConverters> messageConverters;
 
+	private final ObjectProvider<HttpMessageConverterCustomizer> customizers;
+
+	/**
+	 * @deprecated in favour of
+	 * {@link SpringDecoder#SpringDecoder(ObjectFactory, ObjectProvider)}
+	 */
+	@Deprecated
 	public SpringDecoder(ObjectFactory<HttpMessageConverters> messageConverters) {
+		this(messageConverters, new EmptyObjectProvider<>());
+	}
+
+	public SpringDecoder(ObjectFactory<HttpMessageConverters> messageConverters,
+			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
 		this.messageConverters = messageConverters;
+		this.customizers = customizers;
 	}
 
 	@Override
 	public Object decode(final Response response, Type type) throws IOException, FeignException {
 		if (type instanceof Class || type instanceof ParameterizedType || type instanceof WildcardType) {
+			List<HttpMessageConverter<?>> converters = messageConverters.getObject().getConverters();
+			customizers.forEach(customizer -> customizer.accept(converters));
 			@SuppressWarnings({ "unchecked", "rawtypes" })
-			HttpMessageConverterExtractor<?> extractor = new HttpMessageConverterExtractor(type,
-					this.messageConverters.getObject().getConverters());
+			HttpMessageConverterExtractor<?> extractor = new HttpMessageConverterExtractor(type, converters);
 
 			return extractor.extractData(new FeignResponseAdapter(response));
 		}
@@ -70,23 +88,23 @@ public class SpringDecoder implements Decoder {
 
 		@Override
 		public HttpStatus getStatusCode() throws IOException {
-			return HttpStatus.valueOf(this.response.status());
+			return HttpStatus.valueOf(response.status());
 		}
 
 		@Override
 		public int getRawStatusCode() throws IOException {
-			return this.response.status();
+			return response.status();
 		}
 
 		@Override
 		public String getStatusText() throws IOException {
-			return this.response.reason();
+			return response.reason();
 		}
 
 		@Override
 		public void close() {
 			try {
-				this.response.body().close();
+				response.body().close();
 			}
 			catch (IOException ex) {
 				// Ignore exception on close...
@@ -95,12 +113,12 @@ public class SpringDecoder implements Decoder {
 
 		@Override
 		public InputStream getBody() throws IOException {
-			return this.response.body().asInputStream();
+			return response.body().asInputStream();
 		}
 
 		@Override
 		public HttpHeaders getHeaders() {
-			return getHttpHeaders(this.response.headers());
+			return getHttpHeaders(response.headers());
 		}
 
 	}

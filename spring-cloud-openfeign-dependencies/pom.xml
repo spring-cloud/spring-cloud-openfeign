@@ -10,12 +10,12 @@
 		<relativePath/>
 	</parent>
 	<artifactId>spring-cloud-openfeign-dependencies</artifactId>
-	<version>3.0.4-SNAPSHOT</version>
+	<version>3.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>spring-cloud-openfeign-dependencies</name>
 	<description>Spring Cloud OpenFeign Dependencies</description>
 	<properties>
-		<feign.version>10.12</feign.version>
+		<feign.version>11.2</feign.version>
 		<feign-form.version>3.8.0</feign-form.version>
 		<spring-security-oauth2-autoconfigure.version>2.1.2.RELEASE</spring-security-oauth2-autoconfigure.version>
 	</properties>

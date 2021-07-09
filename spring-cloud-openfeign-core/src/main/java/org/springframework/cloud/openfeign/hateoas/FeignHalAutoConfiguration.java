@@ -16,26 +16,18 @@
 
 package org.springframework.cloud.openfeign.hateoas;
 
-import java.util.Collections;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.cloud.openfeign.support.HttpMessageConverterCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.mediatype.hal.HalMediaTypeConfiguration;
-import org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
-
-import static org.springframework.hateoas.MediaTypes.HAL_JSON;
+import org.springframework.hateoas.config.HateoasConfiguration;
+import org.springframework.hateoas.config.WebConverters;
 
 /**
  * @author Hector Espert
@@ -43,23 +35,15 @@ import static org.springframework.hateoas.MediaTypes.HAL_JSON;
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnWebApplication
-@ConditionalOnClass(RepresentationModel.class)
+@ConditionalOnClass(WebConverters.class)
 @AutoConfigureAfter({ JacksonAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class,
-		RepositoryRestMvcAutoConfiguration.class })
+		RepositoryRestMvcAutoConfiguration.class, HateoasConfiguration.class })
 public class FeignHalAutoConfiguration {
 
 	@Bean
-	@ConditionalOnBean(HalMediaTypeConfiguration.class)
-	@ConditionalOnMissingBean
-	public TypeConstrainedMappingJackson2HttpMessageConverter halJacksonHttpMessageConverter(
-			ObjectProvider<ObjectMapper> objectMapper, HalMediaTypeConfiguration halConfiguration) {
-		ObjectMapper mapper = objectMapper.getIfAvailable(ObjectMapper::new).copy();
-		halConfiguration.configureObjectMapper(mapper);
-		TypeConstrainedMappingJackson2HttpMessageConverter converter = new TypeConstrainedMappingJackson2HttpMessageConverter(
-				RepresentationModel.class);
-		converter.setSupportedMediaTypes(Collections.singletonList(HAL_JSON));
-		converter.setObjectMapper(mapper);
-		return converter;
+	@ConditionalOnBean(WebConverters.class)
+	HttpMessageConverterCustomizer webConvertersCustomizer(WebConverters webConverters) {
+		return new WebConvertersCustomizer(webConverters);
 	}
 
 }
