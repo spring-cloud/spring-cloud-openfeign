@@ -27,6 +27,7 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
  *
  * @author Marcin Grzejszczak
  * @author Andrii Bohutskyi
+ * @author Kwangyong Kim
  * @since 3.0.0
  */
 public final class FeignCircuitBreaker {
@@ -53,6 +54,8 @@ public final class FeignCircuitBreaker {
 
 		private boolean circuitBreakerGroupEnabled;
 
+		private CircuitBreakerNameResolver circuitBreakerNameResolver;
+
 		Builder circuitBreakerFactory(CircuitBreakerFactory circuitBreakerFactory) {
 			this.circuitBreakerFactory = circuitBreakerFactory;
 			return this;
@@ -65,6 +68,11 @@ public final class FeignCircuitBreaker {
 
 		Builder circuitBreakerGroupEnabled(boolean circuitBreakerGroupEnabled) {
 			this.circuitBreakerGroupEnabled = circuitBreakerGroupEnabled;
+			return this;
+		}
+
+		Builder circuitBreakerNameResolver(CircuitBreakerNameResolver circuitBreakerNameResolver) {
+			this.circuitBreakerNameResolver = circuitBreakerNameResolver;
 			return this;
 		}
 
@@ -82,9 +90,9 @@ public final class FeignCircuitBreaker {
 		}
 
 		public Feign build(final FallbackFactory<?> nullableFallbackFactory) {
-			super.invocationHandlerFactory(
-					(target, dispatch) -> new FeignCircuitBreakerInvocationHandler(circuitBreakerFactory,
-							feignClientName, target, dispatch, nullableFallbackFactory, circuitBreakerGroupEnabled));
+			super.invocationHandlerFactory((target, dispatch) -> new FeignCircuitBreakerInvocationHandler(
+					circuitBreakerFactory, feignClientName, target, dispatch, nullableFallbackFactory,
+					circuitBreakerGroupEnabled, circuitBreakerNameResolver));
 			return super.build();
 		}
 

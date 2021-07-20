@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.databind.Module;
 import feign.Client;
 import feign.Feign;
 import feign.RequestInterceptor;
+import feign.Target;
 import feign.hc5.ApacheHttp5Client;
 import feign.httpclient.ApacheHttpClient;
 import feign.okhttp.OkHttpClient;
@@ -79,6 +81,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Olga Maciaszek-Sharma
  * @author Nguyen Ky Thanh
  * @author Andrii Bohutskyi
+ * @author Kwangyong Kim
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -147,11 +150,28 @@ public class FeignAutoConfiguration {
 		}
 
 		@Bean
+		@ConditionalOnMissingBean(CircuitBreakerNameResolver.class)
+		public CircuitBreakerNameResolver circuitBreakerNameResolver() {
+			return new DefaultCircuitBreakerNameResolver();
+		}
+
+		@Bean
 		@ConditionalOnMissingBean
 		@ConditionalOnBean(CircuitBreakerFactory.class)
 		public Targeter circuitBreakerFeignTargeter(CircuitBreakerFactory circuitBreakerFactory,
-				@Value("${feign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled) {
-			return new FeignCircuitBreakerTargeter(circuitBreakerFactory, circuitBreakerGroupEnabled);
+				@Value("${feign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled,
+				CircuitBreakerNameResolver circuitBreakerNameResolver) {
+			return new FeignCircuitBreakerTargeter(circuitBreakerFactory, circuitBreakerGroupEnabled,
+					circuitBreakerNameResolver);
+		}
+
+		static class DefaultCircuitBreakerNameResolver implements CircuitBreakerNameResolver {
+
+			@Override
+			public String resolveCircuitBreakerName(String feignClientName, Target<?> target, Method method) {
+				return Feign.configKey(target.getClass(), method);
+			}
+
 		}
 
 	}
