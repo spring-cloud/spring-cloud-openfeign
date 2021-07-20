@@ -68,6 +68,11 @@ it will resolve the service in the Eureka service registry. If you
 don't want to use Eureka, you can simply configure a list of servers
 in your external configuration using https://cloud.spring.io/spring-cloud-static/spring-cloud-commons/current/reference/html/#simplediscoveryclient[`SimpleDiscoveryClient`].
 
+TIP: To use `@EnableFeignClients` annotation on `@Configuration` - annotated classes, please make sure to specify -
+`@EnableFeignClients(basePackages = "guru.sfg.brewery.beer_service.services.inventory")`
+or list them explicitly:
+`@EnableFeignClients(clients = InventoryServiceFeignClient.class)`
+
 WARNING: In order to maintain backward compatibility, is used as the default load-balancer implementation.
 However, Spring Cloud Netflix Ribbon is now in maintenance mode, so we recommend using Spring Cloud LoadBalancer instead.
 To do this, set the value of `spring.cloud.loadbalancer.ribbon.enabled` to `false`.
