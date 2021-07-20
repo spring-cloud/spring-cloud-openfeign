@@ -68,7 +68,7 @@ it will resolve the service in the Eureka service registry. If you
 don't want to use Eureka, you can simply configure a list of servers
 in your external configuration using https://cloud.spring.io/spring-cloud-static/spring-cloud-commons/current/reference/html/#simplediscoveryclient[`SimpleDiscoveryClient`].
 
-TIP: To use `@EnableFeignClients` annotation on `@Configuration` - annotated classes, please make sure to specify -
+TIP: To use `@EnableFeignClients` annotation on `@Configuration` - annotated classes, please make sure to specify where the clients are located as:
 `@EnableFeignClients(basePackages = "guru.sfg.brewery.beer_service.services.inventory")`
 or list them explicitly:
 `@EnableFeignClients(clients = InventoryServiceFeignClient.class)`
