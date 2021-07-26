@@ -106,16 +106,13 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 		return () -> {
 			try {
 				RequestContextHolder.setRequestAttributes(requestAttributes);
-				return this.dispatch.get(method).invoke(args);
+				return dispatch.get(method).invoke(args);
 			}
 			catch (RuntimeException throwable) {
 				throw throwable;
 			}
 			catch (Throwable throwable) {
 				throw new RuntimeException(throwable);
-			}
-			finally {
-				RequestContextHolder.resetRequestAttributes();
 			}
 		};
 	}
