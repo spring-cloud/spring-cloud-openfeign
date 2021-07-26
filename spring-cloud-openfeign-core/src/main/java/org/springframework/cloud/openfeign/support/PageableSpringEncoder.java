@@ -32,6 +32,7 @@ import org.springframework.data.domain.Sort;
  * Provides support for encoding spring Pageable via composition.
  *
  * @author Pascal Büttiker
+ * @author Yanming Zhou
  */
 public class PageableSpringEncoder implements Encoder {
 
@@ -82,8 +83,8 @@ public class PageableSpringEncoder implements Encoder {
 				Pageable pageable = (Pageable) object;
 
 				if (pageable.isPaged()) {
-					template.query(pageParameter, pageable.getPageNumber() + "");
-					template.query(sizeParameter, pageable.getPageSize() + "");
+					template.query(pageParameter, String.valueOf(pageable.getPageNumber()));
+					template.query(sizeParameter, String.valueOf(pageable.getPageSize()));
 				}
 
 				if (pageable.getSort() != null) {
