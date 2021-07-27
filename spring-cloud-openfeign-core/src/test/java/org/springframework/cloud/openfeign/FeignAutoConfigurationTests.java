@@ -16,12 +16,16 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.lang.reflect.Method;
+
+import feign.Target;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.DefaultCircuitBreakerNameResolver;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,6 +35,7 @@ import static org.mockito.Mockito.mock;
  * @author Tim Peeters
  * @author Olga Maciaszek-Sharma
  * @author Andrii Bohutskyi
+ * @author Kwangyong Kim
  */
 class FeignAutoConfigurationTests {
 
@@ -50,6 +55,8 @@ class FeignAutoConfigurationTests {
 				.withPropertyValues("feign.circuitbreaker.enabled=true").run(ctx -> {
 					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
 					assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(ctx, false);
+					assertThatFeignCircuitBreakerTargeterHasSameCircuitBreakerNameResolver(ctx,
+							DefaultCircuitBreakerNameResolver.class);
 				});
 	}
 
@@ -63,6 +70,17 @@ class FeignAutoConfigurationTests {
 				});
 	}
 
+	@Test
+	void shouldInstantiateFeignCircuitBreakerTargeterWhenEnabledWithCustomCircuitBreakerNameResolver() {
+		runner.withBean(CircuitBreakerFactory.class, () -> mock(CircuitBreakerFactory.class))
+				.withBean(CircuitBreakerNameResolver.class, CustomCircuitBreakerNameResolver::new)
+				.withPropertyValues("feign.circuitbreaker.enabled=true").run(ctx -> {
+					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
+					assertThatFeignCircuitBreakerTargeterHasSameCircuitBreakerNameResolver(ctx,
+							CustomCircuitBreakerNameResolver.class);
+				});
+	}
+
 	private void assertOnlyOneTargeterPresent(ConfigurableApplicationContext ctx, Class<?> beanClass) {
 		assertThat(ctx.getBeansOfType(Targeter.class)).hasSize(1).hasValueSatisfying(new Condition<>(
 				beanClass::isInstance, String.format("Targeter should be an instance of %s", beanClass)));
@@ -73,6 +91,21 @@ class FeignAutoConfigurationTests {
 			ConfigurableApplicationContext ctx, boolean expectedValue) {
 		final FeignCircuitBreakerTargeter bean = ctx.getBean(FeignCircuitBreakerTargeter.class);
 		assertThat(bean).hasFieldOrPropertyWithValue("circuitBreakerGroupEnabled", expectedValue);
+	}
+
+	private void assertThatFeignCircuitBreakerTargeterHasSameCircuitBreakerNameResolver(
+			ConfigurableApplicationContext ctx, Class<?> beanClass) {
+		final CircuitBreakerNameResolver bean = ctx.getBean(CircuitBreakerNameResolver.class);
+		assertThat(bean).isExactlyInstanceOf(beanClass);
+	}
+
+	static class CustomCircuitBreakerNameResolver implements CircuitBreakerNameResolver {
+
+		@Override
+		public String resolveCircuitBreakerName(String feignClientName, Target<?> target, Method method) {
+			return feignClientName + "_" + method.getName();
+		}
+
 	}
 
 }
