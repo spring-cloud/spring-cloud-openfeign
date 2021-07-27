@@ -131,6 +131,16 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
+	public void testProcessAnnotationOnMethod_Simple_RegexPathVariable() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTestWithDigitalId", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test/{id:\\d+}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.formParams()).isEmpty();
+	}
+
+	@Test
 	public void testProcessAnnotationOnMethod_Simple_SlashEncoded() throws Exception {
 		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), false);
 
@@ -587,6 +597,9 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
+
+		@GetMapping("/test/{id:\\d+}")
+		ResponseEntity<TestObject> getTestWithDigitalId(@PathVariable("id") String id);
 
 		@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();

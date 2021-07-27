@@ -52,6 +52,9 @@ public interface StoreClient {
 
 	@RequestMapping(method = RequestMethod.POST, value = "/stores/{storeId}", consumes = "application/json")
 	Store update(@PathVariable("storeId") Long storeId, Store store);
+
+	@RequestMapping(method = RequestMethod.DELETE, value = "/stores/{storeId:\\d+}")
+	void delete(@PathVariable Long storeId);
 }
 ----
 
