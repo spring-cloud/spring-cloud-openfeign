@@ -71,6 +71,7 @@ import static feign.form.ContentType.MULTIPART;
  * @author Jonatan Ivanov
  * @author Olga Maciaszek-Sharma
  * @author Hyeonmin Park
+ * @author Yanming Zhou
  */
 @Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
@@ -130,7 +131,13 @@ public class FeignClientsConfiguration {
 	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
 	@ConditionalOnMissingBean
 	public QueryMapEncoder feignQueryMapEncoderPageable() {
-		return new PageableSpringQueryMapEncoder();
+		PageableSpringQueryMapEncoder queryMapEncoder = new PageableSpringQueryMapEncoder();
+		if (springDataWebProperties != null) {
+			queryMapEncoder.setPageParameter(springDataWebProperties.getPageable().getPageParameter());
+			queryMapEncoder.setSizeParameter(springDataWebProperties.getPageable().getSizeParameter());
+			queryMapEncoder.setSortParameter(springDataWebProperties.getSort().getSortParameter());
+		}
+		return queryMapEncoder;
 	}
 
 	@Bean
