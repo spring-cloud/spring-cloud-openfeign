@@ -247,10 +247,6 @@ public class SpringEncoder implements Encoder {
 		return Objects.equals(APPLICATION_FORM_URLENCODED, requestContentType);
 	}
 
-	private boolean isFormUrlEncoded(MediaType requestContentType) {
-		return Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED).contains(requestContentType);
-	}
-
 	private boolean binaryContentType(FeignOutputMessage outputMessage) {
 		MediaType contentType = outputMessage.getHeaders().getContentType();
 		return contentType == null || Stream
