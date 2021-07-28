@@ -69,6 +69,7 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  * @author Ahmad Mozafarnia
+ * @author Can Bezmen
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
@@ -182,7 +183,7 @@ public class SpringEncoderTests {
 
 	@Test
 	public void testFromURLEncodedValue() {
-		Encoder encoder = context.getInstance("can", Encoder.class);
+		Encoder encoder = context.getInstance("formUrlEncoded", Encoder.class);
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
 		request.header(CONTENT_TYPE, APPLICATION_FORM_URLENCODED_VALUE);

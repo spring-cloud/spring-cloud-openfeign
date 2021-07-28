@@ -16,7 +16,10 @@
 
 package org.springframework.cloud.openfeign.loadbalancer;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -29,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import feign.Client;
 import feign.Request;
 import feign.Response;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -117,6 +121,13 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		return Response.builder().request(testRequest()).status(status).build();
 	}
 
+	private Response testResponse(int status, String body) {
+		// ByteArrayInputStream ignores close() and must be wrapped
+		InputStream reallyCloseable = new BufferedInputStream(
+				new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
+		return Response.builder().request(testRequest()).status(status).body(reallyCloseable, null).build();
+	}
+
 	@Test
 	void shouldExecuteOriginalRequestIfInstanceNotFound() throws IOException {
 		Request request = testRequest();
@@ -146,6 +157,22 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 
 		verify(loadBalancerClient, times(2)).reconstructURI(serviceInstance, URI.create("http://test/path"));
 		verify(delegate, times(2)).execute(any(), any());
+	}
+
+	@Test
+	void shouldExposeResponseBodyOnRetry() throws IOException {
+		properties.getRetry().getRetryableStatusCodes().add(503);
+		Request request = testRequest();
+		when(delegate.execute(any(), any())).thenReturn(testResponse(503, "foo"), testResponse(503, "foo"));
+		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
+				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
+				.thenReturn(URI.create("http://testhost:80/path"));
+
+		Response response = feignBlockingLoadBalancerClient.execute(request, new Request.Options());
+
+		String bodyContent = IOUtils.toString(response.body().asReader(StandardCharsets.UTF_8));
+		assertThat(bodyContent).isEqualTo("foo");
 	}
 
 	@Test
