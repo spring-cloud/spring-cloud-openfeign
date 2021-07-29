@@ -26,7 +26,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author Jakub Narloch
  */
-@ConfigurationProperties("feign.compression.request")
+@ConfigurationProperties("spring.cloud.openfeign.compression.request")
 public class FeignClientEncodingProperties {
 
 	/**

@@ -66,7 +66,8 @@ public class FeignHttpClient5ConfigurationTests {
 		@Test
 		public void verifyHttpClient5AutoConfig() {
 			ConfigurableApplicationContext context = new SpringApplicationBuilder()
-					.properties("feign.httpclient.hc5.enabled=true", "feign.httpclient.enabled=false")
+					.properties("spring.cloud.openfeign.httpclient.hc5.enabled=true",
+							"spring.cloud.openfeign.httpclient.enabled=false")
 					.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
 					.run();
 
@@ -80,7 +81,8 @@ public class FeignHttpClient5ConfigurationTests {
 		@Test
 		public void hc5ShouldWinIfTheBothVersionsAvailable() {
 			ConfigurableApplicationContext context = new SpringApplicationBuilder()
-					.properties("feign.httpclient.hc5.enabled=true", "feign.httpclient.enabled=true")
+					.properties("spring.cloud.openfeign.httpclient.hc5.enabled=true",
+							"spring.cloud.openfeign.httpclient.enabled=true")
 					.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
 					.run();
 
@@ -95,7 +97,8 @@ public class FeignHttpClient5ConfigurationTests {
 		@Test
 		public void hc4ShouldBeTheDefaultIfHc5NotEnabled() {
 			ConfigurableApplicationContext context = new SpringApplicationBuilder()
-					.properties("feign.httpclient.hc5.enabled=false", "feign.httpclient.enabled=true")
+					.properties("spring.cloud.openfeign.httpclient.hc5.enabled=false",
+							"spring.cloud.openfeign.httpclient.enabled=true")
 					.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
 					.run();
 
@@ -116,7 +119,7 @@ public class FeignHttpClient5ConfigurationTests {
 		@Test
 		public void hc4ShouldWinEvenHc5ConfigEnabled() {
 			ConfigurableApplicationContext context = new SpringApplicationBuilder()
-					.properties("feign.httpclient.hc5.enabled=true").web(WebApplicationType.NONE)
+					.properties("spring.cloud.openfeign.httpclient.hc5.enabled=true").web(WebApplicationType.NONE)
 					.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
 
 			verifyHc4BeansAvailable(context);

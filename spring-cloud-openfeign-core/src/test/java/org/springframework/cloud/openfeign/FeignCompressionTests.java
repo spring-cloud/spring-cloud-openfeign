@@ -50,8 +50,9 @@ public class FeignCompressionTests {
 	@Test
 	public void testInterceptors() {
 		new ApplicationContextRunner()
-				.withPropertyValues("feign.compression.response.enabled=true", "feign.compression.request.enabled=true",
-						"feign.okhttp.enabled=false")
+				.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true",
+						"spring.cloud.openfeign.compression.request.enabled=true",
+						"spring.cloud.openfeign.okhttp.enabled=false")
 				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
 						FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class,
 						HttpClientConfiguration.class, PlainConfig.class))

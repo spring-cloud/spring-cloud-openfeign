@@ -3,67 +3,67 @@
 	],
 	"properties": [
 		{
-			"name": "feign.autoconfiguration.jackson.enabled",
+			"name": "spring.cloud.openfeign.autoconfiguration.jackson.enabled",
 			"type": "java.lang.Boolean",
 			"description": "If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.",
 			"defaultValue": "false"
 		},
 		{
-			"name": "feign.circuitbreaker.enabled",
+			"name": "spring.cloud.openfeign.circuitbreaker.enabled",
 			"type": "java.lang.Boolean",
 			"description": "If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.",
 			"defaultValue": "false"
 		},
 		{
-			"name": "feign.circuitbreaker.group.enabled",
+			"name": "spring.cloud.openfeign.circuitbreaker.group.enabled",
 			"type": "java.lang.Boolean",
 			"description": "If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with with group.",
 			"defaultValue": "false"
 		},
 		{
-			"name": "feign.httpclient.enabled",
+			"name": "spring.cloud.openfeign.httpclient.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the use of the Apache HTTP Client by Feign.",
 			"defaultValue": "true"
 		},
 		{
-			"name": "feign.httpclient.hc5.enabled",
+			"name": "spring.cloud.openfeign.httpclient.hc5.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the use of the Apache HTTP Client 5 by Feign.",
 			"defaultValue": "false"
 		},
 		{
-			"name": "feign.okhttp.enabled",
+			"name": "spring.cloud.openfeign.okhttp.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the use of the OK HTTP Client by Feign.",
 			"defaultValue": "false"
 		},
 		{
-			"name": "feign.compression.response.enabled",
+			"name": "spring.cloud.openfeign.compression.response.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the response from Feign to be compressed.",
 			"defaultValue": "false"
 		},
 		{
-			"name": "feign.compression.response.useGzipDecoder",
+			"name": "spring.cloud.openfeign.compression.response.useGzipDecoder",
 			"type": "java.lang.Boolean",
 			"description": "Enables the default gzip decoder to be used.",
 			"defaultValue": "false"
 		},
 		{
-			"name": "feign.compression.request.enabled",
+			"name": "spring.cloud.openfeign.compression.request.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the request sent by Feign to be compressed.",
 			"defaultValue": "false"
 		},
 		{
-			"name": "feign.metrics.enabled",
+			"name": "spring.cloud.openfeign.metrics.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables metrics capability for Feign.",
 			"defaultValue": "true"
 		},
 		{
-			"name": "feign.client.refresh-enabled",
+			"name": "spring.cloud.openfeign.client.refresh-enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables options value refresh capability for Feign.",
 			"defaultValue": "false"

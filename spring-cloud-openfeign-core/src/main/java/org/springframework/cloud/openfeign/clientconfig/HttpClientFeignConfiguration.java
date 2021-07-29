@@ -80,7 +80,7 @@ public class HttpClientFeignConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "true")
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.compression.response.enabled", havingValue = "true")
 	public CloseableHttpClient customHttpClient(HttpClientConnectionManager httpClientConnectionManager,
 			FeignHttpClientProperties httpClientProperties) {
 		HttpClientBuilder builder = HttpClientBuilder.create().disableCookieManagement().useSystemProperties();
@@ -89,7 +89,8 @@ public class HttpClientFeignConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "false", matchIfMissing = true)
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.compression.response.enabled", havingValue = "false",
+			matchIfMissing = true)
 	public CloseableHttpClient httpClient(ApacheHttpClientFactory httpClientFactory,
 			HttpClientConnectionManager httpClientConnectionManager, FeignHttpClientProperties httpClientProperties) {
 		this.httpClient = createClient(httpClientFactory.createBuilder(), httpClientConnectionManager,

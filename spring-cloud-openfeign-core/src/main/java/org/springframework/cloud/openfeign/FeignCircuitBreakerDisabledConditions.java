@@ -31,7 +31,8 @@ class FeignCircuitBreakerDisabledConditions extends AnyNestedCondition {
 
 	}
 
-	@ConditionalOnProperty(value = "feign.circuitbreaker.enabled", havingValue = "false", matchIfMissing = true)
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.circuitbreaker.enabled", havingValue = "false",
+			matchIfMissing = true)
 	static class CircuitBreakerDisabled {
 
 	}

@@ -43,7 +43,7 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(OkHttpClient.class)
-@ConditionalOnProperty("feign.okhttp.enabled")
+@ConditionalOnProperty("spring.cloud.openfeign.okhttp.enabled")
 @ConditionalOnBean({ LoadBalancerClient.class, LoadBalancerClientFactory.class })
 @Import(OkHttpFeignConfiguration.class)
 @EnableConfigurationProperties(LoadBalancerProperties.class)

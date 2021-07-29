@@ -207,7 +207,7 @@ public class FeignClientsConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(CircuitBreaker.class)
-	@ConditionalOnProperty("feign.circuitbreaker.enabled")
+	@ConditionalOnProperty("spring.cloud.openfeign.circuitbreaker.enabled")
 	protected static class CircuitBreakerPresentFeignBuilderConfiguration {
 
 		@Bean
@@ -230,7 +230,7 @@ public class FeignClientsConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnBean(type = "io.micrometer.core.instrument.MeterRegistry")
 	@ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
-	@ConditionalOnProperty(name = "feign.metrics.enabled", matchIfMissing = true)
+	@ConditionalOnProperty(name = "spring.cloud.openfeign.metrics.enabled", matchIfMissing = true)
 	@Conditional(FeignClientMetricsEnabledCondition.class)
 	protected static class MetricsConfiguration {
 

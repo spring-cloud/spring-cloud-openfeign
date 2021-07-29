@@ -36,18 +36,18 @@ class FeignAutoConfigurationTests {
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class))
-			.withPropertyValues("feign.httpclient.enabled=false");
+			.withPropertyValues("spring.cloud.openfeign.httpclient.enabled=false");
 
 	@Test
 	void shouldInstantiateDefaultTargeterWhenFeignCircuitBreakerIsDisabled() {
-		runner.withPropertyValues("feign.circuitbreaker.enabled=false")
+		runner.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=false")
 				.run(ctx -> assertOnlyOneTargeterPresent(ctx, DefaultTargeter.class));
 	}
 
 	@Test
 	void shouldInstantiateFeignCircuitBreakerTargeterWhenEnabled() {
 		runner.withBean(CircuitBreakerFactory.class, () -> mock(CircuitBreakerFactory.class))
-				.withPropertyValues("feign.circuitbreaker.enabled=true").run(ctx -> {
+				.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true").run(ctx -> {
 					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
 					assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(ctx, false);
 				});
@@ -56,8 +56,8 @@ class FeignAutoConfigurationTests {
 	@Test
 	void shouldInstantiateFeignCircuitBreakerTargeterWithEnabledGroup() {
 		runner.withBean(CircuitBreakerFactory.class, () -> mock(CircuitBreakerFactory.class))
-				.withPropertyValues("feign.circuitbreaker.enabled=true")
-				.withPropertyValues("feign.circuitbreaker.group.enabled=true").run(ctx -> {
+				.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true")
+				.withPropertyValues("spring.cloud.openfeign.circuitbreaker.group.enabled=true").run(ctx -> {
 					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
 					assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(ctx, true);
 				});

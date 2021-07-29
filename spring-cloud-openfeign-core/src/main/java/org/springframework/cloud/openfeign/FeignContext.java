@@ -35,7 +35,7 @@ import org.springframework.lang.Nullable;
 public class FeignContext extends NamedContextFactory<FeignClientSpecification> {
 
 	public FeignContext() {
-		super(FeignClientsConfiguration.class, "feign", "feign.client.name");
+		super(FeignClientsConfiguration.class, "spring.cloud.openfeign", "spring.cloud.openfeign.client.name");
 	}
 
 	@Nullable

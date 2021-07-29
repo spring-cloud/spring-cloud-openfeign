@@ -49,8 +49,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Olga Maciaszek-Sharma
  */
 @SpringBootTest(classes = FeignHttpClientUrlTests.TestConfig.class, webEnvironment = DEFINED_PORT,
-		value = { "spring.application.name=feignclienturltest", "feign.circuitbreaker.enabled=false",
-				"feign.okhttp.enabled=false", "spring.cloud.loadbalancer.retry.enabled=false" })
+		value = { "spring.application.name=feignclienturltest", "spring.cloud.openfeign.circuitbreaker.enabled=false",
+				"spring.cloud.openfeign.okhttp.enabled=false", "spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
 class FeignHttpClientUrlTests {
 

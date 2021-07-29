@@ -24,7 +24,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Olga Maciaszek-Sharma
  * @since 2.2.8
  */
-@ConfigurationProperties("feign.encoder")
+@ConfigurationProperties("spring.cloud.openfeign.encoder")
 public class FeignEncoderProperties {
 
 	/**

@@ -99,9 +99,9 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
  */
 @SpringBootTest(classes = ValidFeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest",
-				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
-				"feign.okhttp.enabled=false", "feign.circuitbreaker.enabled=true",
-				"spring.cloud.loadbalancer.retry.enabled=false" })
+				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
+				"spring.cloud.openfeign.httpclient.enabled=false", "spring.cloud.openfeign.okhttp.enabled=false",
+				"spring.cloud.openfeign.circuitbreaker.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
 class ValidFeignClientTests {
 

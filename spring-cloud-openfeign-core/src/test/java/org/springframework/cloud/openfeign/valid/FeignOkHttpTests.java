@@ -54,8 +54,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Olga Maciaszek-Sharma
  */
 @SpringBootTest(classes = FeignOkHttpTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
-		value = { "spring.application.name=feignclienttest", "feign.circuitbreaker.enabled=false",
-				"feign.httpclient.enabled=false", "feign.okhttp.enabled=true",
+		value = { "spring.application.name=feignclienttest", "spring.cloud.openfeign.circuitbreaker.enabled=false",
+				"spring.cloud.openfeign.httpclient.enabled=false", "spring.cloud.openfeign.okhttp.enabled=true",
 				"spring.cloud.httpclientfactories.ok.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
 class FeignOkHttpTests {

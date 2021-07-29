@@ -34,7 +34,8 @@ public class HttpClient5DisabledConditions extends AnyNestedCondition {
 
 	}
 
-	@ConditionalOnProperty(value = "feign.httpclient.hc5.enabled", havingValue = "false", matchIfMissing = true)
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.httpclient.hc5.enabled", havingValue = "false",
+			matchIfMissing = true)
 	static class HttpClient5Disabled {
 
 	}

@@ -39,7 +39,7 @@ import org.springframework.context.annotation.Configuration;
 // The OK HTTP client uses "transparent" compression.
 // If the content-encoding header is present it disable transparent compression
 @ConditionalOnMissingBean(type = "okhttp3.OkHttpClient")
-@ConditionalOnProperty("feign.compression.request.enabled")
+@ConditionalOnProperty("spring.cloud.openfeign.compression.request.enabled")
 @AutoConfigureAfter(FeignAutoConfiguration.class)
 public class FeignContentGzipEncodingAutoConfiguration {
 

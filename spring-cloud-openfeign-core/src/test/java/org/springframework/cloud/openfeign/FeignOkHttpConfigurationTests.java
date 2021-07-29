@@ -49,8 +49,8 @@ public class FeignOkHttpConfigurationTests {
 	@Before
 	public void setUp() {
 		this.context = new SpringApplicationBuilder()
-				.properties("debug=true", "feign.httpclient.disableSslValidation=true", "feign.okhttp.enabled=true",
-						"feign.httpclient.enabled=false")
+				.properties("debug=true", "spring.cloud.openfeign.httpclient.disableSslValidation=true",
+						"spring.cloud.openfeign.okhttp.enabled=true", "spring.cloud.openfeign.httpclient.enabled=false")
 				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
 				.run();
 	}

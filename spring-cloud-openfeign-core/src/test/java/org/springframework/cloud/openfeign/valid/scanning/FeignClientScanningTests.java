@@ -49,7 +49,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientScanningTests.Application.class, webEnvironment = RANDOM_PORT,
-		value = { "spring.application.name=feignclienttest", "feign.httpclient.enabled=false" })
+		value = { "spring.application.name=feignclienttest", "spring.cloud.openfeign.httpclient.enabled=false" })
 @DirtiesContext
 public class FeignClientScanningTests {
 

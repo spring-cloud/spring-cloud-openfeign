@@ -53,8 +53,9 @@ public class FeignHttpClientConfigurationTests {
 	@Before
 	public void setUp() {
 		this.context = new SpringApplicationBuilder()
-				.properties("debug=true", "feign.httpclient.disableSslValidation=true").web(WebApplicationType.NONE)
-				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
+				.properties("debug=true", "spring.cloud.openfeign.httpclient.disableSslValidation=true")
+				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
+				.run();
 	}
 
 	@After

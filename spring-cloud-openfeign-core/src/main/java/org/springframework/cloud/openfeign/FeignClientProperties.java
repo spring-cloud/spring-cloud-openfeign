@@ -41,7 +41,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Jonatan Ivanov
  * @author Olga Maciaszek-Sharma
  */
-@ConfigurationProperties("feign.client")
+@ConfigurationProperties("spring.cloud.openfeign.client")
 public class FeignClientProperties {
 
 	private boolean defaultToProperties = true;

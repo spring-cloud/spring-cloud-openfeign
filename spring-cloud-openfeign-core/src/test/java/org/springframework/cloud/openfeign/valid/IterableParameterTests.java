@@ -50,8 +50,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = IterableParameterTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=iterableparametertest",
-				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
-				"feign.okhttp.enabled=false", "feign.circuitbreaker.enabled=false" })
+				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
+				"spring.cloud.openfeign.httpclient.enabled=false", "spring.cloud.openfeign.okhttp.enabled=false",
+				"spring.cloud.openfeign.circuitbreaker.enabled=false" })
 @DirtiesContext
 public class IterableParameterTests {
 

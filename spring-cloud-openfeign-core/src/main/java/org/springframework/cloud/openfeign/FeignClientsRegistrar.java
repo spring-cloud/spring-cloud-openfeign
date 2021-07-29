@@ -436,7 +436,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	}
 
 	private boolean isClientRefreshEnabled() {
-		return environment.getProperty("feign.client.refresh-enabled", Boolean.class, false);
+		return environment.getProperty("spring.cloud.openfeign.client.refresh-enabled", Boolean.class, false);
 	}
 
 }

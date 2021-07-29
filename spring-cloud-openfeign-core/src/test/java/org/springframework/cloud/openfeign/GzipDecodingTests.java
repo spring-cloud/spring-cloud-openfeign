@@ -44,8 +44,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = GzipDecodingTests.Application.class,
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		value = { "spring.application.name=defaultGzipDecoderTests", "feign.compression.response.enabled=true",
-				"feign.client.config.default.loggerLevel=none", "feign.metrics.enabled=false",
+		value = { "spring.application.name=defaultGzipDecoderTests",
+				"spring.cloud.openfeign.compression.response.enabled=true",
+				"spring.cloud.openfeign.client.config.default.loggerLevel=none",
+				"spring.cloud.openfeign.metrics.enabled=false",
 				"logging.level.org.springframework.cloud.openfeign=DEBUG" })
 @DirtiesContext
 public class GzipDecodingTests extends FeignClientFactoryBean {
