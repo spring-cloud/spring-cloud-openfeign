@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -37,7 +37,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,7 +46,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SpringDecoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=springdecodertest", "spring.jmx.enabled=false" })
 @DirtiesContext
@@ -131,9 +129,9 @@ public class SpringDecoderTests extends FeignClientFactoryBean {
 		assertThat(header).as("header was wrong").isEqualTo("myval");
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void test404() {
-		testClient().getNotFound();
+		Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> testClient().getNotFound());
 	}
 
 	@Test

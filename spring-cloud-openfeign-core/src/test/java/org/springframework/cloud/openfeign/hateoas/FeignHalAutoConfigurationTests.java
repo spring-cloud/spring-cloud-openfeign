@@ -19,11 +19,11 @@ package org.springframework.cloud.openfeign.hateoas;
 import java.util.Collections;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -45,7 +45,7 @@ import static org.springframework.hateoas.MediaTypes.HAL_JSON;
  * @author Hector Espert
  * @author Olga Maciaszek-Sharma
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FeignHalAutoConfigurationTests {
 
 	@Mock

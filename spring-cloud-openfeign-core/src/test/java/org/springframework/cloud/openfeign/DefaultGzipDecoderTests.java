@@ -18,8 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Objects;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +30,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,7 +38,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Jaesik Kim
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DefaultGzipDecoderTests.Application.class,
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=defaultGzipDecoderTests", "feign.compression.response.enabled=true",

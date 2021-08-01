@@ -18,8 +18,7 @@ package org.springframework.cloud.openfeign.hateoas;
 
 import java.util.Collection;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,7 +30,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -42,7 +40,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Hector Espert
  */
 @SpringBootTest(classes = FeignHalApplication.class, webEnvironment = RANDOM_PORT, value = "debug=true")
-@RunWith(SpringRunner.class)
 @DirtiesContext
 public class FeignHalTests {
 

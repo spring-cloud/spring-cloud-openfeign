@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.openfeign.hateoas;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
@@ -38,7 +38,7 @@ public class FeignHalAutoConfigurationContextTests {
 
 	private WebApplicationContextRunner contextRunner;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		contextRunner = new WebApplicationContextRunner()
 				.withConfiguration(AutoConfigurations.of(JacksonAutoConfiguration.class,

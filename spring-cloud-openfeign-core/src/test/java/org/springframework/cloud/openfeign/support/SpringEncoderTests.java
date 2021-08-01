@@ -26,8 +26,8 @@ import java.util.List;
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,7 +52,6 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,7 +70,6 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
  * @author Ahmad Mozafarnia
  * @author Can Bezmen
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=springencodertest", "spring.jmx.enabled=false" })
 @DirtiesContext
@@ -147,14 +145,16 @@ public class SpringEncoderTests {
 				.isEqualTo(APPLICATION_OCTET_STREAM_VALUE);
 	}
 
-	@Test(expected = EncodeException.class)
+	@Test
 	public void testMultipartFile1() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
 
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
-		encoder.encode(multipartFile, MultipartFile.class, request);
+
+		Assertions.assertThatExceptionOfType(EncodeException.class)
+				.isThrownBy(() -> encoder.encode(multipartFile, MultipartFile.class, request));
 	}
 
 	// gh-105, gh-107

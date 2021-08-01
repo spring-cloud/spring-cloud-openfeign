@@ -25,11 +25,8 @@ import java.util.Collections;
 import java.util.List;
 
 import feign.Feign;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.openfeign.testclients.TestClient;
@@ -37,15 +34,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Sven Döring
  * @author Sam Kruglov
  */
 public class FeignClientBuilderTests {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	private FeignClientBuilder feignClientBuilder;
 
@@ -75,7 +70,7 @@ public class FeignClientBuilderTests {
 		return (T) ReflectionUtils.getField(field, factoryBean);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.applicationContext = Mockito.mock(ApplicationContext.class);
 		this.feignClientBuilder = new FeignClientBuilder(this.applicationContext);
@@ -170,11 +165,9 @@ public class FeignClientBuilderTests {
 																														// the
 																														// FeignClientFactoryBean
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder.forType(TestClient.class, "TestClient");
-
 		// expect: 'the build will fail right after calling build() with the mocked
 		// unusual exception'
-		this.thrown.expect(Matchers.isA(ClosedFileSystemException.class));
-		builder.build();
+		assertThatExceptionOfType(ClosedFileSystemException.class).isThrownBy(() -> builder.build());
 	}
 
 	private interface TestFeignClient {

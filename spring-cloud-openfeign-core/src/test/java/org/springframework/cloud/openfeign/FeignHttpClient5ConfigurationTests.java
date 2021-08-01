@@ -22,14 +22,12 @@ import feign.httpclient.ApacheHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.cloud.test.ClassPathExclusions;
-import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,7 +57,6 @@ public class FeignHttpClient5ConfigurationTests {
 		assertThat(client).isInstanceOf(ApacheHttp5Client.class);
 	}
 
-	@RunWith(ModifiedClassPathRunner.class)
 	@ClassPathExclusions("ribbon-loadbalancer-{version:\\d.*}.jar")
 	public static class WithoutLoadBalancerInClasspath {
 
@@ -108,7 +105,6 @@ public class FeignHttpClient5ConfigurationTests {
 
 	}
 
-	@RunWith(ModifiedClassPathRunner.class)
 	@ClassPathExclusions({ "ribbon-loadbalancer-{version:\\d.*}.jar", "feign-hc5-{version:\\d.*}.jar",
 			"httpclient5-{version:\\d.*}.jar", "httpcore5-{version:\\d.*}.jar", "httpcore5-h2-{version:\\d.*}.jar" })
 	public static class WithoutLoadBalancerAndHc5InClasspath {
