@@ -13,7 +13,6 @@
 |feign.compression.request.mime-types | `[text/xml, application/xml, application/json]` | The list of supported mime types.
 |feign.compression.request.min-request-size | `2048` | The minimum threshold content size.
 |feign.compression.response.enabled | `false` | Enables the response from Feign to be compressed.
-|feign.compression.response.useGzipDecoder | `false` | Enables the default gzip decoder to be used.
 |feign.encoder.charset-from-content-type | `false` | Indicates whether the charset should be derived from the {@code Content-Type} header.
 |feign.httpclient.connection-timeout | `2000` | 
 |feign.httpclient.connection-timer-repeat | `3000` | 

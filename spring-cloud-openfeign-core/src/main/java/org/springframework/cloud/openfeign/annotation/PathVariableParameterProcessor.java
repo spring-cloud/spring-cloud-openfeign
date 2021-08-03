@@ -34,6 +34,7 @@ import static feign.Util.emptyToNull;
  *
  * @author Jakub Narloch
  * @author Abhijit Sarkar
+ * @author Yanming Zhou
  * @see AnnotatedParameterProcessor
  */
 public class PathVariableParameterProcessor implements AnnotatedParameterProcessor {
@@ -54,7 +55,8 @@ public class PathVariableParameterProcessor implements AnnotatedParameterProcess
 
 		MethodMetadata data = context.getMethodMetadata();
 		String varName = '{' + name + '}';
-		if (!data.template().url().contains(varName) && !searchMapValues(data.template().queries(), varName)
+		String varNameRegex = ".*\\{" + name + "(:[^}]+)?\\}.*";
+		if (!data.template().url().matches(varNameRegex) && !searchMapValues(data.template().queries(), varName)
 				&& !searchMapValues(data.template().headers(), varName)) {
 			data.formParams().add(name);
 		}

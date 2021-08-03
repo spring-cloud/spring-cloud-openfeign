@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.openfeign.hateoas;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
@@ -27,19 +27,20 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
-import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.config.WebConverters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Hector Espert
+ * @author Olga Maciaszek-Sharma
  */
-public class FeignHalAutoConfigurationContextTests {
+class FeignHalAutoConfigurationContextTests {
 
 	private WebApplicationContextRunner contextRunner;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		contextRunner = new WebApplicationContextRunner()
 				.withConfiguration(AutoConfigurations.of(JacksonAutoConfiguration.class,
 						HttpMessageConvertersAutoConfiguration.class, HypermediaAutoConfiguration.class,
@@ -48,23 +49,18 @@ public class FeignHalAutoConfigurationContextTests {
 	}
 
 	@Test
-	public void testHalJacksonHttpMessageConverterIsNotLoaded() {
+	void shouldNotLoadWebConvertersCustomizerWhenNotWebConvertersNotInClasspath() {
 		FilteredClassLoader filteredClassLoader = new FilteredClassLoader(RepositoryRestMvcConfiguration.class,
-				RepresentationModel.class);
+				WebConverters.class);
 		contextRunner.withClassLoader(filteredClassLoader)
-				.run(context -> assertThat(context).doesNotHaveBean("halJacksonHttpMessageConverter"));
+				.run(context -> assertThat(context).doesNotHaveBean("webConvertersCustomizer"));
 	}
 
 	@Test
-	public void testHalJacksonHttpMessageConverterIsLoaded() {
+	void shouldLoadWebConvertersCustomizer() {
 		FilteredClassLoader filteredClassLoader = new FilteredClassLoader(RepositoryRestMvcConfiguration.class);
 		contextRunner.withClassLoader(filteredClassLoader)
-				.run(context -> assertThat(context).hasBean("halJacksonHttpMessageConverter"));
-	}
-
-	@Test
-	public void testHalJacksonHttpMessageConverterIsNotLoadedUseRestDataMessageConverterInstead() {
-		contextRunner.run(context -> assertThat(context).hasBean("halJacksonHttpMessageConverter"));
+				.run(context -> assertThat(context).hasBean("webConvertersCustomizer"));
 	}
 
 }

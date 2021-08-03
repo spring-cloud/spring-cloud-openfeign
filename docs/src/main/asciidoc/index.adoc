@@ -1,1 +1,1 @@
-spring-cloud-openfeign.adoc
+include::spring-cloud-openfeign.adoc[]

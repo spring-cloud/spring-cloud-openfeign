@@ -52,6 +52,9 @@ public interface StoreClient {
 
 	@RequestMapping(method = RequestMethod.POST, value = "/stores/{storeId}", consumes = "application/json")
 	Store update(@PathVariable("storeId") Long storeId, Store store);
+
+	@RequestMapping(method = RequestMethod.DELETE, value = "/stores/{storeId:\\d+}")
+	void delete(@PathVariable Long storeId);
 }
 ----
 
@@ -69,6 +72,11 @@ don't want to use Eureka, you can configure a list of servers
 in your external configuration using https://cloud.spring.io/spring-cloud-static/spring-cloud-commons/current/reference/html/#simplediscoveryclient[`SimpleDiscoveryClient`].
 
 Spring Cloud OpenFeign supports all the features available for the blocking mode of Spring Cloud LoadBalancer. You can read more about them in the https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#spring-cloud-loadbalancer[project documentation].
+
+TIP: To use `@EnableFeignClients` annotation on `@Configuration`-annotated-classes, make sure to specify where the clients are located, for example:
+`@EnableFeignClients(basePackages = "com.example.clients")` 
+or list them explicitly:
+`@EnableFeignClients(clients = InventoryServiceFeignClient.class)`
 
 [[spring-cloud-feign-overriding-defaults]]
 === Overriding Feign Defaults
@@ -343,7 +351,22 @@ public class FooConfiguration {
 }
 ----
 
-The circuit breaker name follows this pattern `<feignClientName>#<calledMethod>`. When calling a `@FeignClient` with name `foo` and the called interface method is `bar` then the circuit breaker name will be `foo_bar`.
+The circuit breaker name follows this pattern `<feignClientClassName>#<calledMethod>(<parameterTypes>)`. When calling a `@FeignClient` with `FooClient` interface and the called interface method that has no parameters is `bar` then the circuit breaker name will be `FooClient#bar()`.
+
+NOTE: As of 2020.0.2, the circuit breaker name pattern has changed from `<feignClientName>_<calledMethod>`.
+Using `CircuitBreakerNameResolver` introduced in 2020.0.4, circuit breaker names can retain the old pattern.
+
+Providing a bean of `CircuitBreakerNameResolver`, you can change the circuit breaker name pattern.
+[source,java,indent=0]
+----
+@Configuration
+public class FooConfiguration {
+	@Bean
+	public CircuitBreakerNameResolver circuitBreakerNameResolver() {
+		return (String feignClientName, Target<?> target, Method method) -> feignClientName + "_" + method.getName();
+	}
+}
+----
 
 To enable Spring Cloud CircuitBreaker group set the `feign.circuitbreaker.group.enabled` property to `true` (by default `false`).
 
@@ -497,14 +520,6 @@ feign.compression.request.min-request-size=2048
 ----
 
 These properties allow you to be selective about the compressed media types and minimum request threshold length.
-
-For http clients except OkHttpClient, default gzip decoder can be enabled to decode gzip response in UTF-8 encoding:
-
-[source,java]
-----
-feign.compression.response.enabled=true
-feign.compression.response.useGzipDecoder=true
-----
 
 === Feign logging
 

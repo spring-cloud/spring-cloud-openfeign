@@ -37,8 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,7 +82,7 @@ public class FeignClientScanningTests {
 	@FeignClient("localapp123")
 	protected interface TestClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		String getHello();
 
 	}
@@ -91,7 +90,7 @@ public class FeignClientScanningTests {
 	@FeignClient("${feignClient.localappName}")
 	protected interface TestClientByKey {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		String getHello();
 
 	}
@@ -104,7 +103,7 @@ public class FeignClientScanningTests {
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		public String getHello() {
 			return "hello world 1";
 		}

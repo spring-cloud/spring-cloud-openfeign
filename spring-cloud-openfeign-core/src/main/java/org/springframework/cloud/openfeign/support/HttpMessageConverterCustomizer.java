@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2016-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign.testclients;
+package org.springframework.cloud.openfeign.support;
 
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
+import java.util.List;
+import java.util.function.Consumer;
+
+import org.springframework.http.converter.HttpMessageConverter;
 
 /**
- * @author Ryan Baxter
+ * Allows customising {@link HttpMessageConverter} objects passed via {@link Consumer}
+ * parameter.
+ *
+ * @author Olga Maciaszek-Sharma
+ * @since 3.1.0
  */
-@FeignClient(name = "localapp")
-public interface TestClient {
-
-	@GetMapping("/hello")
-	String getHello();
+public interface HttpMessageConverterCustomizer extends Consumer<List<HttpMessageConverter<?>>> {
 
 }

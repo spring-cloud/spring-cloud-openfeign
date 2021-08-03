@@ -31,9 +31,37 @@ import org.springframework.data.domain.Sort;
  * {@link org.springframework.cloud.openfeign.SpringQueryMap}.
  *
  * @author Hyeonmin Park
+ * @author Yanming Zhou
  * @since 2.2.8
  */
 public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
+
+	/**
+	 * Page index parameter name.
+	 */
+	private String pageParameter = "page";
+
+	/**
+	 * Page size parameter name.
+	 */
+	private String sizeParameter = "size";
+
+	/**
+	 * Sort parameter name.
+	 */
+	private String sortParameter = "sort";
+
+	public void setPageParameter(String pageParameter) {
+		this.pageParameter = pageParameter;
+	}
+
+	public void setSizeParameter(String sizeParameter) {
+		this.sizeParameter = sizeParameter;
+	}
+
+	public void setSortParameter(String sortParameter) {
+		this.sortParameter = sortParameter;
+	}
 
 	@Override
 	public Map<String, Object> encode(Object object) {
@@ -44,8 +72,8 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 				Pageable pageable = (Pageable) object;
 
 				if (pageable.isPaged()) {
-					queryMap.put("page", pageable.getPageNumber());
-					queryMap.put("size", pageable.getPageSize());
+					queryMap.put(pageParameter, pageable.getPageNumber());
+					queryMap.put(sizeParameter, pageable.getPageSize());
 				}
 
 				if (pageable.getSort() != null) {
@@ -69,7 +97,7 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 			sortQueries.add(order.getProperty() + "%2C" + order.getDirection());
 		}
 		if (!sortQueries.isEmpty()) {
-			queryMap.put("sort", sortQueries);
+			queryMap.put(sortParameter, sortQueries);
 		}
 	}
 

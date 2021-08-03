@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import feign.Feign;
 import feign.InvocationHandlerFactory;
 import feign.Target;
 
@@ -51,9 +50,11 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 
 	private final boolean circuitBreakerGroupEnabled;
 
+	private final CircuitBreakerNameResolver circuitBreakerNameResolver;
+
 	FeignCircuitBreakerInvocationHandler(CircuitBreakerFactory factory, String feignClientName, Target<?> target,
 			Map<Method, InvocationHandlerFactory.MethodHandler> dispatch, FallbackFactory<?> nullableFallbackFactory,
-			boolean circuitBreakerGroupEnabled) {
+			boolean circuitBreakerGroupEnabled, CircuitBreakerNameResolver circuitBreakerNameResolver) {
 		this.factory = factory;
 		this.feignClientName = feignClientName;
 		this.target = checkNotNull(target, "target");
@@ -61,6 +62,7 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 		this.fallbackMethodMap = toFallbackMethod(dispatch);
 		this.nullableFallbackFactory = nullableFallbackFactory;
 		this.circuitBreakerGroupEnabled = circuitBreakerGroupEnabled;
+		this.circuitBreakerNameResolver = circuitBreakerNameResolver;
 	}
 
 	@Override
@@ -82,7 +84,8 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 		else if ("toString".equals(method.getName())) {
 			return toString();
 		}
-		String circuitName = Feign.configKey(target.type(), method);
+
+		String circuitName = circuitBreakerNameResolver.resolveCircuitBreakerName(feignClientName, target, method);
 		CircuitBreaker circuitBreaker = circuitBreakerGroupEnabled ? factory.create(circuitName, feignClientName)
 				: factory.create(circuitName);
 		Supplier<Object> supplier = asSupplier(method, args);
@@ -106,16 +109,13 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 		return () -> {
 			try {
 				RequestContextHolder.setRequestAttributes(requestAttributes);
-				return this.dispatch.get(method).invoke(args);
+				return dispatch.get(method).invoke(args);
 			}
 			catch (RuntimeException throwable) {
 				throw throwable;
 			}
 			catch (Throwable throwable) {
 				throw new RuntimeException(throwable);
-			}
-			finally {
-				RequestContextHolder.resetRequestAttributes();
 			}
 		};
 	}

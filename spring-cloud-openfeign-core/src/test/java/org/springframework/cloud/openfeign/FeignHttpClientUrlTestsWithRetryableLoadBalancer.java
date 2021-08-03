@@ -38,8 +38,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.SocketUtils;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -104,7 +102,7 @@ class FeignHttpClientUrlTestsWithRetryableLoadBalancer {
 	@FeignClient(name = "localappurl", url = "http://localhost:${server.port}/")
 	protected interface UrlClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		Hello getHello();
 
 	}
@@ -112,7 +110,7 @@ class FeignHttpClientUrlTestsWithRetryableLoadBalancer {
 	@FeignClient(name = "beanappurl", url = "#{SERVER_URL}path")
 	protected interface BeanUrlClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		Hello getHello();
 
 	}
@@ -120,7 +118,7 @@ class FeignHttpClientUrlTestsWithRetryableLoadBalancer {
 	@FeignClient(name = "beanappurlnoprotocol", url = "#{SERVER_URL_NO_PROTOCOL}path")
 	protected interface BeanUrlClientNoProtocol {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
+		@GetMapping("/hello")
 		Hello getHello();
 
 	}
