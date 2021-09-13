@@ -60,8 +60,6 @@ public class OAuth2FeignRequestInterceptorTests {
 
 		assertThat(headers.containsKey("Authorization")).describedAs("RequestTemplate must have a Authorization header")
 				.isTrue();
-		assertThat(headers.containsKey("Authorization")).describedAs("RequestTemplate must have a Authorization header")
-				.isTrue();
 		Assertions.assertThat(headers.get("Authorization")).describedAs("Authorization must have a extract of Fancy")
 				.contains("Bearer Fancy");
 	}

@@ -64,7 +64,7 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static feign.CollectionFormat.SSV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * @author chadjaros
@@ -457,7 +457,7 @@ public class SpringMvcContractTests {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTestFallback", String.class, String.class,
 				Integer.class);
 
-		assumeTrue("does not have java 8 parameter names", hasJava8ParameterNames(method));
+		assumeTrue(hasJava8ParameterNames(method), "does not have java 8 parameter names");
 
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
