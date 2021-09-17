@@ -66,12 +66,12 @@ The load-balancer client above will want to discover the physical addresses
 for the "stores" service. If your application is a Eureka client then
 it will resolve the service in the Eureka service registry. If you
 don't want to use Eureka, you can configure a list of servers
-in your external configuration using https://cloud.spring.io/spring-cloud-static/spring-cloud-commons/current/reference/html/#simplediscoveryclient[`SimpleDiscoveryClient`].
+in your external configuration using https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#simplediscoveryclient[`SimpleDiscoveryClient`].
 
 Spring Cloud OpenFeign supports all the features available for the blocking mode of Spring Cloud LoadBalancer. You can read more about them in the https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#spring-cloud-loadbalancer[project documentation].
 
 TIP: To use `@EnableFeignClients` annotation on `@Configuration`-annotated-classes, make sure to specify where the clients are located, for example:
-`@EnableFeignClients(basePackages = "com.example.clients")` 
+`@EnableFeignClients(basePackages = "com.example.clients")`
 or list them explicitly:
 `@EnableFeignClients(clients = InventoryServiceFeignClient.class)`
 
