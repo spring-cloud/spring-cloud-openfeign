@@ -62,6 +62,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import static feign.CollectionFormat.CSV;
 import static feign.CollectionFormat.SSV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
@@ -73,6 +74,7 @@ import static org.junit.Assume.assumeTrue;
  * @author Aaron Whiteside
  * @author Artyom Romanenko
  * @author Olga Maciaszek-Sharma
+ * @author Sam Kruglov
  */
 public class SpringMvcContractTests {
 
@@ -300,6 +302,15 @@ public class SpringMvcContractTests {
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().collectionFormat()).isEqualTo(SSV);
+	}
+
+	@Test
+	public void processAnnotationOnClass_CollectionFormat() throws NoSuchMethodException {
+		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getWithoutCollectionFormat");
+
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().collectionFormat()).isEqualTo(CSV);
 	}
 
 	@Test
@@ -744,11 +755,15 @@ public class SpringMvcContractTests {
 
 	@JsonAutoDetect
 	@RequestMapping("/advanced")
+	@CollectionFormat(CSV)
 	public interface TestTemplate_Advanced {
 
 		@CollectionFormat(SSV)
 		@GetMapping
 		ResponseEntity<TestObject> getWithCollectionFormat();
+
+		@GetMapping
+		ResponseEntity<TestObject> getWithoutCollectionFormat();
 
 		@ExceptionHandler
 		@PutMapping(path = "/test/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
