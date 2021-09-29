@@ -25,7 +25,7 @@ import org.springframework.cloud.context.named.NamedContextFactory;
  * @author Dave Syer
  * @author Gregor Zurowski
  */
-class FeignClientSpecification implements NamedContextFactory.Specification {
+public class FeignClientSpecification implements NamedContextFactory.Specification {
 
 	private String name;
 
@@ -34,7 +34,7 @@ class FeignClientSpecification implements NamedContextFactory.Specification {
 	FeignClientSpecification() {
 	}
 
-	FeignClientSpecification(String name, Class<?>[] configuration) {
+	public FeignClientSpecification(String name, Class<?>[] configuration) {
 		this.name = name;
 		this.configuration = configuration;
 	}
