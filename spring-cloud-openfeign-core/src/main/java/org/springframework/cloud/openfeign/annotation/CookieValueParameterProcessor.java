@@ -31,7 +31,6 @@ import static feign.Util.emptyToNull;
 
 /**
  * @{link CookieValue} annotation processor.
- *
  * @author Gong Yi
  *
  */
