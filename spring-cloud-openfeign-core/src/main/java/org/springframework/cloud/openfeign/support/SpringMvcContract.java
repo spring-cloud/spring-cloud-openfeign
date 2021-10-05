@@ -38,6 +38,7 @@ import feign.Request;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.CollectionFormat;
+import org.springframework.cloud.openfeign.annotation.CookieValueParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.MatrixVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
@@ -360,6 +361,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		annotatedArgumentResolvers.add(new RequestHeaderParameterProcessor());
 		annotatedArgumentResolvers.add(new QueryMapParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestPartParameterProcessor());
+		annotatedArgumentResolvers.add(new CookieValueParameterProcessor());
 
 		return annotatedArgumentResolvers;
 	}

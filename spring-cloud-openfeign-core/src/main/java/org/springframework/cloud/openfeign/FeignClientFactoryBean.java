@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -276,13 +277,8 @@ public class FeignClientFactoryBean
 			builder.encoder(getOrInstantiate(config.getEncoder()));
 		}
 
-		if (Objects.nonNull(config.getDefaultRequestHeaders())) {
-			builder.requestInterceptor(requestTemplate -> requestTemplate.headers(config.getDefaultRequestHeaders()));
-		}
-
-		if (Objects.nonNull(config.getDefaultQueryParameters())) {
-			builder.requestInterceptor(requestTemplate -> requestTemplate.queries(config.getDefaultQueryParameters()));
-		}
+		addDefaultRequestHeaders(config, builder);
+		addDefaultQueryParams(config, builder);
 
 		if (Objects.nonNull(config.getDecoder())) {
 			builder.decoder(getOrInstantiate(config.getDecoder()));
@@ -298,6 +294,35 @@ public class FeignClientFactoryBean
 
 		if (config.getCapabilities() != null) {
 			config.getCapabilities().stream().map(this::getOrInstantiate).forEach(builder::addCapability);
+		}
+	}
+
+	private void addDefaultQueryParams(FeignClientProperties.FeignClientConfiguration config, Feign.Builder builder) {
+		Map<String, Collection<String>> defaultQueryParameters = config.getDefaultQueryParameters();
+		if (Objects.nonNull(defaultQueryParameters)) {
+			builder.requestInterceptor(requestTemplate -> {
+				Map<String, Collection<String>> queries = requestTemplate.queries();
+				defaultQueryParameters.keySet().forEach(key -> {
+					if (!queries.containsKey(key)) {
+						requestTemplate.query(key, defaultQueryParameters.get(key));
+					}
+				});
+			});
+		}
+	}
+
+	private void addDefaultRequestHeaders(FeignClientProperties.FeignClientConfiguration config,
+			Feign.Builder builder) {
+		Map<String, Collection<String>> defaultRequestHeaders = config.getDefaultRequestHeaders();
+		if (Objects.nonNull(defaultRequestHeaders)) {
+			builder.requestInterceptor(requestTemplate -> {
+				Map<String, Collection<String>> headers = requestTemplate.headers();
+				defaultRequestHeaders.keySet().forEach(key -> {
+					if (!headers.containsKey(key)) {
+						requestTemplate.header(key, defaultRequestHeaders.get(key));
+					}
+				});
+			});
 		}
 	}
 

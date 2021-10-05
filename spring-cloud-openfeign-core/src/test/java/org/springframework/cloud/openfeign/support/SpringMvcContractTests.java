@@ -45,6 +45,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.MatrixVariable;
@@ -129,6 +130,16 @@ public class SpringMvcContractTests {
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 		assertThat(data.template().decodeSlash()).isTrue();
+	}
+
+	@Test
+	public void testProcessAnnotationOnMethod_Simple_RegexPathVariable() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTestWithDigitalId", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test/{id:\\d+}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.formParams()).isEmpty();
 	}
 
 	@Test
@@ -580,6 +591,24 @@ public class SpringMvcContractTests {
 		assertThat(data.formParams()).contains("file", "id");
 	}
 
+	@Test
+	public void testSingleCookieAnnotation() throws NoSuchMethodException {
+		Method method = TestTemplate_Cookies.class.getDeclaredMethod("singleCookie", String.class, String.class);
+
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		assertThat(data.template().headers().get("cookie").iterator().next()).isEqualTo("cookie1={cookie1}");
+	}
+
+	@Test
+	public void testMultipleCookiesAnnotation() throws NoSuchMethodException {
+		Method method = TestTemplate_Cookies.class.getDeclaredMethod("multipleCookies", String.class, String.class,
+				String.class);
+
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		assertThat(data.template().headers().get("cookie").iterator().next())
+				.isEqualTo("cookie1={cookie1}; cookie2={cookie2}");
+	}
+
 	private ConversionService getConversionService() {
 		FormattingConversionServiceFactoryBean conversionServiceFactoryBean = new FormattingConversionServiceFactoryBean();
 		conversionServiceFactoryBean.afterPropertiesSet();
@@ -590,6 +619,9 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(value = "/test/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
+
+		@GetMapping("/test/{id:\\d+}")
+		ResponseEntity<TestObject> getTestWithDigitalId(@PathVariable("id") String id);
 
 		@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject getTest();
@@ -624,6 +656,17 @@ public class SpringMvcContractTests {
 
 		@GetMapping(value = "/test/{id}", headers = "X-Foo=bar")
 		ResponseEntity<TestObject> getTest(@PathVariable("id") String id);
+
+	}
+
+	public interface TestTemplate_Cookies {
+
+		@GetMapping("/test/{id}")
+		ResponseEntity<TestObject> singleCookie(@PathVariable("id") String id, @CookieValue("cookie1") String cookie1);
+
+		@GetMapping("/test/{id}")
+		ResponseEntity<TestObject> multipleCookies(@PathVariable("id") String id,
+				@CookieValue("cookie1") String cookie1, @CookieValue("cookie2") String cookie2);
 
 	}
 

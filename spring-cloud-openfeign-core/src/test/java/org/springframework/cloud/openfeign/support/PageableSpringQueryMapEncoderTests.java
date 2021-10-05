@@ -16,8 +16,10 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import feign.RequestTemplate;
-import feign.codec.Encoder;
+import java.util.List;
+import java.util.Map;
+
+import feign.QueryMapEncoder;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +36,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 /**
  * Tests the pagination encoding and sorting.
  *
- * @author Charlie Mordant.
  * @author Yanming Zhou
  */
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=springencodertest", "spring.jmx.enabled=false" })
 @DirtiesContext
-public class PageableEncoderTests {
+public class PageableSpringQueryMapEncoderTests {
 
 	public static final int PAGE = 1;
 
@@ -67,19 +68,14 @@ public class PageableEncoderTests {
 
 	@Test
 	public void testPaginationAndSortingRequest() {
-		Encoder encoder = this.context.getInstance("foo", Encoder.class);
+		QueryMapEncoder encoder = this.context.getInstance("foo", QueryMapEncoder.class);
 		assertThat(encoder).isNotNull();
-		RequestTemplate request = new RequestTemplate();
-		encoder.encode(createPageAndSortRequest(), null, request);
 
-		// Request queries shall contain three entries
-		assertThat(request.queries()).hasSize(3);
-		// Request page shall contain page
-		assertThat(request.queries().get(getPageParameter())).contains(String.valueOf(PAGE));
-		// Request size shall contain size
-		assertThat(request.queries().get(getSizeParameter())).contains(String.valueOf(SIZE));
-		// Request sort size shall contain sort entries
-		assertThat(request.queries().get(getSortParameter())).hasSize(2);
+		Map<String, Object> map = encoder.encode(createPageAndSortRequest());
+		assertThat(map).hasSize(3);
+		assertThat((Integer) map.get(getPageParameter())).isEqualTo(PAGE);
+		assertThat((Integer) map.get(getSizeParameter())).isEqualTo(SIZE);
+		assertThat((List<?>) map.get(getSortParameter())).hasSize(2);
 	}
 
 	private Pageable createPageAndSortRequest() {
@@ -88,17 +84,14 @@ public class PageableEncoderTests {
 
 	@Test
 	public void testPaginationRequest() {
-		Encoder encoder = this.context.getInstance("foo", Encoder.class);
+		QueryMapEncoder encoder = this.context.getInstance("foo", QueryMapEncoder.class);
 		assertThat(encoder).isNotNull();
-		RequestTemplate request = new RequestTemplate();
-		encoder.encode(createPageAndRequest(), null, request);
-		assertThat(request.queries().size()).isEqualTo(2);
-		// Request page shall contain page
-		assertThat(request.queries().get(getPageParameter())).contains(String.valueOf(PAGE));
-		// Request size shall contain size
-		assertThat(request.queries().get(getSizeParameter())).contains(String.valueOf(SIZE));
-		// Request sort size shall contain sort entries
-		assertThat(request.queries()).doesNotContainKey(getSortParameter());
+
+		Map<String, Object> map = encoder.encode(createPageAndRequest());
+		assertThat(map).hasSize(2);
+		assertThat((Integer) map.get(getPageParameter())).isEqualTo(PAGE);
+		assertThat((Integer) map.get(getSizeParameter())).isEqualTo(SIZE);
+		assertThat(map).doesNotContainKey(getSortParameter());
 	}
 
 	private Pageable createPageAndRequest() {
@@ -107,15 +100,12 @@ public class PageableEncoderTests {
 
 	@Test
 	public void testSortingRequest() {
-		Encoder encoder = this.context.getInstance("foo", Encoder.class);
+		QueryMapEncoder encoder = this.context.getInstance("foo", QueryMapEncoder.class);
 		assertThat(encoder).isNotNull();
-		RequestTemplate request = new RequestTemplate();
 
-		encoder.encode(createSort(), null, request);
-		// Request queries shall contain three entries
-		assertThat(request.queries().size()).isEqualTo(1);
-		// Request sort size shall contain sort entries
-		assertThat(request.queries().get(getSortParameter())).hasSize(2);
+		Map<String, Object> map = encoder.encode(createSort());
+		assertThat(map).hasSize(1);
+		assertThat((List<?>) map.get(getSortParameter())).hasSize(2);
 	}
 
 	private Sort createSort() {
@@ -124,13 +114,11 @@ public class PageableEncoderTests {
 
 	@Test
 	public void testUnpagedRequest() {
-		Encoder encoder = this.context.getInstance("foo", Encoder.class);
+		QueryMapEncoder encoder = this.context.getInstance("foo", QueryMapEncoder.class);
 		assertThat(encoder).isNotNull();
-		RequestTemplate request = new RequestTemplate();
 
-		encoder.encode(Pageable.unpaged(), null, request);
-		// Request queries shall contain three entries
-		assertThat(request.queries()).isEmpty();
+		Map<String, Object> map = encoder.encode(Pageable.unpaged());
+		assertThat(map).isEmpty();
 	}
 
 }
