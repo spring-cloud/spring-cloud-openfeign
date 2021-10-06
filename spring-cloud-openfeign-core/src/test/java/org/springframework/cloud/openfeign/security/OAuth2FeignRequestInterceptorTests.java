@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author João Pedro Evangelista
  * @author Tim Ysewyn
+ * @author Szymon Linowski
  */
 public class OAuth2FeignRequestInterceptorTests {
 

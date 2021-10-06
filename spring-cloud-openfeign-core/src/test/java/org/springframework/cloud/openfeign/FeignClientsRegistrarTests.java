@@ -35,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * @author Spencer Gibb
  * @author Gang Li
  * @author Michal Domagala
+ * @author Szymon Linowski
  */
 public class FeignClientsRegistrarTests {
 

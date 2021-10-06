@@ -74,6 +74,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Aaron Whiteside
  * @author Artyom Romanenko
  * @author Olga Maciaszek-Sharma
+ * @author Szymon Linowski
  */
 public class SpringMvcContractTests {
 

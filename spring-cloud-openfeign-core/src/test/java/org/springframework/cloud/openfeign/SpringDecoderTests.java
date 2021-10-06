@@ -45,6 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
+ * @author Szymon Linowski
  */
 @SpringBootTest(classes = SpringDecoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=springdecodertest", "spring.jmx.enabled=false" })

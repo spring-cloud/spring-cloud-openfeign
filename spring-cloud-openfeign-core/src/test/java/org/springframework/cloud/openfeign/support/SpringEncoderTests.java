@@ -69,6 +69,7 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
  * @author Olga Maciaszek-Sharma
  * @author Ahmad Mozafarnia
  * @author Can Bezmen
+ * @author Szymon Linowski
  */
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=springencodertest", "spring.jmx.enabled=false" })

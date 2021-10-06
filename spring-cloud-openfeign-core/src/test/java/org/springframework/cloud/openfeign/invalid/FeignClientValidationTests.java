@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Dave Syer
+ * @author Szymon Linowski
  */
 public class FeignClientValidationTests {
 
