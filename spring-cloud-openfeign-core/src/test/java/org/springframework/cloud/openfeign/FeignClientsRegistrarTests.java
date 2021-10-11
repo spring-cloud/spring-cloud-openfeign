@@ -18,7 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -29,32 +29,34 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Spencer Gibb
  * @author Gang Li
  * @author Michal Domagala
+ * @author Szymon Linowski
  */
 public class FeignClientsRegistrarTests {
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void badNameHttpPrefix() {
-		testGetName("https://bad_hostname");
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("http://bad_hostname"));
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void badNameHttpsPrefix() {
-		testGetName("https://bad_hostname");
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("https://bad_hostname"));
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void badName() {
-		testGetName("bad_hostname");
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("bad_hostname"));
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void badNameStartsWithHttp() {
-		testGetName("http_bad_hostname");
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("http_bad_hostname"));
 	}
 
 	@Test
@@ -81,14 +83,16 @@ public class FeignClientsRegistrarTests {
 		return registrar.getName(Collections.singletonMap("name", name));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testFallback() {
-		new AnnotationConfigApplicationContext(FallbackTestConfig.class);
+		assertThatExceptionOfType(IllegalArgumentException.class)
+			.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackTestConfig.class));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testFallbackFactory() {
-		new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
+		assertThatExceptionOfType(IllegalArgumentException.class)
+			.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class));
 	}
 
 	@Test

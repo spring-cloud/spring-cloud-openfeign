@@ -18,7 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import feign.Logger;
 import feign.slf4j.Slf4jLogger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;

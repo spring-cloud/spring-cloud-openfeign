@@ -31,8 +31,8 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import feign.MethodMetadata;
 import feign.Param;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.SpringQueryMap;
@@ -64,7 +64,8 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static feign.CollectionFormat.SSV;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * @author chadjaros
@@ -73,6 +74,7 @@ import static org.junit.Assume.assumeTrue;
  * @author Aaron Whiteside
  * @author Artyom Romanenko
  * @author Olga Maciaszek-Sharma
+ * @author Szymon Linowski
  */
 public class SpringMvcContractTests {
 
@@ -114,7 +116,7 @@ public class SpringMvcContractTests {
 		return false;
 	}
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		contract = new SpringMvcContract(Collections.emptyList(), getConversionService());
 	}
@@ -467,7 +469,7 @@ public class SpringMvcContractTests {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTestFallback", String.class, String.class,
 				Integer.class);
 
-		assumeTrue("does not have java 8 parameter names", hasJava8ParameterNames(method));
+		assumeTrue(hasJava8ParameterNames(method), "does not have java 8 parameter names");
 
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
@@ -496,11 +498,12 @@ public class SpringMvcContractTests {
 		assertThat(headers.get("aHeader").iterator().next()).isEqualTo("{aHeader}");
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void testProcessHeaderMapMoreThanOnce() throws Exception {
 		Method method = TestTemplate_HeaderMap.class.getDeclaredMethod("headerMapMoreThanOnce", MultiValueMap.class,
 				MultiValueMap.class);
-		contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		assertThatExceptionOfType(IllegalStateException.class)
+			.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
 	}
 
 	@Test
@@ -527,11 +530,12 @@ public class SpringMvcContractTests {
 		assertThat(params.get("aParam").iterator().next()).isEqualTo("{aParam}");
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void testProcessQueryMapMoreThanOnce() throws Exception {
 		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapMoreThanOnce", MultiValueMap.class,
 				MultiValueMap.class);
-		contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		assertThatExceptionOfType(IllegalStateException.class)
+			.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
 	}
 
 	@Test

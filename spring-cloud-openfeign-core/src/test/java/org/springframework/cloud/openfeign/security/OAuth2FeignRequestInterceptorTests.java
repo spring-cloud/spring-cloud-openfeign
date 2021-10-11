@@ -21,9 +21,9 @@ import java.util.Map;
 
 import feign.Request.HttpMethod;
 import feign.RequestTemplate;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -32,14 +32,14 @@ import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedExc
 import org.springframework.security.oauth2.client.token.AccessTokenRequest;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * @author João Pedro Evangelista
  * @author Tim Ysewyn
+ * @author Szymon Linowski
  */
 public class OAuth2FeignRequestInterceptorTests {
 
@@ -47,7 +47,7 @@ public class OAuth2FeignRequestInterceptorTests {
 
 	private RequestTemplate requestTemplate;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		oAuth2FeignRequestInterceptor = new OAuth2FeignRequestInterceptor(new MockOAuth2ClientContext("Fancy"),
 				new BaseOAuth2ProtectedResourceDetails());
@@ -58,25 +58,30 @@ public class OAuth2FeignRequestInterceptorTests {
 	public void applyAuthorizationHeader() {
 		oAuth2FeignRequestInterceptor.apply(requestTemplate);
 		Map<String, Collection<String>> headers = requestTemplate.headers();
-		Assert.assertTrue("RequestTemplate must have a Authorization header", headers.containsKey("Authorization"));
-		Assert.assertThat("Authorization must have a extract of Fancy", headers.get("Authorization"),
-				contains("Bearer Fancy"));
+
+		assertThat(headers.containsKey("Authorization")).describedAs("RequestTemplate must have a Authorization header")
+			.isTrue();
+		Assertions.assertThat(headers.get("Authorization")).describedAs("Authorization must have a extract of Fancy")
+			.contains("Bearer Fancy");
 	}
 
-	@Test(expected = OAuth2AccessDeniedException.class)
+	@Test
 	public void tryToAcquireToken() {
 		oAuth2FeignRequestInterceptor = new OAuth2FeignRequestInterceptor(new DefaultOAuth2ClientContext(),
 				new BaseOAuth2ProtectedResourceDetails());
-		OAuth2AccessToken oAuth2AccessToken = oAuth2FeignRequestInterceptor.getToken();
-		Assert.assertTrue(oAuth2AccessToken.getValue() + " Must be null", oAuth2AccessToken.getValue() == null);
+
+		Assertions.assertThatExceptionOfType(OAuth2AccessDeniedException.class)
+			.isThrownBy(() -> oAuth2FeignRequestInterceptor.getToken()).withMessage(
+			"Unable to obtain a new access token for resource 'null'. The provider manager is not configured to support it.");
 	}
 
 	@Test
 	public void configureAccessTokenProvider() {
 		OAuth2AccessToken mockedToken = new MockOAuth2AccessToken("MOCKED_TOKEN");
 		oAuth2FeignRequestInterceptor.setAccessTokenProvider(new MockAccessTokenProvider(mockedToken));
-		Assert.assertEquals("Should return same mocked token instance", mockedToken,
-				oAuth2FeignRequestInterceptor.acquireAccessToken());
+
+		assertThat(oAuth2FeignRequestInterceptor.acquireAccessToken())
+			.describedAs("Should return same mocked token instance").isEqualTo(mockedToken);
 	}
 
 	@Test
@@ -103,10 +108,11 @@ public class OAuth2FeignRequestInterceptorTests {
 		oAuth2FeignRequestInterceptor.apply(requestTemplate);
 
 		Map<String, Collection<String>> headers = requestTemplate.headers();
-		Assert.assertTrue("RequestTemplate must have a Authorization header", headers.containsKey("Authorization"));
-		Assert.assertThat("Authorization must have a extract of Fancy", headers.get("Authorization"), hasSize(1));
-		Assert.assertThat("Authorization must have a extract of Fancy", headers.get("Authorization"),
-				contains("Bearer Fancy"));
+		assertThat(headers.containsKey("Authorization")).describedAs("RequestTemplate must have a Authorization header")
+			.isTrue();
+		assertThat(headers.get("Authorization")).describedAs("Authorization must have a extract of Fancy").hasSize(1);
+		assertThat(headers.get("Authorization")).describedAs("Authorization must have a extract of Fancy")
+			.contains("Bearer Fancy");
 	}
 
 }

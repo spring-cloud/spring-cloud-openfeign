@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import feign.QueryMapEncoder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,7 +29,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -40,7 +38,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  *
  * @author Yanming Zhou
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=springencodertest", "spring.jmx.enabled=false" })
 @DirtiesContext

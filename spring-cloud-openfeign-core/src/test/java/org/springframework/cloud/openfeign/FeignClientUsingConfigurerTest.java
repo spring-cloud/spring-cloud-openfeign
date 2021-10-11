@@ -24,8 +24,7 @@ import feign.Feign;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.micrometer.MicrometerCapability;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -35,7 +34,6 @@ import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +43,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jonatan Ivanov
  */
 @DirtiesContext
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientUsingConfigurerTest.Application.class, value = {
 		"feign.client.config.default.loggerLevel=full",
 		"feign.client.config.default.requestInterceptors[0]=org.springframework.cloud.openfeign.FeignClientUsingPropertiesTests.FooRequestInterceptor",
