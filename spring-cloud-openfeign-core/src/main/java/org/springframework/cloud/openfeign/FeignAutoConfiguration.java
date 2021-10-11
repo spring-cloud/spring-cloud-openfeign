@@ -169,7 +169,7 @@ public class FeignAutoConfiguration {
 
 			@Override
 			public String resolveCircuitBreakerName(String feignClientName, Target<?> target, Method method) {
-				return Feign.configKey(target.getClass(), method);
+				return Feign.configKey(target.type(), method);
 			}
 
 		}
