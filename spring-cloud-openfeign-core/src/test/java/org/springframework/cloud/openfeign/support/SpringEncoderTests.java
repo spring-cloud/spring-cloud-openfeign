@@ -155,7 +155,7 @@ public class SpringEncoderTests {
 		MultipartFile multipartFile = new MockMultipartFile("test_multipart_file", "hi".getBytes());
 
 		Assertions.assertThatExceptionOfType(EncodeException.class)
-			.isThrownBy(() -> encoder.encode(multipartFile, MultipartFile.class, request));
+				.isThrownBy(() -> encoder.encode(multipartFile, MultipartFile.class, request));
 	}
 
 	// gh-105, gh-107

@@ -60,9 +60,9 @@ public class OAuth2FeignRequestInterceptorTests {
 		Map<String, Collection<String>> headers = requestTemplate.headers();
 
 		assertThat(headers.containsKey("Authorization")).describedAs("RequestTemplate must have a Authorization header")
-			.isTrue();
+				.isTrue();
 		Assertions.assertThat(headers.get("Authorization")).describedAs("Authorization must have a extract of Fancy")
-			.contains("Bearer Fancy");
+				.contains("Bearer Fancy");
 	}
 
 	@Test
@@ -71,8 +71,8 @@ public class OAuth2FeignRequestInterceptorTests {
 				new BaseOAuth2ProtectedResourceDetails());
 
 		Assertions.assertThatExceptionOfType(OAuth2AccessDeniedException.class)
-			.isThrownBy(() -> oAuth2FeignRequestInterceptor.getToken()).withMessage(
-			"Unable to obtain a new access token for resource 'null'. The provider manager is not configured to support it.");
+				.isThrownBy(() -> oAuth2FeignRequestInterceptor.getToken()).withMessage(
+						"Unable to obtain a new access token for resource 'null'. The provider manager is not configured to support it.");
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class OAuth2FeignRequestInterceptorTests {
 		oAuth2FeignRequestInterceptor.setAccessTokenProvider(new MockAccessTokenProvider(mockedToken));
 
 		assertThat(oAuth2FeignRequestInterceptor.acquireAccessToken())
-			.describedAs("Should return same mocked token instance").isEqualTo(mockedToken);
+				.describedAs("Should return same mocked token instance").isEqualTo(mockedToken);
 	}
 
 	@Test
@@ -109,10 +109,10 @@ public class OAuth2FeignRequestInterceptorTests {
 
 		Map<String, Collection<String>> headers = requestTemplate.headers();
 		assertThat(headers.containsKey("Authorization")).describedAs("RequestTemplate must have a Authorization header")
-			.isTrue();
+				.isTrue();
 		assertThat(headers.get("Authorization")).describedAs("Authorization must have a extract of Fancy").hasSize(1);
 		assertThat(headers.get("Authorization")).describedAs("Authorization must have a extract of Fancy")
-			.contains("Bearer Fancy");
+				.contains("Bearer Fancy");
 	}
 
 }

@@ -503,7 +503,7 @@ public class SpringMvcContractTests {
 		Method method = TestTemplate_HeaderMap.class.getDeclaredMethod("headerMapMoreThanOnce", MultiValueMap.class,
 				MultiValueMap.class);
 		assertThatExceptionOfType(IllegalStateException.class)
-			.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
+				.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
 	}
 
 	@Test
@@ -535,7 +535,7 @@ public class SpringMvcContractTests {
 		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapMoreThanOnce", MultiValueMap.class,
 				MultiValueMap.class);
 		assertThatExceptionOfType(IllegalStateException.class)
-			.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
+				.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
 	}
 
 	@Test

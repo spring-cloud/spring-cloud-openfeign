@@ -86,13 +86,13 @@ public class FeignClientsRegistrarTests {
 	@Test
 	public void testFallback() {
 		assertThatExceptionOfType(IllegalArgumentException.class)
-			.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackTestConfig.class));
+				.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackTestConfig.class));
 	}
 
 	@Test
 	public void testFallbackFactory() {
 		assertThatExceptionOfType(IllegalArgumentException.class)
-			.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class));
+				.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class));
 	}
 
 	@Test
