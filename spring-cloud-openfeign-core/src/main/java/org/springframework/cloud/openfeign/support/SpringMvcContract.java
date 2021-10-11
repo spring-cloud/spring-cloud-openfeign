@@ -35,6 +35,8 @@ import feign.Feign;
 import feign.MethodMetadata;
 import feign.Param;
 import feign.Request;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.CollectionFormat;
@@ -82,6 +84,8 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  */
 public class SpringMvcContract extends Contract.BaseContract
 		implements ResourceLoaderAware {
+
+	private static final Log LOG = LogFactory.getLog(SpringMvcContract.class);
 
 	private static final String ACCEPT = "Accept";
 
@@ -181,49 +185,20 @@ public class SpringMvcContract extends Contract.BaseContract
 
 	@Override
 	protected void processAnnotationOnClass(MethodMetadata data, Class<?> clz) {
-		if (clz.getInterfaces().length == 0) {
 			RequestMapping classAnnotation = findMergedAnnotation(clz,
 					RequestMapping.class);
 			if (classAnnotation != null) {
-				// Prepend path from class annotation if specified
-				if (classAnnotation.value().length > 0) {
-					String pathValue = emptyToNull(classAnnotation.value()[0]);
-					pathValue = resolve(pathValue);
-					if (!pathValue.startsWith("/")) {
-						pathValue = "/" + pathValue;
-					}
-					data.template().uri(pathValue);
-					if (data.template().decodeSlash() != decodeSlash) {
-						data.template().decodeSlash(decodeSlash);
-					}
-				}
+				LOG.error("Cannot process class: " + clz.getName()
+						+ ". @RequestMapping annotation is not allowed on @FeignClient interfaces.");
+				throw new IllegalArgumentException(
+						"@RequestMapping annotation not allowed on @FeignClient interfaces");
 			}
-		}
 	}
 
 	@Override
 	public MethodMetadata parseAndValidateMetadata(Class<?> targetType, Method method) {
 		processedMethods.put(Feign.configKey(targetType, method), method);
-		MethodMetadata md = super.parseAndValidateMetadata(targetType, method);
-
-		RequestMapping classAnnotation = findMergedAnnotation(targetType,
-				RequestMapping.class);
-		if (classAnnotation != null) {
-			// produces - use from class annotation only if method has not specified this
-			if (!md.template().headers().containsKey(ACCEPT)) {
-				parseProduces(md, method, classAnnotation);
-			}
-
-			// consumes -- use from class annotation only if method has not specified this
-			if (!md.template().headers().containsKey(CONTENT_TYPE)) {
-				parseConsumes(md, method, classAnnotation);
-			}
-
-			// headers -- class annotation is inherited to methods, always write these if
-			// present
-			parseHeaders(md, method, classAnnotation);
-		}
-		return md;
+		return super.parseAndValidateMetadata(targetType, method);
 	}
 
 	@Override
