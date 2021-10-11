@@ -26,9 +26,11 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Spencer Gibb
@@ -101,6 +103,20 @@ public class FeignClientsRegistrarTests {
 				.doesNotThrowAnyException();
 	}
 
+	@Test
+	public void testChildRequestMappingAnnotation() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> new AnnotationConfigApplicationContext(ChildRequestMappingTestConfig.class))
+				.withMessage("@FeignClient can't annotated with @RequestMapping");
+	}
+
+	@Test
+	public void testRequestMappingAnnotation() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> new AnnotationConfigApplicationContext(RequestMappingTestConfig.class))
+				.withMessage("@FeignClient can't annotated with @RequestMapping");
+	}
+
 	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)
 	protected interface FallbackClient {
 
@@ -115,6 +131,22 @@ public class FeignClientsRegistrarTests {
 
 		@GetMapping("/hello")
 		String fallbackFactoryTest();
+
+	}
+
+	@RequestMapping
+	protected interface ParentRequestMappingClient {
+
+	}
+
+	@FeignClient(name = "childRequestMappingClient")
+	protected interface ChildRequestMappingClient extends ParentRequestMappingClient {
+
+	}
+
+	@FeignClient(name = "requestMappingClient")
+	@RequestMapping
+	protected interface RequestMappingClient {
 
 	}
 
@@ -135,6 +167,20 @@ public class FeignClientsRegistrarTests {
 	@EnableFeignClients(clients = { org.springframework.cloud.openfeign.feignclientsregistrar.TopLevelClient.class,
 			org.springframework.cloud.openfeign.feignclientsregistrar.sub.SubLevelClient.class })
 	protected static class TopLevelSubLevelTestConfig {
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@EnableAutoConfiguration
+	@EnableFeignClients(clients = { FeignClientsRegistrarTests.ChildRequestMappingClient.class })
+	protected static class ChildRequestMappingTestConfig {
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@EnableAutoConfiguration
+	@EnableFeignClients(clients = { FeignClientsRegistrarTests.RequestMappingClient.class })
+	protected static class RequestMappingTestConfig {
 
 	}
 

@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import feign.Request;
@@ -49,6 +50,7 @@ import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
@@ -57,6 +59,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * @author Spencer Gibb
@@ -192,6 +195,12 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 				AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
 				AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
 				Assert.isTrue(annotationMetadata.isInterface(), "@FeignClient can only be specified on an interface");
+
+				Class<?> beanClass = ClassUtils.resolveClassName(
+						Objects.requireNonNull(beanDefinition.getBeanClassName()),
+						Thread.currentThread().getContextClassLoader());
+				Assert.isTrue(Objects.isNull(AnnotationUtils.findAnnotation(beanClass, RequestMapping.class)),
+						"@FeignClient can't annotated with @RequestMapping");
 
 				Map<String, Object> attributes = annotationMetadata
 						.getAnnotationAttributes(FeignClient.class.getCanonicalName());
