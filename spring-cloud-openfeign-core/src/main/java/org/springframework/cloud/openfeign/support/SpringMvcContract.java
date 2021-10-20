@@ -80,6 +80,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Artyom Romanenko
  * @author Darren Foong
  * @author Ram Anaswara
+ * @author Sam Kruglov
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
 
@@ -171,11 +172,11 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	@Override
 	protected void processAnnotationOnClass(MethodMetadata data, Class<?> clz) {
 		if (clz.getInterfaces().length == 0) {
-			RequestMapping classAnnotation = findMergedAnnotation(clz, RequestMapping.class);
-			if (classAnnotation != null) {
+			RequestMapping requestMapping = findMergedAnnotation(clz, RequestMapping.class);
+			if (requestMapping != null) {
 				// Prepend path from class annotation if specified
-				if (classAnnotation.value().length > 0) {
-					String pathValue = emptyToNull(classAnnotation.value()[0]);
+				if (requestMapping.value().length > 0) {
+					String pathValue = emptyToNull(requestMapping.value()[0]);
 					pathValue = resolve(pathValue);
 					if (!pathValue.startsWith("/")) {
 						pathValue = "/" + pathValue;
@@ -185,6 +186,10 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 						data.template().decodeSlash(decodeSlash);
 					}
 				}
+			}
+			CollectionFormat collectionFormat = findMergedAnnotation(clz, CollectionFormat.class);
+			if (collectionFormat != null) {
+				data.template().collectionFormat(collectionFormat.value());
 			}
 		}
 	}
