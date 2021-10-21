@@ -184,20 +184,19 @@ public class SpringMvcContractTests {
 
 	@Test
 	public void testProcessAnnotations_Class_Annotations_RequestMapping() {
-		assertThatIllegalArgumentException()
-			.isThrownBy(() -> {
-				Method method = TestTemplate_Class_RequestMapping.class
+		assertThatIllegalArgumentException().isThrownBy(() -> {
+			Method method = TestTemplate_Class_RequestMapping.class
 					.getDeclaredMethod("getSpecificTest", String.class, String.class);
-				contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
-			});
+			contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		});
 	}
 
 	@Test
 	public void testProcessAnnotations_Class_AnnotationsGetAllTests() throws Exception {
 		Method method = TestTemplate_Class_Annotations.class
-			.getDeclaredMethod("getAllTests", String.class);
+				.getDeclaredMethod("getAllTests", String.class);
 		MethodMetadata data = contract
-			.parseAndValidateMetadata(method.getDeclaringClass(), method);
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -264,8 +263,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-			.isEqualTo("/test/{id}?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -300,8 +298,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-			.isEqualTo("/test/{id}?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -325,8 +322,7 @@ public class SpringMvcContractTests {
 		MethodMetadata data = contract
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url())
-			.isEqualTo("/test2?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/test2?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -386,12 +382,12 @@ public class SpringMvcContractTests {
 	public void testProcessAnnotations_Advanced2() throws Exception {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest");
 		MethodMetadata data = contract
-			.parseAndValidateMetadata(method.getDeclaringClass(), method);
+				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
@@ -498,7 +494,7 @@ public class SpringMvcContractTests {
 				.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url())
-			.isEqualTo("/testfallback/{id}?amount=" + "{amount}");
+				.isEqualTo("/testfallback/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -658,7 +654,7 @@ public class SpringMvcContractTests {
 		ResponseEntity<TestObject> getMappingTest(@PathVariable("id") String id);
 
 		@RequestMapping(method = RequestMethod.POST,
-			produces = MediaType.APPLICATION_JSON_VALUE)
+				produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject postTest(@RequestBody TestObject object);
 
 		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -671,7 +667,7 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(value = "/test/{testId}", method = RequestMethod.GET)
 		TestObject getSpecificTest(@PathVariable("classId") String classId,
-			@PathVariable("testId") String testId);
+				@PathVariable("testId") String testId);
 
 	}
 
@@ -679,7 +675,7 @@ public class SpringMvcContractTests {
 
 		@RequestMapping(value = "/test/{testId}", method = RequestMethod.GET)
 		TestObject getSpecificTest(@PathVariable("classId") String classId,
-			@PathVariable("testId") String testId);
+				@PathVariable("testId") String testId);
 
 		@RequestMapping(method = RequestMethod.GET)
 		TestObject getAllTests(@PathVariable("classId") String classId);

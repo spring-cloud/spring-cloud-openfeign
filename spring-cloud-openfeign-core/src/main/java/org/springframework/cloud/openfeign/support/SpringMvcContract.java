@@ -185,14 +185,13 @@ public class SpringMvcContract extends Contract.BaseContract
 
 	@Override
 	protected void processAnnotationOnClass(MethodMetadata data, Class<?> clz) {
-			RequestMapping classAnnotation = findMergedAnnotation(clz,
-					RequestMapping.class);
-			if (classAnnotation != null) {
-				LOG.error("Cannot process class: " + clz.getName()
-						+ ". @RequestMapping annotation is not allowed on @FeignClient interfaces.");
-				throw new IllegalArgumentException(
-						"@RequestMapping annotation not allowed on @FeignClient interfaces");
-			}
+		RequestMapping classAnnotation = findMergedAnnotation(clz, RequestMapping.class);
+		if (classAnnotation != null) {
+			LOG.error("Cannot process class: " + clz.getName()
+					+ ". @RequestMapping annotation is not allowed on @FeignClient interfaces.");
+			throw new IllegalArgumentException(
+					"@RequestMapping annotation not allowed on @FeignClient interfaces");
+		}
 	}
 
 	@Override
