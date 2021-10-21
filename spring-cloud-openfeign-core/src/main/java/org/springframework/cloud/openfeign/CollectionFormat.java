@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  * @author Sam Kruglov
  * @see feign.CollectionFormat
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CollectionFormat {
 
