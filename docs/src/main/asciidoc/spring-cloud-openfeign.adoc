@@ -491,10 +491,7 @@ public interface UserClient extends UserService {
 }
 ----
 
-NOTE: It is generally not advisable to share an interface between a
-server and a client. It introduces tight coupling, and is also not supported by
-all the maintained Spring MVC versions (method parameter
-mapping is not inherited in some versions).
+WARNING: `@FeignClient` interfaces should not be shared between server and client and annotating `@FeignClient` interfaces with `@RequestMapping` on class level is no longer supported.
 
 === Feign request/response compression
 
