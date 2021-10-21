@@ -65,6 +65,7 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static feign.CollectionFormat.CSV;
 import static feign.CollectionFormat.SSV;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -182,16 +183,12 @@ public class SpringMvcContractTests {
 	}
 
 	@Test
-	public void testProcessAnnotations_Class_AnnotationsGetSpecificTest() throws Exception {
-		Method method = TestTemplate_Class_Annotations.class.getDeclaredMethod("getSpecificTest", String.class,
-				String.class);
-		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
-
-		assertThat(data.template().url()).isEqualTo("/prepend/{classId}/test/{testId}");
-		assertThat(data.template().method()).isEqualTo("GET");
-
-		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("classId");
-		assertThat(data.indexToName().get(1).iterator().next()).isEqualTo("testId");
+	public void testProcessAnnotations_Class_Annotations_RequestMapping() {
+		assertThatIllegalArgumentException().isThrownBy(() -> {
+			Method method = TestTemplate_Class_RequestMapping.class.getDeclaredMethod("getSpecificTest", String.class,
+					String.class);
+			contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		});
 	}
 
 	@Test
@@ -199,23 +196,11 @@ public class SpringMvcContractTests {
 		Method method = TestTemplate_Class_Annotations.class.getDeclaredMethod("getAllTests", String.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/prepend/{classId}");
+		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("GET");
 
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("classId");
 		assertThat(data.template().decodeSlash()).isTrue();
-	}
-
-	@Test
-	public void testProcessAnnotations_Class_AnnotationsGetAllTests_EncodeSlash() throws Exception {
-		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), false);
-
-		Method method = TestTemplate_Class_Annotations.class.getDeclaredMethod("getAllTests", String.class);
-		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
-
-		assertThat(data.template().url()).isEqualTo("/prepend/{classId}");
-
-		assertThat(data.template().decodeSlash()).isFalse();
 	}
 
 	@Test
@@ -232,22 +217,6 @@ public class SpringMvcContractTests {
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo(data.indexToName().get(0).iterator().next());
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo(data.indexToName().get(0).iterator().next());
 		assertThat(data.template().decodeSlash()).isTrue();
-	}
-
-	@Test
-	public void testProcessAnnotations_ExtendedInterface_EncodeSlash() throws Exception {
-		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), false);
-
-		Method extendedMethod = TestTemplate_Extended.class.getMethod("getAllTests", String.class);
-		MethodMetadata extendedData = contract.parseAndValidateMetadata(extendedMethod.getDeclaringClass(),
-				extendedMethod);
-
-		Method method = TestTemplate_Class_Annotations.class.getDeclaredMethod("getAllTests", String.class);
-		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
-
-		assertThat(data.template().url()).isEqualTo(extendedData.template().url());
-		assertThat(data.template().method()).isEqualTo(extendedData.template().method());
-		assertThat(data.template().decodeSlash()).isFalse();
 	}
 
 	@Test
@@ -280,7 +249,7 @@ public class SpringMvcContractTests {
 				Integer.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -319,7 +288,7 @@ public class SpringMvcContractTests {
 				Integer.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/advanced/test/{id}?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -338,7 +307,7 @@ public class SpringMvcContractTests {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest2", String.class, Integer.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/advanced/test2?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/test2?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -390,7 +359,7 @@ public class SpringMvcContractTests {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTest");
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/advanced");
+		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -482,7 +451,7 @@ public class SpringMvcContractTests {
 
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/advanced/testfallback/{id}?amount=" + "{amount}");
+		assertThat(data.template().url()).isEqualTo("/testfallback/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
@@ -646,6 +615,13 @@ public class SpringMvcContractTests {
 	}
 
 	@RequestMapping("/prepend/{classId}")
+	public interface TestTemplate_Class_RequestMapping {
+
+		@RequestMapping(value = "/test/{testId}", method = RequestMethod.GET)
+		TestObject getSpecificTest(@PathVariable("classId") String classId, @PathVariable("testId") String testId);
+
+	}
+
 	public interface TestTemplate_Class_Annotations {
 
 		@GetMapping("/test/{testId}")
@@ -754,7 +730,6 @@ public class SpringMvcContractTests {
 	}
 
 	@JsonAutoDetect
-	@RequestMapping("/advanced")
 	@CollectionFormat(CSV)
 	public interface TestTemplate_Advanced {
 
