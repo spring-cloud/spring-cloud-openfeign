@@ -4,14 +4,14 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>spring-cloud-openfeign</artifactId>
-	<version>3.0.5-SNAPSHOT</version>
+	<version>3.0.6-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Spring Cloud OpenFeign</name>
 	<description>Spring Cloud OpenFeign</description>
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>3.0.4</version>
+		<version>3.0.5-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 	<scm>
