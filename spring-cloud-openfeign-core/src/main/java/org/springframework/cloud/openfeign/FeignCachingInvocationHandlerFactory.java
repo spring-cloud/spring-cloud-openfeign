@@ -36,12 +36,11 @@ import org.springframework.cache.interceptor.CacheInterceptor;
 public class FeignCachingInvocationHandlerFactory implements InvocationHandlerFactory {
 
 	private final InvocationHandlerFactory delegateFactory;
+
 	private final CacheInterceptor cacheInterceptor;
 
-	public FeignCachingInvocationHandlerFactory(
-		InvocationHandlerFactory delegateFactory,
-		CacheInterceptor cacheInterceptor
-	) {
+	public FeignCachingInvocationHandlerFactory(InvocationHandlerFactory delegateFactory,
+			CacheInterceptor cacheInterceptor) {
 		this.delegateFactory = delegateFactory;
 		this.cacheInterceptor = cacheInterceptor;
 	}
@@ -79,4 +78,5 @@ public class FeignCachingInvocationHandlerFactory implements InvocationHandlerFa
 			});
 		};
 	}
+
 }

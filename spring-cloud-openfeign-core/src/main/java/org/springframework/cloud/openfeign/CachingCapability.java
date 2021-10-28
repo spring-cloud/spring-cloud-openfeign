@@ -38,4 +38,5 @@ public class CachingCapability implements Capability {
 	public InvocationHandlerFactory enrich(InvocationHandlerFactory invocationHandlerFactory) {
 		return new FeignCachingInvocationHandlerFactory(invocationHandlerFactory, cacheInterceptor);
 	}
+
 }

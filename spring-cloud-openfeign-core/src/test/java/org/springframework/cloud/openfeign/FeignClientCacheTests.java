@@ -58,16 +58,14 @@ public class FeignClientCacheTests {
 
 	@Test
 	void interceptedCallsReal() {
-		assertThatExceptionOfType(RetryableException.class)
-			.isThrownBy(foo::getWithCache)
-			.withRootCauseInstanceOf(UnknownHostException.class);
+		assertThatExceptionOfType(RetryableException.class).isThrownBy(foo::getWithCache)
+				.withRootCauseInstanceOf(UnknownHostException.class);
 	}
 
 	@Test
 	void nonInterceptedCallsReal() {
-		assertThatExceptionOfType(RetryableException.class)
-			.isThrownBy(foo::getWithoutCache)
-			.withRootCauseInstanceOf(UnknownHostException.class);
+		assertThatExceptionOfType(RetryableException.class).isThrownBy(foo::getWithoutCache)
+				.withRootCauseInstanceOf(UnknownHostException.class);
 	}
 
 	@Nested
@@ -87,10 +85,10 @@ public class FeignClientCacheTests {
 
 		@Test
 		void nonInterceptedCallsReal() {
-			assertThatExceptionOfType(RetryableException.class)
-				.isThrownBy(foo::getWithoutCache)
-				.withRootCauseInstanceOf(UnknownHostException.class);
+			assertThatExceptionOfType(RetryableException.class).isThrownBy(foo::getWithoutCache)
+					.withRootCauseInstanceOf(UnknownHostException.class);
 		}
+
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -110,6 +108,7 @@ public class FeignClientCacheTests {
 
 		@RequestLine("GET /without-cache")
 		String getWithoutCache();
+
 	}
 
 	public static class FooConfiguration {
@@ -118,5 +117,7 @@ public class FeignClientCacheTests {
 		Contract feignContract() {
 			return new Contract.Default();
 		}
+
 	}
+
 }
