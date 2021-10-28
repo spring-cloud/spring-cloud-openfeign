@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClientsProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.context.annotation.Bean;
@@ -39,7 +40,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2.2.0
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(LoadBalancerProperties.class)
+@EnableConfigurationProperties(LoadBalancerClientsProperties.class)
 class DefaultFeignLoadBalancerConfiguration {
 
 	@Bean
