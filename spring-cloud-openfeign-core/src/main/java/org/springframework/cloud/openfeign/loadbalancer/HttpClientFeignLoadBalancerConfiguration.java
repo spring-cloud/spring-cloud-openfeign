@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClientsProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.cloud.openfeign.HttpClient5DisabledConditions;
@@ -50,7 +51,7 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
 @Conditional(HttpClient5DisabledConditions.class)
 @Import(HttpClientFeignConfiguration.class)
-@EnableConfigurationProperties(LoadBalancerProperties.class)
+@EnableConfigurationProperties(LoadBalancerClientsProperties.class)
 class HttpClientFeignLoadBalancerConfiguration {
 
 	@Bean

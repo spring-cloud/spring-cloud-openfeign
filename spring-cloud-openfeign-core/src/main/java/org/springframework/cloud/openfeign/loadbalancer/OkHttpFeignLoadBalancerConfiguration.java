@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClientsProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.cloud.openfeign.clientconfig.OkHttpFeignConfiguration;
@@ -46,7 +47,7 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnProperty("feign.okhttp.enabled")
 @ConditionalOnBean({ LoadBalancerClient.class, LoadBalancerClientFactory.class })
 @Import(OkHttpFeignConfiguration.class)
-@EnableConfigurationProperties(LoadBalancerProperties.class)
+@EnableConfigurationProperties(LoadBalancerClientsProperties.class)
 class OkHttpFeignLoadBalancerConfiguration {
 
 	@Bean
