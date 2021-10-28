@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
 
 import com.fasterxml.jackson.databind.Module;
+import feign.Capability;
 import feign.Client;
 import feign.Feign;
 import feign.RequestInterceptor;
@@ -50,6 +51,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.cloud.client.actuator.HasFeatures;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
@@ -81,6 +83,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Nguyen Ky Thanh
  * @author Andrii Bohutskyi
  * @author Kwangyong Kim
+ * @author Sam Kruglov
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -103,6 +106,13 @@ public class FeignAutoConfiguration {
 		FeignContext context = new FeignContext();
 		context.setConfigurations(this.configurations);
 		return context;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "feign.cache.enabled", matchIfMissing = true)
+	@ConditionalOnBean(CacheInterceptor.class)
+	public Capability cachingCapability(CacheInterceptor cacheInterceptor) {
+		return new CachingCapability(cacheInterceptor);
 	}
 
 	@Configuration(proxyBeanMethods = false)
