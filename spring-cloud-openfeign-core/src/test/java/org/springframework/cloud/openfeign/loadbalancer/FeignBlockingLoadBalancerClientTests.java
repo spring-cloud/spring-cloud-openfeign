@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import feign.Client;
 import feign.Request;
 import feign.Response;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -71,16 +72,21 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class FeignBlockingLoadBalancerClientTests {
 
-	private Client delegate = mock(Client.class);
+	private final Client delegate = mock(Client.class);
 
-	private BlockingLoadBalancerClient loadBalancerClient = mock(BlockingLoadBalancerClient.class);
+	private final BlockingLoadBalancerClient loadBalancerClient = mock(BlockingLoadBalancerClient.class);
 
 	private final LoadBalancerClientFactory loadBalancerClientFactory = mock(LoadBalancerClientFactory.class);
 
 	private final LoadBalancerProperties loadBalancerProperties = new LoadBalancerProperties();
 
-	private FeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new FeignBlockingLoadBalancerClient(
-			delegate, loadBalancerClient, loadBalancerProperties, loadBalancerClientFactory);
+	private final FeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new FeignBlockingLoadBalancerClient(
+			delegate, loadBalancerClient, loadBalancerClientFactory);
+
+	@BeforeEach
+	void setUp() {
+		when(loadBalancerClientFactory.getProperties(any(String.class))).thenReturn(loadBalancerProperties);
+	}
 
 	@Test
 	void shouldExtractServiceIdFromRequestUrl() throws IOException {
