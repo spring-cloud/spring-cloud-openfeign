@@ -78,17 +78,27 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 
 	private final LoadBalancedRetryFactory loadBalancedRetryFactory;
 
-	private final LoadBalancerProperties properties;
-
 	private final LoadBalancerClientFactory loadBalancerClientFactory;
 
+	/**
+	 * @deprecated in favour of
+	 * {@link RetryableFeignBlockingLoadBalancerClient#RetryableFeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancedRetryFactory, LoadBalancerClientFactory)}
+	 */
+	@Deprecated
 	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties,
 			LoadBalancerClientFactory loadBalancerClientFactory) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
 		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
-		this.properties = properties;
+		this.loadBalancerClientFactory = loadBalancerClientFactory;
+	}
+
+	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory) {
+		this.delegate = delegate;
+		this.loadBalancerClient = loadBalancerClient;
+		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
 		this.loadBalancerClientFactory = loadBalancerClientFactory;
 	}
 
@@ -232,6 +242,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 	}
 
 	private String getHint(String serviceId) {
+		LoadBalancerProperties properties = loadBalancerClientFactory.getProperties(serviceId);
 		String defaultHint = properties.getHint().getOrDefault("default", "default");
 		String hintPropertyValue = properties.getHint().get(serviceId);
 		return hintPropertyValue != null ? hintPropertyValue : defaultHint;

@@ -60,15 +60,24 @@ public class FeignBlockingLoadBalancerClient implements Client {
 
 	private final LoadBalancerClient loadBalancerClient;
 
-	private final LoadBalancerProperties properties;
-
 	private final LoadBalancerClientFactory loadBalancerClientFactory;
 
+	/**
+	 * @deprecated in favour of
+	 * {@link FeignBlockingLoadBalancerClient#FeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancerClientFactory)}
+	 */
+	@Deprecated
 	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancerProperties properties, LoadBalancerClientFactory loadBalancerClientFactory) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
-		this.properties = properties;
+		this.loadBalancerClientFactory = loadBalancerClientFactory;
+	}
+
+	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
+			LoadBalancerClientFactory loadBalancerClientFactory) {
+		this.delegate = delegate;
+		this.loadBalancerClient = loadBalancerClient;
 		this.loadBalancerClientFactory = loadBalancerClientFactory;
 	}
 
@@ -116,6 +125,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 	}
 
 	private String getHint(String serviceId) {
+		LoadBalancerProperties properties = loadBalancerClientFactory.getProperties(serviceId);
 		String defaultHint = properties.getHint().getOrDefault("default", "default");
 		String hintPropertyValue = properties.getHint().get(serviceId);
 		return hintPropertyValue != null ? hintPropertyValue : defaultHint;
