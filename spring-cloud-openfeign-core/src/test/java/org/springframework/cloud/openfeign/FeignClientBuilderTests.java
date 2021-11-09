@@ -25,11 +25,8 @@ import java.util.Collections;
 import java.util.List;
 
 import feign.Feign;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.openfeign.testclients.TestClient;
@@ -37,15 +34,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Sven Döring
  * @author Sam Kruglov
+ * @author Szymon Linowski
  */
-public class FeignClientBuilderTests {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
+class FeignClientBuilderTests {
 
 	private FeignClientBuilder feignClientBuilder;
 
@@ -75,14 +71,14 @@ public class FeignClientBuilderTests {
 		return (T) ReflectionUtils.getField(field, factoryBean);
 	}
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.applicationContext = Mockito.mock(ApplicationContext.class);
 		this.feignClientBuilder = new FeignClientBuilder(this.applicationContext);
 	}
 
 	@Test
-	public void safetyCheckForNewFieldsOnTheFeignClientAnnotation() {
+	void safetyCheckForNewFieldsOnTheFeignClientAnnotation() {
 		final List<String> methodNames = new ArrayList();
 		for (final Method method : FeignClient.class.getMethods()) {
 			methodNames.add(method.getName());
@@ -101,7 +97,7 @@ public class FeignClientBuilderTests {
 	}
 
 	@Test
-	public void forType_preinitializedBuilder() {
+	void forType_preinitializedBuilder() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder.forType(TestFeignClient.class, "TestClient");
 
@@ -120,7 +116,7 @@ public class FeignClientBuilderTests {
 	}
 
 	@Test
-	public void forType_allFieldsSetOnBuilder() {
+	void forType_allFieldsSetOnBuilder() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder.forType(TestFeignClient.class, "TestClient")
 				.decode404(true).url("Url/").path("/Path").contextId("TestContext");
@@ -139,7 +135,7 @@ public class FeignClientBuilderTests {
 	}
 
 	@Test
-	public void forType_clientFactoryBeanProvided() {
+	void forType_clientFactoryBeanProvided() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
 				.forType(TestFeignClient.class, new FeignClientFactoryBean(), "TestClient").decode404(true)
@@ -160,21 +156,19 @@ public class FeignClientBuilderTests {
 	}
 
 	@Test
-	public void forType_build() {
+	void forType_build() {
 		// given:
 		Mockito.when(this.applicationContext.getBean(FeignContext.class)).thenThrow(new ClosedFileSystemException()); // throw
-																														// an
-																														// unusual
-																														// exception
-																														// in
-																														// the
-																														// FeignClientFactoryBean
+		// an
+		// unusual
+		// exception
+		// in
+		// the
+		// FeignClientFactoryBean
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder.forType(TestClient.class, "TestClient");
-
 		// expect: 'the build will fail right after calling build() with the mocked
 		// unusual exception'
-		this.thrown.expect(Matchers.isA(ClosedFileSystemException.class));
-		builder.build();
+		assertThatExceptionOfType(ClosedFileSystemException.class).isThrownBy(() -> builder.build());
 	}
 
 	private interface TestFeignClient {

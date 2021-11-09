@@ -20,7 +20,7 @@ import java.lang.reflect.Field;
 
 import feign.Feign;
 import feign.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -35,10 +35,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Matt King
  * @author Sam Kruglov
  */
-public class FeignBuilderCustomizerTests {
+class FeignBuilderCustomizerTests {
 
 	@Test
-	public void testBuilderCustomizer() {
+	void testBuilderCustomizer() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				FeignBuilderCustomizerTests.SampleConfiguration2.class);
 
@@ -61,7 +61,7 @@ public class FeignBuilderCustomizerTests {
 	}
 
 	@Test
-	public void testBuildCustomizerOrdered() {
+	void testBuildCustomizerOrdered() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				FeignBuilderCustomizerTests.SampleConfiguration3.class);
 
@@ -76,7 +76,7 @@ public class FeignBuilderCustomizerTests {
 	}
 
 	@Test
-	public void testBuildCustomizerOrderedWithAdditional() {
+	void testBuildCustomizerOrderedWithAdditional() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				FeignBuilderCustomizerTests.SampleConfiguration3.class);
 

@@ -17,8 +17,7 @@
 package org.springframework.cloud.openfeign.valid.scanning;
 
 import feign.Client;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +35,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,11 +44,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 /**
  * @author Spencer Gibb
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientScanningTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest", "feign.httpclient.enabled=false" })
 @DirtiesContext
-public class FeignClientScanningTests {
+class FeignClientScanningTests {
 
 	@Value("${local.server.port}")
 	private int port = 0;
@@ -66,14 +63,14 @@ public class FeignClientScanningTests {
 	private Client feignClient;
 
 	@Test
-	public void testSimpleType() {
+	void testSimpleType() {
 		String hello = this.testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match").isEqualTo("hello world 1");
 	}
 
 	@Test
-	public void testSimpleTypeByKey() {
+	void testSimpleTypeByKey() {
 		String hello = this.testClientByKey.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match").isEqualTo("hello world 1");

@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign.encoding.proto;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,12 +34,12 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import org.springframework.beans.factory.ObjectFactory;
@@ -58,8 +57,8 @@ import static org.assertj.core.api.Assertions.fail;
  *
  * @author ScienJus
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ProtobufSpringEncoderTest {
+@ExtendWith(MockitoExtension.class)
+class ProtobufSpringEncoderTest {
 
 	@Mock
 	private HttpClient httpClient;
@@ -70,7 +69,7 @@ public class ProtobufSpringEncoderTest {
 			.setMsg("Erlang/OTP 最初是爱立信为开发电信设备系统设计的编程语言平台，" + "电信设备(路由器、接入网关、…)典型设计是通过背板连接主控板卡与多块业务板卡的分布式系统。").build();
 
 	@Test
-	public void testProtobuf() throws IOException {
+	void testProtobuf() throws IOException {
 		// protobuf convert to request by feign and ProtobufHttpMessageConverter
 		RequestTemplate requestTemplate = newRequestTemplate();
 		newEncoder().encode(this.request, Request.class, requestTemplate);
@@ -84,7 +83,7 @@ public class ProtobufSpringEncoderTest {
 	}
 
 	@Test
-	public void testProtobufWithCharsetWillFail() throws IOException, URISyntaxException {
+	void testProtobufWithCharsetWillFail() throws IOException {
 		// protobuf convert to request by feign and ProtobufHttpMessageConverter
 		RequestTemplate requestTemplate = newRequestTemplate();
 		newEncoder().encode(this.request, Request.class, requestTemplate);

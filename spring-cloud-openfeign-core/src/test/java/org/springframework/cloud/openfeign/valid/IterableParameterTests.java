@@ -18,8 +18,7 @@ package org.springframework.cloud.openfeign.valid;
 
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -37,7 +36,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,19 +45,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Spencer Gibb
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = IterableParameterTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=iterableparametertest",
 				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
 				"feign.okhttp.enabled=false", "feign.circuitbreaker.enabled=false" })
 @DirtiesContext
-public class IterableParameterTests {
+class IterableParameterTests {
 
 	@Autowired
 	private TestClient testClient;
 
 	@Test
-	public void testClient() {
+	void testClient() {
 		assertThat(this.testClient).as("testClient was null").isNotNull();
 		String results = this.testClient.echo(HashSet.of("a", "b"));
 		assertThat(results).isEqualTo("a,b");
@@ -77,7 +74,7 @@ public class IterableParameterTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(clients = TestClient.class)
-	@LoadBalancerClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
+	@LoadBalancerClient(name = "localapp", configuration = LocalLoadBalancerConfiguration.class)
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application {
 
@@ -89,7 +86,7 @@ public class IterableParameterTests {
 	}
 
 	// Load balancer with fixed server list for "local" pointing to localhost
-	public static class LocalRibbonClientConfiguration {
+	public static class LocalLoadBalancerConfiguration {
 
 		@LocalServerPort
 		private int port = 0;

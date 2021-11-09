@@ -47,8 +47,7 @@ import static org.mockito.Mockito.mockingDetails;
  * @author Olga Maciaszek-Sharma
  */
 @SpringBootTest(properties = { "feign.okhttp.enabled: true", "spring.cloud.httpclientfactories.ok.enabled: true",
-		"ribbon.eureka.enabled = false", "ribbon.okhttp.enabled: true", "feign.okhttp.enabled: true",
-		"ribbon.httpclient.enabled: false", "feign.httpclient.enabled: false",
+		"feign.okhttp.enabled: true", "feign.httpclient.enabled: false",
 		"spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
 class OkHttpClientConfigurationTests {

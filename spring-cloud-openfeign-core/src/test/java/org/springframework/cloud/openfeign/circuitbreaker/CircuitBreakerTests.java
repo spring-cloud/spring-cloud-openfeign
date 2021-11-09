@@ -20,11 +20,10 @@ import java.util.function.Function;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -43,7 +42,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.SocketUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,11 +51,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Spencer Gibb
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = CircuitBreakerTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT, value = {
 		"spring.application.name=springcircuittest", "spring.jmx.enabled=false", "feign.circuitbreaker.enabled=true" })
 @DirtiesContext
-public class CircuitBreakerTests {
+class CircuitBreakerTests {
 
 	@Autowired
 	MyCircuitBreaker myCircuitBreaker;
@@ -69,22 +66,22 @@ public class CircuitBreakerTests {
 	TestClientWithFactory testClientWithFactory;
 
 	@BeforeAll
-	public static void beforeClass() {
+	static void beforeClass() {
 		System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
 	}
 
 	@AfterAll
-	public static void afterClass() {
+	static void afterClass() {
 		System.clearProperty("server.port");
 	}
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		this.myCircuitBreaker.clear();
 	}
 
 	@Test
-	public void testSimpleTypeWithFallback() {
+	void testSimpleTypeWithFallback() {
 		Hello hello = testClient.getHello();
 
 		assertThat(hello).as("hello was null").isNotNull();
@@ -93,12 +90,12 @@ public class CircuitBreakerTests {
 	}
 
 	@Test
-	public void test404WithFallback() {
+	void test404WithFallback() {
 		assertThat(testClient.getException()).isEqualTo("Fixed response");
 	}
 
 	@Test
-	public void testSimpleTypeWithFallbackFactory() {
+	void testSimpleTypeWithFallbackFactory() {
 		Hello hello = testClientWithFactory.getHello();
 
 		assertThat(hello).as("hello was null").isNotNull();
@@ -107,7 +104,7 @@ public class CircuitBreakerTests {
 	}
 
 	@Test
-	public void test404WithFallbackFactory() {
+	void test404WithFallbackFactory() {
 		assertThat(testClientWithFactory.getException()).isEqualTo("Fixed response");
 	}
 

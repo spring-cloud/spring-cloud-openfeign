@@ -17,14 +17,12 @@
 package org.springframework.cloud.openfeign.encoding.proto;
 
 import feign.RequestTemplate;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.test.ClassPathExclusions;
-import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.http.converter.StringHttpMessageConverter;
 
 import static feign.Request.HttpMethod.POST;
@@ -34,12 +32,11 @@ import static feign.Request.HttpMethod.POST;
  *
  * @author ScienJus
  */
-@RunWith(ModifiedClassPathRunner.class)
 @ClassPathExclusions("protobuf-*.jar")
-public class ProtobufNotInClasspathTest {
+class ProtobufNotInClasspathTest {
 
 	@Test
-	public void testEncodeWhenProtobufNotInClasspath() {
+	void testEncodeWhenProtobufNotInClasspath() {
 		ObjectFactory<HttpMessageConverters> converters = () -> new HttpMessageConverters(
 				new StringHttpMessageConverter());
 		RequestTemplate requestTemplate = new RequestTemplate();

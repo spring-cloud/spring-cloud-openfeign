@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 /**
  * @author Hector Espert
  */
-public class FeignHalRibbonConfiguration {
+public class FeignHalConfiguration {
 
 	@Value("${local.server.port}")
 	private int serverPort = 0;

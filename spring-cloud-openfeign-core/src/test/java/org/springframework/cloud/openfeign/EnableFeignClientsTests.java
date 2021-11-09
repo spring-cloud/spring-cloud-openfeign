@@ -23,17 +23,15 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.optionals.OptionalDecoder;
 import feign.slf4j.Slf4jLogger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.cloud.test.ClassPathExclusions;
-import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -41,48 +39,47 @@ import org.springframework.context.annotation.Import;
 /**
  * @author Spencer Gibb
  */
-@RunWith(ModifiedClassPathRunner.class)
 @ClassPathExclusions({ "spring-data-commons-*.jar" })
-public class EnableFeignClientsTests {
+class EnableFeignClientsTests {
 
 	private ConfigurableApplicationContext context;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
 				.properties("debug=true", "feign.httpclient.enabled=false")
 				.sources(EnableFeignClientsTests.PlainConfiguration.class).run();
 	}
 
-	@After
-	public void tearDown() {
+	@AfterEach
+	void tearDown() {
 		if (context != null) {
 			context.close();
 		}
 	}
 
 	@Test
-	public void decoderDefaultCorrect() {
+	void decoderDefaultCorrect() {
 		OptionalDecoder.class.cast(this.context.getBeansOfType(Decoder.class).get(0));
 	}
 
 	@Test
-	public void encoderDefaultCorrect() {
+	void encoderDefaultCorrect() {
 		SpringEncoder.class.cast(this.context.getBeansOfType(Encoder.class).get(0));
 	}
 
 	@Test
-	public void loggerDefaultCorrect() {
+	void loggerDefaultCorrect() {
 		Slf4jLogger.class.cast(this.context.getBeansOfType(Logger.class).get(0));
 	}
 
 	@Test
-	public void contractDefaultCorrect() {
+	void contractDefaultCorrect() {
 		SpringMvcContract.class.cast(this.context.getBeansOfType(Contract.class).get(0));
 	}
 
 	@Test
-	public void builderDefaultCorrect() {
+	void builderDefaultCorrect() {
 		Feign.Builder.class.cast(this.context.getBeansOfType(Feign.Builder.class).get(0));
 	}
 

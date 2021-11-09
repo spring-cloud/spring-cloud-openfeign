@@ -18,9 +18,8 @@ package org.springframework.cloud.openfeign.support;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,7 +30,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.cloud.openfeign.support.FeignHttpClientProperties.Hc5Properties.DEFAULT_SOCKET_TIMEOUT;
@@ -41,21 +39,20 @@ import static org.springframework.cloud.openfeign.support.FeignHttpClientPropert
  * @author Ryan Baxter
  * @author Nguyen Ky Thanh
  */
-@RunWith(SpringRunner.class)
 @DirtiesContext
-public class FeignHttpClientPropertiesTests {
+class FeignHttpClientPropertiesTests {
 
 	private AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
-	@After
-	public void clear() {
+	@AfterEach
+	void clear() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void testDefaults() {
+	void testDefaults() {
 		setupContext();
 		assertThat(getProperties().getConnectionTimeout())
 				.isEqualTo(FeignHttpClientProperties.DEFAULT_CONNECTION_TIMEOUT);
@@ -73,7 +70,7 @@ public class FeignHttpClientPropertiesTests {
 	}
 
 	@Test
-	public void testCustomization() {
+	void testCustomization() {
 		TestPropertyValues
 				.of("feign.httpclient.maxConnections=2", "feign.httpclient.connectionTimeout=2",
 						"feign.httpclient.maxConnectionsPerRoute=2", "feign.httpclient.timeToLive=2",

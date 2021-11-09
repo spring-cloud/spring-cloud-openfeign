@@ -18,8 +18,7 @@ package org.springframework.cloud.openfeign.encoding;
 
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -39,7 +38,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -51,15 +49,14 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(classes = FeignAcceptEncodingTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "feign.compression.response.enabled=true" })
-@RunWith(SpringRunner.class)
 @DirtiesContext
-public class FeignAcceptEncodingTests {
+class FeignAcceptEncodingTests {
 
 	@Autowired
 	private InvoiceClient invoiceClient;
 
 	@Test
-	public void compressedResponse() {
+	void compressedResponse() {
 
 		// when
 		final ResponseEntity<List<Invoice>> invoices = this.invoiceClient.getInvoices();

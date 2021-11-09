@@ -26,16 +26,13 @@ import org.apache.http.config.Lookup;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.impl.conn.DefaultHttpClientConnectionOperator;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
-import org.springframework.cloud.test.ClassPathExclusions;
-import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ReflectionUtils;
 
@@ -44,28 +41,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Ryan Baxter
  */
-@RunWith(ModifiedClassPathRunner.class)
-@ClassPathExclusions({ "ribbon-loadbalancer-{version:\\d.*}.jar" })
-public class FeignHttpClientConfigurationTests {
+class FeignHttpClientConfigurationTests {
 
 	private ConfigurableApplicationContext context;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.context = new SpringApplicationBuilder()
 				.properties("debug=true", "feign.httpclient.disableSslValidation=true").web(WebApplicationType.NONE)
 				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
 	}
 
-	@After
-	public void tearDown() {
+	@AfterEach
+	void tearDown() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void disableSslTest() throws Exception {
+	void disableSslTest() {
 		try {
 			HttpClientConnectionManager connectionManager = this.context.getBean(HttpClientConnectionManager.class);
 			Lookup<ConnectionSocketFactory> socketFactoryRegistry = getConnectionSocketFactoryLookup(connectionManager);

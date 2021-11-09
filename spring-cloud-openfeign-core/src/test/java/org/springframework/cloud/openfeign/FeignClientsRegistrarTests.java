@@ -18,7 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -29,48 +29,50 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Spencer Gibb
  * @author Gang Li
  * @author Michal Domagala
+ * @author Szymon Linowski
  */
-public class FeignClientsRegistrarTests {
+class FeignClientsRegistrarTests {
 
-	@Test(expected = IllegalStateException.class)
-	public void badNameHttpPrefix() {
-		testGetName("https://bad_hostname");
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void badNameHttpsPrefix() {
-		testGetName("https://bad_hostname");
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void badName() {
-		testGetName("bad_hostname");
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void badNameStartsWithHttp() {
-		testGetName("http_bad_hostname");
+	@Test
+	void badNameHttpPrefix() {
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("http://bad_hostname"));
 	}
 
 	@Test
-	public void goodName() {
+	void badNameHttpsPrefix() {
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("https://bad_hostname"));
+	}
+
+	@Test
+	void badName() {
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("bad_hostname"));
+	}
+
+	@Test
+	void badNameStartsWithHttp() {
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("http_bad_hostname"));
+	}
+
+	@Test
+	void goodName() {
 		String name = testGetName("good-name");
 		assertThat(name).as("name was wrong").isEqualTo("good-name");
 	}
 
 	@Test
-	public void goodNameHttpPrefix() {
+	void goodNameHttpPrefix() {
 		String name = testGetName("https://good-name");
 		assertThat(name).as("name was wrong").isEqualTo("https://good-name");
 	}
 
 	@Test
-	public void goodNameHttpsPrefix() {
+	void goodNameHttpsPrefix() {
 		String name = testGetName("https://goodname");
 		assertThat(name).as("name was wrong").isEqualTo("https://goodname");
 	}
@@ -81,18 +83,20 @@ public class FeignClientsRegistrarTests {
 		return registrar.getName(Collections.singletonMap("name", name));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testFallback() {
-		new AnnotationConfigApplicationContext(FallbackTestConfig.class);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testFallbackFactory() {
-		new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
+	@Test
+	void testFallback() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackTestConfig.class));
 	}
 
 	@Test
-	public void shouldPassSubLevelFeignClient() {
+	void testFallbackFactory() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class));
+	}
+
+	@Test
+	void shouldPassSubLevelFeignClient() {
 		AnnotationConfigApplicationContext config = new AnnotationConfigApplicationContext();
 		((DefaultListableBeanFactory) config.getBeanFactory()).setAllowBeanDefinitionOverriding(false);
 		config.register(TopLevelSubLevelTestConfig.class);

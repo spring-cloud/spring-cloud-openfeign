@@ -21,17 +21,14 @@ import java.lang.reflect.Field;
 import javax.net.ssl.HostnameVerifier;
 
 import okhttp3.OkHttpClient;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
-import org.springframework.cloud.test.ClassPathExclusions;
-import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ReflectionUtils;
 
@@ -40,14 +37,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Ryan Baxter
  */
-@RunWith(ModifiedClassPathRunner.class)
-@ClassPathExclusions({ "ribbon-loadbalancer-{version:\\d.*}.jar" })
-public class FeignOkHttpConfigurationTests {
+class FeignOkHttpConfigurationTests {
 
 	private ConfigurableApplicationContext context;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		this.context = new SpringApplicationBuilder()
 				.properties("debug=true", "feign.httpclient.disableSslValidation=true", "feign.okhttp.enabled=true",
 						"feign.httpclient.enabled=false")
@@ -55,18 +50,18 @@ public class FeignOkHttpConfigurationTests {
 				.run();
 	}
 
-	@After
-	public void tearDown() {
+	@AfterEach
+	void tearDown() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void disableSslTest() throws Exception {
+	void disableSslTest() {
 		OkHttpClient httpClient = this.context.getBean(OkHttpClient.class);
 		HostnameVerifier hostnameVerifier = (HostnameVerifier) this.getField(httpClient, "hostnameVerifier");
-		assertThat(OkHttpClientFactory.TrustAllHostnames.class.isInstance(hostnameVerifier)).isTrue();
+		assertThat(hostnameVerifier instanceof OkHttpClientFactory.TrustAllHostnames).isTrue();
 	}
 
 	protected <T> Object getField(Object target, String name) {

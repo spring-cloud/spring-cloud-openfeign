@@ -18,8 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Objects;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +30,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,14 +39,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jaesik Kim
  * @author Olga Maciaszek-Sharma
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = GzipDecodingTests.Application.class,
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=defaultGzipDecoderTests", "feign.compression.response.enabled=true",
 				"feign.client.config.default.loggerLevel=none", "feign.metrics.enabled=false",
 				"logging.level.org.springframework.cloud.openfeign=DEBUG" })
 @DirtiesContext
-public class GzipDecodingTests extends FeignClientFactoryBean {
+class GzipDecodingTests extends FeignClientFactoryBean {
 
 	@Autowired
 	FeignContext context;
@@ -56,7 +53,7 @@ public class GzipDecodingTests extends FeignClientFactoryBean {
 	@Value("${local.server.port}")
 	private int port = 0;
 
-	public GzipDecodingTests() {
+	GzipDecodingTests() {
 		setName("tests");
 		setContextId("test");
 	}
@@ -67,7 +64,7 @@ public class GzipDecodingTests extends FeignClientFactoryBean {
 	}
 
 	@Test
-	public void testBodyDecompress() {
+	void testBodyDecompress() {
 		ResponseEntity<Hello> response = testClient().getGzipResponse();
 		assertThat(response).as("response was null").isNotNull();
 		assertThat(response.getStatusCode()).as("wrong status code").isEqualTo(HttpStatus.OK);
@@ -77,7 +74,7 @@ public class GzipDecodingTests extends FeignClientFactoryBean {
 	}
 
 	@Test
-	public void testNullBodyDecompress() {
+	void testNullBodyDecompress() {
 		ResponseEntity<Hello> response = testClient().getNullResponse();
 		assertThat(response).as("response was null").isNotNull();
 		assertThat(response.getStatusCode()).as("wrong status code").isEqualTo(HttpStatus.OK);
@@ -87,7 +84,7 @@ public class GzipDecodingTests extends FeignClientFactoryBean {
 	}
 
 	@Test
-	public void testCharsetDecompress() {
+	void testCharsetDecompress() {
 		ResponseEntity<Hello> response = testClient().getUtf8Response();
 		assertThat(response).as("response was null").isNotNull();
 		assertThat(response.getStatusCode()).as("wrong status code").isEqualTo(HttpStatus.OK);

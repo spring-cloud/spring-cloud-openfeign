@@ -18,7 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -30,10 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Michael Cramer
  */
-public class FeignErrorDecoderFactoryTests {
+class FeignErrorDecoderFactoryTests {
 
 	@Test
-	public void testNoDefaultFactory() {
+	void testNoDefaultFactory() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration1.class);
 		String[] beanNamesForType = context.getBeanNamesForType(FeignErrorDecoderFactory.class);
 		assertThat(beanNamesForType).isEmpty();
@@ -41,7 +41,7 @@ public class FeignErrorDecoderFactoryTests {
 	}
 
 	@Test
-	public void testCustomErrorDecoderFactory() {
+	void testCustomErrorDecoderFactory() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration2.class);
 		FeignErrorDecoderFactory errorDecoderFactory = context.getBean(FeignErrorDecoderFactory.class);
 		assertThat(errorDecoderFactory).isNotNull();
@@ -52,7 +52,7 @@ public class FeignErrorDecoderFactoryTests {
 	}
 
 	@Test
-	public void testCustomErrorDecoderFactoryNotOverwritingErrorDecoder() {
+	void testCustomErrorDecoderFactoryNotOverwritingErrorDecoder() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SampleConfiguration3.class);
 		FeignErrorDecoderFactory errorDecoderFactory = context.getBean(FeignErrorDecoderFactory.class);
 		assertThat(errorDecoderFactory).isNotNull();

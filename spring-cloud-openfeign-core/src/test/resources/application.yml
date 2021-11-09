@@ -13,19 +13,6 @@ eureka:
   client:
     registerWithEureka: false
     fetchRegistry: false
-#error:
-#  path: /myerror
-ribbon:
-  ConnectTimeout: 3001
-  ReadTimeout: 60001
-foo:
-  ribbon:
-    ConnectTimeout: 7
-    ReadTimeout: 17
-badClients:
-  ribbon:
-    MaxAutoRetriesNextServer: 10
-    ReadTimeout: 200
 endpoints:
   health:
     sensitive: false

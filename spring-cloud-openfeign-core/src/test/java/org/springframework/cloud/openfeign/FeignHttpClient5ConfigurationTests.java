@@ -22,14 +22,12 @@ import feign.httpclient.ApacheHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.cloud.test.ClassPathExclusions;
-import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Nguyen Ky Thanh
  */
-public class FeignHttpClient5ConfigurationTests {
+class FeignHttpClient5ConfigurationTests {
 
 	private static void verifyHc4BeansAvailable(ConfigurableApplicationContext context) {
 		org.apache.http.impl.client.CloseableHttpClient httpClient4 = context
@@ -59,62 +57,55 @@ public class FeignHttpClient5ConfigurationTests {
 		assertThat(client).isInstanceOf(ApacheHttp5Client.class);
 	}
 
-	@RunWith(ModifiedClassPathRunner.class)
-	@ClassPathExclusions("ribbon-loadbalancer-{version:\\d.*}.jar")
-	public static class WithoutLoadBalancerInClasspath {
+	@Test
+	void verifyHttpClient5AutoConfig() {
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
+				.properties("feign.httpclient.hc5.enabled=true", "feign.httpclient.enabled=false")
+				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
+				.run();
 
-		@Test
-		public void verifyHttpClient5AutoConfig() {
-			ConfigurableApplicationContext context = new SpringApplicationBuilder()
-					.properties("feign.httpclient.hc5.enabled=true", "feign.httpclient.enabled=false")
-					.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
-					.run();
+		verifyHc5BeansAvailable(context);
 
-			verifyHc5BeansAvailable(context);
-
-			if (context != null) {
-				context.close();
-			}
+		if (context != null) {
+			context.close();
 		}
-
-		@Test
-		public void hc5ShouldWinIfTheBothVersionsAvailable() {
-			ConfigurableApplicationContext context = new SpringApplicationBuilder()
-					.properties("feign.httpclient.hc5.enabled=true", "feign.httpclient.enabled=true")
-					.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
-					.run();
-
-			Client client = context.getBean(Client.class);
-			assertThat(client).isInstanceOf(ApacheHttp5Client.class);
-
-			if (context != null) {
-				context.close();
-			}
-		}
-
-		@Test
-		public void hc4ShouldBeTheDefaultIfHc5NotEnabled() {
-			ConfigurableApplicationContext context = new SpringApplicationBuilder()
-					.properties("feign.httpclient.hc5.enabled=false", "feign.httpclient.enabled=true")
-					.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
-					.run();
-
-			verifyHc4BeansAvailable(context);
-
-			if (context != null) {
-				context.close();
-			}
-		}
-
 	}
 
-	@RunWith(ModifiedClassPathRunner.class)
-	@ClassPathExclusions({ "ribbon-loadbalancer-{version:\\d.*}.jar", "feign-hc5-{version:\\d.*}.jar",
-			"httpclient5-{version:\\d.*}.jar", "httpcore5-{version:\\d.*}.jar", "httpcore5-h2-{version:\\d.*}.jar" })
-	public static class WithoutLoadBalancerAndHc5InClasspath {
+	@Test
+	void hc5ShouldWinIfTheBothVersionsAvailable() {
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
+				.properties("feign.httpclient.hc5.enabled=true", "feign.httpclient.enabled=true")
+				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
+				.run();
+
+		Client client = context.getBean(Client.class);
+		assertThat(client).isInstanceOf(ApacheHttp5Client.class);
+
+		if (context != null) {
+			context.close();
+		}
+	}
+
+	@Test
+	void hc4ShouldBeTheDefaultIfHc5NotEnabled() {
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
+				.properties("feign.httpclient.hc5.enabled=false", "feign.httpclient.enabled=true")
+				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
+				.run();
+
+		verifyHc4BeansAvailable(context);
+
+		if (context != null) {
+			context.close();
+		}
+	}
+
+	@ClassPathExclusions({ "feign-hc5-{version:\\d.*}.jar", "httpclient5-{version:\\d.*}.jar",
+			"httpcore5-{version:\\d.*}.jar", "httpcore5-h2-{version:\\d.*}.jar" })
+	static class WithoutLoadBalancerAndHc5InClasspath {
 
 		@Test
-		public void hc4ShouldWinEvenHc5ConfigEnabled() {
+		void hc4ShouldWinEvenHc5ConfigEnabled() {
 			ConfigurableApplicationContext context = new SpringApplicationBuilder()
 					.properties("feign.httpclient.hc5.enabled=true").web(WebApplicationType.NONE)
 					.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
@@ -127,7 +118,7 @@ public class FeignHttpClient5ConfigurationTests {
 		}
 
 		@Test
-		public void hc4ShouldBeTheDefault() {
+		void hc4ShouldBeTheDefault() {
 			ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
 					.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
 
