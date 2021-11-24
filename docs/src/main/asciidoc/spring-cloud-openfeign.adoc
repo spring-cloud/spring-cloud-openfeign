@@ -192,6 +192,7 @@ feign:
 				capabilities:
 					- com.example.FooCapability
 					- com.example.BarCapability
+				queryMapEncoder: com.example.SimpleQueryMapEncoder
 				metrics.enabled: false
 ----
 

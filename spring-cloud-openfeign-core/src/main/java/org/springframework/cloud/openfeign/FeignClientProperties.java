@@ -26,6 +26,7 @@ import feign.Capability;
 import feign.Contract;
 import feign.ExceptionPropagationPolicy;
 import feign.Logger;
+import feign.QueryMapEncoder;
 import feign.RequestInterceptor;
 import feign.Retryer;
 import feign.codec.Decoder;
@@ -40,6 +41,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Ram Anaswara
  * @author Jonatan Ivanov
  * @author Olga Maciaszek-Sharma
+ * @author Hyeonmin Park
  */
 @ConfigurationProperties("feign.client")
 public class FeignClientProperties {
@@ -138,6 +140,8 @@ public class FeignClientProperties {
 		private ExceptionPropagationPolicy exceptionPropagationPolicy;
 
 		private List<Class<Capability>> capabilities;
+
+		private Class<QueryMapEncoder> queryMapEncoder;
 
 		private MetricsProperties metrics;
 
@@ -255,6 +259,14 @@ public class FeignClientProperties {
 			this.capabilities = capabilities;
 		}
 
+		public Class<QueryMapEncoder> getQueryMapEncoder() {
+			return queryMapEncoder;
+		}
+
+		public void setQueryMapEncoder(Class<QueryMapEncoder> queryMapEncoder) {
+			this.queryMapEncoder = queryMapEncoder;
+		}
+
 		public MetricsProperties getMetrics() {
 			return metrics;
 		}
@@ -289,7 +301,8 @@ public class FeignClientProperties {
 					&& Objects.equals(exceptionPropagationPolicy, that.exceptionPropagationPolicy)
 					&& Objects.equals(defaultRequestHeaders, that.defaultRequestHeaders)
 					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters)
-					&& Objects.equals(capabilities, that.capabilities) && Objects.equals(metrics, that.metrics)
+					&& Objects.equals(capabilities, that.capabilities)
+					&& Objects.equals(queryMapEncoder, that.queryMapEncoder) && Objects.equals(metrics, that.metrics)
 					&& Objects.equals(followRedirects, that.followRedirects);
 		}
 
@@ -297,7 +310,7 @@ public class FeignClientProperties {
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
 					decode404, encoder, decoder, contract, exceptionPropagationPolicy, defaultQueryParameters,
-					defaultRequestHeaders, capabilities, metrics, followRedirects);
+					defaultRequestHeaders, capabilities, queryMapEncoder, metrics, followRedirects);
 		}
 
 	}

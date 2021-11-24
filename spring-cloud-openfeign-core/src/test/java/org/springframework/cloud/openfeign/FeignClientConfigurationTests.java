@@ -24,6 +24,7 @@ import feign.Capability;
 import feign.Contract;
 import feign.ExceptionPropagationPolicy;
 import feign.Logger;
+import feign.QueryMapEncoder;
 import feign.RequestInterceptor;
 import feign.Retryer;
 import feign.codec.Decoder;
@@ -43,6 +44,7 @@ import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.a
 
 /**
  * @author Jonatan Ivanov
+ * @author Hyeonmin Park
  */
 class FeignClientConfigurationTests {
 
@@ -64,6 +66,7 @@ class FeignClientConfigurationTests {
 		assertThat(config.getContract()).isNull();
 		assertThat(config.getExceptionPropagationPolicy()).isNull();
 		assertThat(config.getCapabilities()).isNull();
+		assertThat(config.getQueryMapEncoder()).isNull();
 		assertThat(config.getMetrics()).isNull();
 	}
 
@@ -88,6 +91,7 @@ class FeignClientConfigurationTests {
 		config.setExceptionPropagationPolicy(ExceptionPropagationPolicy.UNWRAP);
 		List<Class<Capability>> capabilities = Lists.list(Capability.class);
 		config.setCapabilities(capabilities);
+		config.setQueryMapEncoder(QueryMapEncoder.class);
 		FeignClientProperties.MetricsProperties metrics = new FeignClientProperties.MetricsProperties();
 		config.setMetrics(metrics);
 
@@ -105,6 +109,7 @@ class FeignClientConfigurationTests {
 		assertThat(config.getContract()).isSameAs(Contract.class);
 		assertThat(config.getExceptionPropagationPolicy()).isSameAs(ExceptionPropagationPolicy.UNWRAP);
 		assertThat(config.getCapabilities()).isSameAs(capabilities);
+		assertThat(config.getQueryMapEncoder()).isSameAs(QueryMapEncoder.class);
 		assertThat(config.getMetrics()).isSameAs(metrics);
 	}
 
