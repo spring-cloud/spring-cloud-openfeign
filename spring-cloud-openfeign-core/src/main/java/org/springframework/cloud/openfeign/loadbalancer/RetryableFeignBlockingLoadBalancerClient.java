@@ -70,7 +70,7 @@ import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class RetryableFeignBlockingLoadBalancerClient implements Client {
 
-	private static final Log LOG = LogFactory.getLog(FeignBlockingLoadBalancerClient.class);
+	private static final Log LOG = LogFactory.getLog(RetryableFeignBlockingLoadBalancerClient.class);
 
 	private final Client delegate;
 
