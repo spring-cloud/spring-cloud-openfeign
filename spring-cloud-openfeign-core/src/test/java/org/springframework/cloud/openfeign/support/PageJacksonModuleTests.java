@@ -16,13 +16,18 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import java.util.ArrayList;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,6 +36,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Ruben Vervaeke
  * @author Olga Maciaszek-Sharma
+ * @author Pedro Mendes
+ * @author Nikita Konev
  */
 public class PageJacksonModuleTests {
 
@@ -40,6 +47,7 @@ public class PageJacksonModuleTests {
 	public static void initialize() {
 		objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new PageJacksonModule());
+		objectMapper.registerModule(new SortJacksonModule());
 	}
 
 	@ParameterizedTest
@@ -56,6 +64,42 @@ public class PageJacksonModuleTests {
 		assertThat(result.getPageable()).isNotNull();
 		assertThat(result.getPageable().getPageSize()).isEqualTo(2);
 		assertThat(result.getPageable().getPageNumber()).isEqualTo(1);
+	}
+
+	@Test
+	public void serializeAndDeserializeEmpty() throws JsonProcessingException {
+		// Given
+		PageImpl<Object> objects = new PageImpl<>(new ArrayList<>());
+		String pageJson = objectMapper.writeValueAsString(objects);
+		// When
+		Page<?> result = objectMapper.readValue(pageJson, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(0);
+		assertThat(result.getContent()).hasSize(0);
+	}
+
+	@Test
+	public void serializeAndDeserializeFilledMultiple() throws JsonProcessingException {
+		// Given
+		ArrayList<Object> strings0 = new ArrayList<>();
+		strings0.add("first element");
+		strings0.add("second element");
+		PageImpl<Object> objects = new PageImpl<>(strings0, PageRequest.of(6, 2), 100);
+		assertThat(objects.getContent()).hasSize(2);
+		assertThat(objects.getPageable().getPageSize()).isEqualTo(2);
+
+		String pageJson = objectMapper.writeValueAsString(objects);
+		// When
+		Page<?> result = objectMapper.readValue(pageJson, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(100);
+		assertThat(result.getContent()).hasSize(2);
+		assertThat(result.getContent().get(0)).isEqualTo("first element");
+		assertThat(result.getContent().get(1)).isEqualTo("second element");
+		assertThat(result.getPageable().getPageSize()).isEqualTo(2);
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(6);
 	}
 
 }

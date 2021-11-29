@@ -38,6 +38,8 @@ import org.springframework.data.domain.Sort;
  *
  * @author Pascal Büttiker
  * @author Olga Maciaszek-Sharma
+ * @author Pedro Mendes
+ * @author Nikita Konev
  */
 public class PageJacksonModule extends Module {
 
@@ -69,18 +71,22 @@ public class PageJacksonModule extends Module {
 				@JsonProperty("size") int size, @JsonProperty("totalElements") @JsonAlias({ "total-elements",
 						"total_elements", "totalelements", "TotalElements" }) long totalElements,
 				@JsonProperty("sort") Sort sort) {
-			PageRequest pageRequest;
-			if (sort != null) {
-				pageRequest = PageRequest.of(number, size, sort);
+			if (size > 0) {
+				PageRequest pageRequest;
+				if (sort != null) {
+					pageRequest = PageRequest.of(number, size, sort);
+				}
+				else {
+					pageRequest = PageRequest.of(number, size);
+				}
+				delegate = new PageImpl<>(content, pageRequest, totalElements);
 			}
 			else {
-				pageRequest = PageRequest.of(number, size);
+				delegate = new PageImpl<>(content);
 			}
-			delegate = new PageImpl<>(content, pageRequest, totalElements);
-
 		}
 
-		@JsonProperty
+		@JsonIgnore
 		@Override
 		public int getTotalPages() {
 			return delegate.getTotalPages();
@@ -104,7 +110,7 @@ public class PageJacksonModule extends Module {
 			return delegate.getSize();
 		}
 
-		@JsonProperty
+		@JsonIgnore
 		@Override
 		public int getNumberOfElements() {
 			return delegate.getNumberOfElements();
@@ -128,13 +134,13 @@ public class PageJacksonModule extends Module {
 			return delegate.getSort();
 		}
 
-		@JsonProperty
+		@JsonIgnore
 		@Override
 		public boolean isFirst() {
 			return delegate.isFirst();
 		}
 
-		@JsonProperty
+		@JsonIgnore
 		@Override
 		public boolean isLast() {
 			return delegate.isLast();
@@ -174,6 +180,18 @@ public class PageJacksonModule extends Module {
 		@Override
 		public Iterator<T> iterator() {
 			return delegate.iterator();
+		}
+
+		@JsonIgnore
+		@Override
+		public Pageable getPageable() {
+			return delegate.getPageable();
+		}
+
+		@JsonIgnore
+		@Override
+		public boolean isEmpty() {
+			return delegate.isEmpty();
 		}
 
 	}
