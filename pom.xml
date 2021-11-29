@@ -79,6 +79,15 @@
 				<groupId>io.spring.javaformat</groupId>
 				<artifactId>spring-javaformat-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.basepom.maven</groupId>
+				<artifactId>duplicate-finder-maven-plugin</artifactId>
+				<configuration>
+					<ignoredResourcePatterns>
+						<ignoredResourcePattern>mozilla/public-suffix-list.txt</ignoredResourcePattern>
+					</ignoredResourcePatterns>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
