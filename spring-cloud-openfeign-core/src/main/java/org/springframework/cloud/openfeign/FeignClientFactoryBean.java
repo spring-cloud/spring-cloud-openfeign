@@ -68,6 +68,7 @@ import org.springframework.util.StringUtils;
  * @author Jonatan Ivanov
  * @author Sam Kruglov
  * @author Jasbir Singh
+ * @author Hyeonmin Park
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -294,6 +295,10 @@ public class FeignClientFactoryBean
 
 		if (config.getCapabilities() != null) {
 			config.getCapabilities().stream().map(this::getOrInstantiate).forEach(builder::addCapability);
+		}
+
+		if (config.getQueryMapEncoder() != null) {
+			builder.queryMapEncoder(getOrInstantiate(config.getQueryMapEncoder()));
 		}
 	}
 

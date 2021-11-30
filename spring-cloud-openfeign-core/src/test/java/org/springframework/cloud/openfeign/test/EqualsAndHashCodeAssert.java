@@ -99,7 +99,7 @@ public class EqualsAndHashCodeAssert {
 	 */
 	public static void assertEqualsAndHashCodeConsistency(Object objectOne, Object objectTwo) {
 		assertThat(objectOne.equals(objectTwo)).isTrue();
-		assertThat(objectOne.hashCode()).isEqualTo(objectTwo.hashCode());
+		assertThat(objectOne).hasSameHashCodeAs(objectTwo);
 	}
 
 }
