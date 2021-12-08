@@ -760,6 +760,16 @@ feign.client.refresh-enabled=true
 ----
 TIP: DO NOT annotate the `@FeignClient` interface with the `@RefreshScope` annotation.
 
+=== OAuth2 Support
+OAuth2 support can be enabled by setting following flag:
+----
+feign.oauth2.enabled=true
+----
+When flag is set to true, and oauth2 client context with resource details are present, a bean of class `OAuth2FeignRequestInterceptor` will be created. Since now, before each request, interceptor will resolve required access token and include it as header.
+Sometimes when load balancing is enabled for Feign clients, You may want to use load balancing for fetching access token too. To achieve this, You should ensure that load balancer is on classpath (`spring-cloud-starter-loadbalancer`), as well as explicitly enable load balancing for `OAuth2FeignRequestInterceptor` by setting following flag:
+----
+feign.oauth2.load-balanced=true
+----
 
 == Configuration properties
 

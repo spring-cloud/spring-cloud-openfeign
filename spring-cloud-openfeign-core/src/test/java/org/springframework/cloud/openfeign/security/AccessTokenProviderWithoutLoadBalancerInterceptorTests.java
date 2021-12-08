@@ -23,11 +23,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.cloud.client.loadbalancer.RetryLoadBalancerInterceptor;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignContext;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.cloud.openfeign.security.OAuth2AccessTokenProviderReflectionUtils.getAccessTokenProviderInterceptor;
 
 /**
  * @author Wojciech Mąka
@@ -52,17 +52,17 @@ public class AccessTokenProviderWithoutLoadBalancerInterceptorTests {
 	FeignContext context;
 
 	@Autowired
-	private ApplicationContext applicationContext;
+	private ConfigurableApplicationContext applicationContext;
 
 	@Test
 	void testOAuth2RequestInterceptorIsNotLoadBalanced() {
-		Application.SampleClient client = applicationContext.getBean(Application.SampleClient.class);
-		assertThat(client).isNotNull();
-		OAuth2FeignRequestInterceptor interceptor = applicationContext.getBean(OAuth2FeignRequestInterceptor.class);
-		assertThat(interceptor).isNotNull();
-		RetryLoadBalancerInterceptor loadBalancerInterceptor = getAccessTokenProviderInterceptor(interceptor,
-				RetryLoadBalancerInterceptor.class);
-		assertThat(loadBalancerInterceptor).isNull();
+		AssertableApplicationContext assertableContext = AssertableApplicationContext.get(() -> applicationContext);
+		assertThat(assertableContext)
+				.hasSingleBean(AccessTokenProviderWithoutLoadBalancerInterceptorTests.Application.SampleClient.class);
+		assertThat(assertableContext).hasSingleBean(OAuth2FeignRequestInterceptor.class);
+		assertThat(assertableContext).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
+				.extracting("interceptors").asList()
+				.filteredOn(obj -> RetryLoadBalancerInterceptor.class.equals(obj.getClass())).isEmpty();
 	}
 
 	@Configuration(proxyBeanMethods = false)

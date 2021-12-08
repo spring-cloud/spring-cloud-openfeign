@@ -17,13 +17,13 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 import feign.Target;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor;
@@ -38,9 +38,7 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.security.oauth2.client.resource.BaseOAuth2ProtectedResourceDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
-import static org.springframework.cloud.openfeign.security.OAuth2AccessTokenProviderReflectionUtils.getAccessTokenProviderInterceptors;
 
 /**
  * @author Tim Peeters
@@ -134,32 +132,23 @@ class FeignAutoConfigurationTests {
 	}
 
 	private void assertOauth2FeignRequestInterceptorExists(ConfigurableApplicationContext ctx) {
-		OAuth2FeignRequestInterceptor interceptor = ctx.getBean(OAuth2FeignRequestInterceptor.class);
-		assertThat(interceptor).isNotNull();
+		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
+		assertThat(context).hasSingleBean(OAuth2FeignRequestInterceptor.class);
 	}
 
 	private void assertAccessTokenProviderInterceptorExists(ConfigurableApplicationContext ctx,
 			Class<? extends ClientHttpRequestInterceptor> clazz) {
-		OAuth2FeignRequestInterceptor interceptor = ctx.getBean(OAuth2FeignRequestInterceptor.class);
-		List<ClientHttpRequestInterceptor> interceptors = getAccessTokenProviderInterceptors(interceptor);
-		for (ClientHttpRequestInterceptor accessTokenProviderInterceptor : interceptors) {
-			if (clazz.isAssignableFrom(accessTokenProviderInterceptor.getClass())) {
-				return;
-			}
-		}
-		fail("No required interceptor found in AccessTokenProvider interceptor list.");
+		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
+		assertThat(context).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
+				.extracting("interceptors").asList().first().isInstanceOf(clazz);
 	}
 
 	private void assertAccessTokenProviderInterceptorNotExists(ConfigurableApplicationContext ctx,
 			Class<? extends ClientHttpRequestInterceptor> clazz) {
-		OAuth2FeignRequestInterceptor interceptor = ctx.getBean(OAuth2FeignRequestInterceptor.class);
-		List<ClientHttpRequestInterceptor> interceptors = getAccessTokenProviderInterceptors(interceptor);
-		for (ClientHttpRequestInterceptor accessTokenProviderInterceptor : interceptors) {
-			if (clazz.isAssignableFrom(accessTokenProviderInterceptor.getClass())) {
-				fail("No required interceptor found in AccessTokenProvider interceptor list.");
-				return;
-			}
-		}
+		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
+		assertThat(context).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
+				.extracting("interceptors").asList().filteredOn(obj -> clazz.isAssignableFrom(obj.getClass()))
+				.isEmpty();
 	}
 
 	private void assertOnlyOneTargeterPresent(ConfigurableApplicationContext ctx, Class<?> beanClass) {
