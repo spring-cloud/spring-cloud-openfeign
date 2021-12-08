@@ -52,11 +52,6 @@ public class OAuth2FeignRequestInterceptorBuilder {
 				new ResourceOwnerPasswordAccessTokenProvider(), new ClientCredentialsAccessTokenProvider()));
 	}
 
-	public OAuth2FeignRequestInterceptorBuilder withAccessTokenProvider(AccessTokenProvider accessTokenProvider) {
-		this.accessTokenProvider = accessTokenProvider;
-		return this;
-	}
-
 	public OAuth2FeignRequestInterceptorBuilder withAccessTokenProviderInterceptors(
 			ClientHttpRequestInterceptor... interceptors) {
 		accessTokenProviderInterceptors.addAll(Arrays.asList(interceptors));
