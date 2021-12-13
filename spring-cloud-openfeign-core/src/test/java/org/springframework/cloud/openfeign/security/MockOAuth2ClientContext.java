@@ -29,7 +29,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
  *
  * @author João Pedro Evangelista
  */
-final class MockOAuth2ClientContext implements OAuth2ClientContext {
+public final class MockOAuth2ClientContext implements OAuth2ClientContext {
 
 	private final String value;
 

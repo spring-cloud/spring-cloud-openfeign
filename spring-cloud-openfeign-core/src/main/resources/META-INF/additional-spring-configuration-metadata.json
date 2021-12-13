@@ -61,6 +61,18 @@
 			"type": "java.lang.Boolean",
 			"description": "Enables options value refresh capability for Feign.",
 			"defaultValue": "false"
+		},
+		{
+			"name": "feign.oauth2.enabled",
+			"type": "java.lang.Boolean",
+			"description": "Enables feign interceptor for managing oauth2 access token.",
+			"defaultValue": "false"
+		},
+		{
+			"name": "feign.oauth2.load-balanced",
+			"type": "java.lang.Boolean",
+			"description": "Enables load balancing for oauth2 access token provider.",
+			"defaultValue": "false"
 		}
 	]
 }

@@ -30,5 +30,6 @@
 |feign.httpclient.time-to-live-unit |  | 
 |feign.metrics.enabled | `true` | Enables metrics capability for Feign.
 |feign.okhttp.enabled | `false` | Enables the use of the OK HTTP Client by Feign.
-
+|feign.oauth2.enabled | `false` | Enables the use OAuth2FeignRequestInterceptor to resolve access token.
+|feign.oauth2.load-balanced | `false` | Enables `LoadBalancerInterceptor` or `RetryloadBalancerInterceptor` for `OAuth2FeignRequestInterceptor.accessTokenProvider` to use load balancing when resolving authentication token.
 |===

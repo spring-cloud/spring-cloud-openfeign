@@ -55,11 +55,14 @@ import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.cloud.client.actuator.HasFeatures;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor;
+import org.springframework.cloud.client.loadbalancer.RetryLoadBalancerInterceptor;
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionManagerFactory;
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
+import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptorConfigurer;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
@@ -73,6 +76,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 
+import static org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptorBuilder.buildWithConfigurers;
+
 /**
  * @author Spencer Gibb
  * @author Julien Roy
@@ -84,6 +89,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
  * @author Andrii Bohutskyi
  * @author Kwangyong Kim
  * @author Sam Kruglov
+ * @author Wojciech Mąka
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -322,12 +328,30 @@ public class FeignAutoConfiguration {
 	@ConditionalOnProperty("feign.oauth2.enabled")
 	protected static class Oauth2FeignConfiguration {
 
+		@ConditionalOnBean({ RetryLoadBalancerInterceptor.class, OAuth2ClientContext.class,
+				OAuth2ProtectedResourceDetails.class })
+		@ConditionalOnProperty(value = "feign.oauth2.load-balanced", havingValue = "true")
+		@Bean
+		public OAuth2FeignRequestInterceptorConfigurer retryLoadBalancerInterceptorInjectingConfigurer(
+				final RetryLoadBalancerInterceptor loadBalancerInterceptor) {
+			return builder -> builder.withAccessTokenProviderInterceptors(loadBalancerInterceptor);
+		}
+
+		@ConditionalOnBean({ LoadBalancerInterceptor.class, OAuth2ClientContext.class,
+				OAuth2ProtectedResourceDetails.class })
+		@ConditionalOnProperty(value = "feign.oauth2.load-balanced", havingValue = "true")
+		@Bean
+		public OAuth2FeignRequestInterceptorConfigurer loadBalancerInterceptorInjectingConfigurer(
+				final LoadBalancerInterceptor loadBalancerInterceptor) {
+			return builder -> builder.withAccessTokenProviderInterceptors(loadBalancerInterceptor);
+		}
+
 		@Bean
 		@ConditionalOnMissingBean(OAuth2FeignRequestInterceptor.class)
 		@ConditionalOnBean({ OAuth2ClientContext.class, OAuth2ProtectedResourceDetails.class })
 		public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2ClientContext oAuth2ClientContext,
-				OAuth2ProtectedResourceDetails resource) {
-			return new OAuth2FeignRequestInterceptor(oAuth2ClientContext, resource);
+				OAuth2ProtectedResourceDetails resource, List<OAuth2FeignRequestInterceptorConfigurer> configurers) {
+			return buildWithConfigurers(oAuth2ClientContext, resource, configurers);
 		}
 
 	}

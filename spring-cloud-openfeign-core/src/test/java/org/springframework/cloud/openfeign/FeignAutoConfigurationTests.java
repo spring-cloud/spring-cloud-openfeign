@@ -23,10 +23,19 @@ import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.DefaultCircuitBreakerNameResolver;
+import org.springframework.cloud.openfeign.security.MockOAuth2ClientContext;
+import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
+import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptorBuilder;
+import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptorConfigurer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
+import org.springframework.security.oauth2.client.resource.BaseOAuth2ProtectedResourceDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -36,6 +45,7 @@ import static org.mockito.Mockito.mock;
  * @author Olga Maciaszek-Sharma
  * @author Andrii Bohutskyi
  * @author Kwangyong Kim
+ * @author Wojciech Mąka
  */
 class FeignAutoConfigurationTests {
 
@@ -81,6 +91,66 @@ class FeignAutoConfigurationTests {
 				});
 	}
 
+	@Test
+	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithoutInterceptors() {
+		runner.withPropertyValues("feign.oauth2.enabled=true").withBean(MockOAuth2ClientContext.class, "token")
+				.withBean(BaseOAuth2ProtectedResourceDetails.class)
+				.withBean(LoadBalancerInterceptor.class, () -> mock(LoadBalancerInterceptor.class)).run(ctx -> {
+					assertOauth2FeignRequestInterceptorExists(ctx);
+					assertAccessTokenProviderInterceptorNotExists(ctx, LoadBalancerInterceptor.class);
+				});
+	}
+
+	@Test
+	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithLoadBalancedInterceptor() {
+		runner.withPropertyValues("feign.oauth2.enabled=true", "feign.oauth2.load-balanced=true")
+				.withBean(MockOAuth2ClientContext.class, "token").withBean(BaseOAuth2ProtectedResourceDetails.class)
+				.withBean(LoadBalancerInterceptor.class, () -> mock(LoadBalancerInterceptor.class)).run(ctx -> {
+					assertOauth2FeignRequestInterceptorExists(ctx);
+					assertAccessTokenProviderInterceptorExists(ctx, LoadBalancerInterceptor.class);
+				});
+	}
+
+	@Test
+	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithoutLoadBalancedInterceptorIfNoBeanPresent() {
+		runner.withPropertyValues("feign.oauth2.enabled=true", "feign.oauth2.load-balanced=true")
+				.withBean(MockOAuth2ClientContext.class, "token").withBean(BaseOAuth2ProtectedResourceDetails.class)
+				.run(ctx -> {
+					assertOauth2FeignRequestInterceptorExists(ctx);
+					assertAccessTokenProviderInterceptorNotExists(ctx, LoadBalancerInterceptor.class);
+				});
+	}
+
+	@Test
+	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithCustomAccessTokenProviderInterceptor() {
+		runner.withPropertyValues("feign.oauth2.enabled=true").withBean(MockOAuth2ClientContext.class, "token")
+				.withBean(BaseOAuth2ProtectedResourceDetails.class)
+				.withBean(CustomOAuth2FeignRequestInterceptorConfigurer.class).run(ctx -> {
+					assertOauth2FeignRequestInterceptorExists(ctx);
+					assertAccessTokenProviderInterceptorExists(ctx, BasicAuthenticationInterceptor.class);
+				});
+	}
+
+	private void assertOauth2FeignRequestInterceptorExists(ConfigurableApplicationContext ctx) {
+		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
+		assertThat(context).hasSingleBean(OAuth2FeignRequestInterceptor.class);
+	}
+
+	private void assertAccessTokenProviderInterceptorExists(ConfigurableApplicationContext ctx,
+			Class<? extends ClientHttpRequestInterceptor> clazz) {
+		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
+		assertThat(context).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
+				.extracting("interceptors").asList().first().isInstanceOf(clazz);
+	}
+
+	private void assertAccessTokenProviderInterceptorNotExists(ConfigurableApplicationContext ctx,
+			Class<? extends ClientHttpRequestInterceptor> clazz) {
+		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
+		assertThat(context).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
+				.extracting("interceptors").asList().filteredOn(obj -> clazz.isAssignableFrom(obj.getClass()))
+				.isEmpty();
+	}
+
 	private void assertOnlyOneTargeterPresent(ConfigurableApplicationContext ctx, Class<?> beanClass) {
 		assertThat(ctx.getBeansOfType(Targeter.class)).hasSize(1).hasValueSatisfying(new Condition<>(
 				beanClass::isInstance, String.format("Targeter should be an instance of %s", beanClass)));
@@ -104,6 +174,16 @@ class FeignAutoConfigurationTests {
 		@Override
 		public String resolveCircuitBreakerName(String feignClientName, Target<?> target, Method method) {
 			return feignClientName + "_" + method.getName();
+		}
+
+	}
+
+	static class CustomOAuth2FeignRequestInterceptorConfigurer implements OAuth2FeignRequestInterceptorConfigurer {
+
+		@Override
+		public void customize(OAuth2FeignRequestInterceptorBuilder requestInterceptorBuilder) {
+			requestInterceptorBuilder
+					.withAccessTokenProviderInterceptors(new BasicAuthenticationInterceptor("username", "password"));
 		}
 
 	}
