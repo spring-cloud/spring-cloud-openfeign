@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
-
 import feign.Capability;
 import feign.Feign;
 import feign.InvocationHandlerFactory;
@@ -47,6 +45,7 @@ import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import feign.micrometer.MicrometerCapability;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;

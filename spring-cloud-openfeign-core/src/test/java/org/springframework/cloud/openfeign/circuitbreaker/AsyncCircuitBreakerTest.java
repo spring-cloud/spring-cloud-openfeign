@@ -21,9 +21,8 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.servlet.http.HttpServletRequest;
-
 import feign.RequestInterceptor;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.ObjectProvider;

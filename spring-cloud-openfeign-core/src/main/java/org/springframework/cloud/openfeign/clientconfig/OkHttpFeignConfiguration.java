@@ -18,8 +18,7 @@ package org.springframework.cloud.openfeign.clientconfig;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PreDestroy;
-
+import jakarta.annotation.PreDestroy;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 

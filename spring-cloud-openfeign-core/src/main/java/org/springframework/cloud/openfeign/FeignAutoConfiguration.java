@@ -24,8 +24,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PreDestroy;
-
 import com.fasterxml.jackson.databind.Module;
 import feign.Capability;
 import feign.Client;
@@ -35,6 +33,7 @@ import feign.Target;
 import feign.hc5.ApacheHttp5Client;
 import feign.httpclient.ApacheHttpClient;
 import feign.okhttp.OkHttpClient;
+import jakarta.annotation.PreDestroy;
 import okhttp3.ConnectionPool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

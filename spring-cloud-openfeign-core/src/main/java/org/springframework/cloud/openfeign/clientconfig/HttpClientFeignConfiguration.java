@@ -20,8 +20,7 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.annotation.PreDestroy;
-
+import jakarta.annotation.PreDestroy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.config.RequestConfig;
