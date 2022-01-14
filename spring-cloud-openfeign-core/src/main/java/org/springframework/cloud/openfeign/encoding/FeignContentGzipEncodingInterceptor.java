@@ -83,7 +83,7 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 	}
 
 	/**
-	 * Returns whether the content mime types matches the configures mime types.
+	 * Returns whether the content mime types matches the configured mime types.
 	 * @param contentTypes the content types
 	 * @return true if any specified content type matches the request content types
 	 */
