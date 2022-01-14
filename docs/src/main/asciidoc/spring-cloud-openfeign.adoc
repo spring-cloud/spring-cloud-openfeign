@@ -739,7 +739,7 @@ To work around this problem you can use an `ObjectProvider` when autowiring your
 [source,java,indent=0]
 ----
 @Autowired
-ObjectProvider<TestFeginClient> testFeginClient;
+ObjectProvider<TestFeignClient> testFeignClient;
 ----
 
 === Spring Data Support

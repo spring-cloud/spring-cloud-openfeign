@@ -45,26 +45,33 @@ class FeignOkHttpConfigurationTests {
 	void setUp() {
 		this.context = new SpringApplicationBuilder()
 				.properties("debug=true", "feign.httpclient.disableSslValidation=true", "feign.okhttp.enabled=true",
-						"feign.httpclient.enabled=false")
+						"feign.httpclient.enabled=false", "feign.httpclient.okhttp-client-properties.read-timeout=9s")
 				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
 				.run();
 	}
 
 	@AfterEach
 	void tearDown() {
-		if (this.context != null) {
-			this.context.close();
+		if (context != null) {
+			context.close();
 		}
 	}
 
 	@Test
 	void disableSslTest() {
-		OkHttpClient httpClient = this.context.getBean(OkHttpClient.class);
+		OkHttpClient httpClient = context.getBean(OkHttpClient.class);
 		HostnameVerifier hostnameVerifier = (HostnameVerifier) this.getField(httpClient, "hostnameVerifier");
 		assertThat(hostnameVerifier instanceof OkHttpClientFactory.TrustAllHostnames).isTrue();
 	}
 
-	protected <T> Object getField(Object target, String name) {
+	@Test
+	void shouldConfigureReadTimeout() {
+		OkHttpClient httpClient = context.getBean(OkHttpClient.class);
+
+		assertThat(httpClient.readTimeoutMillis()).isEqualTo(9000);
+	}
+
+	protected Object getField(Object target, String name) {
 		Field field = ReflectionUtils.findField(target.getClass(), name);
 		ReflectionUtils.makeAccessible(field);
 		Object value = ReflectionUtils.getField(field, target);
