@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -274,8 +275,8 @@ public class FeignAutoConfiguration {
 		@ConditionalOnMissingBean(ConnectionPool.class)
 		public ConnectionPool httpClientConnectionPool(FeignHttpClientProperties httpClientProperties,
 				OkHttpClientConnectionPoolFactory connectionPoolFactory) {
-			Integer maxTotalConnections = httpClientProperties.getMaxConnections();
-			Long timeToLive = httpClientProperties.getTimeToLive();
+			int maxTotalConnections = httpClientProperties.getMaxConnections();
+			long timeToLive = httpClientProperties.getTimeToLive();
 			TimeUnit ttlUnit = httpClientProperties.getTimeToLiveUnit();
 			return connectionPoolFactory.create(maxTotalConnections, timeToLive, ttlUnit);
 		}
@@ -283,12 +284,13 @@ public class FeignAutoConfiguration {
 		@Bean
 		public okhttp3.OkHttpClient client(OkHttpClientFactory httpClientFactory, ConnectionPool connectionPool,
 				FeignHttpClientProperties httpClientProperties) {
-			Boolean followRedirects = httpClientProperties.isFollowRedirects();
-			Integer connectTimeout = httpClientProperties.getConnectionTimeout();
-			Boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
+			boolean followRedirects = httpClientProperties.isFollowRedirects();
+			int connectTimeout = httpClientProperties.getConnectionTimeout();
+			boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
+			Duration readTimeout = httpClientProperties.getOkHttpClientProperties().getReadTimeout();
 			this.okHttpClient = httpClientFactory.createBuilder(disableSslValidation)
 					.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS).followRedirects(followRedirects)
-					.connectionPool(connectionPool).build();
+					.readTimeout(readTimeout).connectionPool(connectionPool).build();
 			return this.okHttpClient;
 		}
 
