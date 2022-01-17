@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Collections;
 
+import feign.Target;
 import org.junit.Test;
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -25,15 +26,19 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.env.MockEnvironment;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 /**
  * @author Spencer Gibb
  * @author Gang Li
  * @author Michal Domagala
+ * @author Szymon Linowski
+ * @author Olga Maciaszek-Sharma
  */
 public class FeignClientsRegistrarTests {
 
@@ -101,6 +106,30 @@ public class FeignClientsRegistrarTests {
 				.doesNotThrowAnyException();
 	}
 
+	@Test
+	public void shouldResolveNullUrl() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+		context.register(NullUrlFeignClientTestConfig.class);
+		context.refresh();
+
+		Object feignClientBean = context.getBean(NullUrlFeignClient.class);
+
+		Object invocationHandlerLambda = ReflectionTestUtils.getField(feignClientBean, "h");
+		Target.HardCodedTarget<NullUrlFeignClient> target = (Target.HardCodedTarget<NullUrlFeignClient>) ReflectionTestUtils
+				.getField(invocationHandlerLambda, "arg$4");
+		assertThat(target.name()).isEqualTo("nullUrlFeignClient");
+		assertThat(target.url()).isEqualTo("http://nullUrlFeignClient");
+	}
+
+	@Test
+	public void shouldResolveAndValidateNullName() {
+		assertThatIllegalStateException().isThrownBy(() -> {
+			AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+			context.register(NullExpressionNameFeignClientTestConfig.class);
+			context.refresh();
+		});
+	}
+
 	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)
 	protected interface FallbackClient {
 
@@ -115,6 +144,16 @@ public class FeignClientsRegistrarTests {
 
 		@GetMapping("/hello")
 		String fallbackFactoryTest();
+
+	}
+
+	@FeignClient(name = "nullUrlFeignClient", url = "${test.url:#{null}}", path = "${test.path:#{null}}")
+	protected interface NullUrlFeignClient {
+
+	}
+
+	@FeignClient(name = "${test.name:#{null}}")
+	protected interface NullExpressionNameFeignClient {
 
 	}
 
@@ -135,6 +174,20 @@ public class FeignClientsRegistrarTests {
 	@EnableFeignClients(clients = { org.springframework.cloud.openfeign.feignclientsregistrar.TopLevelClient.class,
 			org.springframework.cloud.openfeign.feignclientsregistrar.sub.SubLevelClient.class })
 	protected static class TopLevelSubLevelTestConfig {
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@EnableAutoConfiguration
+	@EnableFeignClients(clients = NullUrlFeignClient.class)
+	protected static class NullUrlFeignClientTestConfig {
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@EnableAutoConfiguration
+	@EnableFeignClients(clients = NullExpressionNameFeignClient.class)
+	protected static class NullExpressionNameFeignClientTestConfig {
 
 	}
 
