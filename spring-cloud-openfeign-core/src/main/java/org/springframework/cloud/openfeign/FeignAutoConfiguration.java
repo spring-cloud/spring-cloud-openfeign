@@ -286,7 +286,7 @@ public class FeignAutoConfiguration {
 			boolean followRedirects = httpClientProperties.isFollowRedirects();
 			int connectTimeout = httpClientProperties.getConnectionTimeout();
 			boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
-			Duration readTimeout = httpClientProperties.getOkHttpClientProperties().getReadTimeout();
+			Duration readTimeout = httpClientProperties.getOkHttp().getReadTimeout();
 			this.okHttpClient = httpClientFactory.createBuilder(disableSslValidation)
 					.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS).followRedirects(followRedirects)
 					.readTimeout(readTimeout).connectionPool(connectionPool).build();

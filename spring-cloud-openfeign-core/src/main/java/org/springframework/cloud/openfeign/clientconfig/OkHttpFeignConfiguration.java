@@ -59,7 +59,7 @@ public class OkHttpFeignConfiguration {
 			FeignHttpClientProperties httpClientProperties) {
 		boolean followRedirects = httpClientProperties.isFollowRedirects();
 		int connectTimeout = httpClientProperties.getConnectionTimeout();
-		Duration reaTimeout = httpClientProperties.getOkHttpClientProperties().getReadTimeout();
+		Duration reaTimeout = httpClientProperties.getOkHttp().getReadTimeout();
 		this.okHttpClient = httpClientFactory.createBuilder(httpClientProperties.isDisableSslValidation())
 				.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS).followRedirects(followRedirects)
 				.readTimeout(reaTimeout).connectionPool(connectionPool).build();

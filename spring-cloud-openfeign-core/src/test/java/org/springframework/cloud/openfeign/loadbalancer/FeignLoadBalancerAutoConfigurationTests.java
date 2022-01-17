@@ -60,7 +60,7 @@ class FeignLoadBalancerAutoConfigurationTests {
 	void shouldInstantiateOkHttpFeignClientWhenEnabled() {
 		ConfigurableApplicationContext context = initContext("feign.httpclient.enabled=false",
 				"feign.okhttp.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false",
-				"feign.httpclient.okhttp-client-properties.read-timeout=9s");
+				"feign.httpclient.okhttp.read-timeout=9s");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		Map<String, FeignBlockingLoadBalancerClient> beans = context
 				.getBeansOfType(FeignBlockingLoadBalancerClient.class);
