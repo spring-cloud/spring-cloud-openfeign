@@ -448,6 +448,9 @@ public class FeignClientFactoryBean
 	}
 
 	private String cleanPath() {
+		if (path == null) {
+			return "";
+		}
 		String path = this.path.trim();
 		if (StringUtils.hasLength(path)) {
 			if (!path.startsWith("/")) {

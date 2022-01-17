@@ -302,7 +302,11 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 			if (resolver == null) {
 				return resolved;
 			}
-			return String.valueOf(resolver.evaluate(resolved, new BeanExpressionContext(beanFactory, null)));
+			Object evaluateValue = resolver.evaluate(resolved, new BeanExpressionContext(beanFactory, null));
+			if (evaluateValue != null) {
+				return String.valueOf(evaluateValue);
+			}
+			return null;
 		}
 		return value;
 	}
