@@ -95,7 +95,7 @@ public class FeignHttpClientProperties {
 	/**
 	 * Additional {@link OkHttpClient}-specific properties.
 	 */
-	private OkHttpClientProperties okHttpClientProperties = new OkHttpClientProperties();
+	private OkHttp okHttp = new OkHttp();
 
 	public int getConnectionTimerRepeat() {
 		return connectionTimerRepeat;
@@ -169,12 +169,12 @@ public class FeignHttpClientProperties {
 		this.hc5 = hc5;
 	}
 
-	public OkHttpClientProperties getOkHttpClientProperties() {
-		return okHttpClientProperties;
+	public OkHttp getOkHttp() {
+		return okHttp;
 	}
 
-	public void setOkHttpClientProperties(OkHttpClientProperties okHttpClientProperties) {
-		this.okHttpClientProperties = okHttpClientProperties;
+	public void setOkHttp(OkHttp okHttp) {
+		this.okHttp = okHttp;
 	}
 
 	public static class Hc5Properties {
@@ -292,7 +292,7 @@ public class FeignHttpClientProperties {
 	/**
 	 * {@link OkHttpClient}-specific properties.
 	 */
-	public static class OkHttpClientProperties {
+	public static class OkHttp {
 
 		/**
 		 * {@link OkHttpClient} read timeout; defaults to 60 seconds.

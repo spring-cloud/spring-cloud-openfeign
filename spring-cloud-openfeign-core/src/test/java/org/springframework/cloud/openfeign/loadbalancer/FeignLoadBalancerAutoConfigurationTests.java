@@ -59,11 +59,11 @@ class FeignLoadBalancerAutoConfigurationTests {
 	@Test
 	void shouldInstantiateOkHttpFeignClientWhenEnabled() {
 		ConfigurableApplicationContext context = initContext("feign.httpclient.enabled=false",
-			"feign.okhttp.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false",
-			"feign.httpclient.okhttp-client-properties.read-timeout=9s");
+				"feign.okhttp.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false",
+				"feign.httpclient.okhttp.read-timeout=9s");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		Map<String, FeignBlockingLoadBalancerClient> beans = context
-			.getBeansOfType(FeignBlockingLoadBalancerClient.class);
+				.getBeansOfType(FeignBlockingLoadBalancerClient.class);
 		assertThat(beans).as("Missing bean of type %s", OkHttpClient.class).hasSize(1);
 		Client client = beans.get("feignClient").getDelegate();
 		assertThat(client).isInstanceOf(OkHttpClient.class);
