@@ -132,7 +132,6 @@ public class FeignClientFactoryBean
 		// @formatter:on
 
 		configureFeign(context, builder);
-		applyBuildCustomizers(context, builder);
 
 		return builder;
 	}
@@ -444,6 +443,7 @@ public class FeignClientFactoryBean
 			builder.client(client);
 		}
 		Targeter targeter = get(context, Targeter.class);
+		applyBuildCustomizers(context, builder);
 		return (T) targeter.target(this, builder, context, new HardCodedTarget<>(type, name, url));
 	}
 
