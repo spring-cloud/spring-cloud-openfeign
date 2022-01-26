@@ -65,9 +65,9 @@ import static org.mockito.Mockito.when;
  * Commons project, so here we are only testing the interactions between
  * {@link FeignBlockingLoadBalancerClient} and its delegates.
  *
+ * @author Olga Maciaszek-Sharma
  * @see <a href=
  * "https://github.com/spring-cloud/spring-cloud-commons/blob/main/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
- * @author Olga Maciaszek-Sharma
  */
 @ExtendWith(MockitoExtension.class)
 class FeignBlockingLoadBalancerClientTests {
