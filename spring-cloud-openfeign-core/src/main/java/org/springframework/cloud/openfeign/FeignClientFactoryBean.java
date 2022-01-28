@@ -69,6 +69,7 @@ import org.springframework.util.StringUtils;
  * @author Sam Kruglov
  * @author Jasbir Singh
  * @author Hyeonmin Park
+ * @author Felix Dittrich
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -132,7 +133,6 @@ public class FeignClientFactoryBean
 		// @formatter:on
 
 		configureFeign(context, builder);
-		applyBuildCustomizers(context, builder);
 
 		return builder;
 	}
@@ -443,6 +443,9 @@ public class FeignClientFactoryBean
 			}
 			builder.client(client);
 		}
+
+		applyBuildCustomizers(context, builder);
+
 		Targeter targeter = get(context, Targeter.class);
 		return (T) targeter.target(this, builder, context, new HardCodedTarget<>(type, name, url));
 	}
