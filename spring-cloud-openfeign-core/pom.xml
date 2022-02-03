@@ -62,11 +62,6 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>io.reactivex</groupId>
-			<artifactId>rxjava-reactive-streams</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.retry</groupId>
 			<artifactId>spring-retry</artifactId>
 			<optional>true</optional>
@@ -123,11 +118,6 @@
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-okhttp</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>io.reactivex</groupId>
-			<artifactId>rxjava</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
