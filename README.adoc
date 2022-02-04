@@ -40,7 +40,8 @@ and binding to the Spring Environment and other Spring programming model idioms.
 
 == Building
 
-:jdkversion: 1.8
+
+:jdkversion: 17
 
 === Basic Compile and Test
 
