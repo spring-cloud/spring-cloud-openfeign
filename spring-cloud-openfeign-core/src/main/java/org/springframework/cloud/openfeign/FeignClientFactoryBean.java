@@ -374,6 +374,7 @@ public class FeignClientFactoryBean
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
 			builder.client(client);
+			applyBuildCustomizers(context, builder);
 			Targeter targeter = get(context, Targeter.class);
 			return targeter.target(this, builder, context, target);
 		}
