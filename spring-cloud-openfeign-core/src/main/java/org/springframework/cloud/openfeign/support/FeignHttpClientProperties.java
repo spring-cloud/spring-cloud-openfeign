@@ -28,7 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Nguyen Ky Thanh
  * @author Olga Maciaszek-Sharma
  */
-@ConfigurationProperties(prefix = "feign.httpclient")
+@ConfigurationProperties(prefix = "spring.cloud.openfeign.httpclient")
 public class FeignHttpClientProperties {
 
 	/**

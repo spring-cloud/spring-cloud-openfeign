@@ -39,7 +39,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(FeignClientEncodingProperties.class)
 @ConditionalOnClass(Feign.class)
 @ConditionalOnBean(Client.class)
-@ConditionalOnProperty(value = "feign.compression.response.enabled", matchIfMissing = false)
+@ConditionalOnProperty(value = "spring.cloud.openfeign.compression.response.enabled", matchIfMissing = false)
 // The OK HTTP client uses "transparent" compression.
 // If the accept-encoding header is present it disable transparent compression
 @ConditionalOnMissingBean(type = "okhttp3.OkHttpClient")

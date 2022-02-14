@@ -43,7 +43,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		webEnvironment = RANDOM_PORT,
 		value = { "security.oauth2.client.id=test-service", "security.oauth2.client.client-id=test-service",
 				"security.oauth2.client.client-secret=test-service",
-				"security.oauth2.client.grant-type=client_credentials", "feign.oauth2.enabled=true" })
+				"security.oauth2.client.grant-type=client_credentials", "spring.cloud.openfeign.oauth2.enabled=true" })
 @DirtiesContext
 public class AccessTokenProviderWithoutLoadBalancerInterceptorTests {
 

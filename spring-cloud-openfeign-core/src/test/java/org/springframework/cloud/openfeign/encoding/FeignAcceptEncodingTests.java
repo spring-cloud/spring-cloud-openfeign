@@ -48,7 +48,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Jakub Narloch
  */
 @SpringBootTest(classes = FeignAcceptEncodingTests.Application.class, webEnvironment = RANDOM_PORT,
-		value = { "feign.compression.response.enabled=true" })
+		value = { "spring.cloud.openfeign.compression.response.enabled=true" })
 @DirtiesContext
 class FeignAcceptEncodingTests {
 
