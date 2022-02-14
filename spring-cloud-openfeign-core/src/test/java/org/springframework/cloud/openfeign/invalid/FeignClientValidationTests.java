@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package org.springframework.cloud.openfeign.invalid;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
@@ -31,17 +29,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Dave Syer
+ * @author Szymon Linowski
  */
-public class FeignClientValidationTests {
-
-	@Rule
-	public ExpectedException expected = ExpectedException.none();
+class FeignClientValidationTests {
 
 	@Test
-	public void testServiceIdAndValue() {
+	void testServiceIdAndValue() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				LoadBalancerAutoConfiguration.class, NameAndServiceIdConfiguration.class);
 		assertThat(context.getBean(NameAndServiceIdConfiguration.Client.class)).isNotNull();
@@ -49,7 +46,7 @@ public class FeignClientValidationTests {
 	}
 
 	@Test
-	public void testDuplicatedClientNames() {
+	void testDuplicatedClientNames() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.setAllowBeanDefinitionOverriding(false);
 		context.register(LoadBalancerAutoConfiguration.class, DuplicatedFeignClientNamesConfiguration.class);
@@ -60,9 +57,10 @@ public class FeignClientValidationTests {
 	}
 
 	@Test
-	public void testNotLegalHostname() {
-		this.expected.expectMessage("not legal hostname (foo_bar)");
-		new AnnotationConfigApplicationContext(BadHostnameConfiguration.class);
+	void testNotLegalHostname() {
+		assertThatExceptionOfType(IllegalStateException.class)
+				.isThrownBy(() -> new AnnotationConfigApplicationContext(BadHostnameConfiguration.class))
+				.withMessage("Service id not legal hostname (foo_bar)");
 	}
 
 	@Configuration(proxyBeanMethods = false)

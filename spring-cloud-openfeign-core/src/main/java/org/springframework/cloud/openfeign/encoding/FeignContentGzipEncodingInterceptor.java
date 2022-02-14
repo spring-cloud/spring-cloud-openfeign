@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 	}
 
 	/**
-	 * Returns whether the content mime types matches the configures mime types.
+	 * Returns whether the content mime types matches the configured mime types.
 	 * @param contentTypes the content types
 	 * @return true if any specified content type matches the request content types
 	 */

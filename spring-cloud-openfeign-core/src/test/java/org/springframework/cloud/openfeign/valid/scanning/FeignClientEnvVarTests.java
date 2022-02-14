@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package org.springframework.cloud.openfeign.valid.scanning;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -34,7 +33,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -44,18 +42,17 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 /**
  * @author Ryan Baxter
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientEnvVarTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest", "feign.httpclient.enabled=false",
 				"basepackage=org.springframework.cloud.openfeign.testclients" })
 @DirtiesContext
-public class FeignClientEnvVarTests {
+class FeignClientEnvVarTests {
 
 	@Autowired
 	private TestClient testClient;
 
 	@Test
-	public void testSimpleType() {
+	void testSimpleType() {
 		String hello = this.testClient.getHello();
 		assertThat(hello).as("hello was null").isNotNull();
 		assertThat(hello).as("first hello didn't match").isEqualTo("hello world 1");

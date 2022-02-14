@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,8 @@ import org.springframework.util.StringUtils;
  * @author Jonatan Ivanov
  * @author Sam Kruglov
  * @author Jasbir Singh
+ * @author Hyeonmin Park
+ * @author Felix Dittrich
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -131,7 +133,6 @@ public class FeignClientFactoryBean
 		// @formatter:on
 
 		configureFeign(context, builder);
-		applyBuildCustomizers(context, builder);
 
 		return builder;
 	}
@@ -295,6 +296,10 @@ public class FeignClientFactoryBean
 		if (config.getCapabilities() != null) {
 			config.getCapabilities().stream().map(this::getOrInstantiate).forEach(builder::addCapability);
 		}
+
+		if (config.getQueryMapEncoder() != null) {
+			builder.queryMapEncoder(getOrInstantiate(config.getQueryMapEncoder()));
+		}
 	}
 
 	private void addDefaultQueryParams(FeignClientProperties.FeignClientConfiguration config, Feign.Builder builder) {
@@ -369,6 +374,7 @@ public class FeignClientFactoryBean
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
 			builder.client(client);
+			applyBuildCustomizers(context, builder);
 			Targeter targeter = get(context, Targeter.class);
 			return targeter.target(this, builder, context, target);
 		}
@@ -438,11 +444,17 @@ public class FeignClientFactoryBean
 			}
 			builder.client(client);
 		}
+
+		applyBuildCustomizers(context, builder);
+
 		Targeter targeter = get(context, Targeter.class);
 		return (T) targeter.target(this, builder, context, new HardCodedTarget<>(type, name, url));
 	}
 
 	private String cleanPath() {
+		if (path == null) {
+			return "";
+		}
 		String path = this.path.trim();
 		if (StringUtils.hasLength(path)) {
 			if (!path.startsWith("/")) {

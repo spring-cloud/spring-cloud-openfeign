@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,12 @@ import feign.Feign;
 import feign.MethodMetadata;
 import feign.Param;
 import feign.Request;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.CollectionFormat;
+import org.springframework.cloud.openfeign.annotation.CookieValueParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.MatrixVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor;
@@ -79,8 +82,11 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Artyom Romanenko
  * @author Darren Foong
  * @author Ram Anaswara
+ * @author Sam Kruglov
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
+
+	private static final Log LOG = LogFactory.getLog(SpringMvcContract.class);
 
 	private static final String ACCEPT = "Accept";
 
@@ -169,47 +175,22 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 	@Override
 	protected void processAnnotationOnClass(MethodMetadata data, Class<?> clz) {
-		if (clz.getInterfaces().length == 0) {
-			RequestMapping classAnnotation = findMergedAnnotation(clz, RequestMapping.class);
-			if (classAnnotation != null) {
-				// Prepend path from class annotation if specified
-				if (classAnnotation.value().length > 0) {
-					String pathValue = emptyToNull(classAnnotation.value()[0]);
-					pathValue = resolve(pathValue);
-					if (!pathValue.startsWith("/")) {
-						pathValue = "/" + pathValue;
-					}
-					data.template().uri(pathValue);
-					if (data.template().decodeSlash() != decodeSlash) {
-						data.template().decodeSlash(decodeSlash);
-					}
-				}
-			}
+		RequestMapping classAnnotation = findMergedAnnotation(clz, RequestMapping.class);
+		if (classAnnotation != null) {
+			LOG.error("Cannot process class: " + clz.getName()
+					+ ". @RequestMapping annotation is not allowed on @FeignClient interfaces.");
+			throw new IllegalArgumentException("@RequestMapping annotation not allowed on @FeignClient interfaces");
+		}
+		CollectionFormat collectionFormat = findMergedAnnotation(clz, CollectionFormat.class);
+		if (collectionFormat != null) {
+			data.template().collectionFormat(collectionFormat.value());
 		}
 	}
 
 	@Override
 	public MethodMetadata parseAndValidateMetadata(Class<?> targetType, Method method) {
 		processedMethods.put(Feign.configKey(targetType, method), method);
-		MethodMetadata md = super.parseAndValidateMetadata(targetType, method);
-
-		RequestMapping classAnnotation = findMergedAnnotation(targetType, RequestMapping.class);
-		if (classAnnotation != null) {
-			// produces - use from class annotation only if method has not specified this
-			if (!md.template().headers().containsKey(ACCEPT)) {
-				parseProduces(md, method, classAnnotation);
-			}
-
-			// consumes -- use from class annotation only if method has not specified this
-			if (!md.template().headers().containsKey(CONTENT_TYPE)) {
-				parseConsumes(md, method, classAnnotation);
-			}
-
-			// headers -- class annotation is inherited to methods, always write these if
-			// present
-			parseHeaders(md, method, classAnnotation);
-		}
-		return md;
+		return super.parseAndValidateMetadata(targetType, method);
 	}
 
 	@Override
@@ -360,6 +341,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		annotatedArgumentResolvers.add(new RequestHeaderParameterProcessor());
 		annotatedArgumentResolvers.add(new QueryMapParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestPartParameterProcessor());
+		annotatedArgumentResolvers.add(new CookieValueParameterProcessor());
 
 		return annotatedArgumentResolvers;
 	}

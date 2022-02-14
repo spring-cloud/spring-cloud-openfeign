@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.openfeign.clientconfig;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PreDestroy;
-
+import jakarta.annotation.PreDestroy;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 
@@ -48,8 +48,8 @@ public class OkHttpFeignConfiguration {
 	@ConditionalOnMissingBean(ConnectionPool.class)
 	public ConnectionPool httpClientConnectionPool(FeignHttpClientProperties httpClientProperties,
 			OkHttpClientConnectionPoolFactory connectionPoolFactory) {
-		Integer maxTotalConnections = httpClientProperties.getMaxConnections();
-		Long timeToLive = httpClientProperties.getTimeToLive();
+		int maxTotalConnections = httpClientProperties.getMaxConnections();
+		long timeToLive = httpClientProperties.getTimeToLive();
 		TimeUnit ttlUnit = httpClientProperties.getTimeToLiveUnit();
 		return connectionPoolFactory.create(maxTotalConnections, timeToLive, ttlUnit);
 	}
@@ -57,11 +57,12 @@ public class OkHttpFeignConfiguration {
 	@Bean
 	public okhttp3.OkHttpClient client(OkHttpClientFactory httpClientFactory, ConnectionPool connectionPool,
 			FeignHttpClientProperties httpClientProperties) {
-		Boolean followRedirects = httpClientProperties.isFollowRedirects();
-		Integer connectTimeout = httpClientProperties.getConnectionTimeout();
+		boolean followRedirects = httpClientProperties.isFollowRedirects();
+		int connectTimeout = httpClientProperties.getConnectionTimeout();
+		Duration reaTimeout = httpClientProperties.getOkHttp().getReadTimeout();
 		this.okHttpClient = httpClientFactory.createBuilder(httpClientProperties.isDisableSslValidation())
 				.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS).followRedirects(followRedirects)
-				.connectionPool(connectionPool).build();
+				.readTimeout(reaTimeout).connectionPool(connectionPool).build();
 		return this.okHttpClient;
 	}
 

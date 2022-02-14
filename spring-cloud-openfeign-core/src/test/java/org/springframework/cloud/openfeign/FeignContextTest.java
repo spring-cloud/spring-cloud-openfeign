@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.Collection;
 import feign.Logger;
 import feign.RequestInterceptor;
 import org.assertj.core.util.Lists;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -30,10 +30,10 @@ import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FeignContextTest {
+class FeignContextTest {
 
 	@Test
-	public void getInstanceWithoutAncestors_verifyNullForMissing() {
+	void getInstanceWithoutAncestors_verifyNullForMissing() {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
 
@@ -51,7 +51,7 @@ public class FeignContextTest {
 	}
 
 	@Test
-	public void getInstancesWithoutAncestors_verifyEmptyForMissing() {
+	void getInstancesWithoutAncestors_verifyEmptyForMissing() {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
 
@@ -66,7 +66,7 @@ public class FeignContextTest {
 	}
 
 	@Test
-	public void getInstanceWithoutAncestors() {
+	void getInstanceWithoutAncestors() {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
 
@@ -80,7 +80,7 @@ public class FeignContextTest {
 	}
 
 	@Test
-	public void getInstancesWithoutAncestors() {
+	void getInstancesWithoutAncestors() {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
 

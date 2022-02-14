@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.springframework.cloud.openfeign.support;
 
 import feign.RequestTemplate;
 import feign.codec.Encoder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +27,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -39,11 +37,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Charlie Mordant.
  * @author Yanming Zhou
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=springencodertest", "spring.jmx.enabled=false" })
 @DirtiesContext
-public class PageableEncoderTests {
+class PageableEncoderTests {
 
 	public static final int PAGE = 1;
 
@@ -69,7 +66,7 @@ public class PageableEncoderTests {
 	}
 
 	@Test
-	public void testPaginationAndSortingRequest() {
+	void testPaginationAndSortingRequest() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
@@ -90,7 +87,7 @@ public class PageableEncoderTests {
 	}
 
 	@Test
-	public void testPaginationRequest() {
+	void testPaginationRequest() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
@@ -109,7 +106,7 @@ public class PageableEncoderTests {
 	}
 
 	@Test
-	public void testSortingRequest() {
+	void testSortingRequest() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
@@ -126,7 +123,7 @@ public class PageableEncoderTests {
 	}
 
 	@Test
-	public void testUnpagedRequest() {
+	void testUnpagedRequest() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();

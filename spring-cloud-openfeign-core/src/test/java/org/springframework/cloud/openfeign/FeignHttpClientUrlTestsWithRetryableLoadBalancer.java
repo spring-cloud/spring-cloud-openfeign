@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(classes = FeignHttpClientUrlTestsWithRetryableLoadBalancer.TestConfig.class,
 		webEnvironment = DEFINED_PORT,
 		value = { "spring.application.name=feignclienturlwithretryableloadbalancertest", "feign.hystrix.enabled=false",
-				"feign.okhttp.enabled=false", "spring.cloud.loadbalancer.ribbon.enabled=false" })
+				"feign.okhttp.enabled=false" })
 @DirtiesContext
 class FeignHttpClientUrlTestsWithRetryableLoadBalancer {
 

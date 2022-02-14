@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
@@ -38,6 +39,8 @@ import org.springframework.data.domain.Sort;
  *
  * @author Pascal Büttiker
  * @author Olga Maciaszek-Sharma
+ * @author Pedro Mendes
+ * @author Nikita Konev
  */
 public class PageJacksonModule extends Module {
 
@@ -57,6 +60,7 @@ public class PageJacksonModule extends Module {
 	}
 
 	@JsonDeserialize(as = SimplePageImpl.class)
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	private interface PageMixIn {
 
 	}
@@ -69,15 +73,19 @@ public class PageJacksonModule extends Module {
 				@JsonProperty("size") int size, @JsonProperty("totalElements") @JsonAlias({ "total-elements",
 						"total_elements", "totalelements", "TotalElements" }) long totalElements,
 				@JsonProperty("sort") Sort sort) {
-			PageRequest pageRequest;
-			if (sort != null) {
-				pageRequest = PageRequest.of(number, size, sort);
+			if (size > 0) {
+				PageRequest pageRequest;
+				if (sort != null) {
+					pageRequest = PageRequest.of(number, size, sort);
+				}
+				else {
+					pageRequest = PageRequest.of(number, size);
+				}
+				delegate = new PageImpl<>(content, pageRequest, totalElements);
 			}
 			else {
-				pageRequest = PageRequest.of(number, size);
+				delegate = new PageImpl<>(content);
 			}
-			delegate = new PageImpl<>(content, pageRequest, totalElements);
-
 		}
 
 		@JsonProperty
@@ -174,6 +182,18 @@ public class PageJacksonModule extends Module {
 		@Override
 		public Iterator<T> iterator() {
 			return delegate.iterator();
+		}
+
+		@JsonIgnore
+		@Override
+		public Pageable getPageable() {
+			return delegate.getPageable();
+		}
+
+		@JsonIgnore
+		@Override
+		public boolean isEmpty() {
+			return delegate.isEmpty();
 		}
 
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClientsProperties;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.cloud.openfeign.HttpClient5DisabledConditions;
 import org.springframework.cloud.openfeign.clientconfig.HttpClientFeignConfiguration;
@@ -50,16 +50,16 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
 @Conditional(HttpClient5DisabledConditions.class)
 @Import(HttpClientFeignConfiguration.class)
-@EnableConfigurationProperties(LoadBalancerProperties.class)
+@EnableConfigurationProperties(LoadBalancerClientsProperties.class)
 class HttpClientFeignLoadBalancerConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
 	@Conditional(OnRetryNotEnabledCondition.class)
 	public Client feignClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient,
-			LoadBalancerProperties properties, LoadBalancerClientFactory loadBalancerClientFactory) {
+			LoadBalancerClientFactory loadBalancerClientFactory) {
 		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
-		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, properties, loadBalancerClientFactory);
+		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancerClientFactory);
 	}
 
 	@Bean
@@ -69,11 +69,10 @@ class HttpClientFeignLoadBalancerConfiguration {
 	@ConditionalOnProperty(value = "spring.cloud.loadbalancer.retry.enabled", havingValue = "true",
 			matchIfMissing = true)
 	public Client feignRetryClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient,
-			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties,
-			LoadBalancerClientFactory loadBalancerClientFactory) {
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory) {
 		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
 		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory,
-				properties, loadBalancerClientFactory);
+				loadBalancerClientFactory);
 	}
 
 }

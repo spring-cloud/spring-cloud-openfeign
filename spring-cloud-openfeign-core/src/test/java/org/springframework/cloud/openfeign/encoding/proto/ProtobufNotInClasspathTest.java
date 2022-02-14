@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@
 package org.springframework.cloud.openfeign.encoding.proto;
 
 import feign.RequestTemplate;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.test.ClassPathExclusions;
-import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.http.converter.StringHttpMessageConverter;
 
 import static feign.Request.HttpMethod.POST;
@@ -34,12 +32,11 @@ import static feign.Request.HttpMethod.POST;
  *
  * @author ScienJus
  */
-@RunWith(ModifiedClassPathRunner.class)
 @ClassPathExclusions("protobuf-*.jar")
-public class ProtobufNotInClasspathTest {
+class ProtobufNotInClasspathTest {
 
 	@Test
-	public void testEncodeWhenProtobufNotInClasspath() {
+	void testEncodeWhenProtobufNotInClasspath() {
 		ObjectFactory<HttpMessageConverters> converters = () -> new HttpMessageConverters(
 				new StringHttpMessageConverter());
 		RequestTemplate requestTemplate = new RequestTemplate();

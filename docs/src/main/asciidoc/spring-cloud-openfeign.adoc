@@ -69,12 +69,12 @@ The load-balancer client above will want to discover the physical addresses
 for the "stores" service. If your application is a Eureka client then
 it will resolve the service in the Eureka service registry. If you
 don't want to use Eureka, you can configure a list of servers
-in your external configuration using https://cloud.spring.io/spring-cloud-static/spring-cloud-commons/current/reference/html/#simplediscoveryclient[`SimpleDiscoveryClient`].
+in your external configuration using https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#simplediscoveryclient[`SimpleDiscoveryClient`].
 
 Spring Cloud OpenFeign supports all the features available for the blocking mode of Spring Cloud LoadBalancer. You can read more about them in the https://docs.spring.io/spring-cloud-commons/docs/current/reference/html/#spring-cloud-loadbalancer[project documentation].
 
 TIP: To use `@EnableFeignClients` annotation on `@Configuration`-annotated-classes, make sure to specify where the clients are located, for example:
-`@EnableFeignClients(basePackages = "com.example.clients")` 
+`@EnableFeignClients(basePackages = "com.example.clients")`
 or list them explicitly:
 `@EnableFeignClients(clients = InventoryServiceFeignClient.class)`
 
@@ -122,6 +122,7 @@ Spring Cloud OpenFeign provides the following beans by default for feign (`BeanT
 * `Encoder` feignEncoder: `SpringEncoder`
 * `Logger` feignLogger: `Slf4jLogger`
 * `MicrometerCapability` micrometerCapability: If `feign-micrometer` is on the classpath and `MeterRegistry` is available
+* `CachingCapability` cachingCapability: If `@EnableCaching` annotation is used. Can be disabled via `feign.cache.enabled`.
 * `Contract` feignContract: `SpringMvcContract`
 * `Feign.Builder` feignBuilder: `FeignCircuitBreaker.Builder`
 * `Client` feignClient: If Spring Cloud LoadBalancer is on the classpath, `FeignBlockingLoadBalancerClient` is used.
@@ -141,7 +142,7 @@ Spring Cloud OpenFeign _does not_ provide the following beans by default for fei
 * `Collection<RequestInterceptor>`
 * `SetterFactory`
 * `QueryMapEncoder`
-* `Capability` (`MicrometerCapability` is provided by default)
+* `Capability` (`MicrometerCapability` and `CachingCapability` are provided by default)
 
 A bean of `Retryer.NEVER_RETRY` with the type `Retryer` is created by default, which will disable retrying.
 Notice this retrying behavior is different from the Feign default one, where it will automatically retry IOExceptions,
@@ -195,6 +196,7 @@ feign:
 				capabilities:
 					- com.example.FooCapability
 					- com.example.BarCapability
+				queryMapEncoder: com.example.SimpleQueryMapEncoder
 				metrics.enabled: false
 ----
 
@@ -494,10 +496,7 @@ public interface UserClient extends UserService {
 }
 ----
 
-NOTE: It is generally not advisable to share an interface between a
-server and a client. It introduces tight coupling, and is also not supported by
-all the maintained Spring MVC versions (method parameter
-mapping is not inherited in some versions).
+WARNING: `@FeignClient` interfaces should not be shared between server and client and annotating `@FeignClient` interfaces with `@RequestMapping` on class level is no longer supported.
 
 === Feign request/response compression
 
@@ -605,6 +604,22 @@ public class FooConfiguration {
 }
 ----
 
+=== Feign Caching
+
+If `@EnableCaching` annotation is used, a `CachingCapability` bean is created and registered so that your Feign client recognizes `@Cache*` annotations on its interface:
+
+[source,java,indent=0]
+----
+public interface DemoClient {
+
+	@GetMapping("/demo/{filterParam}")
+    @Cacheable(cacheNames = "demo-cache", key = "#keyParam")
+	String demoEndpoint(String keyParam, @PathVariable String filterParam);
+}
+----
+
+You can also disable the feature via property `feign.cache.enabled=false`.
+
 === Feign @QueryMap support
 
 The OpenFeign `@QueryMap` annotation provides support for POJOs to be used as
@@ -692,20 +707,21 @@ public interface DemoTemplate {
 ----
 
 === Feign `CollectionFormat` support
-We support `feign.CollectionFormat` by providing the `@CollectionFormat` annotation.You can annotate a Feign client method with it by passing the desired `feign.CollectionFormat` as annotation value.
+We support `feign.CollectionFormat` by providing the `@CollectionFormat` annotation.
+You can annotate a Feign client method (or the whole class to affect all methods) with it by passing the desired `feign.CollectionFormat` as annotation value.
 
 In the following example, the `CSV` format is used instead of the default `EXPLODED` to process the method.
 
 [source,java,indent=0]
 ----
 @FeignClient(name = "demo")
-	protected interface PageableFeignClient {
+protected interface PageableFeignClient {
 
-		@CollectionFormat(feign.CollectionFormat.CSV)
-		@GetMapping(path = "/page")
-		ResponseEntity performRequest(Pageable page);
+    @CollectionFormat(feign.CollectionFormat.CSV)
+    @GetMapping(path = "/page")
+    ResponseEntity performRequest(Pageable page);
 
-	}
+}
 ----
 
 TIP: Set the `CSV` format while sending `Pageable` as a query parameter in order for it to be encoded correctly.
@@ -723,7 +739,7 @@ To work around this problem you can use an `ObjectProvider` when autowiring your
 [source,java,indent=0]
 ----
 @Autowired
-ObjectProvider<TestFeginClient> testFeginClient;
+ObjectProvider<TestFeignClient> testFeignClient;
 ----
 
 === Spring Data Support
@@ -745,6 +761,16 @@ feign.client.refresh-enabled=true
 ----
 TIP: DO NOT annotate the `@FeignClient` interface with the `@RefreshScope` annotation.
 
+=== OAuth2 Support
+OAuth2 support can be enabled by setting following flag:
+----
+feign.oauth2.enabled=true
+----
+When the flag is set to true, and the oauth2 client context resource details are present, a bean of class `OAuth2FeignRequestInterceptor` is created. Before each request, the interceptor resolves the required access token and includes it as a header.
+Sometimes, when load balancing is enabled for Feign clients, you may want to use load balancing for fetching access tokens, too. To do so, you should ensure that the load balancer is on the classpath (spring-cloud-starter-loadbalancer) and explicitly enable load balancing for OAuth2FeignRequestInterceptor by setting the following flag:
+----
+feign.oauth2.load-balanced=true
+----
 
 == Configuration properties
 

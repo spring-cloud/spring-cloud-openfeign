@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,30 +69,31 @@ import static org.mockito.Mockito.when;
  * Commons project, so here we are only testing the interactions between
  * {@link RetryableFeignBlockingLoadBalancerClient} and its delegates.
  *
+ * @author Olga Maciaszek-Sharma
  * @see <a href=
  * "https://github.com/spring-cloud/spring-cloud-commons/blob/main/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
- * @author Olga Maciaszek-Sharma
  */
 @ExtendWith(MockitoExtension.class)
 class RetryableFeignBlockingLoadBalancerClientTests {
 
-	private Client delegate = mock(Client.class);
+	private final Client delegate = mock(Client.class);
 
-	private LoadBalancedRetryFactory retryFactory = mock(LoadBalancedRetryFactory.class);
+	private final LoadBalancedRetryFactory retryFactory = mock(LoadBalancedRetryFactory.class);
 
-	private BlockingLoadBalancerClient loadBalancerClient = mock(BlockingLoadBalancerClient.class);
+	private final BlockingLoadBalancerClient loadBalancerClient = mock(BlockingLoadBalancerClient.class);
 
 	private final LoadBalancerClientFactory loadBalancerClientFactory = mock(LoadBalancerClientFactory.class);
 
-	private LoadBalancerProperties properties = new LoadBalancerProperties();
+	private final LoadBalancerProperties properties = new LoadBalancerProperties();
 
-	private RetryableFeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new RetryableFeignBlockingLoadBalancerClient(
+	private final RetryableFeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new RetryableFeignBlockingLoadBalancerClient(
 			delegate, loadBalancerClient, retryFactory, properties, loadBalancerClientFactory);
 
-	private ServiceInstance serviceInstance = new DefaultServiceInstance("test-a", "test", "testhost", 80, false);
+	private final ServiceInstance serviceInstance = new DefaultServiceInstance("test-a", "test", "testhost", 80, false);
 
 	@BeforeEach
 	void setUp() {
+		when(loadBalancerClientFactory.getProperties(any(String.class))).thenReturn(properties);
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
 				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(serviceInstance);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 the original author or authors.
+ * Copyright 2016-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.springframework.cloud.openfeign.hateoas;
 
 import java.util.Collection;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,7 +30,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -42,15 +40,14 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Hector Espert
  */
 @SpringBootTest(classes = FeignHalApplication.class, webEnvironment = RANDOM_PORT, value = "debug=true")
-@RunWith(SpringRunner.class)
 @DirtiesContext
-public class FeignHalTests {
+class FeignHalTests {
 
 	@Autowired
 	private FeignHalClient feignHalClient;
 
 	@Test
-	public void testEntityModel() {
+	void testEntityModel() {
 		EntityModel<MarsRover> entity = feignHalClient.entity();
 		assertThat(entity).isNotNull();
 
@@ -65,7 +62,7 @@ public class FeignHalTests {
 	}
 
 	@Test
-	public void testCollectionModel() {
+	void testCollectionModel() {
 		CollectionModel<MarsRover> collectionModel = feignHalClient.collection();
 		assertThat(collectionModel).isNotNull();
 		assertThat(collectionModel).isNotEmpty();
@@ -84,7 +81,7 @@ public class FeignHalTests {
 	}
 
 	@Test
-	public void testPagedModel() {
+	void testPagedModel() {
 		PagedModel<MarsRover> paged = feignHalClient.paged();
 		assertThat(paged).isNotNull();
 		assertThat(paged).isNotEmpty();

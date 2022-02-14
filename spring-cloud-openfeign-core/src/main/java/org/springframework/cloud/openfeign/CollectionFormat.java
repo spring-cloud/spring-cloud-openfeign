@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ import java.lang.annotation.Target;
  * Indicates which collection format should be used while processing the annotated method.
  *
  * @author Olga Maciaszek-Sharma
+ * @author Sam Kruglov
  * @see feign.CollectionFormat
  */
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CollectionFormat {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@ import feign.Feign;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.micrometer.MicrometerCapability;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -35,7 +34,6 @@ import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,12 +43,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jonatan Ivanov
  */
 @DirtiesContext
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientUsingConfigurerTest.Application.class, value = {
 		"feign.client.config.default.loggerLevel=full",
 		"feign.client.config.default.requestInterceptors[0]=org.springframework.cloud.openfeign.FeignClientUsingPropertiesTests.FooRequestInterceptor",
 		"feign.client.config.default.requestInterceptors[1]=org.springframework.cloud.openfeign.FeignClientUsingPropertiesTests.BarRequestInterceptor" })
-public class FeignClientUsingConfigurerTest {
+class FeignClientUsingConfigurerTest {
 
 	private static final String BEAN_NAME_PREFIX = "org.springframework.cloud.openfeign.FeignClientUsingConfigurerTest$";
 
@@ -61,7 +58,7 @@ public class FeignClientUsingConfigurerTest {
 	private FeignContext context;
 
 	@Test
-	public void testFeignClient() {
+	void testFeignClient() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
 				.getBeanDefinition(BEAN_NAME_PREFIX + "TestFeignClient")
 				.getAttribute("feignClientsRegistrarFactoryBean");
@@ -84,7 +81,7 @@ public class FeignClientUsingConfigurerTest {
 	}
 
 	@Test
-	public void testNoInheritFeignClient() {
+	void testNoInheritFeignClient() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
 				.getBeanDefinition(BEAN_NAME_PREFIX + "NoInheritFeignClient")
 				.getAttribute("feignClientsRegistrarFactoryBean");
@@ -100,7 +97,7 @@ public class FeignClientUsingConfigurerTest {
 	}
 
 	@Test
-	public void testNoInheritFeignClient_ignoreProperties() {
+	void testNoInheritFeignClient_ignoreProperties() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
 				.getBeanDefinition(BEAN_NAME_PREFIX + "NoInheritFeignClient")
 				.getAttribute("feignClientsRegistrarFactoryBean");

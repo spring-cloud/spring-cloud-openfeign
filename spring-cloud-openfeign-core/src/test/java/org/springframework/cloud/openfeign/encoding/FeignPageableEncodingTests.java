@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@ package org.springframework.cloud.openfeign.encoding;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -45,7 +44,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -58,14 +56,13 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(classes = FeignPageableEncodingTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "feign.compression.request.enabled=true", "feign.autoconfiguration.jackson.enabled=true" })
-@RunWith(SpringJUnit4ClassRunner.class)
-public class FeignPageableEncodingTests {
+class FeignPageableEncodingTests {
 
 	@Autowired
 	private InvoiceClient invoiceClient;
 
 	@Test
-	public void testPageable() {
+	void testPageable() {
 		// given
 		Pageable pageable = PageRequest.of(0, 10, Sort.Direction.ASC, "sortProperty");
 
@@ -87,7 +84,7 @@ public class FeignPageableEncodingTests {
 	}
 
 	@Test
-	public void testPageableWithDescDirection() {
+	void testPageableWithDescDirection() {
 		// given
 		Pageable pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "sortProperty");
 
@@ -113,7 +110,7 @@ public class FeignPageableEncodingTests {
 	}
 
 	@Test
-	public void testPageableWithMultipleSort() {
+	void testPageableWithMultipleSort() {
 		// given
 		Pageable pageable = PageRequest.of(0, 10,
 				Sort.by(Sort.Order.desc("sortProperty1"), Sort.Order.asc("sortProperty2")));
@@ -143,7 +140,7 @@ public class FeignPageableEncodingTests {
 	}
 
 	@Test
-	public void testPageableWithoutSort() {
+	void testPageableWithoutSort() {
 		// given
 		Pageable pageable = PageRequest.of(0, 10);
 
@@ -162,7 +159,7 @@ public class FeignPageableEncodingTests {
 	}
 
 	@Test
-	public void testPageableWithoutSortWithBody() {
+	void testPageableWithoutSortWithBody() {
 		// given
 		Pageable pageable = PageRequest.of(0, 10);
 
@@ -184,7 +181,7 @@ public class FeignPageableEncodingTests {
 	}
 
 	@Test
-	public void testPageableWithBody() {
+	void testPageableWithBody() {
 		// given
 		Pageable pageable = PageRequest.of(0, 10,
 				Sort.by(Sort.Order.desc("sortProperty1"), Sort.Order.asc("sortProperty2")));
@@ -221,7 +218,7 @@ public class FeignPageableEncodingTests {
 	}
 
 	@Test
-	public void testUnpagedWithBody() {
+	void testUnpagedWithBody() {
 		// given
 		Pageable unpaged = Pageable.unpaged();
 
@@ -242,7 +239,7 @@ public class FeignPageableEncodingTests {
 	}
 
 	@Test
-	public void testSortWithBody() {
+	void testSortWithBody() {
 		// given
 		Sort sort = Sort.by(Sort.Order.desc("amount"));
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,11 +32,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
-
 import feign.Capability;
 import feign.Feign;
 import feign.InvocationHandlerFactory;
+import feign.QueryMapEncoder;
 import feign.Request;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -46,6 +45,7 @@ import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import feign.micrometer.MicrometerCapability;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
@@ -78,6 +78,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Olga Maciaszek-Sharma
  * @author Ilia Ilinykh
  * @author Jonatan Ivanov
+ * @author Hyeonmin Park
  */
 @SuppressWarnings("FieldMayBeFinal")
 @SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class, webEnvironment = RANDOM_PORT)
@@ -244,6 +245,19 @@ public class FeignClientUsingPropertiesTests {
 		List<Capability> capabilities = (List) ReflectionTestUtils.getField(feignBuilder, "capabilities");
 		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
 				.hasAtLeastOneElementOfType(MicrometerCapability.class);
+	}
+
+	@Test
+	public void clientShouldContainQueryMapEncoder() {
+		fooFactoryBean.setApplicationContext(applicationContext);
+		Feign.Builder feignBuilder = fooFactoryBean.feign(context);
+		FooClient fooClient = feignBuilder.target(FooClient.class, "http://localhost:" + port);
+
+		String response = fooClient.foo();
+		assertThat(response).isEqualTo("OK");
+		QueryMapEncoder queryMapEncoder = (QueryMapEncoder) ReflectionTestUtils.getField(feignBuilder,
+				"queryMapEncoder");
+		assertThat(queryMapEncoder).isInstanceOf(NoOpQueryMapEncoder.class);
 	}
 
 	@Test
@@ -415,6 +429,15 @@ public class FeignClientUsingPropertiesTests {
 	}
 
 	public static class NoOpCapability implements Capability {
+
+	}
+
+	public static class NoOpQueryMapEncoder implements QueryMapEncoder {
+
+		@Override
+		public Map<String, Object> encode(Object o) {
+			return null;
+		}
 
 	}
 

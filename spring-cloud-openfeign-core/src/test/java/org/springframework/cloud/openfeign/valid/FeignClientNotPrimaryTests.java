@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@ package org.springframework.cloud.openfeign.valid;
 import java.util.List;
 
 import feign.Logger;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -36,7 +35,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,13 +45,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Spencer Gibb
  * @author Jakub Narloch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientNotPrimaryTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=feignclientnotprimarytest",
 				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG", "feign.httpclient.enabled=false",
 				"feign.okhttp.enabled=false" })
 @DirtiesContext
-public class FeignClientNotPrimaryTests {
+class FeignClientNotPrimaryTests {
 
 	public static final String HELLO_WORLD_1 = "hello world 1";
 
@@ -64,17 +61,17 @@ public class FeignClientNotPrimaryTests {
 	private List<TestClient> testClients;
 
 	@Test
-	public void testClientType() {
+	void testClientType() {
 		assertThat(this.testClient).as("testClient was of wrong type").isInstanceOf(PrimaryTestClient.class);
 	}
 
 	@Test
-	public void testClientCount() {
+	void testClientCount() {
 		assertThat(this.testClients).as("testClients was wrong").hasSize(2);
 	}
 
 	@Test
-	public void testSimpleType() {
+	void testSimpleType() {
 		Hello hello = this.testClient.getHello();
 		assertThat(hello).as("hello was null").isNull();
 	}
@@ -120,10 +117,10 @@ public class FeignClientNotPrimaryTests {
 
 		private String message;
 
-		public Hello() {
+		Hello() {
 		}
 
-		public Hello(String message) {
+		Hello(String message) {
 			this.message = message;
 		}
 

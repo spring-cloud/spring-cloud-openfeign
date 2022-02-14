@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,59 +18,67 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Collections;
 
-import org.junit.Test;
+import feign.Target;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.env.MockEnvironment;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 /**
  * @author Spencer Gibb
  * @author Gang Li
  * @author Michal Domagala
+ * @author Szymon Linowski
+ * @author Olga Maciaszek-Sharma
  */
-public class FeignClientsRegistrarTests {
+class FeignClientsRegistrarTests {
 
-	@Test(expected = IllegalStateException.class)
-	public void badNameHttpPrefix() {
-		testGetName("https://bad_hostname");
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void badNameHttpsPrefix() {
-		testGetName("https://bad_hostname");
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void badName() {
-		testGetName("bad_hostname");
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void badNameStartsWithHttp() {
-		testGetName("http_bad_hostname");
+	@Test
+	void badNameHttpPrefix() {
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("http://bad_hostname"));
 	}
 
 	@Test
-	public void goodName() {
+	void badNameHttpsPrefix() {
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("https://bad_hostname"));
+	}
+
+	@Test
+	void badName() {
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("bad_hostname"));
+	}
+
+	@Test
+	void badNameStartsWithHttp() {
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> testGetName("http_bad_hostname"));
+	}
+
+	@Test
+	void goodName() {
 		String name = testGetName("good-name");
 		assertThat(name).as("name was wrong").isEqualTo("good-name");
 	}
 
 	@Test
-	public void goodNameHttpPrefix() {
+	void goodNameHttpPrefix() {
 		String name = testGetName("https://good-name");
 		assertThat(name).as("name was wrong").isEqualTo("https://good-name");
 	}
 
 	@Test
-	public void goodNameHttpsPrefix() {
+	void goodNameHttpsPrefix() {
 		String name = testGetName("https://goodname");
 		assertThat(name).as("name was wrong").isEqualTo("https://goodname");
 	}
@@ -81,24 +89,51 @@ public class FeignClientsRegistrarTests {
 		return registrar.getName(Collections.singletonMap("name", name));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testFallback() {
-		new AnnotationConfigApplicationContext(FallbackTestConfig.class);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testFallbackFactory() {
-		new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
+	@Test
+	void testFallback() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackTestConfig.class));
 	}
 
 	@Test
-	public void shouldPassSubLevelFeignClient() {
-		AnnotationConfigApplicationContext config = new AnnotationConfigApplicationContext();
-		((DefaultListableBeanFactory) config.getBeanFactory()).setAllowBeanDefinitionOverriding(false);
-		config.register(TopLevelSubLevelTestConfig.class);
-		assertThatCode(() -> config.refresh())
+	void testFallbackFactory() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+				.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class));
+	}
+
+	@Test
+	void shouldPassSubLevelFeignClient() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+		((DefaultListableBeanFactory) context.getBeanFactory()).setAllowBeanDefinitionOverriding(false);
+		context.register(TopLevelSubLevelTestConfig.class);
+		assertThatCode(context::refresh)
 				.as("Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
 				.doesNotThrowAnyException();
+	}
+
+	@Test
+	@DisabledForJreRange(min = JRE.JAVA_16)
+	void shouldResolveNullUrl() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+		context.register(NullUrlFeignClientTestConfig.class);
+		context.refresh();
+
+		Object feignClientBean = context.getBean(NullUrlFeignClient.class);
+
+		Object invocationHandlerLambda = ReflectionTestUtils.getField(feignClientBean, "h");
+		Target.HardCodedTarget<NullUrlFeignClient> target = (Target.HardCodedTarget<NullUrlFeignClient>) ReflectionTestUtils
+				.getField(invocationHandlerLambda, "arg$3");
+		assertThat(target.name()).isEqualTo("nullUrlFeignClient");
+		assertThat(target.url()).isEqualTo("http://nullUrlFeignClient");
+	}
+
+	@Test
+	void shouldResolveAndValidateNullName() {
+		assertThatIllegalStateException().isThrownBy(() -> {
+			AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+			context.register(NullExpressionNameFeignClientTestConfig.class);
+			context.refresh();
+		});
 	}
 
 	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)
@@ -115,6 +150,16 @@ public class FeignClientsRegistrarTests {
 
 		@GetMapping("/hello")
 		String fallbackFactoryTest();
+
+	}
+
+	@FeignClient(name = "nullUrlFeignClient", url = "${test.url:#{null}}", path = "${test.path:#{null}}")
+	protected interface NullUrlFeignClient {
+
+	}
+
+	@FeignClient(name = "${test.name:#{null}}")
+	protected interface NullExpressionNameFeignClient {
 
 	}
 
@@ -135,6 +180,20 @@ public class FeignClientsRegistrarTests {
 	@EnableFeignClients(clients = { org.springframework.cloud.openfeign.feignclientsregistrar.TopLevelClient.class,
 			org.springframework.cloud.openfeign.feignclientsregistrar.sub.SubLevelClient.class })
 	protected static class TopLevelSubLevelTestConfig {
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@EnableAutoConfiguration
+	@EnableFeignClients(clients = NullUrlFeignClient.class)
+	protected static class NullUrlFeignClientTestConfig {
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@EnableAutoConfiguration
+	@EnableFeignClients(clients = NullExpressionNameFeignClient.class)
+	protected static class NullExpressionNameFeignClientTestConfig {
 
 	}
 

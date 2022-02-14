@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfigurati
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 /**
  * @author Olga Maciaszek-Sharma
@@ -58,9 +59,18 @@ class FeignLoadBalancerAutoConfigurationTests {
 	@Test
 	void shouldInstantiateOkHttpFeignClientWhenEnabled() {
 		ConfigurableApplicationContext context = initContext("feign.httpclient.enabled=false",
-				"feign.okhttp.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false");
+				"feign.okhttp.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false",
+				"feign.httpclient.okhttp.read-timeout=9s");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
-		assertLoadBalanced(context, OkHttpClient.class);
+		Map<String, FeignBlockingLoadBalancerClient> beans = context
+				.getBeansOfType(FeignBlockingLoadBalancerClient.class);
+		assertThat(beans).as("Missing bean of type %s", OkHttpClient.class).hasSize(1);
+		Client client = beans.get("feignClient").getDelegate();
+		assertThat(client).isInstanceOf(OkHttpClient.class);
+		OkHttpClient okHttpClient = (OkHttpClient) client;
+		okhttp3.OkHttpClient httpClient = (okhttp3.OkHttpClient) getField(okHttpClient, "delegate");
+		assertThat(httpClient.readTimeoutMillis()).isEqualTo(9000);
+
 	}
 
 	@Test

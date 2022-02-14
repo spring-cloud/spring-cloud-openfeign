@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import feign.Client;
 import feign.Request;
 import feign.Response;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -64,23 +65,28 @@ import static org.mockito.Mockito.when;
  * Commons project, so here we are only testing the interactions between
  * {@link FeignBlockingLoadBalancerClient} and its delegates.
  *
+ * @author Olga Maciaszek-Sharma
  * @see <a href=
  * "https://github.com/spring-cloud/spring-cloud-commons/blob/main/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
- * @author Olga Maciaszek-Sharma
  */
 @ExtendWith(MockitoExtension.class)
 class FeignBlockingLoadBalancerClientTests {
 
-	private Client delegate = mock(Client.class);
+	private final Client delegate = mock(Client.class);
 
-	private BlockingLoadBalancerClient loadBalancerClient = mock(BlockingLoadBalancerClient.class);
+	private final BlockingLoadBalancerClient loadBalancerClient = mock(BlockingLoadBalancerClient.class);
 
 	private final LoadBalancerClientFactory loadBalancerClientFactory = mock(LoadBalancerClientFactory.class);
 
 	private final LoadBalancerProperties loadBalancerProperties = new LoadBalancerProperties();
 
-	private FeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new FeignBlockingLoadBalancerClient(
-			delegate, loadBalancerClient, loadBalancerProperties, loadBalancerClientFactory);
+	private final FeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new FeignBlockingLoadBalancerClient(
+			delegate, loadBalancerClient, loadBalancerClientFactory);
+
+	@BeforeEach
+	void setUp() {
+		when(loadBalancerClientFactory.getProperties(any(String.class))).thenReturn(loadBalancerProperties);
+	}
 
 	@Test
 	void shouldExtractServiceIdFromRequestUrl() throws IOException {

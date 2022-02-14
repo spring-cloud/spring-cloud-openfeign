@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2015 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
  *
  * @author João Pedro Evangelista
  */
-final class MockOAuth2ClientContext implements OAuth2ClientContext {
+public final class MockOAuth2ClientContext implements OAuth2ClientContext {
 
 	private final String value;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import java.util.Map;
 import feign.Client;
 import feign.RequestInterceptor;
 import feign.httpclient.ApacheHttpClient;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -32,8 +31,6 @@ import org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingAutoC
 import org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingInterceptor;
 import org.springframework.cloud.openfeign.encoding.FeignContentGzipEncodingAutoConfiguration;
 import org.springframework.cloud.openfeign.encoding.FeignContentGzipEncodingInterceptor;
-import org.springframework.cloud.test.ClassPathExclusions;
-import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -43,12 +40,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Ryan Baxter
  * @author Biju Kunjummen
  */
-@RunWith(ModifiedClassPathRunner.class)
-@ClassPathExclusions({ "ribbon-loadbalancer-{version:\\d.*}.jar" })
-public class FeignCompressionTests {
+class FeignCompressionTests {
 
 	@Test
-	public void testInterceptors() {
+	void testInterceptors() {
 		new ApplicationContextRunner()
 				.withPropertyValues("feign.compression.response.enabled=true", "feign.compression.request.enabled=true",
 						"feign.okhttp.enabled=false")

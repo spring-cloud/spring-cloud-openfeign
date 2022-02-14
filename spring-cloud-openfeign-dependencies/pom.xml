@@ -6,16 +6,16 @@
 	<parent>
 		<artifactId>spring-cloud-dependencies-parent</artifactId>
 		<groupId>org.springframework.cloud</groupId>
-		<version>3.1.0-SNAPSHOT</version>
+		<version>4.0.0-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 	<artifactId>spring-cloud-openfeign-dependencies</artifactId>
-	<version>3.1.0-SNAPSHOT</version>
+	<version>4.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>spring-cloud-openfeign-dependencies</name>
 	<description>Spring Cloud OpenFeign Dependencies</description>
 	<properties>
-		<feign.version>11.6</feign.version>
+		<feign.version>11.8</feign.version>
 		<feign-form.version>3.8.0</feign-form.version>
 		<spring-security-oauth2-autoconfigure.version>2.1.2.RELEASE</spring-security-oauth2-autoconfigure.version>
 	</properties>

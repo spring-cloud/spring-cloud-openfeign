@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.openfeign.valid;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
@@ -34,17 +34,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Dave Syer
  */
-public class FeignClientValidationTests {
+class FeignClientValidationTests {
 
 	@Test
-	public void validNotLoadBalanced() {
+	void validNotLoadBalanced() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(GoodUrlConfiguration.class);
 		assertThat(context.getBean(GoodUrlConfiguration.Client.class)).isNotNull();
 		context.close();
 	}
 
 	@Test
-	public void validPlaceholder() {
+	void validPlaceholder() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				PlaceholderUrlConfiguration.class);
 		assertThat(context.getBean(PlaceholderUrlConfiguration.Client.class)).isNotNull();
@@ -52,7 +52,7 @@ public class FeignClientValidationTests {
 	}
 
 	@Test
-	public void validLoadBalanced() {
+	void validLoadBalanced() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				LoadBalancerAutoConfiguration.class,
 				org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration.class,

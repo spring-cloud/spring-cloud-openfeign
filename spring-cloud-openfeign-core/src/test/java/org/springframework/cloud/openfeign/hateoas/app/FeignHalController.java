@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 the original author or authors.
+ * Copyright 2016-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,25 +35,25 @@ public class FeignHalController {
 	public EntityModel<MarsRover> getEntity() {
 		MarsRover marsRover = new MarsRover();
 		marsRover.setName("Sojourner");
-		Link link = new Link("/entity", "self");
-		return new EntityModel<>(marsRover, link);
+		Link link = Link.of("/entity", "self");
+		return EntityModel.of(marsRover, link);
 	}
 
 	@GetMapping("/collection")
 	public CollectionModel<MarsRover> getCollection() {
 		MarsRover marsRover = new MarsRover();
 		marsRover.setName("Opportunity");
-		Link link = new Link("/collection", "self");
-		return new CollectionModel<>(Collections.singleton(marsRover), link);
+		Link link = Link.of("/collection", "self");
+		return CollectionModel.of(Collections.singleton(marsRover), link);
 	}
 
 	@GetMapping("/paged")
 	public CollectionModel<MarsRover> getPaged() {
 		MarsRover marsRover = new MarsRover();
 		marsRover.setName("Curiosity");
-		Link link = new Link("/paged", "self");
+		Link link = Link.of("/paged", "self");
 		PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(1, 1, 1);
-		return new PagedModel<>(Collections.singleton(marsRover), metadata, link);
+		return PagedModel.of(Collections.singleton(marsRover), metadata, link);
 	}
 
 }
