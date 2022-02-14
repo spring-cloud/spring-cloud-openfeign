@@ -174,10 +174,10 @@ application.yml
 [source,yaml]
 ----
 spring:
-	cloud:
-		openfeign:
-			client:
-				config:
+    cloud:
+        openfeign:
+            client:
+                config:
                     feignName:
                         connectTimeout: 5000
                         readTimeout: 5000
@@ -212,10 +212,10 @@ application.yml
 [source,yaml]
 ----
 spring:
-	cloud:
-		openfeign:
-			client:
-				config:
+    cloud:
+        openfeign:
+            client:
+                config:
                     default:
                         connectTimeout: 5000
                         readTimeout: 5000
