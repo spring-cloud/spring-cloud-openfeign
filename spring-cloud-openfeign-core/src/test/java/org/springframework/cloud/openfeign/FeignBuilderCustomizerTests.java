@@ -17,18 +17,22 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Field;
+import java.util.stream.Stream;
 
 import feign.Client;
 import feign.Feign;
 import feign.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.ReflectionUtils;
 
@@ -42,6 +46,7 @@ import static org.mockito.Mockito.spy;
  * @author Matt King
  * @author Sam Kruglov
  * @author Felix Dittrich
+ * @author Olga Maciaszek-Sharma
  */
 class FeignBuilderCustomizerTests {
 
@@ -117,15 +122,14 @@ class FeignBuilderCustomizerTests {
 		context.close();
 	}
 
-	@Test
-	void testBuildCustomizerWithCustomHttpClient() {
+	@ParameterizedTest(name = "should use custom HttpClient with config: {0}")
+	@MethodSource("testConfiguration")
+	void testBuildCustomizerWithCustomHttpClient(Class configClass) {
 		ArgumentCaptor<Feign.Builder> feignBuilderCaptor = ArgumentCaptor.forClass(Feign.Builder.class);
 		doCallRealMethod().when(targeterSpy).target(any(), feignBuilderCaptor.capture(), any(), any());
-
 		Client customClientMock = mock(Client.class);
 
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				FeignBuilderCustomizerTests.SampleConfiguration3.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(configClass);
 		FeignClientFactoryBean clientFactoryBean = context.getBean(FeignClientFactoryBean.class);
 		clientFactoryBean.addCustomizer(builder -> builder.client(customClientMock));
 		clientFactoryBean.getTarget();
@@ -137,14 +141,20 @@ class FeignBuilderCustomizerTests {
 		context.close();
 	}
 
-	private static FeignClientFactoryBean defaultFeignClientFactoryBean() {
+	private static FeignClientFactoryBean defaultFeignClientFactoryBean(String url) {
 		FeignClientFactoryBean feignClientFactoryBean = new FeignClientFactoryBean();
 		feignClientFactoryBean.setContextId("test");
 		feignClientFactoryBean.setName("test");
 		feignClientFactoryBean.setType(FeignClientFactoryTests.TestType.class);
 		feignClientFactoryBean.setPath("");
-		feignClientFactoryBean.setUrl("http://some.absolute.url");
+		if (url != null) {
+			feignClientFactoryBean.setUrl(url);
+		}
 		return feignClientFactoryBean;
+	}
+
+	private static Stream<Class> testConfiguration() {
+		return Stream.of(SampleConfiguration3.class, LoadBalancedSampleConfiguration.class);
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -173,7 +183,7 @@ class FeignBuilderCustomizerTests {
 
 		@Bean
 		FeignClientFactoryBean feignClientFactoryBean() {
-			return defaultFeignClientFactoryBean();
+			return defaultFeignClientFactoryBean("http://some.absolute.url");
 		}
 
 		@Bean
@@ -216,7 +226,7 @@ class FeignBuilderCustomizerTests {
 
 		@Bean
 		FeignClientFactoryBean feignClientFactoryBean() {
-			return defaultFeignClientFactoryBean();
+			return defaultFeignClientFactoryBean("http://some.absolute.url");
 		}
 
 		@Bean
@@ -227,6 +237,18 @@ class FeignBuilderCustomizerTests {
 		@Bean
 		Client client() {
 			return defaultClient;
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@Import(SampleConfiguration3.class)
+	protected static class LoadBalancedSampleConfiguration {
+
+		@Primary
+		@Bean
+		FeignClientFactoryBean feignClientFactoryBean() {
+			return defaultFeignClientFactoryBean(null);
 		}
 
 	}
