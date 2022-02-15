@@ -174,32 +174,32 @@ application.yml
 [source,yaml]
 ----
 spring:
-    cloud:
-        openfeign:
-            client:
-                config:
-                    feignName:
-                        connectTimeout: 5000
-                        readTimeout: 5000
-                        loggerLevel: full
-                        errorDecoder: com.example.SimpleErrorDecoder
-                        retryer: com.example.SimpleRetryer
-                        defaultQueryParameters:
-                            query: queryValue
-                        defaultRequestHeaders:
-                            header: headerValue
-                        requestInterceptors:
-                            - com.example.FooRequestInterceptor
-                            - com.example.BarRequestInterceptor
-                        decode404: false
-                        encoder: com.example.SimpleEncoder
-                        decoder: com.example.SimpleDecoder
-                        contract: com.example.SimpleContract
-                        capabilities:
-                            - com.example.FooCapability
-                            - com.example.BarCapability
-                        queryMapEncoder: com.example.SimpleQueryMapEncoder
-                        metrics.enabled: false
+	cloud:
+		openfeign:
+			client:
+				config:
+					feignName:
+						connectTimeout: 5000
+						readTimeout: 5000
+						loggerLevel: full
+						errorDecoder: com.example.SimpleErrorDecoder
+						retryer: com.example.SimpleRetryer
+						defaultQueryParameters:
+							query: queryValue
+						defaultRequestHeaders:
+							header: headerValue
+						requestInterceptors:
+							- com.example.FooRequestInterceptor
+							- com.example.BarRequestInterceptor
+						decode404: false
+						encoder: com.example.SimpleEncoder
+						decoder: com.example.SimpleDecoder
+						contract: com.example.SimpleContract
+						capabilities:
+							- com.example.FooCapability
+							- com.example.BarCapability
+						queryMapEncoder: com.example.SimpleQueryMapEncoder
+						metrics.enabled: false
 ----
 
 Default configurations can be specified in the `@EnableFeignClients` attribute `defaultConfiguration` in a similar manner as described above. The difference is that this configuration will apply to _all_ feign clients.
@@ -212,14 +212,14 @@ application.yml
 [source,yaml]
 ----
 spring:
-    cloud:
-        openfeign:
-            client:
-                config:
-                    default:
-                        connectTimeout: 5000
-                        readTimeout: 5000
-                        loggerLevel: basic
+	cloud:
+		openfeign:
+			client:
+				config:
+					default:
+						connectTimeout: 5000
+						readTimeout: 5000
+						loggerLevel: basic
 ----
 
 If we create both `@Configuration` bean and configuration properties, configuration properties will win.
