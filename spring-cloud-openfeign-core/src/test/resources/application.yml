@@ -24,8 +24,8 @@ management.endpoints.web.expose: '*'
 
 ---
 spring.config.activate.on-profile: no-metrics
-feign.metrics.enabled: false
+spring.cloud.openfeign.metrics.enabled: false
 
 ---
 spring.config.activate.on-profile: no-foo-metrics
-feign.client.config.foo.metrics.enabled: false
+spring.cloud.openfeign.client.config.foo.metrics.enabled: false

@@ -47,7 +47,7 @@ class EnableFeignClientsTests {
 	@BeforeEach
 	void setUp() {
 		context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
-				.properties("debug=true", "feign.httpclient.enabled=false")
+				.properties("debug=true", "spring.cloud.openfeign.httpclient.enabled=false")
 				.sources(EnableFeignClientsTests.PlainConfiguration.class).run();
 	}
 

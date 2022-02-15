@@ -79,7 +79,7 @@ class FeignClientMetricsEnabledConditionTests {
 		when(beanProvider.getIfAvailable()).thenReturn(null);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
-		verify(environment, never()).getProperty("feign.client.name");
+		verify(environment, never()).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -89,7 +89,7 @@ class FeignClientMetricsEnabledConditionTests {
 		when(feignClientProperties.getConfig()).thenReturn(null);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
-		verify(environment, never()).getProperty("feign.client.name");
+		verify(environment, never()).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -97,11 +97,11 @@ class FeignClientMetricsEnabledConditionTests {
 		FeignClientProperties feignClientProperties = mock(FeignClientProperties.class);
 		when(beanProvider.getIfAvailable()).thenReturn(feignClientProperties);
 		when(context.getEnvironment()).thenReturn(environment);
-		when(environment.getProperty("feign.client.name")).thenReturn("foo");
+		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(new HashMap<>());
 
 		assertThat(condition.matches(context, metadata)).isTrue();
-		verify(environment).getProperty("feign.client.name");
+		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -109,11 +109,11 @@ class FeignClientMetricsEnabledConditionTests {
 		FeignClientProperties feignClientProperties = mock(FeignClientProperties.class);
 		when(beanProvider.getIfAvailable()).thenReturn(feignClientProperties);
 		when(context.getEnvironment()).thenReturn(environment);
-		when(environment.getProperty("feign.client.name")).thenReturn(null);
+		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn(null);
 		when(feignClientProperties.getConfig()).thenReturn(new HashMap<>());
 
 		assertThat(condition.matches(context, metadata)).isTrue();
-		verify(environment).getProperty("feign.client.name");
+		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -121,12 +121,12 @@ class FeignClientMetricsEnabledConditionTests {
 		FeignClientProperties feignClientProperties = mock(FeignClientProperties.class);
 		when(beanProvider.getIfAvailable()).thenReturn(feignClientProperties);
 		when(context.getEnvironment()).thenReturn(environment);
-		when(environment.getProperty("feign.client.name")).thenReturn("");
+		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("");
 		when(feignClientProperties.getConfig()).thenReturn(new HashMap<>());
 
 		assertThat(condition.matches(context, metadata)).isTrue();
 
-		verify(environment).getProperty("feign.client.name");
+		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -134,11 +134,11 @@ class FeignClientMetricsEnabledConditionTests {
 		FeignClientProperties feignClientProperties = mock(FeignClientProperties.class);
 		when(beanProvider.getIfAvailable()).thenReturn(feignClientProperties);
 		when(context.getEnvironment()).thenReturn(environment);
-		when(environment.getProperty("feign.client.name")).thenReturn("foo");
+		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", null));
 
 		assertThat(condition.matches(context, metadata)).isTrue();
-		verify(environment).getProperty("feign.client.name");
+		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -148,12 +148,12 @@ class FeignClientMetricsEnabledConditionTests {
 				FeignClientProperties.FeignClientConfiguration.class);
 		when(beanProvider.getIfAvailable()).thenReturn(feignClientProperties);
 		when(context.getEnvironment()).thenReturn(environment);
-		when(environment.getProperty("feign.client.name")).thenReturn("foo");
+		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
 		when(feignClientConfig.getMetrics()).thenReturn(null);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
-		verify(environment).getProperty("feign.client.name");
+		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -163,12 +163,12 @@ class FeignClientMetricsEnabledConditionTests {
 				FeignClientProperties.FeignClientConfiguration.class);
 		when(beanProvider.getIfAvailable()).thenReturn(feignClientProperties);
 		when(context.getEnvironment()).thenReturn(environment);
-		when(environment.getProperty("feign.client.name")).thenReturn("foo");
+		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
 		when(feignClientConfig.getMetrics()).thenReturn(new FeignClientProperties.MetricsProperties());
 
 		assertThat(condition.matches(context, metadata)).isTrue();
-		verify(environment).getProperty("feign.client.name");
+		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -178,14 +178,14 @@ class FeignClientMetricsEnabledConditionTests {
 				FeignClientProperties.FeignClientConfiguration.class);
 		when(beanProvider.getIfAvailable()).thenReturn(feignClientProperties);
 		when(context.getEnvironment()).thenReturn(environment);
-		when(environment.getProperty("feign.client.name")).thenReturn("foo");
+		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
 		FeignClientProperties.MetricsProperties metricsProperties = new FeignClientProperties.MetricsProperties();
 		metricsProperties.setEnabled(null);
 		when(feignClientConfig.getMetrics()).thenReturn(metricsProperties);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
-		verify(environment).getProperty("feign.client.name");
+		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -195,14 +195,14 @@ class FeignClientMetricsEnabledConditionTests {
 				FeignClientProperties.FeignClientConfiguration.class);
 		when(beanProvider.getIfAvailable()).thenReturn(feignClientProperties);
 		when(context.getEnvironment()).thenReturn(environment);
-		when(environment.getProperty("feign.client.name")).thenReturn("foo");
+		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
 		FeignClientProperties.MetricsProperties metricsProperties = new FeignClientProperties.MetricsProperties();
 		metricsProperties.setEnabled(true);
 		when(feignClientConfig.getMetrics()).thenReturn(metricsProperties);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
-		verify(environment).getProperty("feign.client.name");
+		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
@@ -212,14 +212,14 @@ class FeignClientMetricsEnabledConditionTests {
 				FeignClientProperties.FeignClientConfiguration.class);
 		when(beanProvider.getIfAvailable()).thenReturn(feignClientProperties);
 		when(context.getEnvironment()).thenReturn(environment);
-		when(environment.getProperty("feign.client.name")).thenReturn("foo");
+		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
 		FeignClientProperties.MetricsProperties metricsProperties = new FeignClientProperties.MetricsProperties();
 		metricsProperties.setEnabled(false);
 		when(feignClientConfig.getMetrics()).thenReturn(metricsProperties);
 
 		assertThat(condition.matches(context, metadata)).isFalse();
-		verify(environment).getProperty("feign.client.name");
+		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 }

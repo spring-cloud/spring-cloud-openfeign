@@ -49,8 +49,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(classes = FeignHttpClientUrlTestsWithRetryableLoadBalancer.TestConfig.class,
 		webEnvironment = DEFINED_PORT,
-		value = { "spring.application.name=feignclienturlwithretryableloadbalancertest", "feign.hystrix.enabled=false",
-				"feign.okhttp.enabled=false" })
+		value = { "spring.application.name=feignclienturlwithretryableloadbalancertest",
+				"spring.cloud.openfeign.hystrix.enabled=false", "spring.cloud.openfeign.okhttp.enabled=false" })
 @DirtiesContext
 class FeignHttpClientUrlTestsWithRetryableLoadBalancer {
 

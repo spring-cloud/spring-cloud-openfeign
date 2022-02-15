@@ -54,7 +54,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest(classes = CircuitBreakerWithNoFallbackTests.Application.class,
 		webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
 		value = { "spring.application.name=springcircuittest", "spring.jmx.enabled=false",
-				"feign.circuitbreaker.enabled=true" })
+				"spring.cloud.openfeign.circuitbreaker.enabled=true" })
 @DirtiesContext
 public class CircuitBreakerWithNoFallbackTests {
 

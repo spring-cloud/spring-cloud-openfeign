@@ -115,7 +115,7 @@ public class FeignAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnProperty(value = "feign.cache.enabled", matchIfMissing = true)
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.cache.enabled", matchIfMissing = true)
 	@ConditionalOnBean(CacheInterceptor.class)
 	public Capability cachingCapability(CacheInterceptor cacheInterceptor) {
 		return new CachingCapability(cacheInterceptor);
@@ -123,7 +123,7 @@ public class FeignAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass({ Module.class, Page.class, Sort.class })
-	@ConditionalOnProperty(value = "feign.autoconfiguration.jackson.enabled", havingValue = "true")
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.autoconfiguration.jackson.enabled", havingValue = "true")
 	protected static class FeignJacksonConfiguration {
 
 		@Bean
@@ -154,7 +154,7 @@ public class FeignAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(CircuitBreaker.class)
-	@ConditionalOnProperty(value = "feign.circuitbreaker.enabled", havingValue = "true")
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.circuitbreaker.enabled", havingValue = "true")
 	protected static class CircuitBreakerPresentFeignTargeterConfiguration {
 
 		@Bean
@@ -173,7 +173,7 @@ public class FeignAutoConfiguration {
 		@ConditionalOnMissingBean
 		@ConditionalOnBean(CircuitBreakerFactory.class)
 		public Targeter circuitBreakerFeignTargeter(CircuitBreakerFactory circuitBreakerFactory,
-				@Value("${feign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled,
+				@Value("${spring.cloud.openfeign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled,
 				CircuitBreakerNameResolver circuitBreakerNameResolver) {
 			return new FeignCircuitBreakerTargeter(circuitBreakerFactory, circuitBreakerGroupEnabled,
 					circuitBreakerNameResolver);
@@ -197,7 +197,7 @@ public class FeignAutoConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttpClient.class)
 	@ConditionalOnMissingBean(CloseableHttpClient.class)
-	@ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.httpclient.enabled", matchIfMissing = true)
 	@Conditional(HttpClient5DisabledConditions.class)
 	protected static class HttpClientFeignConfiguration {
 
@@ -265,7 +265,7 @@ public class FeignAutoConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(OkHttpClient.class)
 	@ConditionalOnMissingBean(okhttp3.OkHttpClient.class)
-	@ConditionalOnProperty("feign.okhttp.enabled")
+	@ConditionalOnProperty("spring.cloud.openfeign.okhttp.enabled")
 	protected static class OkHttpFeignConfiguration {
 
 		private okhttp3.OkHttpClient okHttpClient;
@@ -312,7 +312,7 @@ public class FeignAutoConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttp5Client.class)
 	@ConditionalOnMissingBean(org.apache.hc.client5.http.impl.classic.CloseableHttpClient.class)
-	@ConditionalOnProperty(value = "feign.httpclient.hc5.enabled", havingValue = "true")
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.httpclient.hc5.enabled", havingValue = "true")
 	@Import(org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.class)
 	protected static class HttpClient5FeignConfiguration {
 
@@ -326,12 +326,12 @@ public class FeignAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(OAuth2ClientContext.class)
-	@ConditionalOnProperty("feign.oauth2.enabled")
+	@ConditionalOnProperty("spring.cloud.openfeign.oauth2.enabled")
 	protected static class Oauth2FeignConfiguration {
 
 		@ConditionalOnBean({ RetryLoadBalancerInterceptor.class, OAuth2ClientContext.class,
 				OAuth2ProtectedResourceDetails.class })
-		@ConditionalOnProperty(value = "feign.oauth2.load-balanced", havingValue = "true")
+		@ConditionalOnProperty(value = "spring.cloud.openfeign.oauth2.load-balanced", havingValue = "true")
 		@Bean
 		public OAuth2FeignRequestInterceptorConfigurer retryLoadBalancerInterceptorInjectingConfigurer(
 				final RetryLoadBalancerInterceptor loadBalancerInterceptor) {
@@ -340,7 +340,7 @@ public class FeignAutoConfiguration {
 
 		@ConditionalOnBean({ LoadBalancerInterceptor.class, OAuth2ClientContext.class,
 				OAuth2ProtectedResourceDetails.class })
-		@ConditionalOnProperty(value = "feign.oauth2.load-balanced", havingValue = "true")
+		@ConditionalOnProperty(value = "spring.cloud.openfeign.oauth2.load-balanced", havingValue = "true")
 		@Bean
 		public OAuth2FeignRequestInterceptorConfigurer loadBalancerInterceptorInjectingConfigurer(
 				final LoadBalancerInterceptor loadBalancerInterceptor) {

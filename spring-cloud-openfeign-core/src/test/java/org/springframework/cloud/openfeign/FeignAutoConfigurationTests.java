@@ -51,18 +51,18 @@ class FeignAutoConfigurationTests {
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class))
-			.withPropertyValues("feign.httpclient.enabled=false");
+			.withPropertyValues("spring.cloud.openfeign.httpclient.enabled=false");
 
 	@Test
 	void shouldInstantiateDefaultTargeterWhenFeignCircuitBreakerIsDisabled() {
-		runner.withPropertyValues("feign.circuitbreaker.enabled=false")
+		runner.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=false")
 				.run(ctx -> assertOnlyOneTargeterPresent(ctx, DefaultTargeter.class));
 	}
 
 	@Test
 	void shouldInstantiateFeignCircuitBreakerTargeterWhenEnabled() {
 		runner.withBean(CircuitBreakerFactory.class, () -> mock(CircuitBreakerFactory.class))
-				.withPropertyValues("feign.circuitbreaker.enabled=true").run(ctx -> {
+				.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true").run(ctx -> {
 					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
 					assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(ctx, false);
 					assertThatFeignCircuitBreakerTargeterHasSameCircuitBreakerNameResolver(ctx,
@@ -73,8 +73,8 @@ class FeignAutoConfigurationTests {
 	@Test
 	void shouldInstantiateFeignCircuitBreakerTargeterWithEnabledGroup() {
 		runner.withBean(CircuitBreakerFactory.class, () -> mock(CircuitBreakerFactory.class))
-				.withPropertyValues("feign.circuitbreaker.enabled=true")
-				.withPropertyValues("feign.circuitbreaker.group.enabled=true").run(ctx -> {
+				.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true")
+				.withPropertyValues("spring.cloud.openfeign.circuitbreaker.group.enabled=true").run(ctx -> {
 					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
 					assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(ctx, true);
 				});
@@ -84,7 +84,7 @@ class FeignAutoConfigurationTests {
 	void shouldInstantiateFeignCircuitBreakerTargeterWhenEnabledWithCustomCircuitBreakerNameResolver() {
 		runner.withBean(CircuitBreakerFactory.class, () -> mock(CircuitBreakerFactory.class))
 				.withBean(CircuitBreakerNameResolver.class, CustomCircuitBreakerNameResolver::new)
-				.withPropertyValues("feign.circuitbreaker.enabled=true").run(ctx -> {
+				.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true").run(ctx -> {
 					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
 					assertThatFeignCircuitBreakerTargeterHasSameCircuitBreakerNameResolver(ctx,
 							CustomCircuitBreakerNameResolver.class);
@@ -93,8 +93,8 @@ class FeignAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithoutInterceptors() {
-		runner.withPropertyValues("feign.oauth2.enabled=true").withBean(MockOAuth2ClientContext.class, "token")
-				.withBean(BaseOAuth2ProtectedResourceDetails.class)
+		runner.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true")
+				.withBean(MockOAuth2ClientContext.class, "token").withBean(BaseOAuth2ProtectedResourceDetails.class)
 				.withBean(LoadBalancerInterceptor.class, () -> mock(LoadBalancerInterceptor.class)).run(ctx -> {
 					assertOauth2FeignRequestInterceptorExists(ctx);
 					assertAccessTokenProviderInterceptorNotExists(ctx, LoadBalancerInterceptor.class);
@@ -103,8 +103,9 @@ class FeignAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithLoadBalancedInterceptor() {
-		runner.withPropertyValues("feign.oauth2.enabled=true", "feign.oauth2.load-balanced=true")
-				.withBean(MockOAuth2ClientContext.class, "token").withBean(BaseOAuth2ProtectedResourceDetails.class)
+		runner.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true",
+				"spring.cloud.openfeign.oauth2.load-balanced=true").withBean(MockOAuth2ClientContext.class, "token")
+				.withBean(BaseOAuth2ProtectedResourceDetails.class)
 				.withBean(LoadBalancerInterceptor.class, () -> mock(LoadBalancerInterceptor.class)).run(ctx -> {
 					assertOauth2FeignRequestInterceptorExists(ctx);
 					assertAccessTokenProviderInterceptorExists(ctx, LoadBalancerInterceptor.class);
@@ -113,9 +114,9 @@ class FeignAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithoutLoadBalancedInterceptorIfNoBeanPresent() {
-		runner.withPropertyValues("feign.oauth2.enabled=true", "feign.oauth2.load-balanced=true")
-				.withBean(MockOAuth2ClientContext.class, "token").withBean(BaseOAuth2ProtectedResourceDetails.class)
-				.run(ctx -> {
+		runner.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true",
+				"spring.cloud.openfeign.oauth2.load-balanced=true").withBean(MockOAuth2ClientContext.class, "token")
+				.withBean(BaseOAuth2ProtectedResourceDetails.class).run(ctx -> {
 					assertOauth2FeignRequestInterceptorExists(ctx);
 					assertAccessTokenProviderInterceptorNotExists(ctx, LoadBalancerInterceptor.class);
 				});
@@ -123,8 +124,8 @@ class FeignAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithCustomAccessTokenProviderInterceptor() {
-		runner.withPropertyValues("feign.oauth2.enabled=true").withBean(MockOAuth2ClientContext.class, "token")
-				.withBean(BaseOAuth2ProtectedResourceDetails.class)
+		runner.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true")
+				.withBean(MockOAuth2ClientContext.class, "token").withBean(BaseOAuth2ProtectedResourceDetails.class)
 				.withBean(CustomOAuth2FeignRequestInterceptorConfigurer.class).run(ctx -> {
 					assertOauth2FeignRequestInterceptorExists(ctx);
 					assertAccessTokenProviderInterceptorExists(ctx, BasicAuthenticationInterceptor.class);

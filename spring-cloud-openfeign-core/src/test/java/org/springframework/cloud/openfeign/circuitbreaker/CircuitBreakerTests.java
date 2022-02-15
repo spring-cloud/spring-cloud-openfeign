@@ -53,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(classes = CircuitBreakerTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT,
 		value = { "spring.application.name=springcircuittest", "spring.jmx.enabled=false",
-				"feign.circuitbreaker.enabled=true" })
+				"spring.cloud.openfeign.circuitbreaker.enabled=true" })
 @DirtiesContext
 class CircuitBreakerTests {
 
