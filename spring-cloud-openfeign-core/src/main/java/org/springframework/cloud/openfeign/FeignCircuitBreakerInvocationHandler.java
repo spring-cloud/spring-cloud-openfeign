@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.LinkedHashMap;
@@ -29,6 +30,7 @@ import feign.Target;
 
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableException;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -95,13 +97,24 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 				try {
 					return this.fallbackMethodMap.get(method).invoke(fallback, args);
 				}
-				catch (Exception e) {
-					throw new IllegalStateException(e);
+				catch (Exception exception) {
+					unwrapAndRethrow(exception);
 				}
+				return null;
 			};
 			return circuitBreaker.run(supplier, fallbackFunction);
 		}
 		return circuitBreaker.run(supplier);
+	}
+
+	private void unwrapAndRethrow(Exception exception) {
+		if (exception instanceof InvocationTargetException || exception instanceof NoFallbackAvailableException) {
+			Throwable underlyingException = exception.getCause();
+			if (underlyingException instanceof RuntimeException) {
+				throw (RuntimeException) underlyingException;
+			}
+			throw new IllegalStateException(exception);
+		}
 	}
 
 	private Supplier<Object> asSupplier(final Method method, final Object[] args) {
