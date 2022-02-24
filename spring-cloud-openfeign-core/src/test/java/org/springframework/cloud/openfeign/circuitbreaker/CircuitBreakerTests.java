@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign.circuitbreaker;
 
+import java.io.IOException;
 import java.util.function.Function;
 
 import org.apache.commons.logging.Log;
@@ -47,6 +48,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Spencer Gibb
@@ -61,6 +63,9 @@ class CircuitBreakerTests {
 
 	@Autowired
 	TestClient testClient;
+
+	@Autowired
+	ExceptionClient exceptionClient;
 
 	@Autowired
 	TestClientWithFactory testClientWithFactory;
@@ -108,6 +113,17 @@ class CircuitBreakerTests {
 		assertThat(testClientWithFactory.getException()).isEqualTo("Fixed response");
 	}
 
+	@Test
+	void testRuntimeExceptionUnwrapped() {
+		assertThatExceptionOfType(UnsupportedOperationException.class)
+				.isThrownBy(() -> exceptionClient.getRuntimeException());
+	}
+
+	@Test
+	void testCheckedExceptionWrapped() {
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> exceptionClient.getCheckedException());
+	}
+
 	@FeignClient(name = "test", url = "http://localhost:${server.port}/", fallback = Fallback.class)
 	protected interface TestClient {
 
@@ -116,6 +132,18 @@ class CircuitBreakerTests {
 
 		@GetMapping("/hellonotfound")
 		String getException();
+
+	}
+
+	@FeignClient(name = "exceptionClient", url = "http://localhost:${server.port}/",
+			fallbackFactory = ExceptionThrowingFallbackFactory.class)
+	protected interface ExceptionClient {
+
+		@GetMapping("/runtimeException")
+		Hello getRuntimeException();
+
+		@GetMapping("/runtimeException")
+		Hello getCheckedException() throws IOException;
 
 	}
 
@@ -156,6 +184,25 @@ class CircuitBreakerTests {
 
 	}
 
+	static class ExceptionThrowingFallbackFactory implements FallbackFactory<ExceptionClient> {
+
+		@Override
+		public ExceptionClient create(Throwable cause) {
+			return new ExceptionClient() {
+				@Override
+				public Hello getRuntimeException() {
+					throw new UnsupportedOperationException("Not implemented!");
+				}
+
+				@Override
+				public Hello getCheckedException() throws IOException {
+					throw new IOException();
+				}
+			};
+		}
+
+	}
+
 	static class FallbackWithFactory implements TestClientWithFactory {
 
 		@Override
@@ -173,7 +220,7 @@ class CircuitBreakerTests {
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
-	@EnableFeignClients(clients = { TestClient.class, TestClientWithFactory.class })
+	@EnableFeignClients(clients = { TestClient.class, TestClientWithFactory.class, ExceptionClient.class })
 	@Import(NoSecurityConfiguration.class)
 	protected static class Application implements TestClient {
 
@@ -223,6 +270,11 @@ class CircuitBreakerTests {
 		@Bean
 		TestFallbackFactory testFallbackFactory() {
 			return new TestFallbackFactory();
+		}
+
+		@Bean
+		ExceptionThrowingFallbackFactory exceptionThrowingFallbackFactory() {
+			return new ExceptionThrowingFallbackFactory();
 		}
 
 	}
