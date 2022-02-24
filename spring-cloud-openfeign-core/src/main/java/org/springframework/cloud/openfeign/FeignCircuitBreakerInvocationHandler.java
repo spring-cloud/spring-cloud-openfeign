@@ -113,6 +113,9 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 			if (underlyingException instanceof RuntimeException) {
 				throw (RuntimeException) underlyingException;
 			}
+			if (underlyingException != null) {
+				throw new IllegalStateException(underlyingException);
+			}
 			throw new IllegalStateException(exception);
 		}
 	}
