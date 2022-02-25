@@ -194,6 +194,21 @@ public class PageJacksonModule extends Module {
 			return delegate.isEmpty();
 		}
 
+		@Override
+		public int hashCode() {
+			return delegate.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return delegate.equals(obj);
+		}
+
+		@Override
+		public String toString() {
+			return delegate.toString();
+		}
+
 	}
 
 }
