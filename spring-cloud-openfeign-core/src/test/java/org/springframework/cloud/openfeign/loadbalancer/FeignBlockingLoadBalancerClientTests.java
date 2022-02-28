@@ -167,11 +167,13 @@ class FeignBlockingLoadBalancerClientTests {
 				.get("anotherLoadBalancerLifecycle")).getCompleteLog().values();
 		assertThat(lifecycleLogRequests).extracting(lbRequest -> lbRequest.getContext().getHint())
 				.contains(callbackTestHint);
-		assertThat(lifecycleLogStartedRequests).extracting(lbRequest -> lbRequest.getContext().getHint())
-				.contains(callbackTestHint);
+		assertThat(lifecycleLogStartedRequests).extracting(lbRequest -> lbRequest.getContext()
+				.getHint())
+			.contains(callbackTestHint);
 		assertThat(anotherLifecycleLogRequests)
-				.extracting(completionContext -> completionContext.getClientResponse().getHttpStatus())
-				.contains(HttpStatus.OK);
+			.extracting(completionContext -> completionContext.getClientResponse()
+				.getHttpStatus())
+			.contains(HttpStatus.OK.value());
 	}
 
 	private String read(Response response) throws IOException {
