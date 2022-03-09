@@ -35,11 +35,11 @@ import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableExcept
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
+import org.springframework.cloud.test.TestSocketUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.util.SocketUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -66,7 +66,7 @@ public class CircuitBreakerWithNoFallbackTests {
 
 	@BeforeAll
 	public static void beforeClass() {
-		System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
+		System.setProperty("server.port", String.valueOf(TestSocketUtils.findAvailableTcpPort()));
 	}
 
 	@AfterAll
