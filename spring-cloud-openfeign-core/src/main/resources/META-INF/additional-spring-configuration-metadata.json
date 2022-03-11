@@ -15,6 +15,12 @@
 			"defaultValue": "false"
 		},
 		{
+			"name": "feign.circuitbreaker.alphanumeric-ids.enabled",
+			"type": "java.lang.Boolean",
+			"description": "If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.",
+			"defaultValue": "false"
+		},
+		{
 			"name": "feign.circuitbreaker.group.enabled",
 			"type": "java.lang.Boolean",
 			"description": "If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with with group.",
