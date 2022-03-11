@@ -165,8 +165,18 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(CircuitBreakerNameResolver.class)
+		@ConditionalOnProperty(value = "feign.circuitbreaker.alphanumeric-ids.enabled",
+				havingValue = "false", matchIfMissing = true)
 		public CircuitBreakerNameResolver circuitBreakerNameResolver() {
 			return new DefaultCircuitBreakerNameResolver();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(CircuitBreakerNameResolver.class)
+		@ConditionalOnProperty(value = "feign.circuitbreaker.alphanumeric-ids.enabled",
+				havingValue = "true")
+		public CircuitBreakerNameResolver alphanumericCircuitBreakerNameResolver() {
+			return new AlphanumericCircuitBreakerNameResolver();
 		}
 
 		@Bean
@@ -184,6 +194,15 @@ public class FeignAutoConfiguration {
 			@Override
 			public String resolveCircuitBreakerName(String feignClientName, Target<?> target, Method method) {
 				return Feign.configKey(target.type(), method);
+			}
+
+		}
+
+		static class AlphanumericCircuitBreakerNameResolver extends DefaultCircuitBreakerNameResolver {
+
+			@Override
+			public String resolveCircuitBreakerName(String feignClientName, Target<?> target, Method method) {
+				return super.resolveCircuitBreakerName(feignClientName, target, method).replaceAll("[^a-zA-Z0-9]", "");
 			}
 
 		}

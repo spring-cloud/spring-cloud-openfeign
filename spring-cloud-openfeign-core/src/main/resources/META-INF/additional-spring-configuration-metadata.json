@@ -21,6 +21,12 @@
 			"defaultValue": "false"
 		},
 		{
+			"name": "spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled",
+			"type": "java.lang.Boolean",
+			"description": "If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.",
+			"defaultValue": "false"
+		},
+		{
 			"name": "spring.cloud.openfeign.httpclient.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the use of the Apache HTTP Client by Feign.",
