@@ -37,7 +37,7 @@ public class CircuitBreakerAutoConfigurationTests {
 			webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 			value = { "spring.application.name=springcircuittest", "spring.jmx.enabled=false",
 					"spring.cloud.openfeign.circuitbreaker.enabled=true",
-				"spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled=false"})
+					"spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled=false" })
 	@Nested
 	class DefaultNamingStrategy {
 
@@ -58,7 +58,7 @@ public class CircuitBreakerAutoConfigurationTests {
 	@SpringBootTest(classes = CircuitBreakerTests.Application.class,
 			webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 			value = { "spring.application.name=springcircuittest", "spring.jmx.enabled=false",
-					"spring.cloud.openfeign.circuitbreaker.enabled=true",})
+					"spring.cloud.openfeign.circuitbreaker.enabled=true" })
 	@Nested
 	class AlphanumericNamingStrategy {
 

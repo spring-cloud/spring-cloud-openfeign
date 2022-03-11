@@ -27,7 +27,7 @@ import org.springframework.boot.test.context.assertj.AssertableApplicationContex
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor;
-import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.DefaultCircuitBreakerNameResolver;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.AlphanumericCircuitBreakerNameResolver;
 import org.springframework.cloud.openfeign.security.MockOAuth2ClientContext;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptorBuilder;
@@ -66,7 +66,7 @@ class FeignAutoConfigurationTests {
 					assertOnlyOneTargeterPresent(ctx, FeignCircuitBreakerTargeter.class);
 					assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(ctx, false);
 					assertThatFeignCircuitBreakerTargeterHasSameCircuitBreakerNameResolver(ctx,
-							DefaultCircuitBreakerNameResolver.class);
+							AlphanumericCircuitBreakerNameResolver.class);
 				});
 	}
 
