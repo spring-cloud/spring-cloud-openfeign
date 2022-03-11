@@ -57,8 +57,7 @@ public class CircuitBreakerAutoConfigurationTests {
 	@SpringBootTest(classes = CircuitBreakerTests.Application.class,
 			webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 			value = { "spring.application.name=springcircuittest", "spring.jmx.enabled=false",
-					"feign.circuitbreaker.enabled=true",
-					"feign.circuitbreaker.alphanumeric-ids.enabled=true" })
+					"feign.circuitbreaker.enabled=true", "feign.circuitbreaker.alphanumeric-ids.enabled=true" })
 	@Nested
 	class AlphanumericNamingStrategy {
 

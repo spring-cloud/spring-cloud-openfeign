@@ -2,6 +2,7 @@
 |Name | Default | Description
 
 |feign.autoconfiguration.jackson.enabled | `false` | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
+|feign.circuitbreaker.alphanumeric-ids.enabled | `false` | If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.
 |feign.circuitbreaker.enabled | `false` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
 |feign.circuitbreaker.group.enabled | `false` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with with group.
 |feign.client.config |  | 

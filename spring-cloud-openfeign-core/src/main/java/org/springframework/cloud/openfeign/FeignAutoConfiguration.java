@@ -166,16 +166,15 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(CircuitBreakerNameResolver.class)
-		@ConditionalOnProperty(value = "feign.circuitbreaker.alphanumeric-ids.enabled",
-				havingValue = "false", matchIfMissing = true)
+		@ConditionalOnProperty(value = "feign.circuitbreaker.alphanumeric-ids.enabled", havingValue = "false",
+				matchIfMissing = true)
 		public CircuitBreakerNameResolver circuitBreakerNameResolver() {
 			return new DefaultCircuitBreakerNameResolver();
 		}
 
 		@Bean
 		@ConditionalOnMissingBean(CircuitBreakerNameResolver.class)
-		@ConditionalOnProperty(value = "feign.circuitbreaker.alphanumeric-ids.enabled",
-				havingValue = "true")
+		@ConditionalOnProperty(value = "feign.circuitbreaker.alphanumeric-ids.enabled", havingValue = "true")
 		public CircuitBreakerNameResolver alphanumericCircuitBreakerNameResolver() {
 			return new AlphanumericCircuitBreakerNameResolver();
 		}
