@@ -78,6 +78,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Olga Maciaszek-Sharma
  * @author Szymon Linowski
  * @author Sam Kruglov
+ * @author Bhavya Agrawal
  */
 class SpringMvcContractTests {
 
@@ -169,6 +170,59 @@ class SpringMvcContractTests {
 				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("id");
+	}
+
+	@Test
+	void testProcessAnnotations_SimpleNoPath() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+
+	}
+
+	@Test
+	void testProcessAnnotations_Simple() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test/{id}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+
+		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("id");
+	}
+
+	@Test
+	public void testProcessAnnotations_SimplePathIsOnlyASlash() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getSlashPath",
+			String.class);
+		MethodMetadata data = contract
+			.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/?id=" + "{id}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+
+	}
+
+	@Test
+	public void testProcessAnnotations_MissingLeadingSlashInPath() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTestNoLeadingSlash",
+			String.class);
+		MethodMetadata data = contract
+			.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test?name=" + "{name}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+
 	}
 
 	@Test
@@ -615,6 +669,12 @@ class SpringMvcContractTests {
 
 		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject postMappingTest(@RequestBody TestObject object);
+
+		@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getSlashPath(@RequestParam("id") String id);
+
+		@GetMapping(path = "test", produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getTestNoLeadingSlash(@RequestParam("name") String name);
 
 	}
 
