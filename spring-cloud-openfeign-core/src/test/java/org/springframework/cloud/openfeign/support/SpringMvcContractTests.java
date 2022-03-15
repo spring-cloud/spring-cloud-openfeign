@@ -180,49 +180,31 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
-
+				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
-	void testProcessAnnotations_Simple() throws Exception {
-		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest", String.class);
-		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
-
-		assertThat(data.template().url()).isEqualTo("/test/{id}");
-		assertThat(data.template().method()).isEqualTo("GET");
-		assertThat(data.template().headers().get("Accept").iterator().next())
-			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
-
-		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("id");
-	}
-
-	@Test
-	public void testProcessAnnotations_SimplePathIsOnlyASlash() throws Exception {
-		Method method = TestTemplate_Simple.class.getDeclaredMethod("getSlashPath",
-			String.class);
+	void testProcessAnnotations_SimplePathIsOnlyASlash() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getSlashPath", String.class);
 		MethodMetadata data = contract
 			.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
-
+				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
-	public void testProcessAnnotations_MissingLeadingSlashInPath() throws Exception {
-		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTestNoLeadingSlash",
-			String.class);
+	void testProcessAnnotations_MissingLeadingSlashInPath() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTestNoLeadingSlash", String.class);
 		MethodMetadata data = contract
 			.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/test?name=" + "{name}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
-
+				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
