@@ -172,6 +172,41 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testProcessAnnotations_SimpleNoPath() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+	}
+
+	@Test
+	void testProcessAnnotations_SimplePathIsOnlyASlash() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getSlashPath", String.class);
+		MethodMetadata data = contract
+			.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/?id=" + "{id}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+	}
+
+	@Test
+	void testProcessAnnotations_MissingLeadingSlashInPath() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTestNoLeadingSlash", String.class);
+		MethodMetadata data = contract
+			.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test?name=" + "{name}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+	}
+
+	@Test
 	void testProcessAnnotations_SimpleGetMapping() throws Exception {
 		Method method = TestTemplate_Simple.class.getDeclaredMethod("getMappingTest", String.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
@@ -615,6 +650,12 @@ class SpringMvcContractTests {
 
 		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject postMappingTest(@RequestBody TestObject object);
+
+		@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getSlashPath(@RequestParam("id") String id);
+
+		@GetMapping(path = "test", produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getTestNoLeadingSlash(@RequestParam("name") String name);
 
 	}
 
