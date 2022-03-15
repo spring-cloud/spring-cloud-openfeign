@@ -78,7 +78,9 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Olga Maciaszek-Sharma
  * @author Szymon Linowski
  * @author Sam Kruglov
- */
+ * @author Bhavya Agrawal
+ **/
+
 class SpringMvcContractTests {
 
 	private static final Class<?> EXECUTABLE_TYPE;
