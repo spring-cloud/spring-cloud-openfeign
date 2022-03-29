@@ -50,14 +50,15 @@ final class LoadBalancerUtils {
 	static Response executeWithLoadBalancerLifecycleProcessing(Client feignClient, Request.Options options,
 			Request feignRequest, org.springframework.cloud.client.loadbalancer.Request lbRequest,
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse,
-			Set<LoadBalancerLifecycle> supportedLifecycleProcessors, boolean loadBalanced) throws IOException {
+			Set<LoadBalancerLifecycle> supportedLifecycleProcessors, boolean loadBalanced, boolean useRawStatusCodes)
+			throws IOException {
 		supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStartRequest(lbRequest, lbResponse));
 		try {
 			Response response = feignClient.execute(feignRequest, options);
 			if (loadBalanced) {
 				supportedLifecycleProcessors.forEach(
 						lifecycle -> lifecycle.onComplete(new CompletionContext<>(CompletionContext.Status.SUCCESS,
-								lbRequest, lbResponse, buildResponseData(response))));
+								lbRequest, lbResponse, buildResponseData(response, useRawStatusCodes))));
 			}
 			return response;
 		}
@@ -70,9 +71,12 @@ final class LoadBalancerUtils {
 		}
 	}
 
-	static ResponseData buildResponseData(Response response) {
+	static ResponseData buildResponseData(Response response, boolean useRawStatusCodes) {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		response.headers().forEach((key, value) -> responseHeaders.put(key, new ArrayList<>(value)));
+		if (useRawStatusCodes) {
+			return new ResponseData(responseHeaders, null, buildRequestData(response.request()), response.status());
+		}
 		return new ResponseData(HttpStatus.resolve(response.status()), responseHeaders, null,
 				buildRequestData(response.request()));
 	}
@@ -87,9 +91,9 @@ final class LoadBalancerUtils {
 	static Response executeWithLoadBalancerLifecycleProcessing(Client feignClient, Request.Options options,
 			Request feignRequest, org.springframework.cloud.client.loadbalancer.Request lbRequest,
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse,
-			Set<LoadBalancerLifecycle> supportedLifecycleProcessors) throws IOException {
+			Set<LoadBalancerLifecycle> supportedLifecycleProcessors, boolean useRawStatusCodes) throws IOException {
 		return executeWithLoadBalancerLifecycleProcessing(feignClient, options, feignRequest, lbRequest, lbResponse,
-				supportedLifecycleProcessors, true);
+				supportedLifecycleProcessors, true, useRawStatusCodes);
 	}
 
 }
