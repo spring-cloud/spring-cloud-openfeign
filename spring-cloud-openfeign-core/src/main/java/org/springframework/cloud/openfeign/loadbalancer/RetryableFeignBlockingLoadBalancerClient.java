@@ -163,10 +163,9 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			}
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
 					retrievedServiceInstance);
-			LoadBalancerProperties loadBalancerProperties = loadBalancerClientFactory.getProperties(serviceId);
 			Response response = LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing(delegate, options,
-					feignRequest, lbRequest, lbResponse, supportedLifecycleProcessors, retrievedServiceInstance != null,
-					loadBalancerProperties.isUseRawStatusCodeInResponseData());
+					feignRequest, lbRequest, lbResponse, supportedLifecycleProcessors,
+					retrievedServiceInstance != null);
 			int responseStatus = response.status();
 			if (retryPolicy != null && retryPolicy.retryableStatusCode(responseStatus)) {
 				if (LOG.isDebugEnabled()) {
