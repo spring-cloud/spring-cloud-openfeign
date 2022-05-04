@@ -546,6 +546,18 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testProcessQueryObject() throws Exception {
+		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryObject", TestObject.class, String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/queryObject?aParam=" + "{aParam}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.queryMapIndex().intValue()).isEqualTo(0);
+		Map<String, Collection<String>> params = data.template().queries();
+		assertThat(params.get("aParam").iterator().next()).isEqualTo("{aParam}");
+	}
+
+	@Test
 	void testProcessQueryMapMoreThanOnce() throws Exception {
 		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapMoreThanOnce", MultiValueMap.class,
 				MultiValueMap.class);
@@ -752,6 +764,8 @@ class SpringMvcContractTests {
 		@GetMapping("/queryMapObject")
 		String queryMapObject(@SpringQueryMap TestObject queryMap, @RequestParam(name = "aParam") String aParam);
 
+		@GetMapping("/queryObject")
+		String queryObject(@RequestParam TestObject queryMap, @RequestParam(name = "aParam") String aParam);
 	}
 
 	public interface TestTemplate_RequestPart {

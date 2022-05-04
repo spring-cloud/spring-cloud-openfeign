@@ -23,6 +23,7 @@ import java.util.Map;
 
 import feign.MethodMetadata;
 
+import feign.form.util.PojoUtil;
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -51,7 +52,7 @@ public class RequestParamParameterProcessor implements AnnotatedParameterProcess
 		Class<?> parameterType = method.getParameterTypes()[parameterIndex];
 		MethodMetadata data = context.getMethodMetadata();
 
-		if (Map.class.isAssignableFrom(parameterType)) {
+		if (Map.class.isAssignableFrom(parameterType) || PojoUtil.isUserPojo(parameterType)) {
 			checkState(data.queryMapIndex() == null, "Query map can only be present once.");
 			data.queryMapIndex(parameterIndex);
 
