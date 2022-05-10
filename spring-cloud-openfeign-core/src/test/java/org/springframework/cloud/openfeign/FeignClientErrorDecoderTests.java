@@ -120,7 +120,7 @@ public class FeignClientErrorDecoderTests {
 
 	}
 
-	@FeignClient(name = "dynamic", url = FeignUtils.EMPTY_CLIENT, configuration = FooConfiguration.class)
+	@FeignClient(name = "dynamic", url = "", configuration = FooConfiguration.class)
 	interface DynamicClient {
 
 		@RequestLine("GET /")
