@@ -23,6 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.cloud.openfeign.support.FeignUtils;
 import org.springframework.core.annotation.AliasFor;
 
 /**
@@ -98,6 +99,7 @@ public @interface FeignClient {
 
 	/**
 	 * @return an absolute URL or resolvable hostname (the protocol is optional).
+	 * If you are using {@link java.net.URI}, configure the value to {@link FeignUtils#EMPTY_CLIENT}.
 	 */
 	String url() default "";
 

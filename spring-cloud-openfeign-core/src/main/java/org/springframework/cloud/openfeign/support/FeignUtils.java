@@ -16,13 +16,9 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.http.HttpHeaders;
+
+import java.util.*;
 
 import static java.util.Optional.ofNullable;
 
@@ -31,6 +27,8 @@ import static java.util.Optional.ofNullable;
  * @author Olga Maciaszek-Sharma
  */
 public final class FeignUtils {
+
+	public final static String EMPTY_CLIENT = "emptyClient";
 
 	private FeignUtils() {
 		throw new IllegalStateException("Can't instantiate a utility class");

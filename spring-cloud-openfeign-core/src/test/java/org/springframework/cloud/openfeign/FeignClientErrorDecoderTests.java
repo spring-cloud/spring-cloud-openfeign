@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.cloud.openfeign.support.FeignUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,10 +61,18 @@ public class FeignClientErrorDecoderTests {
 	@Autowired
 	private BarClient bar;
 
+	@Autowired
+	private DynamicClient dynamicClient;
+
 	@Test
 	public void clientsAvailable() {
 		assertThat(this.foo).isNotNull();
 		assertThat(this.bar).isNotNull();
+	}
+
+	@Test
+	public void dynamicTest(){
+		dynamicClient.get(URI.create("https://github.com"));
 	}
 
 	@Test
@@ -96,7 +106,7 @@ public class FeignClientErrorDecoderTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@EnableFeignClients(clients = { FooClient.class, BarClient.class })
+	@EnableFeignClients(clients = { FooClient.class, BarClient.class ,DynamicClient.class})
 	@EnableAutoConfiguration
 	protected static class TestConfiguration {
 
@@ -107,6 +117,14 @@ public class FeignClientErrorDecoderTests {
 
 		@RequestLine("GET /")
 		String get();
+
+	}
+
+	@FeignClient(name = "dynamic", url = FeignUtils.EMPTY_CLIENT, configuration = FooConfiguration.class)
+	interface DynamicClient {
+
+		@RequestLine("GET /")
+		String get(URI uri);
 
 	}
 
