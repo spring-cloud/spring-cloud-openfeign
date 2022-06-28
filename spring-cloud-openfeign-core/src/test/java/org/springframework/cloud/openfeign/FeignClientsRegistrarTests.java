@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign;
 
 import java.util.Collections;
 
-import feign.Target;
 import org.junit.Test;
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -26,7 +25,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.env.MockEnvironment;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -104,21 +102,6 @@ public class FeignClientsRegistrarTests {
 		assertThatCode(() -> config.refresh())
 				.as("Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
 				.doesNotThrowAnyException();
-	}
-
-	@Test
-	public void shouldResolveNullUrl() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		context.register(NullUrlFeignClientTestConfig.class);
-		context.refresh();
-
-		Object feignClientBean = context.getBean(NullUrlFeignClient.class);
-
-		Object invocationHandlerLambda = ReflectionTestUtils.getField(feignClientBean, "h");
-		Target.HardCodedTarget<NullUrlFeignClient> target = (Target.HardCodedTarget<NullUrlFeignClient>) ReflectionTestUtils
-				.getField(invocationHandlerLambda, "arg$4");
-		assertThat(target.name()).isEqualTo("nullUrlFeignClient");
-		assertThat(target.url()).isEqualTo("http://nullUrlFeignClient");
 	}
 
 	@Test
