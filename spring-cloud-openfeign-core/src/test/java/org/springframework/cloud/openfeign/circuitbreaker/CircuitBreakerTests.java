@@ -117,13 +117,13 @@ public class CircuitBreakerTests {
 	}
 
 	@Test
-	void testRuntimeExceptionUnwrapped() {
+	public void testRuntimeExceptionUnwrapped() {
 		assertThatExceptionOfType(UnsupportedOperationException.class)
 				.isThrownBy(() -> exceptionClient.getRuntimeException());
 	}
 
 	@Test
-	void testCheckedExceptionWrapped() {
+	public void testCheckedExceptionWrapped() {
 		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> exceptionClient.getCheckedException());
 	}
 
