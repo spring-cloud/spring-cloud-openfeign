@@ -312,6 +312,7 @@ public class FeignAutoConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(OAuth2ClientContext.class)
 	@ConditionalOnProperty("feign.oauth2.enabled")
+	@Deprecated // spring-security-oauth2 reached EOL
 	protected static class Oauth2FeignConfiguration {
 
 		@Bean

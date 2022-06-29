@@ -17,7 +17,8 @@
 	<properties>
 		<feign.version>10.12</feign.version>
 		<feign-form.version>3.8.0</feign-form.version>
-		<spring-security-oauth2-autoconfigure.version>2.1.2.RELEASE</spring-security-oauth2-autoconfigure.version>
+		<!-- Deprecated - reached EOL -->
+		<spring-security-oauth2-autoconfigure.version>2.5.2</spring-security-oauth2-autoconfigure.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
