@@ -1,38 +1,38 @@
 |===
 |Name | Default | Description
 
-|feign.autoconfiguration.jackson.enabled | `false` | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
-|feign.circuitbreaker.alphanumeric-ids.enabled | `false` | If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.
-|feign.circuitbreaker.enabled | `false` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
-|feign.circuitbreaker.group.enabled | `false` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with with group.
+|feign.autoconfiguration.jackson.enabled | `+++false+++` | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
+|feign.circuitbreaker.alphanumeric-ids.enabled | `+++false+++` | If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.
+|feign.circuitbreaker.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
+|feign.circuitbreaker.group.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with with group.
 |feign.client.config |  | 
-|feign.client.decode-slash | `true` | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
-|feign.client.default-config | `default` | 
-|feign.client.default-to-properties | `true` | 
-|feign.client.refresh-enabled | `false` | Enables options value refresh capability for Feign.
-|feign.compression.request.enabled | `false` | Enables the request sent by Feign to be compressed.
-|feign.compression.request.mime-types | `[text/xml, application/xml, application/json]` | The list of supported mime types.
-|feign.compression.request.min-request-size | `2048` | The minimum threshold content size.
-|feign.compression.response.enabled | `false` | Enables the response from Feign to be compressed.
-|feign.encoder.charset-from-content-type | `false` | Indicates whether the charset should be derived from the {@code Content-Type} header.
-|feign.httpclient.connection-timeout | `2000` | 
-|feign.httpclient.connection-timer-repeat | `3000` | 
-|feign.httpclient.disable-ssl-validation | `false` | 
-|feign.httpclient.enabled | `true` | Enables the use of the Apache HTTP Client by Feign.
-|feign.httpclient.follow-redirects | `true` | 
-|feign.httpclient.hc5.enabled | `false` | Enables the use of the Apache HTTP Client 5 by Feign.
+|feign.client.decode-slash | `+++true+++` | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
+|feign.client.default-config | `+++default+++` | 
+|feign.client.default-to-properties | `+++true+++` | 
+|feign.client.refresh-enabled | `+++false+++` | Enables options value refresh capability for Feign.
+|feign.compression.request.enabled | `+++false+++` | Enables the request sent by Feign to be compressed.
+|feign.compression.request.mime-types | `+++[text/xml, application/xml, application/json]+++` | The list of supported mime types.
+|feign.compression.request.min-request-size | `+++2048+++` | The minimum threshold content size.
+|feign.compression.response.enabled | `+++false+++` | Enables the response from Feign to be compressed.
+|feign.encoder.charset-from-content-type | `+++false+++` | Indicates whether the charset should be derived from the {@code Content-Type} header.
+|feign.httpclient.connection-timeout | `+++2000+++` | 
+|feign.httpclient.connection-timer-repeat | `+++3000+++` | 
+|feign.httpclient.disable-ssl-validation | `+++false+++` | 
+|feign.httpclient.enabled | `+++true+++` | Enables the use of the Apache HTTP Client by Feign.
+|feign.httpclient.follow-redirects | `+++true+++` | 
+|feign.httpclient.hc5.enabled | `+++false+++` | Enables the use of the Apache HTTP Client 5 by Feign.
 |feign.httpclient.hc5.pool-concurrency-policy |  | Pool concurrency policies.
 |feign.httpclient.hc5.pool-reuse-policy |  | Pool connection re-use policies.
-|feign.httpclient.hc5.socket-timeout | `5` | Default value for socket timeout.
+|feign.httpclient.hc5.socket-timeout | `+++5+++` | Default value for socket timeout.
 |feign.httpclient.hc5.socket-timeout-unit |  | Default value for socket timeout unit.
-|feign.httpclient.max-connections | `200` | 
-|feign.httpclient.max-connections-per-route | `50` | 
-|feign.httpclient.ok-http.read-timeout | `60s` | {@link OkHttpClient} read timeout; defaults to 60 seconds.
-|feign.httpclient.time-to-live | `900` | 
+|feign.httpclient.max-connections | `+++200+++` | 
+|feign.httpclient.max-connections-per-route | `+++50+++` | 
+|feign.httpclient.ok-http.read-timeout | `+++60s+++` | {@link OkHttpClient} read timeout; defaults to 60 seconds.
+|feign.httpclient.time-to-live | `+++900+++` | 
 |feign.httpclient.time-to-live-unit |  | 
-|feign.metrics.enabled | `true` | Enables metrics capability for Feign.
-|feign.oauth2.enabled | `false` | Enables feign interceptor for managing oauth2 access token.
-|feign.oauth2.load-balanced | `false` | Enables load balancing for oauth2 access token provider.
-|feign.okhttp.enabled | `false` | Enables the use of the OK HTTP Client by Feign.
+|feign.metrics.enabled | `+++true+++` | Enables metrics capability for Feign.
+|feign.oauth2.enabled | `+++false+++` | Enables feign interceptor for managing oauth2 access token.
+|feign.oauth2.load-balanced | `+++false+++` | Enables load balancing for oauth2 access token provider.
+|feign.okhttp.enabled | `+++false+++` | Enables the use of the OK HTTP Client by Feign.
 
 |===
