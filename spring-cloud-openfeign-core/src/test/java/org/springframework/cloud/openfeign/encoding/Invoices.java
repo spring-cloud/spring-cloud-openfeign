@@ -27,8 +27,13 @@ import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
  * Utility class used for testing.
  *
  * @author Jakub Narloch
+ * @author Olga Maciaszek-Sharma
  */
 final class Invoices {
+
+	private Invoices() {
+		throw new IllegalStateException("Can't instantiate a utility class");
+	}
 
 	public static List<Invoice> createInvoiceList(int count) {
 		final List<Invoice> invoices = new ArrayList<>();

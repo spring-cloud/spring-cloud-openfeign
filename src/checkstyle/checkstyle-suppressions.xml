@@ -12,6 +12,8 @@
 	<suppress files=".*ProtobufSpringEncoderTest.*" checks="LineLengthCheck" />
 	<suppress files=".*ProtobufTest.*" checks="LineLengthCheck" />
 	<suppress files=".*Hello.*" checks="RedundantModifier"/>
+	<suppress files=".*test.*" checks="JavadocStyle"/>
+	<suppress files=".*test.*" checks="JavadocVariable"/>
 	<!-- Important -->
 	<suppress files=".*HttpEncoding.*" checks="InterfaceIsTypeCheck" />
 </suppressions>

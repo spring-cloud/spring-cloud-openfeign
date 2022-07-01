@@ -24,8 +24,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link Object#equals(Object)} and {@link Object#hashCode()}.
  *
  * @author Jonatan Ivanov
+ * @author Olga Maciaszek-Sharma
  */
-public class EqualsAndHashCodeAssert {
+public final class EqualsAndHashCodeAssert {
+
+	private EqualsAndHashCodeAssert() {
+		throw new IllegalStateException("Can't instantiate a utility class");
+	}
 
 	/**
 	 * Checks if equals is reflexive: for any non-null reference value x, x.equals(x)

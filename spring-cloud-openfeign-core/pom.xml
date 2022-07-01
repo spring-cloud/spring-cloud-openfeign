@@ -94,6 +94,13 @@
 		<dependency>
 			<groupId>io.github.openfeign.form</groupId>
 			<artifactId>feign-form-spring</artifactId>
+			<exclusions>
+<!--				Vulnerable in 3.8.0-->
+				<exclusion>
+					<groupId>commons-io</groupId>
+					<artifactId>commons-io</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
@@ -137,6 +144,10 @@
 				<exclusion>
 					<groupId>javax.activation</groupId>
 					<artifactId>javax.activation-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.activation</groupId>
+					<artifactId>jakarta.activation</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -197,6 +208,12 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-loadbalancer</artifactId>
 			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.11.0</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<profiles>
