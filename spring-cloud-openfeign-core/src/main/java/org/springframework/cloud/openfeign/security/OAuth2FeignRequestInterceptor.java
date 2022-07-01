@@ -43,6 +43,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
  * @author Tim Ysewyn
  * @since 3.0.0
  */
+@Deprecated // spring-security-oauth2 reached EOL
 public class OAuth2FeignRequestInterceptor implements RequestInterceptor {
 
 	/**
