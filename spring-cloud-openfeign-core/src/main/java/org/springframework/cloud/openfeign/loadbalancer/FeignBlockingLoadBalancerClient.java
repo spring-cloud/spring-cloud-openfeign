@@ -19,6 +19,8 @@ package org.springframework.cloud.openfeign.loadbalancer;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import feign.Client;
@@ -49,6 +51,7 @@ import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils
  * {@link ServiceInstance} to use while resolving the request host.
  *
  * @author Olga Maciaszek-Sharma
+ * @author changjin wei(魏昌进)
  * @since 2.2.0
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -62,9 +65,11 @@ public class FeignBlockingLoadBalancerClient implements Client {
 
 	private final LoadBalancerClientFactory loadBalancerClientFactory;
 
+	private final List<LoadBalancerFeignRequestTransformer> transformers;
+
 	/**
 	 * @deprecated in favour of
-	 * {@link FeignBlockingLoadBalancerClient#FeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancerClientFactory)}
+	 * {@link FeignBlockingLoadBalancerClient#FeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancerClientFactory, List)}
 	 */
 	@Deprecated
 	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
@@ -72,13 +77,29 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
 		this.loadBalancerClientFactory = loadBalancerClientFactory;
+		this.transformers = Collections.emptyList();
 	}
 
+	/**
+	 * @deprecated in favour of
+	 * {@link FeignBlockingLoadBalancerClient#FeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancerClientFactory, List)}
+	 */
+	@Deprecated
 	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancerClientFactory loadBalancerClientFactory) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
 		this.loadBalancerClientFactory = loadBalancerClientFactory;
+		this.transformers = Collections.emptyList();
+	}
+
+	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
+			LoadBalancerClientFactory loadBalancerClientFactory,
+			List<LoadBalancerFeignRequestTransformer> transformers) {
+		this.delegate = delegate;
+		this.loadBalancerClient = loadBalancerClient;
+		this.loadBalancerClientFactory = loadBalancerClientFactory;
+		this.transformers = transformers;
 	}
 
 	@Override
@@ -109,7 +130,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 					.body(message, StandardCharsets.UTF_8).build();
 		}
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri).toString();
-		Request newRequest = buildRequest(request, reconstructedUrl);
+		Request newRequest = buildRequest(request, reconstructedUrl, instance);
 		return executeWithLoadBalancerLifecycleProcessing(delegate, options, newRequest, lbRequest, lbResponse,
 				supportedLifecycleProcessors);
 	}
@@ -117,6 +138,16 @@ public class FeignBlockingLoadBalancerClient implements Client {
 	protected Request buildRequest(Request request, String reconstructedUrl) {
 		return Request.create(request.httpMethod(), reconstructedUrl, request.headers(), request.body(),
 				request.charset(), request.requestTemplate());
+	}
+
+	protected Request buildRequest(Request request, String reconstructedUrl, ServiceInstance instance) {
+		Request newRequest = buildRequest(request, reconstructedUrl);
+		if (transformers != null) {
+			for (LoadBalancerFeignRequestTransformer transformer : transformers) {
+				newRequest = transformer.transformRequest(newRequest, instance);
+			}
+		}
+		return newRequest;
 	}
 
 	// Visible for Sleuth instrumentation

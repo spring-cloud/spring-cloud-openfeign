@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign.loadbalancer;
 
+import java.util.List;
+
 import feign.Client;
 import feign.httpclient.ApacheHttpClient;
 import org.apache.http.client.HttpClient;
@@ -42,6 +44,7 @@ import org.springframework.context.annotation.Import;
  *
  * @author Olga Maciaszek-Sharma
  * @author Nguyen Ky Thanh
+ * @author changjin wei(魏昌进)
  * @since 2.2.0
  */
 @Configuration(proxyBeanMethods = false)
@@ -57,9 +60,11 @@ class HttpClientFeignLoadBalancerConfiguration {
 	@ConditionalOnMissingBean
 	@Conditional(OnRetryNotEnabledCondition.class)
 	public Client feignClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient,
-			LoadBalancerClientFactory loadBalancerClientFactory) {
+			LoadBalancerClientFactory loadBalancerClientFactory,
+			List<LoadBalancerFeignRequestTransformer> transformers) {
 		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
-		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancerClientFactory);
+		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancerClientFactory,
+				transformers);
 	}
 
 	@Bean
@@ -69,10 +74,11 @@ class HttpClientFeignLoadBalancerConfiguration {
 	@ConditionalOnProperty(value = "spring.cloud.loadbalancer.retry.enabled", havingValue = "true",
 			matchIfMissing = true)
 	public Client feignRetryClient(LoadBalancerClient loadBalancerClient, HttpClient httpClient,
-			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory) {
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory,
+			List<LoadBalancerFeignRequestTransformer> transformers) {
 		ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
 		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory,
-				loadBalancerClientFactory);
+				loadBalancerClientFactory, transformers);
 	}
 
 }

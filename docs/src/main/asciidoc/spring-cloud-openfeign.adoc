@@ -815,6 +815,33 @@ Sometimes, when load balancing is enabled for Feign clients, you may want to use
 spring.cloud.openfeign.oauth2.load-balanced=true
 ----
 
+=== Transform the load-balanced HTTP request
+
+You can use the selected `ServiceInstance` to transform the load-balanced HTTP Request.
+
+For `Request`, you need to implement and define `LoadBalancerFeignRequestTransformer` as follows:
+
+[source,java,indent=0]
+----
+	@Bean
+	public LoadBalancerFeignRequestTransformer transformer() {
+		return new LoadBalancerFeignRequestTransformer() {
+
+			@Override
+			public Request transformRequest(Request request, ServiceInstance instance) {
+				Map<String, Collection<String>> headers = new HashMap<>(request.headers());
+				headers.put("X-ServiceId", Collections.singletonList(instance.getServiceId()));
+				headers.put("X-InstanceId", Collections.singletonList(instance.getInstanceId()));
+				return Request.create(request.httpMethod(), request.url(), headers, request.body(), request.charset(),
+						request.requestTemplate());
+			}
+		};
+	}
+----
+
+If multiple transformers are defined, they are applied in the order in which Beans are defined.
+Alternatively, you can use `LoadBalancerFeignRequestTransformer.DEFAULT_ORDER` to specify the order.
+
 == Configuration properties
 
 To see the list of all Spring Cloud OpenFeign related configuration properties please check link:appendix.html[the Appendix page].
