@@ -36,7 +36,7 @@ public interface LoadBalancerFeignRequestTransformer {
 	int DEFAULT_ORDER = 0;
 
 	/**
-	 * ServiceInstance to transform the load-balanced Request.
+	 * Allows transforming load-balanced requests based on the provided {@link ServiceInstance}.
 	 * @param request Original request.
 	 * @param instance ServiceInstance returned from LoadBalancer.
 	 * @return New request or original request
