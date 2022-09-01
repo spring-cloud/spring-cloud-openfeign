@@ -21,9 +21,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,6 +68,7 @@ import static org.mockito.Mockito.when;
  * {@link FeignBlockingLoadBalancerClient} and its delegates.
  *
  * @author Olga Maciaszek-Sharma
+ * @author changjin wei(魏昌进)
  * @see <a href=
  * "https://github.com/spring-cloud/spring-cloud-commons/blob/main/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
  */
@@ -80,8 +83,11 @@ class FeignBlockingLoadBalancerClientTests {
 
 	private final LoadBalancerProperties loadBalancerProperties = new LoadBalancerProperties();
 
+	private final List<LoadBalancerFeignRequestTransformer> transformers = Arrays.asList(new InstanceIdTransformer(),
+			new ServiceIdTransformer());
+
 	private final FeignBlockingLoadBalancerClient feignBlockingLoadBalancerClient = new FeignBlockingLoadBalancerClient(
-			delegate, loadBalancerClient, loadBalancerClientFactory);
+			delegate, loadBalancerClient, loadBalancerClientFactory, transformers);
 
 	@BeforeEach
 	void setUp() {
@@ -133,9 +139,11 @@ class FeignBlockingLoadBalancerClientTests {
 		Request actualRequest = captor.getValue();
 		assertThat(actualRequest.httpMethod()).isEqualTo(Request.HttpMethod.GET);
 		assertThat(actualRequest.url()).isEqualTo(url);
-		assertThat(actualRequest.headers()).hasSize(1);
+		assertThat(actualRequest.headers()).hasSize(3);
 		assertThat(actualRequest.headers()).containsEntry(HttpHeaders.CONTENT_TYPE,
 				Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
+		assertThat(actualRequest.headers()).containsEntry("X-ServiceId", Collections.singletonList("test"));
+		assertThat(actualRequest.headers()).containsEntry("X-InstanceId", Collections.singletonList("test-1"));
 		assertThat(new String(actualRequest.body())).isEqualTo("hello");
 	}
 
@@ -249,6 +257,30 @@ class FeignBlockingLoadBalancerClientTests {
 		@Override
 		protected String getName() {
 			return this.getClass().getSimpleName();
+		}
+
+	}
+
+	private static class InstanceIdTransformer implements LoadBalancerFeignRequestTransformer {
+
+		@Override
+		public Request transformRequest(Request request, ServiceInstance instance) {
+			Map<String, Collection<String>> headers = new HashMap<>(request.headers());
+			headers.put("X-InstanceId", Collections.singletonList(instance.getInstanceId()));
+			return Request.create(request.httpMethod(), request.url(), headers, request.body(), request.charset(),
+					request.requestTemplate());
+		}
+
+	}
+
+	private static class ServiceIdTransformer implements LoadBalancerFeignRequestTransformer {
+
+		@Override
+		public Request transformRequest(Request request, ServiceInstance instance) {
+			Map<String, Collection<String>> headers = new HashMap<>(request.headers());
+			headers.put("X-ServiceId", Collections.singletonList(instance.getServiceId()));
+			return Request.create(request.httpMethod(), request.url(), headers, request.body(), request.charset(),
+					request.requestTemplate());
 		}
 
 	}

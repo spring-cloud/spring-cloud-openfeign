@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign.loadbalancer;
 
+import java.util.List;
+
 import feign.Client;
 import feign.okhttp.OkHttpClient;
 
@@ -39,6 +41,7 @@ import org.springframework.context.annotation.Import;
  * that uses {@link OkHttpClient} under the hood.
  *
  * @author Olga Maciaszek-Sharma
+ * @author changjin wei(魏昌进)
  * @since 2.2.0
  */
 @Configuration(proxyBeanMethods = false)
@@ -53,9 +56,11 @@ class OkHttpFeignLoadBalancerConfiguration {
 	@ConditionalOnMissingBean
 	@Conditional(OnRetryNotEnabledCondition.class)
 	public Client feignClient(okhttp3.OkHttpClient okHttpClient, LoadBalancerClient loadBalancerClient,
-			LoadBalancerClientFactory loadBalancerClientFactory) {
+			LoadBalancerClientFactory loadBalancerClientFactory,
+			List<LoadBalancerFeignRequestTransformer> transformers) {
 		OkHttpClient delegate = new OkHttpClient(okHttpClient);
-		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancerClientFactory);
+		return new FeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancerClientFactory,
+				transformers);
 	}
 
 	@Bean
@@ -65,10 +70,11 @@ class OkHttpFeignLoadBalancerConfiguration {
 	@ConditionalOnProperty(value = "spring.cloud.loadbalancer.retry.enabled", havingValue = "true",
 			matchIfMissing = true)
 	public Client feignRetryClient(LoadBalancerClient loadBalancerClient, okhttp3.OkHttpClient okHttpClient,
-			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory) {
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory,
+			List<LoadBalancerFeignRequestTransformer> transformers) {
 		OkHttpClient delegate = new OkHttpClient(okHttpClient);
 		return new RetryableFeignBlockingLoadBalancerClient(delegate, loadBalancerClient, loadBalancedRetryFactory,
-				loadBalancerClientFactory);
+				loadBalancerClientFactory, transformers);
 	}
 
 }

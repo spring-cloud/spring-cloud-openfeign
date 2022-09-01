@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,7 @@ import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils
  * load-balanced with Spring Cloud LoadBalancer.
  *
  * @author Olga Maciaszek-Sharma
+ * @author changjin wei(魏昌进)
  * @since 2.2.6
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -80,9 +82,11 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 
 	private final LoadBalancerClientFactory loadBalancerClientFactory;
 
+	private final List<LoadBalancerFeignRequestTransformer> transformers;
+
 	/**
 	 * @deprecated in favour of
-	 * {@link RetryableFeignBlockingLoadBalancerClient#RetryableFeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancedRetryFactory, LoadBalancerClientFactory)}
+	 * {@link RetryableFeignBlockingLoadBalancerClient#RetryableFeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancedRetryFactory, LoadBalancerClientFactory, List)}
 	 */
 	@Deprecated
 	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
@@ -92,14 +96,31 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 		this.loadBalancerClient = loadBalancerClient;
 		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
 		this.loadBalancerClientFactory = loadBalancerClientFactory;
+		this.transformers = Collections.emptyList();
 	}
 
+	/**
+	 * @deprecated in favour of
+	 * {@link RetryableFeignBlockingLoadBalancerClient#RetryableFeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancedRetryFactory, LoadBalancerClientFactory, List)}
+	 */
+	@Deprecated
 	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory) {
 		this.delegate = delegate;
 		this.loadBalancerClient = loadBalancerClient;
 		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
 		this.loadBalancerClientFactory = loadBalancerClientFactory;
+		this.transformers = Collections.emptyList();
+	}
+
+	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
+			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory,
+			List<LoadBalancerFeignRequestTransformer> transformers) {
+		this.delegate = delegate;
+		this.loadBalancerClient = loadBalancerClient;
+		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
+		this.loadBalancerClientFactory = loadBalancerClientFactory;
+		this.transformers = transformers;
 	}
 
 	@Override
@@ -158,7 +179,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 					}
 					String reconstructedUrl = loadBalancerClient.reconstructURI(retrievedServiceInstance, originalUri)
 							.toString();
-					feignRequest = buildRequest(request, reconstructedUrl);
+					feignRequest = buildRequest(request, reconstructedUrl, retrievedServiceInstance);
 				}
 			}
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
@@ -189,6 +210,16 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 	protected Request buildRequest(Request request, String reconstructedUrl) {
 		return Request.create(request.httpMethod(), reconstructedUrl, request.headers(), request.body(),
 				request.charset(), request.requestTemplate());
+	}
+
+	protected Request buildRequest(Request request, String reconstructedUrl, ServiceInstance instance) {
+		Request newRequest = buildRequest(request, reconstructedUrl);
+		if (transformers != null) {
+			for (LoadBalancerFeignRequestTransformer transformer : transformers) {
+				newRequest = transformer.transformRequest(newRequest, instance);
+			}
+		}
+		return newRequest;
 	}
 
 	private RetryTemplate buildRetryTemplate(String serviceId, Request request, LoadBalancedRetryPolicy retryPolicy) {
