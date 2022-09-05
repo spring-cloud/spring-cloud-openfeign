@@ -179,7 +179,7 @@ class FeignBlockingLoadBalancerClientTests {
 				.contains(callbackTestHint);
 		assertThat(anotherLifecycleLogRequests)
 				.extracting(completionContext -> completionContext.getClientResponse().getHttpStatus())
-				.contains(HttpStatus.OK.value());
+				.contains(HttpStatus.OK);
 	}
 
 	private String read(Response response) throws IOException {

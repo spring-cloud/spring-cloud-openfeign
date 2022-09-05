@@ -33,6 +33,7 @@ import org.springframework.cloud.client.loadbalancer.RequestData;
 import org.springframework.cloud.client.loadbalancer.ResponseData;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
 
 /**
  * @author Olga Maciaszek-Sharma
@@ -72,7 +73,8 @@ final class LoadBalancerUtils {
 	static ResponseData buildResponseData(Response response) {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		response.headers().forEach((key, value) -> responseHeaders.put(key, new ArrayList<>(value)));
-		return new ResponseData(response.status(), responseHeaders, null, buildRequestData(response.request()));
+		return new ResponseData(HttpStatusCode.valueOf(response.status()), responseHeaders, null,
+				buildRequestData(response.request()));
 	}
 
 	static RequestData buildRequestData(Request request) {
