@@ -247,12 +247,12 @@ public class SpringEncoder implements Encoder {
 		return Objects.equals(APPLICATION_FORM_URLENCODED, requestContentType);
 	}
 
-	private boolean binaryContentType(FeignOutputMessage outputMessage) {
+	protected boolean binaryContentType(FeignOutputMessage outputMessage) {
 		MediaType contentType = outputMessage.getHeaders().getContentType();
 		return contentType == null || Stream
-				.of(MediaType.APPLICATION_CBOR, MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_PDF,
-						MediaType.IMAGE_GIF, MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
-				.anyMatch(mediaType -> mediaType.includes(contentType));
+			.of(MediaType.APPLICATION_CBOR, MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_PDF,
+				MediaType.IMAGE_GIF, MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
+			.anyMatch(mediaType -> mediaType.includes(contentType));
 	}
 
 	private final class FeignOutputMessage implements HttpOutputMessage {
