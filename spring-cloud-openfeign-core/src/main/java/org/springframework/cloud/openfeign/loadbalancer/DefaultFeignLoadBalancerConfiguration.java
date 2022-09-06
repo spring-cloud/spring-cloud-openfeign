@@ -68,4 +68,12 @@ class DefaultFeignLoadBalancerConfiguration {
 				loadBalancedRetryFactory, loadBalancerClientFactory, transformers);
 	}
 
+	@Bean
+	@ConditionalOnMissingBean(XForwardedHeadersTransformer.class)
+	@ConditionalOnBean(LoadBalancerClientFactory.class)
+	public XForwardedHeadersTransformer xForwarderHeadersTransformer(
+			LoadBalancerClientFactory loadBalancerClientFactory) {
+		return new XForwardedHeadersTransformer(loadBalancerClientFactory);
+	}
+
 }
