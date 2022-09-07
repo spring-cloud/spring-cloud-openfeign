@@ -60,7 +60,7 @@ public class FeignLoadBalancerAutoConfiguration {
 	@Bean
 	@ConditionalOnBean(LoadBalancerClientFactory.class)
 	@ConditionalOnMissingBean(XForwardedHeadersTransformer.class)
-	public LoadBalancerFeignRequestTransformer xForwarderHeadersFeignTransformer(LoadBalancerClientFactory factory) {
+	public XForwardedHeadersTransformer xForwarderHeadersFeignTransformer(LoadBalancerClientFactory factory) {
 		return new XForwardedHeadersTransformer(factory);
 	}
 
