@@ -65,6 +65,7 @@ import org.springframework.util.StringUtils;
  * @author Ilia Ilinykh
  * @author Marcin Grzejszczak
  * @author Sam Kruglov
+ * @author Dongtiao Zhao
  */
 public class FeignClientFactoryBean implements FactoryBean<Object>, InitializingBean,
 		ApplicationContextAware, BeanFactoryAware {
@@ -239,16 +240,19 @@ public class FeignClientFactoryBean implements FactoryBean<Object>, Initializing
 			builder.logLevel(config.getLoggerLevel());
 		}
 
-		connectTimeoutMillis = config.getConnectTimeout() != null
+		if(config.getConnectTimeout() != null 
+		   		|| config.getReadTimeout() != null 
+		   		|| config.isFollowRedirects() != null ){
+			connectTimeoutMillis = config.getConnectTimeout() != null
 				? config.getConnectTimeout() : connectTimeoutMillis;
-		readTimeoutMillis = config.getReadTimeout() != null ? config.getReadTimeout()
+			readTimeoutMillis = config.getReadTimeout() != null ? config.getReadTimeout()
 				: readTimeoutMillis;
-		followRedirects = config.isFollowRedirects() != null ? config.isFollowRedirects()
+			followRedirects = config.isFollowRedirects() != null ? config.isFollowRedirects()
 				: followRedirects;
-
-		builder.options(new Request.Options(connectTimeoutMillis, TimeUnit.MILLISECONDS,
+			builder.options(new Request.Options(connectTimeoutMillis, TimeUnit.MILLISECONDS,
 				readTimeoutMillis, TimeUnit.MILLISECONDS, followRedirects));
-
+		}
+		
 		if (config.getRetryer() != null) {
 			Retryer retryer = getOrInstantiate(config.getRetryer());
 			builder.retryer(retryer);
