@@ -20,7 +20,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -53,7 +52,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -165,13 +163,12 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 	void shouldNotRetryOnDisabled() throws IOException {
 		properties.getRetry().setEnabled(false);
 		Request request = testRequest();
-		FeignException ex = connectTimedOutException(request);
-		when(delegate.execute(any(), any())).thenThrow(ex);
+		when(delegate.execute(any(), any())).thenThrow(new IOException());
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
 			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 
 		assertThatThrownBy(() -> feignBlockingLoadBalancerClient.execute(request, new Request.Options()))
-			.isInstanceOf(FeignException.class);
+			.isInstanceOf(IOException.class);
 
 		verify(delegate, times(1)).execute(any(), any());
 	}
@@ -270,17 +267,6 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		feignHeaders.put(HttpHeaders.CONTENT_TYPE, Collections.singletonList(MediaType.APPLICATION_JSON_VALUE));
 		return feignHeaders;
 
-	}
-
-	private FeignException connectTimedOutException(Request request) {
-		IOException ex = new SocketTimeoutException("Connect timed out");
-
-		return new RetryableException(
-			-1,
-			format("%s executing %s %s", ex.getMessage(), request.httpMethod(), request.url()),
-			request.httpMethod(),
-			ex,
-			null, request);
 	}
 
 	protected static class TestLoadBalancerLifecycle
