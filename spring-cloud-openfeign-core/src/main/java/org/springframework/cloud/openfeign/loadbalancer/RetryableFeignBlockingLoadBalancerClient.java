@@ -201,7 +201,9 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			retryTemplate.setListeners(retryListeners);
 		}
 
-		retryTemplate.setRetryPolicy(retryPolicy == null ? new NeverRetryPolicy()
+		retryTemplate.setRetryPolicy(
+			!loadBalancerClientFactory.getProperties(serviceId).getRetry().isEnabled() || retryPolicy == null
+				? new NeverRetryPolicy()
 				: new InterceptorRetryPolicy(toHttpRequest(request), retryPolicy, loadBalancerClient, serviceId));
 		return retryTemplate;
 	}
