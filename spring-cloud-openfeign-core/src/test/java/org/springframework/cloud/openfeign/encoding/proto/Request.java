@@ -74,21 +74,21 @@ public final class Request extends com.google.protobuf.GeneratedMessageV3 implem
 			while (!done) {
 				int tag = input.readTag();
 				switch (tag) {
-				case 0:
-					done = true;
-					break;
-				default:
-					if (!parseUnknownFieldProto3(input, unknownFields, extensionRegistry, tag)) {
+					case 0:
 						done = true;
-					}
-					break;
-				case 8:
-					this.id_ = input.readInt32();
-					break;
-				case 18:
-					String s = input.readStringRequireUtf8();
-					this.msg_ = s;
-					break;
+						break;
+					default:
+						if (!parseUnknownFieldProto3(input, unknownFields, extensionRegistry, tag)) {
+							done = true;
+						}
+						break;
+					case 8:
+						this.id_ = input.readInt32();
+						break;
+					case 18:
+						String s = input.readStringRequireUtf8();
+						this.msg_ = s;
+						break;
 				}
 			}
 		}
