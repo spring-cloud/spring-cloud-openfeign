@@ -31,6 +31,7 @@ import feign.form.spring.SpringFormEncoder;
 import feign.micrometer.MicrometerCapability;
 import feign.optionals.OptionalDecoder;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -243,8 +244,10 @@ public class FeignClientsConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public MicrometerCapability micrometerCapability(MeterRegistry meterRegistry) {
-			return new MicrometerCapability(meterRegistry);
+		public MicrometerCapability micrometerCapability(MeterRegistry meterRegistry,
+				ObjectProvider<ObservationRegistry> observationRegistry) {
+			return new MicrometerCapability(meterRegistry,
+					observationRegistry.getIfAvailable(() -> ObservationRegistry.NOOP));
 		}
 
 	}

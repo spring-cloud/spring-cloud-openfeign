@@ -45,7 +45,7 @@ public class QueryMapParameterProcessor implements AnnotatedParameterProcessor {
 		MethodMetadata metadata = context.getMethodMetadata();
 		if (metadata.queryMapIndex() == null) {
 			metadata.queryMapIndex(paramIndex);
-			metadata.queryMapEncoded(SpringQueryMap.class.cast(annotation).encoded());
+			// metadata.queryMapEncoded(SpringQueryMap.class.cast(annotation).encoded());
 		}
 		return true;
 	}
