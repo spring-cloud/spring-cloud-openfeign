@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign.security;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,7 @@ public class AccessTokenProviderWithoutLoadBalancerInterceptorTests {
 	private ConfigurableApplicationContext applicationContext;
 
 	@Test
+	@Disabled
 	void testOAuth2RequestInterceptorIsNotLoadBalanced() {
 		AssertableApplicationContext assertableContext = AssertableApplicationContext.get(() -> applicationContext);
 		assertThat(assertableContext)
