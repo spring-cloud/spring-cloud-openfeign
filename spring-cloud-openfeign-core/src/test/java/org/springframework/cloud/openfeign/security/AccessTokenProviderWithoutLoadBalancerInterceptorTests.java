@@ -41,10 +41,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Wojciech Mąka
  */
 @SpringBootTest(classes = AccessTokenProviderWithoutLoadBalancerInterceptorTests.Application.class,
-		webEnvironment = RANDOM_PORT,
-		value = { "security.oauth2.client.id=test-service", "security.oauth2.client.client-id=test-service",
-				"security.oauth2.client.client-secret=test-service",
-				"security.oauth2.client.grant-type=client_credentials", "spring.cloud.openfeign.oauth2.enabled=true" })
+	webEnvironment = RANDOM_PORT,
+	value = { "security.oauth2.client.id=test-service", "security.oauth2.client.client-id=test-service",
+		"security.oauth2.client.client-secret=test-service",
+		"security.oauth2.client.grant-type=client_credentials", "spring.cloud.openfeign.oauth2.enabled=true" })
 @DirtiesContext
 public class AccessTokenProviderWithoutLoadBalancerInterceptorTests {
 
@@ -70,7 +70,7 @@ public class AccessTokenProviderWithoutLoadBalancerInterceptorTests {
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(
-			clients = { AccessTokenProviderWithoutLoadBalancerInterceptorTests.Application.SampleClient.class })
+		clients = { AccessTokenProviderWithoutLoadBalancerInterceptorTests.Application.SampleClient.class })
 	protected static class Application {
 
 		@GetMapping("/foo")
