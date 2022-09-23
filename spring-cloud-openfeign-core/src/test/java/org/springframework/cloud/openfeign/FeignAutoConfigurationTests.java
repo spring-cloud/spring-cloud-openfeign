@@ -17,6 +17,8 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import feign.Target;
 import org.assertj.core.api.Condition;
@@ -29,12 +31,15 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.DefaultCircuitBreakerNameResolver;
 import org.springframework.cloud.openfeign.security.MockOAuth2ClientContext;
+import org.springframework.cloud.openfeign.security.OAuth2AccessTokenInterceptor;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptorBuilder;
 import org.springframework.cloud.openfeign.security.OAuth2FeignRequestInterceptorConfigurer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.resource.BaseOAuth2ProtectedResourceDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,6 +51,7 @@ import static org.mockito.Mockito.mock;
  * @author Andrii Bohutskyi
  * @author Kwangyong Kim
  * @author Wojciech Mąka
+ * @author Dangzhicairang(小水牛)
  */
 class FeignAutoConfigurationTests {
 
@@ -123,12 +129,30 @@ class FeignAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithCustomAccessTokenProviderInterceptor() {
-		runner.withPropertyValues("feign.oauth2.enabled=true").withBean(MockOAuth2ClientContext.class, "token")
-				.withBean(BaseOAuth2ProtectedResourceDetails.class)
-				.withBean(CustomOAuth2FeignRequestInterceptorConfigurer.class).run(ctx -> {
-					assertOauth2FeignRequestInterceptorExists(ctx);
-					assertAccessTokenProviderInterceptorExists(ctx, BasicAuthenticationInterceptor.class);
-				});
+		runner.withPropertyValues("feign.oauth2.enabled=true")
+			.withBean(MockOAuth2ClientContext.class, "token")
+			.withBean(BaseOAuth2ProtectedResourceDetails.class)
+			.withBean(CustomOAuth2FeignRequestInterceptorConfigurer.class).run(ctx -> {
+				assertOauth2FeignRequestInterceptorExists(ctx);
+				assertAccessTokenProviderInterceptorExists(ctx, BasicAuthenticationInterceptor.class);
+			});
+	}
+
+	@Test
+	void shouldInstantiateFeignOAuth2FeignRequestInterceptor() {
+		runner.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true",
+				"spring.cloud.openfeign.oauth2.specifiedClientIds=feign-client")
+			.withBean(OAuth2AuthorizedClientService.class, () -> mock(OAuth2AuthorizedClientService.class))
+			.withBean(ClientRegistrationRepository.class, () -> mock(ClientRegistrationRepository.class))
+			.run(ctx -> {
+				assertOauth2AccessTokenInterceptorExists(ctx);
+				assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(ctx,
+					new ArrayList<String>() {
+						{
+							add("feign-client");
+						}
+					});
+			});
 	}
 
 	private void assertOauth2FeignRequestInterceptorExists(ConfigurableApplicationContext ctx) {
@@ -137,28 +161,43 @@ class FeignAutoConfigurationTests {
 	}
 
 	private void assertAccessTokenProviderInterceptorExists(ConfigurableApplicationContext ctx,
-			Class<? extends ClientHttpRequestInterceptor> clazz) {
+		Class<? extends ClientHttpRequestInterceptor> clazz) {
 		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
-		assertThat(context).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
+		assertThat(context).getBean(OAuth2FeignRequestInterceptor.class)
+			.extracting("accessTokenProvider")
 				.extracting("interceptors").asList().first().isInstanceOf(clazz);
 	}
 
 	private void assertAccessTokenProviderInterceptorNotExists(ConfigurableApplicationContext ctx,
-			Class<? extends ClientHttpRequestInterceptor> clazz) {
+		Class<? extends ClientHttpRequestInterceptor> clazz) {
 		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
-		assertThat(context).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
-				.extracting("interceptors").asList().filteredOn(obj -> clazz.isAssignableFrom(obj.getClass()))
-				.isEmpty();
+		assertThat(context).getBean(OAuth2FeignRequestInterceptor.class)
+			.extracting("accessTokenProvider")
+			.extracting("interceptors").asList()
+			.filteredOn(obj -> clazz.isAssignableFrom(obj.getClass()))
+			.isEmpty();
+	}
+
+	private void assertOauth2AccessTokenInterceptorExists(ConfigurableApplicationContext ctx) {
+		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
+		assertThat(context).hasSingleBean(OAuth2AccessTokenInterceptor.class);
+	}
+
+	private void assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(
+		ConfigurableApplicationContext ctx, List<String> expectedValue) {
+		final OAuth2AccessTokenInterceptor bean = ctx.getBean(OAuth2AccessTokenInterceptor.class);
+		assertThat(bean).hasFieldOrPropertyWithValue("specifiedClientIds", expectedValue);
 	}
 
 	private void assertOnlyOneTargeterPresent(ConfigurableApplicationContext ctx, Class<?> beanClass) {
-		assertThat(ctx.getBeansOfType(Targeter.class)).hasSize(1).hasValueSatisfying(new Condition<>(
+		assertThat(ctx.getBeansOfType(Targeter.class)).hasSize(1)
+			.hasValueSatisfying(new Condition<>(
 				beanClass::isInstance, String.format("Targeter should be an instance of %s", beanClass)));
 
 	}
 
 	private void assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(
-			ConfigurableApplicationContext ctx, boolean expectedValue) {
+		ConfigurableApplicationContext ctx, boolean expectedValue) {
 		final FeignCircuitBreakerTargeter bean = ctx.getBean(FeignCircuitBreakerTargeter.class);
 		assertThat(bean).hasFieldOrPropertyWithValue("circuitBreakerGroupEnabled", expectedValue);
 	}
