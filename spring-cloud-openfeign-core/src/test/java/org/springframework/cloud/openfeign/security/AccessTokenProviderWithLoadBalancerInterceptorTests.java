@@ -21,6 +21,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
+import org.springframework.cloud.client.loadbalancer.RetryLoadBalancerInterceptor;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignContext;
@@ -30,19 +32,19 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
  * @author Wojciech Mąka
  */
 @SpringBootTest(classes = AccessTokenProviderWithLoadBalancerInterceptorTests.Application.class,
-		webEnvironment = RANDOM_PORT,
-		value = { "security.oauth2.client.id=test-service", "security.oauth2.client.client-id=test-service",
-				"security.oauth2.client.client-secret=test-service",
-				"security.oauth2.client.grant-type=client_credentials", "spring.cloud.openfeign.oauth2.enabled=true",
-				"spring.cloud.openfeign.oauth2.load-balanced=true" })
+	webEnvironment = RANDOM_PORT,
+	value = { "security.oauth2.client.id=test-service", "security.oauth2.client.client-id=test-service",
+		"security.oauth2.client.client-secret=test-service",
+		"security.oauth2.client.grant-type=client_credentials", "spring.cloud.openfeign.oauth2.enabled=true",
+		"spring.cloud.openfeign.oauth2.load-balanced=true" })
 @DirtiesContext
-@Deprecated
 public class AccessTokenProviderWithLoadBalancerInterceptorTests {
 
 	@Autowired
@@ -51,11 +53,22 @@ public class AccessTokenProviderWithLoadBalancerInterceptorTests {
 	@Autowired
 	private ConfigurableApplicationContext applicationContext;
 
+	// @Test
+	@Deprecated
+	void testOAuth2RequestInterceptorIsLoadBalanced() {
+		AssertableApplicationContext assertableContext = AssertableApplicationContext.get(() -> applicationContext);
+		assertThat(assertableContext).hasSingleBean(Application.SampleClient.class);
+		assertThat(assertableContext).hasSingleBean(OAuth2FeignRequestInterceptor.class);
+		assertThat(assertableContext).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
+			.extracting("interceptors").asList()
+			.filteredOn(obj -> RetryLoadBalancerInterceptor.class.equals(obj.getClass())).hasSize(1);
+	}
+
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(
-			clients = { AccessTokenProviderWithLoadBalancerInterceptorTests.Application.SampleClient.class })
+		clients = { AccessTokenProviderWithLoadBalancerInterceptorTests.Application.SampleClient.class })
 	protected static class Application {
 
 		@GetMapping("/foo")

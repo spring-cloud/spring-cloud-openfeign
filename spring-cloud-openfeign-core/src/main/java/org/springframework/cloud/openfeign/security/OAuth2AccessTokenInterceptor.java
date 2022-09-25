@@ -43,9 +43,9 @@ import org.springframework.util.StringUtils;
 /**
  * RequestInterceptor for OAuth2 Feign Requests. By default, It uses the
  * {@link AuthorizedClientServiceOAuth2AuthorizedClientManager } to get
- * {@link OAuth2AuthorizedClient } that hold an {@link OAuth2AccessToken }.
- * Use the Client(s) from properties if not specific
- * the field {@link OAuth2AccessTokenInterceptor#specifiedClientIds}
+ * {@link OAuth2AuthorizedClient } that hold an {@link OAuth2AccessToken }. Use the
+ * Client(s) from properties if not specific the field
+ * {@link OAuth2AccessTokenInterceptor#specifiedClientIds}
  *
  * @author Dangzhicairang(小水牛)
  * @since 4.0.0
@@ -79,23 +79,31 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 	}
 
 	private static final Authentication ANONYMOUS_AUTHENTICATION = new AnonymousAuthenticationToken("anonymous",
-		"anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
+			"anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
 
-	public OAuth2AccessTokenInterceptor(OAuth2ClientProperties oAuth2ClientProperties, OAuth2AuthorizedClientService oAuth2AuthorizedClientService, ClientRegistrationRepository clientRegistrationRepository) {
+	public OAuth2AccessTokenInterceptor(OAuth2ClientProperties oAuth2ClientProperties,
+			OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
+			ClientRegistrationRepository clientRegistrationRepository) {
 		this(new ArrayList<>(), oAuth2ClientProperties, oAuth2AuthorizedClientService, clientRegistrationRepository);
 	}
 
-	public OAuth2AccessTokenInterceptor(List<String> specifiedClientIds, OAuth2ClientProperties oAuth2ClientProperties, OAuth2AuthorizedClientService oAuth2AuthorizedClientService, ClientRegistrationRepository clientRegistrationRepository) {
-		this(BEARER, AUTHORIZATION, specifiedClientIds, oAuth2ClientProperties, oAuth2AuthorizedClientService, clientRegistrationRepository);
+	public OAuth2AccessTokenInterceptor(List<String> specifiedClientIds, OAuth2ClientProperties oAuth2ClientProperties,
+			OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
+			ClientRegistrationRepository clientRegistrationRepository) {
+		this(BEARER, AUTHORIZATION, specifiedClientIds, oAuth2ClientProperties, oAuth2AuthorizedClientService,
+				clientRegistrationRepository);
 	}
 
-	public OAuth2AccessTokenInterceptor(String tokenType, String header, List<String> specifiedClientIds, OAuth2ClientProperties oAuth2ClientProperties, OAuth2AuthorizedClientService oAuth2AuthorizedClientService, ClientRegistrationRepository clientRegistrationRepository) {
+	public OAuth2AccessTokenInterceptor(String tokenType, String header, List<String> specifiedClientIds,
+			OAuth2ClientProperties oAuth2ClientProperties, OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
+			ClientRegistrationRepository clientRegistrationRepository) {
 		this.tokenType = tokenType;
 		this.header = header;
 		this.specifiedClientIds = specifiedClientIds;
 		this.oAuth2ClientProperties = oAuth2ClientProperties;
 		this.oAuth2AuthorizedClientService = oAuth2AuthorizedClientService;
-		this.authorizedClientManager = new AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository, this.oAuth2AuthorizedClientService);
+		this.authorizedClientManager = new AuthorizedClientServiceOAuth2AuthorizedClientManager(
+				clientRegistrationRepository, this.oAuth2AuthorizedClientService);
 	}
 
 	@Override
@@ -120,15 +128,15 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 		}
 
 		// use clients from properties by default
-		for (String clientId : Optional.ofNullable(this.oAuth2ClientProperties).map(OAuth2ClientProperties::getRegistration).map(Map::keySet).orElse(new HashSet<>())) {
+		for (String clientId : Optional.ofNullable(this.oAuth2ClientProperties)
+				.map(OAuth2ClientProperties::getRegistration).map(Map::keySet).orElse(new HashSet<>())) {
 			OAuth2AccessToken token = this.getToken(clientId);
 			if (token != null) {
 				return token;
 			}
 		}
 
-		throw new IllegalStateException(
-			"No token acquired, which is illegal according to the contract.");
+		throw new IllegalStateException("No token acquired, which is illegal according to the contract.");
 	}
 
 	protected OAuth2AccessToken getToken(String clientId) {
@@ -143,7 +151,8 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 		}
 
 		// already exist
-		OAuth2AuthorizedClient oAuth2AuthorizedClient = oAuth2AuthorizedClientService.loadAuthorizedClient(clientId, principal.getName());
+		OAuth2AuthorizedClient oAuth2AuthorizedClient = oAuth2AuthorizedClientService.loadAuthorizedClient(clientId,
+				principal.getName());
 		if (oAuth2AuthorizedClient != null) {
 			OAuth2AccessToken accessToken = oAuth2AuthorizedClient.getAccessToken();
 			if (accessToken != null && this.noExpire(accessToken)) {
@@ -151,22 +160,16 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 			}
 		}
 
-		OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
-			.withClientRegistrationId(clientId)
-			.principal(principal)
-			.build();
+		OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId(clientId)
+				.principal(principal).build();
 		OAuth2AuthorizedClient authorize = this.authorizedClientManager.authorize(authorizeRequest);
-		return Optional.ofNullable(authorize)
-			.map(OAuth2AuthorizedClient::getAccessToken)
-			.filter(this::noExpire)
-			.orElse(null);
+		return Optional.ofNullable(authorize).map(OAuth2AuthorizedClient::getAccessToken).filter(this::noExpire)
+				.orElse(null);
 	}
 
 	protected boolean noExpire(OAuth2AccessToken token) {
-		return Optional.ofNullable(token)
-			.map(OAuth2AccessToken::getExpiresAt)
-			.map(expire -> expire.isAfter(Instant.now()))
-			.orElse(false);
+		return Optional.ofNullable(token).map(OAuth2AccessToken::getExpiresAt)
+				.map(expire -> expire.isAfter(Instant.now())).orElse(false);
 	}
 
 }
