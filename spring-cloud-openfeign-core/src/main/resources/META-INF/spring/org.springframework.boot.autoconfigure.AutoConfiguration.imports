@@ -1,0 +1,5 @@
+org.springframework.cloud.openfeign.hateoas.FeignHalAutoConfiguration
+org.springframework.cloud.openfeign.FeignAutoConfiguration
+org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingAutoConfiguration
+org.springframework.cloud.openfeign.encoding.FeignContentGzipEncodingAutoConfiguration
+org.springframework.cloud.openfeign.loadbalancer.FeignLoadBalancerAutoConfiguration
