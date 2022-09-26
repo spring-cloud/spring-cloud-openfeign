@@ -17,7 +17,6 @@
 package org.springframework.cloud.openfeign.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
