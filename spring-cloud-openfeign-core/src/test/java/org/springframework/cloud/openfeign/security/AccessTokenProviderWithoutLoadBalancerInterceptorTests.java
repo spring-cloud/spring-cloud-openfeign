@@ -41,10 +41,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Wojciech Mąka
  */
 @SpringBootTest(classes = AccessTokenProviderWithoutLoadBalancerInterceptorTests.Application.class,
-	webEnvironment = RANDOM_PORT,
-	value = { "security.oauth2.client.id=test-service", "security.oauth2.client.client-id=test-service",
-		"security.oauth2.client.client-secret=test-service",
-		"security.oauth2.client.grant-type=client_credentials", "spring.cloud.openfeign.oauth2.enabled=true" })
+		webEnvironment = RANDOM_PORT,
+		value = { "security.oauth2.client.id=test-service", "security.oauth2.client.client-id=test-service",
+				"security.oauth2.client.client-secret=test-service",
+				"security.oauth2.client.grant-type=client_credentials", "spring.cloud.openfeign.oauth2.enabled=true" })
 @DirtiesContext
 public class AccessTokenProviderWithoutLoadBalancerInterceptorTests {
 
@@ -59,18 +59,18 @@ public class AccessTokenProviderWithoutLoadBalancerInterceptorTests {
 	void testOAuth2RequestInterceptorIsNotLoadBalanced() {
 		AssertableApplicationContext assertableContext = AssertableApplicationContext.get(() -> applicationContext);
 		assertThat(assertableContext)
-			.hasSingleBean(AccessTokenProviderWithoutLoadBalancerInterceptorTests.Application.SampleClient.class);
+				.hasSingleBean(AccessTokenProviderWithoutLoadBalancerInterceptorTests.Application.SampleClient.class);
 		assertThat(assertableContext).hasSingleBean(OAuth2FeignRequestInterceptor.class);
 		assertThat(assertableContext).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
-			.extracting("interceptors").asList()
-			.filteredOn(obj -> RetryLoadBalancerInterceptor.class.equals(obj.getClass())).isEmpty();
+				.extracting("interceptors").asList()
+				.filteredOn(obj -> RetryLoadBalancerInterceptor.class.equals(obj.getClass())).isEmpty();
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(
-		clients = { AccessTokenProviderWithoutLoadBalancerInterceptorTests.Application.SampleClient.class })
+			clients = { AccessTokenProviderWithoutLoadBalancerInterceptorTests.Application.SampleClient.class })
 	protected static class Application {
 
 		@GetMapping("/foo")

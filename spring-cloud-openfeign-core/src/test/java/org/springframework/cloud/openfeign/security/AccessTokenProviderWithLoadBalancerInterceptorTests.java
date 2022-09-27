@@ -41,11 +41,11 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Wojciech Mąka
  */
 @SpringBootTest(classes = AccessTokenProviderWithLoadBalancerInterceptorTests.Application.class,
-	webEnvironment = RANDOM_PORT,
-	value = { "security.oauth2.client.id=test-service", "security.oauth2.client.client-id=test-service",
-		"security.oauth2.client.client-secret=test-service",
-		"security.oauth2.client.grant-type=client_credentials", "spring.cloud.openfeign.oauth2.enabled=true",
-		"spring.cloud.openfeign.oauth2.load-balanced=true" })
+		webEnvironment = RANDOM_PORT,
+		value = { "security.oauth2.client.id=test-service", "security.oauth2.client.client-id=test-service",
+				"security.oauth2.client.client-secret=test-service",
+				"security.oauth2.client.grant-type=client_credentials", "spring.cloud.openfeign.oauth2.enabled=true",
+				"spring.cloud.openfeign.oauth2.load-balanced=true" })
 @DirtiesContext
 public class AccessTokenProviderWithLoadBalancerInterceptorTests {
 
@@ -62,15 +62,15 @@ public class AccessTokenProviderWithLoadBalancerInterceptorTests {
 		assertThat(assertableContext).hasSingleBean(Application.SampleClient.class);
 		assertThat(assertableContext).hasSingleBean(OAuth2FeignRequestInterceptor.class);
 		assertThat(assertableContext).getBean(OAuth2FeignRequestInterceptor.class).extracting("accessTokenProvider")
-			.extracting("interceptors").asList()
-			.filteredOn(obj -> RetryLoadBalancerInterceptor.class.equals(obj.getClass())).hasSize(1);
+				.extracting("interceptors").asList()
+				.filteredOn(obj -> RetryLoadBalancerInterceptor.class.equals(obj.getClass())).hasSize(1);
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
 	@EnableFeignClients(
-		clients = { AccessTokenProviderWithLoadBalancerInterceptorTests.Application.SampleClient.class })
+			clients = { AccessTokenProviderWithLoadBalancerInterceptorTests.Application.SampleClient.class })
 	protected static class Application {
 
 		@GetMapping("/foo")
