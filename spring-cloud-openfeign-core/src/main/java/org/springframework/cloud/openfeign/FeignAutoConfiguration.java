@@ -49,7 +49,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.cloud.client.actuator.HasFeatures;
@@ -70,6 +69,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
@@ -340,20 +340,18 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@EnableConfigurationProperties(OAuth2ClientProperties.class)
+	@ConditionalOnClass(OAuth2AuthorizedClientManager.class)
 	@ConditionalOnProperty("spring.cloud.openfeign.oauth2.enabled")
 	protected static class Oauth2FeignConfiguration {
 
 		@Bean
 		@ConditionalOnBean({ OAuth2AuthorizedClientService.class, ClientRegistrationRepository.class })
 		public OAuth2AccessTokenInterceptor defaultOAuth2AccessTokenInterceptor(
-				@Value("${spring.cloud.openfeign.oauth2.specifiedClientIds:}") List<String> specifiedClientIds,
-				OAuth2ClientProperties oAuth2ClientProperties,
+				@Value("${spring.cloud.openfeign.oauth2.clientId:}") String clientId,
 				OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
 				ClientRegistrationRepository clientRegistrationRepository) {
-
-			return new OAuth2AccessTokenInterceptor(specifiedClientIds, oAuth2ClientProperties,
-					oAuth2AuthorizedClientService, clientRegistrationRepository);
+			return new OAuth2AccessTokenInterceptor(clientId, oAuth2AuthorizedClientService,
+					clientRegistrationRepository);
 		}
 
 	}

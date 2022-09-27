@@ -17,15 +17,14 @@
 package org.springframework.cloud.openfeign.security;
 
 import java.time.Instant;
-import java.util.HashMap;
 
 import feign.Request.HttpMethod;
 import feign.RequestTemplate;
-import org.assertj.core.api.Assertions;
+import feign.Target;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -35,109 +34,107 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.util.AlternativeJdkIdGenerator;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
+ * Tests for {@link OAuth2AccessTokenInterceptor}.
+ *
  * @author Dangzhicairang(小水牛)
+ * @author Olga Maciaszek-Sharma
+ *
  */
 class OAuth2AccessTokenInterceptorTests {
+
+	private final OAuth2AuthorizedClientService mockOAuth2AuthorizedClientService = mock(
+			OAuth2AuthorizedClientService.class);
+
+	private final OAuth2AuthorizedClientManager mockOAuth2AuthorizedClientManager = mock(
+			OAuth2AuthorizedClientManager.class);
 
 	private OAuth2AccessTokenInterceptor oAuth2AccessTokenInterceptor;
 
 	private RequestTemplate requestTemplate;
 
-	private OAuth2ClientProperties mockOAuth2ClientProperties;
-
 	private static final String DEFAULT_CLIENT_ID = "feign-client";
 
 	@BeforeEach
 	void setUp() {
-
 		requestTemplate = new RequestTemplate().method(HttpMethod.GET);
-
-		mockOAuth2ClientProperties = mock(OAuth2ClientProperties.class);
-		given(mockOAuth2ClientProperties.getRegistration())
-				.willReturn(new HashMap<String, OAuth2ClientProperties.Registration>() {
-					{
-						put(DEFAULT_CLIENT_ID, mock(OAuth2ClientProperties.Registration.class));
-					}
-				});
-
+		Target<?> feignTarget = mock(Target.class);
+		when(feignTarget.url()).thenReturn("http://test");
+		requestTemplate.feignTarget(feignTarget);
 	}
 
 	@Test
-	void noTokenAcquired() {
-
-		OAuth2AuthorizedClientService mockOAuth2AuthorizedClientService = mock(OAuth2AuthorizedClientService.class);
-		given(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString())).willReturn(null);
-
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2ClientProperties,
-				mockOAuth2AuthorizedClientService, mock(ClientRegistrationRepository.class));
-
-		OAuth2AuthorizedClientManager mockOAuth2AuthorizedClientManager = mock(OAuth2AuthorizedClientManager.class);
-		given(mockOAuth2AuthorizedClientManager.authorize(any())).willReturn(null);
-
+	void shouldThrowExceptionWhenNoTokenAcquired() {
+		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString())).thenReturn(null);
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
+				mock(ClientRegistrationRepository.class));
+		when(mockOAuth2AuthorizedClientManager.authorize(any())).thenReturn(null);
 		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
 
-		Assertions.assertThatExceptionOfType(IllegalStateException.class)
+		assertThatExceptionOfType(IllegalStateException.class)
 				.isThrownBy(() -> oAuth2AccessTokenInterceptor.apply(requestTemplate))
-				.withMessage("No token acquired, which is illegal according to the contract.");
-
+				.withMessage("OAuth2 token has not been successfully acquired.");
 	}
 
 	@Test
-	void validTokenAcquired() {
-
-		OAuth2AuthorizedClientService mockOAuth2AuthorizedClientService = mock(OAuth2AuthorizedClientService.class);
-		given(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString())).willReturn(null);
-
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2ClientProperties,
-				mockOAuth2AuthorizedClientService, mock(ClientRegistrationRepository.class));
-
-		OAuth2AuthorizedClientManager mockOAuth2AuthorizedClientManager = mock(OAuth2AuthorizedClientManager.class);
-		given(mockOAuth2AuthorizedClientManager.authorize(any())).willReturn(validTokenOAuth2AuthorizedClient());
-
+	void shouldAcquireValidToken() {
+		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString())).thenReturn(null);
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
+				mock(ClientRegistrationRepository.class));
+		when(mockOAuth2AuthorizedClientManager.authorize(
+				argThat((OAuth2AuthorizeRequest request) -> ("test").equals(request.getClientRegistrationId()))))
+						.thenReturn(validTokenOAuth2AuthorizedClient());
 		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
-		Assertions.assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
 	}
 
 	@Test
-	void expireTokenAcquired() {
-
-		OAuth2AuthorizedClientService mockOAuth2AuthorizedClientService = mock(OAuth2AuthorizedClientService.class);
-		given(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString())).willReturn(null);
-
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2ClientProperties,
-				mockOAuth2AuthorizedClientService, mock(ClientRegistrationRepository.class));
-
-		OAuth2AuthorizedClientManager mockOAuth2AuthorizedClientManager = mock(OAuth2AuthorizedClientManager.class);
-		given(mockOAuth2AuthorizedClientManager.authorize(any())).willReturn(expiredTokenOAuth2AuthorizedClient());
-
+	void shouldThrowExceptionWhenExpiredTokenAcquired() {
+		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString())).thenReturn(null);
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
+				mock(ClientRegistrationRepository.class));
+		when(mockOAuth2AuthorizedClientManager.authorize(any())).thenReturn(expiredTokenOAuth2AuthorizedClient());
 		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
 
-		Assertions.assertThatExceptionOfType(IllegalStateException.class)
+		assertThatExceptionOfType(IllegalStateException.class)
 				.isThrownBy(() -> oAuth2AccessTokenInterceptor.apply(requestTemplate))
-				.withMessage("No token acquired, which is illegal according to the contract.");
+				.withMessage("OAuth2 token has not been successfully acquired.");
 	}
 
 	@Test
-	void acquireTokenFromAuthorizedClient() {
-		OAuth2AuthorizedClientService mockOAuth2AuthorizedClientService = mock(OAuth2AuthorizedClientService.class);
-		given(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString()))
-				.willReturn(validTokenOAuth2AuthorizedClient());
-
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2ClientProperties,
-				mockOAuth2AuthorizedClientService, mock(ClientRegistrationRepository.class));
+	void shouldAcquireTokenFromAuthorizedClient() {
+		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(eq("test"), anyString()))
+				.thenReturn(validTokenOAuth2AuthorizedClient());
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
+				mock(ClientRegistrationRepository.class));
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
-		Assertions.assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+	}
+
+	@Test
+	void shouldAcquireValidTokenFromSpecifiedClientId() {
+		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(eq("testId"), anyString()))
+				.thenReturn(validTokenOAuth2AuthorizedClient());
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor("testId", mockOAuth2AuthorizedClientService,
+				mock(ClientRegistrationRepository.class));
+
+		oAuth2AccessTokenInterceptor.apply(requestTemplate);
+
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
 	}
 
 	private OAuth2AccessToken validToken() {
