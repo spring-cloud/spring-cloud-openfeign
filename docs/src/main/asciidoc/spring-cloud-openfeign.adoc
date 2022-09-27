@@ -811,6 +811,19 @@ When the flag is set to true, and the oauth2 client context resource details are
 Sometimes, when load balancing is enabled for Feign clients, you may want to use load balancing for fetching access tokens, too. To do so, you should ensure that the load balancer is on the classpath (spring-cloud-starter-loadbalancer) and explicitly enable load balancing for OAuth2FeignRequestInterceptor by setting the following flag:
 ----
 feign.oauth2.load-balanced=true
+
+When the flag is set to true, and the oauth2 client context resource details are present, a bean of class `OAuth2AccessTokenInterceptor` is created. Before each request, the interceptor resolves the required access token and includes it as a header.
+`OAuth2AccessTokenInterceptor` uses the `AuthorizedClientServiceOAuth2AuthorizedClientManager` to get `OAuth2AuthorizedClient` that holds an `OAuth2AccessToken`. If the user has specified an OAuth2 `clientId` using the `spring.cloud.openfeign.oauth2.clientId` property, it will be used to retrieve the token. If the token is not retrieved or the `clientId` has not been specified, the `serviceId` retrieved from the `url` host segment will be used.
+
+TIP:: Using the `serviceId` as OAuth2 client id is convenient for load-balanced Feign clients. For non-load-balanced ones, the property-based `clientId` is a suitable approach.
+
+=== Transform the load-balanced HTTP request
+
+You can use the selected `ServiceInstance` to transform the load-balanced HTTP Request.
+
+For `Request`, you need to implement and define `LoadBalancerFeignRequestTransformer`, as follows:
+
+[source,java,indent=0]
 ----
 
 == Configuration properties

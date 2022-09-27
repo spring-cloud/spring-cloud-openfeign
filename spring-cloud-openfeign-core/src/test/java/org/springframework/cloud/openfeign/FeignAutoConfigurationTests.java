@@ -17,8 +17,6 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import feign.Target;
 import org.assertj.core.api.Condition;
@@ -141,17 +139,12 @@ class FeignAutoConfigurationTests {
 	@Test
 	void shouldInstantiateFeignOAuth2FeignRequestInterceptor() {
 		runner.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true",
-				"spring.cloud.openfeign.oauth2.specifiedClientIds=feign-client")
+				"spring.cloud.openfeign.oauth2.clientId=feign-client")
 			.withBean(OAuth2AuthorizedClientService.class, () -> mock(OAuth2AuthorizedClientService.class))
 			.withBean(ClientRegistrationRepository.class, () -> mock(ClientRegistrationRepository.class))
 			.run(ctx -> {
 				assertOauth2AccessTokenInterceptorExists(ctx);
-				assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(ctx,
-					new ArrayList<String>() {
-						{
-							add("feign-client");
-						}
-					});
+				assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(ctx, "feign-client");
 			});
 	}
 
@@ -184,9 +177,9 @@ class FeignAutoConfigurationTests {
 	}
 
 	private void assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(
-		ConfigurableApplicationContext ctx, List<String> expectedValue) {
+		ConfigurableApplicationContext ctx, String expectedValue) {
 		final OAuth2AccessTokenInterceptor bean = ctx.getBean(OAuth2AccessTokenInterceptor.class);
-		assertThat(bean).hasFieldOrPropertyWithValue("specifiedClientIds", expectedValue);
+		assertThat(bean).hasFieldOrPropertyWithValue("clientId", expectedValue);
 	}
 
 	private void assertOnlyOneTargeterPresent(ConfigurableApplicationContext ctx, Class<?> beanClass) {
