@@ -28,7 +28,9 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.form.MultipartFormContentProcessor;
 import feign.form.spring.SpringFormEncoder;
+import feign.micrometer.FeignObservationConvention;
 import feign.micrometer.MicrometerCapability;
+import feign.micrometer.ObservedClientInterceptor;
 import feign.optionals.OptionalDecoder;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
@@ -244,10 +246,16 @@ public class FeignClientsConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public MicrometerCapability micrometerCapability(MeterRegistry meterRegistry,
-				ObjectProvider<ObservationRegistry> observationRegistry) {
-			return new MicrometerCapability(meterRegistry,
-					observationRegistry.getIfAvailable(() -> ObservationRegistry.NOOP));
+		public MicrometerCapability micrometerCapability(MeterRegistry meterRegistry) {
+			return new MicrometerCapability(meterRegistry);
+		}
+
+		@Bean
+		@ConditionalOnBean(ObservationRegistry.class)
+		public FeignBuilderCustomizer defaultClientInterceptorProvider(ObservationRegistry observationRegistry,
+				ObjectProvider<FeignObservationConvention> feignObservationConvention) {
+			return builder -> builder.clientInterceptor(
+					new ObservedClientInterceptor(observationRegistry, feignObservationConvention.getIfAvailable()));
 		}
 
 	}
