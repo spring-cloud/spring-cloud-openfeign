@@ -4,7 +4,7 @@
 |feign.autoconfiguration.jackson.enabled | `+++false+++` | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
 |feign.circuitbreaker.alphanumeric-ids.enabled | `+++false+++` | If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.
 |feign.circuitbreaker.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
-|feign.circuitbreaker.group.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with with group.
+|feign.circuitbreaker.group.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with group.
 |feign.client.config |  | 
 |feign.client.decode-slash | `+++true+++` | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
 |feign.client.default-config | `+++default+++` | 
@@ -31,6 +31,7 @@
 |feign.httpclient.time-to-live | `+++900+++` | 
 |feign.httpclient.time-to-live-unit |  | 
 |feign.metrics.enabled | `+++true+++` | Enables metrics capability for Feign.
+|feign.oauth2.clientRegistrationId |  | Provides a clientRegistrationId to be used with OAuth2.
 |feign.oauth2.enabled | `+++false+++` | Enables feign interceptor for managing oauth2 access token.
 |feign.oauth2.load-balanced | `+++false+++` | Enables load balancing for oauth2 access token provider.
 |feign.okhttp.enabled | `+++false+++` | Enables the use of the OK HTTP Client by Feign.

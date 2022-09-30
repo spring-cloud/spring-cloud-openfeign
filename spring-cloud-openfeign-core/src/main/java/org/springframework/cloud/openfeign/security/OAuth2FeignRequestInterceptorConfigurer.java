@@ -26,7 +26,9 @@ import org.springframework.security.oauth2.client.token.AccessTokenProvider;
  *
  * @author Wojciech Mąka
  * @since 3.1.1
+ * @deprecated since spring-security-oauth2 reached EOL
  */
+@Deprecated // spring-security-oauth2 reached EOL
 @FunctionalInterface
 public interface OAuth2FeignRequestInterceptorConfigurer {
 

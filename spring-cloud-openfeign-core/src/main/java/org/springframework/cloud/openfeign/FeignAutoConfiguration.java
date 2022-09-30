@@ -75,6 +75,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -352,7 +353,7 @@ public class FeignAutoConfiguration {
 	@ConditionalOnClass(OAuth2ClientContext.class)
 	@ConditionalOnProperty("feign.oauth2.enabled")
 	@Deprecated // spring-security-oauth2 reached EOL
-	protected static class Oauth2FeignConfiguration {
+	protected static class DeprecatedOauth2FeignConfiguration {
 
 		@ConditionalOnBean({ RetryLoadBalancerInterceptor.class, OAuth2ClientContext.class,
 				OAuth2ProtectedResourceDetails.class })
@@ -374,20 +375,36 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(OAuth2FeignRequestInterceptor.class)
-		@ConditionalOnBean({OAuth2ClientContext.class, OAuth2ProtectedResourceDetails.class})
+		@ConditionalOnBean({ OAuth2ClientContext.class, OAuth2ProtectedResourceDetails.class })
 		public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2ClientContext oAuth2ClientContext,
-			OAuth2ProtectedResourceDetails resource, List<OAuth2FeignRequestInterceptorConfigurer> configurers) {
+				OAuth2ProtectedResourceDetails resource, List<OAuth2FeignRequestInterceptorConfigurer> configurers) {
 			return buildWithConfigurers(oAuth2ClientContext, resource, configurers);
 		}
 
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(OAuth2AuthorizedClientManager.class)
+	@ConditionalOnProperty("feign.oauth2.enabled")
+	protected static class Oauth2FeignConfiguration {
+
 		@Bean
 		@ConditionalOnBean({ OAuth2AuthorizedClientService.class, ClientRegistrationRepository.class })
+		@ConditionalOnMissingBean
+		OAuth2AuthorizedClientManager feignOAuth2AuthorizedClientManager(
+				ClientRegistrationRepository clientRegistrationRepository,
+				OAuth2AuthorizedClientService oAuth2AuthorizedClientService) {
+			return new AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository,
+					oAuth2AuthorizedClientService);
+
+		}
+
+		@Bean
+		@ConditionalOnBean(OAuth2AuthorizedClientManager.class)
 		public OAuth2AccessTokenInterceptor defaultOAuth2AccessTokenInterceptor(
-				@Value("${spring.cloud.openfeign.oauth2.clientRegistrationId:}") String clientRegistrationId,
-				OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
-				ClientRegistrationRepository clientRegistrationRepository) {
-			return new OAuth2AccessTokenInterceptor(clientRegistrationId, oAuth2AuthorizedClientService,
-					clientRegistrationRepository);
+				@Value("${feign.oauth2.clientRegistrationId:}") String clientRegistrationId,
+				OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+			return new OAuth2AccessTokenInterceptor(clientRegistrationId, oAuth2AuthorizedClientManager);
 		}
 
 	}

@@ -23,7 +23,7 @@
 		{
 			"name": "feign.circuitbreaker.group.enabled",
 			"type": "java.lang.Boolean",
-			"description": "If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with with group.",
+			"description": "If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with group.",
 			"defaultValue": "false"
 		},
 		{
@@ -81,9 +81,9 @@
 			"defaultValue": "false"
 		},
 		{
-			"name": "feign.oauth2.registrationClientId",
+			"name": "feign.oauth2.clientRegistrationId",
 			"type": "java.lang.String",
-			"description": "Provides a clientId to be used with OAuth2.",
+			"description": "Provides a clientRegistrationId to be used with OAuth2.",
 			"defaultValue": ""
 		}
 	]
