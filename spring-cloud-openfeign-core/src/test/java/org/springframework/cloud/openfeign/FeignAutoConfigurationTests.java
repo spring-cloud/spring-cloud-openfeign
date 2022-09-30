@@ -139,13 +139,13 @@ class FeignAutoConfigurationTests {
 	@Test
 	void shouldInstantiateFeignOAuth2FeignRequestInterceptor() {
 		runner.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true",
-				"spring.cloud.openfeign.oauth2.clientId=feign-client")
-			.withBean(OAuth2AuthorizedClientService.class, () -> mock(OAuth2AuthorizedClientService.class))
-			.withBean(ClientRegistrationRepository.class, () -> mock(ClientRegistrationRepository.class))
-			.run(ctx -> {
-				assertOauth2AccessTokenInterceptorExists(ctx);
-				assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(ctx, "feign-client");
-			});
+				"spring.cloud.openfeign.oauth2.clientRegistrationId=feign-client")
+				.withBean(OAuth2AuthorizedClientService.class, () -> mock(OAuth2AuthorizedClientService.class))
+				.withBean(ClientRegistrationRepository.class, () -> mock(ClientRegistrationRepository.class))
+				.run(ctx -> {
+					assertOauth2AccessTokenInterceptorExists(ctx);
+					assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(ctx, "feign-client");
+				});
 	}
 
 	private void assertOauth2FeignRequestInterceptorExists(ConfigurableApplicationContext ctx) {
@@ -177,20 +177,19 @@ class FeignAutoConfigurationTests {
 	}
 
 	private void assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(
-		ConfigurableApplicationContext ctx, String expectedValue) {
+			ConfigurableApplicationContext ctx, String expectedValue) {
 		final OAuth2AccessTokenInterceptor bean = ctx.getBean(OAuth2AccessTokenInterceptor.class);
-		assertThat(bean).hasFieldOrPropertyWithValue("clientId", expectedValue);
+		assertThat(bean).hasFieldOrPropertyWithValue("clientRegistrationId", expectedValue);
 	}
 
 	private void assertOnlyOneTargeterPresent(ConfigurableApplicationContext ctx, Class<?> beanClass) {
-		assertThat(ctx.getBeansOfType(Targeter.class)).hasSize(1)
-			.hasValueSatisfying(new Condition<>(
+		assertThat(ctx.getBeansOfType(Targeter.class)).hasSize(1).hasValueSatisfying(new Condition<>(
 				beanClass::isInstance, String.format("Targeter should be an instance of %s", beanClass)));
 
 	}
 
 	private void assertThatFeignCircuitBreakerTargeterHasGroupEnabledPropertyWithValue(
-		ConfigurableApplicationContext ctx, boolean expectedValue) {
+			ConfigurableApplicationContext ctx, boolean expectedValue) {
 		final FeignCircuitBreakerTargeter bean = ctx.getBean(FeignCircuitBreakerTargeter.class);
 		assertThat(bean).hasFieldOrPropertyWithValue("circuitBreakerGroupEnabled", expectedValue);
 	}

@@ -75,6 +75,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -380,13 +381,13 @@ public class FeignAutoConfiguration {
 		}
 
 		@Bean
-		@ConditionalOnBean({OAuth2AuthorizedClientService.class, ClientRegistrationRepository.class})
+		@ConditionalOnBean({ OAuth2AuthorizedClientService.class, ClientRegistrationRepository.class })
 		public OAuth2AccessTokenInterceptor defaultOAuth2AccessTokenInterceptor(
-			@Value("${spring.cloud.openfeign.oauth2.clientId:}") String clientId,
-			OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
-			ClientRegistrationRepository clientRegistrationRepository) {
-			return new OAuth2AccessTokenInterceptor(clientId, oAuth2AuthorizedClientService,
-				clientRegistrationRepository);
+				@Value("${spring.cloud.openfeign.oauth2.clientRegistrationId:}") String clientRegistrationId,
+				OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
+				ClientRegistrationRepository clientRegistrationRepository) {
+			return new OAuth2AccessTokenInterceptor(clientRegistrationId, oAuth2AuthorizedClientService,
+					clientRegistrationRepository);
 		}
 
 	}

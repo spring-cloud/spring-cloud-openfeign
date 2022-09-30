@@ -32,14 +32,11 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.util.AlternativeJdkIdGenerator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -52,6 +49,9 @@ import static org.mockito.Mockito.when;
  */
 class OAuth2AccessTokenInterceptorTests {
 
+	private final ClientRegistrationRepository mockClientRegistrationRepository = mock(
+			ClientRegistrationRepository.class);
+
 	private final OAuth2AuthorizedClientService mockOAuth2AuthorizedClientService = mock(
 			OAuth2AuthorizedClientService.class);
 
@@ -62,7 +62,7 @@ class OAuth2AccessTokenInterceptorTests {
 
 	private RequestTemplate requestTemplate;
 
-	private static final String DEFAULT_CLIENT_ID = "feign-client";
+	private static final String DEFAULT_CLIENT_REGISTRATION_ID = "feign-client";
 
 	@BeforeEach
 	void setUp() {
@@ -74,9 +74,8 @@ class OAuth2AccessTokenInterceptorTests {
 
 	@Test
 	void shouldThrowExceptionWhenNoTokenAcquired() {
-		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString())).thenReturn(null);
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
-				mock(ClientRegistrationRepository.class));
+				mockClientRegistrationRepository);
 		when(mockOAuth2AuthorizedClientManager.authorize(any())).thenReturn(null);
 		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
 
@@ -87,9 +86,20 @@ class OAuth2AccessTokenInterceptorTests {
 
 	@Test
 	void shouldAcquireValidToken() {
-		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString())).thenReturn(null);
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
-				mock(ClientRegistrationRepository.class));
+				mockClientRegistrationRepository);
+		when(mockOAuth2AuthorizedClientManager.authorize(any())).thenReturn(validTokenOAuth2AuthorizedClient());
+		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
+
+		oAuth2AccessTokenInterceptor.apply(requestTemplate);
+
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+	}
+
+	@Test
+	void shouldAcquireValidTokenFromServiceId() {
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
+				mockClientRegistrationRepository);
 		when(mockOAuth2AuthorizedClientManager.authorize(
 				argThat((OAuth2AuthorizeRequest request) -> ("test").equals(request.getClientRegistrationId()))))
 						.thenReturn(validTokenOAuth2AuthorizedClient());
@@ -101,36 +111,13 @@ class OAuth2AccessTokenInterceptorTests {
 	}
 
 	@Test
-	void shouldThrowExceptionWhenExpiredTokenAcquired() {
-		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(anyString(), anyString())).thenReturn(null);
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
-				mock(ClientRegistrationRepository.class));
-		when(mockOAuth2AuthorizedClientManager.authorize(any())).thenReturn(expiredTokenOAuth2AuthorizedClient());
-		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
-
-		assertThatExceptionOfType(IllegalStateException.class)
-				.isThrownBy(() -> oAuth2AccessTokenInterceptor.apply(requestTemplate))
-				.withMessage("OAuth2 token has not been successfully acquired.");
-	}
-
-	@Test
-	void shouldAcquireTokenFromAuthorizedClient() {
-		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(eq("test"), anyString()))
-				.thenReturn(validTokenOAuth2AuthorizedClient());
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
-				mock(ClientRegistrationRepository.class));
-
-		oAuth2AccessTokenInterceptor.apply(requestTemplate);
-
-		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
-	}
-
-	@Test
 	void shouldAcquireValidTokenFromSpecifiedClientId() {
-		when(mockOAuth2AuthorizedClientService.loadAuthorizedClient(eq("testId"), anyString()))
-				.thenReturn(validTokenOAuth2AuthorizedClient());
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor("testId", mockOAuth2AuthorizedClientService,
-				mock(ClientRegistrationRepository.class));
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(DEFAULT_CLIENT_REGISTRATION_ID,
+				mockOAuth2AuthorizedClientService, mockClientRegistrationRepository);
+		when(mockOAuth2AuthorizedClientManager
+				.authorize(argThat((OAuth2AuthorizeRequest request) -> (DEFAULT_CLIENT_REGISTRATION_ID)
+						.equals(request.getClientRegistrationId())))).thenReturn(validTokenOAuth2AuthorizedClient());
+		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
@@ -142,23 +129,13 @@ class OAuth2AccessTokenInterceptorTests {
 				Instant.now().plusSeconds(60L));
 	}
 
-	private OAuth2AccessToken expiredToken() {
-		return new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "Expired Token",
-				Instant.now().minusSeconds(61L), Instant.now().minusSeconds(60L));
-	}
-
 	private OAuth2AuthorizedClient validTokenOAuth2AuthorizedClient() {
 		return new OAuth2AuthorizedClient(defaultClientRegistration(), "anonymousUser", validToken());
 	}
 
-	private OAuth2AuthorizedClient expiredTokenOAuth2AuthorizedClient() {
-		return new OAuth2AuthorizedClient(defaultClientRegistration(), "anonymousUser", expiredToken());
-	}
-
 	private ClientRegistration defaultClientRegistration() {
-		return ClientRegistration.withRegistrationId(new AlternativeJdkIdGenerator().generateId().toString())
-				.clientId(DEFAULT_CLIENT_ID).tokenUri("mock token uri")
-				.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS).build();
+		return ClientRegistration.withRegistrationId(DEFAULT_CLIENT_REGISTRATION_ID).clientId("clientId")
+				.tokenUri("mock token uri").authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS).build();
 	}
 
 }

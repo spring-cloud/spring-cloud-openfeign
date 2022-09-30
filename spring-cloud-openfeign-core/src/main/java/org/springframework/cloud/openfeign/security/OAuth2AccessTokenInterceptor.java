@@ -17,7 +17,6 @@
 package org.springframework.cloud.openfeign.security;
 
 import java.net.URI;
-import java.time.Instant;
 import java.util.Optional;
 
 import feign.RequestInterceptor;
@@ -69,9 +68,7 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 
 	private final String header;
 
-	private final String clientId;
-
-	private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
+	private final String clientRegistrationId;
 
 	private OAuth2AuthorizedClientManager authorizedClientManager;
 
@@ -87,20 +84,20 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 		this(null, oAuth2AuthorizedClientService, clientRegistrationRepository);
 	}
 
-	public OAuth2AccessTokenInterceptor(String clientId, OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
+	public OAuth2AccessTokenInterceptor(String clientRegistrationId,
+			OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
 			ClientRegistrationRepository clientRegistrationRepository) {
-		this(BEARER, AUTHORIZATION, clientId, oAuth2AuthorizedClientService, clientRegistrationRepository);
+		this(BEARER, AUTHORIZATION, clientRegistrationId, oAuth2AuthorizedClientService, clientRegistrationRepository);
 	}
 
-	public OAuth2AccessTokenInterceptor(String tokenType, String header, String clientId,
+	public OAuth2AccessTokenInterceptor(String tokenType, String header, String clientRegistrationId,
 			OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
 			ClientRegistrationRepository clientRegistrationRepository) {
 		this.tokenType = tokenType;
 		this.header = header;
-		this.clientId = clientId;
-		this.oAuth2AuthorizedClientService = oAuth2AuthorizedClientService;
+		this.clientRegistrationId = clientRegistrationId;
 		this.authorizedClientManager = new AuthorizedClientServiceOAuth2AuthorizedClientManager(
-				clientRegistrationRepository, this.oAuth2AuthorizedClientService);
+				clientRegistrationRepository, oAuth2AuthorizedClientService);
 	}
 
 	@Override
@@ -113,8 +110,8 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 
 	public OAuth2AccessToken getToken(RequestTemplate template) {
 		// If specified, try to use them to get token.
-		if (StringUtils.hasText(clientId)) {
-			OAuth2AccessToken token = getToken(clientId);
+		if (StringUtils.hasText(clientRegistrationId)) {
+			OAuth2AccessToken token = getToken(clientRegistrationId);
 			if (token != null) {
 				return token;
 			}
@@ -129,8 +126,8 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 		throw new IllegalStateException("OAuth2 token has not been successfully acquired.");
 	}
 
-	protected OAuth2AccessToken getToken(String clientId) {
-		if (!StringUtils.hasText(clientId)) {
+	protected OAuth2AccessToken getToken(String clientRegistrationId) {
+		if (!StringUtils.hasText(clientRegistrationId)) {
 			return null;
 		}
 
@@ -139,26 +136,10 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 			principal = ANONYMOUS_AUTHENTICATION;
 		}
 
-		// Already exist
-		OAuth2AuthorizedClient oAuth2AuthorizedClient = oAuth2AuthorizedClientService.loadAuthorizedClient(clientId,
-				principal.getName());
-		if (oAuth2AuthorizedClient != null) {
-			OAuth2AccessToken accessToken = oAuth2AuthorizedClient.getAccessToken();
-			if (accessToken != null && notExpired(accessToken)) {
-				return accessToken;
-			}
-		}
-
-		OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId(clientId)
+		OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId(clientRegistrationId)
 				.principal(principal).build();
 		OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
-		return Optional.ofNullable(authorizedClient).map(OAuth2AuthorizedClient::getAccessToken)
-				.filter(this::notExpired).orElse(null);
-	}
-
-	protected boolean notExpired(OAuth2AccessToken token) {
-		return Optional.ofNullable(token).map(OAuth2AccessToken::getExpiresAt)
-				.map(expire -> expire.isAfter(Instant.now())).orElse(false);
+		return Optional.ofNullable(authorizedClient).map(OAuth2AuthorizedClient::getAccessToken).orElse(null);
 	}
 
 	private static String getServiceId(RequestTemplate template) {
