@@ -75,7 +75,7 @@
 			"defaultValue": "false"
 		},
 		{
-			"name": "spring.cloud.openfeign.oauth2.clientId",
+			"name": "spring.cloud.openfeign.oauth2.registrationClientId",
 			"type": "java.lang.String",
 			"description": "Provides a clientId to be used with OAuth2.",
 			"defaultValue": ""

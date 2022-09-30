@@ -27,7 +27,6 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -37,9 +36,9 @@ import org.springframework.util.StringUtils;
 
 /**
  * A {@link RequestInterceptor} for OAuth2 Feign Requests. By default, it uses the
- * {@link AuthorizedClientServiceOAuth2AuthorizedClientManager } to get
- * {@link OAuth2AuthorizedClient } that holds an {@link OAuth2AccessToken }. If the user
- * has specified an OAuth2 {@code clientRegistrationId} using the
+ * {@link OAuth2AuthorizedClientManager } to get {@link OAuth2AuthorizedClient } that
+ * holds an {@link OAuth2AccessToken }. If the user has specified an OAuth2
+ * {@code clientRegistrationId} using the
  * {@code spring.cloud.openfeign.oauth2.clientRegistrationId} property, it will be used to
  * retrieve the token. If the token is not retrieved or the {@code clientRegistrationId}
  * has not been specified, the {@code serviceId} retrieved from the {@code url} host
