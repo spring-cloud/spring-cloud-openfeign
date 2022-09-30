@@ -347,10 +347,10 @@ public class FeignAutoConfiguration {
 		@Bean
 		@ConditionalOnBean({ OAuth2AuthorizedClientService.class, ClientRegistrationRepository.class })
 		public OAuth2AccessTokenInterceptor defaultOAuth2AccessTokenInterceptor(
-				@Value("${spring.cloud.openfeign.oauth2.clientId:}") String clientId,
+				@Value("${spring.cloud.openfeign.oauth2.clientRegistrationId:}") String clientRegistrationId,
 				OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
 				ClientRegistrationRepository clientRegistrationRepository) {
-			return new OAuth2AccessTokenInterceptor(clientId, oAuth2AuthorizedClientService,
+			return new OAuth2AccessTokenInterceptor(clientRegistrationId, oAuth2AuthorizedClientService,
 					clientRegistrationRepository);
 		}
 

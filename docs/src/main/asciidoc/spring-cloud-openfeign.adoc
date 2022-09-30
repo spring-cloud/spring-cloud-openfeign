@@ -810,9 +810,9 @@ OAuth2 support can be enabled by setting following flag:
 spring.cloud.openfeign.oauth2.enabled=true
 ----
 When the flag is set to true, and the oauth2 client context resource details are present, a bean of class `OAuth2AccessTokenInterceptor` is created. Before each request, the interceptor resolves the required access token and includes it as a header.
-`OAuth2AccessTokenInterceptor` uses the `AuthorizedClientServiceOAuth2AuthorizedClientManager` to get `OAuth2AuthorizedClient` that holds an `OAuth2AccessToken`. If the user has specified an OAuth2 `clientId` using the `spring.cloud.openfeign.oauth2.clientId` property, it will be used to retrieve the token. If the token is not retrieved or the `clientId` has not been specified, the `serviceId` retrieved from the `url` host segment will be used.
+`OAuth2AccessTokenInterceptor` uses the `AuthorizedClientServiceOAuth2AuthorizedClientManager` to get `OAuth2AuthorizedClient` that holds an `OAuth2AccessToken`. If the user has specified an OAuth2 `clientRegistrationId` using the `spring.cloud.openfeign.oauth2.clientRegistrationId` property, it will be used to retrieve the token. If the token is not retrieved or the `clientRegistrationId` has not been specified, the `serviceId` retrieved from the `url` host segment will be used.
 
-TIP:: Using the `serviceId` as OAuth2 client id is convenient for load-balanced Feign clients. For non-load-balanced ones, the property-based `clientId` is a suitable approach.
+TIP:: Using the `serviceId` as OAuth2 client registrationId is convenient for load-balanced Feign clients. For non-load-balanced ones, the property-based `clientRegistrationId` is a suitable approach.
 
 === Transform the load-balanced HTTP request
 

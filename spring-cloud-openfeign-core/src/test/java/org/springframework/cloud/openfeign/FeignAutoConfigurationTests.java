@@ -90,7 +90,7 @@ class FeignAutoConfigurationTests {
 	@Test
 	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithoutInterceptors() {
 		runner.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true",
-				"spring.cloud.openfeign.oauth2.clientId=feign-client")
+				"spring.cloud.openfeign.oauth2.clientRegistrationId=feign-client")
 				.withBean(OAuth2AuthorizedClientService.class, () -> mock(OAuth2AuthorizedClientService.class))
 				.withBean(ClientRegistrationRepository.class, () -> mock(ClientRegistrationRepository.class))
 				.run(ctx -> {
@@ -107,7 +107,7 @@ class FeignAutoConfigurationTests {
 	private void assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(
 			ConfigurableApplicationContext ctx, String expectedValue) {
 		final OAuth2AccessTokenInterceptor bean = ctx.getBean(OAuth2AccessTokenInterceptor.class);
-		assertThat(bean).hasFieldOrPropertyWithValue("clientId", expectedValue);
+		assertThat(bean).hasFieldOrPropertyWithValue("clientRegistrationId", expectedValue);
 	}
 
 	private void assertOnlyOneTargeterPresent(ConfigurableApplicationContext ctx, Class<?> beanClass) {
