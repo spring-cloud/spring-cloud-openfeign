@@ -75,10 +75,10 @@
 			"defaultValue": "false"
 		},
 		{
-			"name": "spring.cloud.openfeign.oauth2.load-balanced",
-			"type": "java.lang.Boolean",
-			"description": "Enables load balancing for oauth2 access token provider.",
-			"defaultValue": "false"
+			"name": "spring.cloud.openfeign.oauth2.clientId",
+			"type": "java.lang.String",
+			"description": "Provides a clientId to be used with OAuth2.",
+			"defaultValue": ""
 		}
 	]
 }
