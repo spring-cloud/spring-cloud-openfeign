@@ -31,8 +31,6 @@ import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2A
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -41,12 +39,13 @@ import org.springframework.util.StringUtils;
  * A {@link RequestInterceptor} for OAuth2 Feign Requests. By default, it uses the
  * {@link AuthorizedClientServiceOAuth2AuthorizedClientManager } to get
  * {@link OAuth2AuthorizedClient } that holds an {@link OAuth2AccessToken }. If the user
- * has specified an OAuth2 {@code clientId} using the
- * {@code spring.cloud.openfeign.oauth2.clientId} property, it will be used to retrieve
- * the token. If the token is not retrieved or the {@code clientId} has not been
- * specified, the {@code serviceId} retrieved from the {@code url} host segment will be
- * used. This approach is convenient for load-balanced Feign clients. For
- * non-load-balanced ones, the property-based {@code clientId} is a suitable approach.
+ * has specified an OAuth2 {@code clientRegistrationId} using the
+ * {@code spring.cloud.openfeign.oauth2.clientRegistrationId} property, it will be used to
+ * retrieve the token. If the token is not retrieved or the {@code clientRegistrationId}
+ * has not been specified, the {@code serviceId} retrieved from the {@code url} host
+ * segment will be used. This approach is convenient for load-balanced Feign clients. For
+ * non-load-balanced ones, the property-based {@code clientRegistrationId} is a suitable
+ * approach.
  *
  * @author Dangzhicairang(小水牛)
  * @author Olga Maciaszek-Sharma
@@ -70,34 +69,26 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 
 	private final String clientRegistrationId;
 
-	private OAuth2AuthorizedClientManager authorizedClientManager;
-
-	public void setAuthorizedClientManager(OAuth2AuthorizedClientManager authorizedClientManager) {
-		this.authorizedClientManager = authorizedClientManager;
-	}
+	private final OAuth2AuthorizedClientManager authorizedClientManager;
 
 	private static final Authentication ANONYMOUS_AUTHENTICATION = new AnonymousAuthenticationToken("anonymous",
 			"anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
 
-	public OAuth2AccessTokenInterceptor(OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
-			ClientRegistrationRepository clientRegistrationRepository) {
-		this(null, oAuth2AuthorizedClientService, clientRegistrationRepository);
+	public OAuth2AccessTokenInterceptor(OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+		this(null, oAuth2AuthorizedClientManager);
 	}
 
 	public OAuth2AccessTokenInterceptor(String clientRegistrationId,
-			OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
-			ClientRegistrationRepository clientRegistrationRepository) {
-		this(BEARER, AUTHORIZATION, clientRegistrationId, oAuth2AuthorizedClientService, clientRegistrationRepository);
+			OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+		this(BEARER, AUTHORIZATION, clientRegistrationId, oAuth2AuthorizedClientManager);
 	}
 
 	public OAuth2AccessTokenInterceptor(String tokenType, String header, String clientRegistrationId,
-			OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
-			ClientRegistrationRepository clientRegistrationRepository) {
+			OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 		this.tokenType = tokenType;
 		this.header = header;
 		this.clientRegistrationId = clientRegistrationId;
-		this.authorizedClientManager = new AuthorizedClientServiceOAuth2AuthorizedClientManager(
-				clientRegistrationRepository, oAuth2AuthorizedClientService);
+		this.authorizedClientManager = oAuth2AuthorizedClientManager;
 	}
 
 	@Override
@@ -144,9 +135,9 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 
 	private static String getServiceId(RequestTemplate template) {
 		Target<?> feignTarget = template.feignTarget();
-		Assert.notNull(feignTarget, "feignTarget may not be null");
+		Assert.notNull(feignTarget, "FeignTarget may not be null.");
 		String url = feignTarget.url();
-		Assert.hasLength(url, "url may not be empty");
+		Assert.hasLength(url, "Url may not be empty.");
 		final URI originalUri = URI.create(url);
 		return originalUri.getHost();
 	}

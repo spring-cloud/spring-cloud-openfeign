@@ -27,9 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 
@@ -48,12 +46,6 @@ import static org.mockito.Mockito.when;
  *
  */
 class OAuth2AccessTokenInterceptorTests {
-
-	private final ClientRegistrationRepository mockClientRegistrationRepository = mock(
-			ClientRegistrationRepository.class);
-
-	private final OAuth2AuthorizedClientService mockOAuth2AuthorizedClientService = mock(
-			OAuth2AuthorizedClientService.class);
 
 	private final OAuth2AuthorizedClientManager mockOAuth2AuthorizedClientManager = mock(
 			OAuth2AuthorizedClientManager.class);
@@ -74,10 +66,8 @@ class OAuth2AccessTokenInterceptorTests {
 
 	@Test
 	void shouldThrowExceptionWhenNoTokenAcquired() {
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
-				mockClientRegistrationRepository);
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientManager);
 		when(mockOAuth2AuthorizedClientManager.authorize(any())).thenReturn(null);
-		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
 
 		assertThatExceptionOfType(IllegalStateException.class)
 				.isThrownBy(() -> oAuth2AccessTokenInterceptor.apply(requestTemplate))
@@ -86,10 +76,10 @@ class OAuth2AccessTokenInterceptorTests {
 
 	@Test
 	void shouldAcquireValidToken() {
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
-				mockClientRegistrationRepository);
-		when(mockOAuth2AuthorizedClientManager.authorize(any())).thenReturn(validTokenOAuth2AuthorizedClient());
-		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientManager);
+		when(mockOAuth2AuthorizedClientManager.authorize(
+				argThat((OAuth2AuthorizeRequest request) -> ("test").equals(request.getClientRegistrationId()))))
+						.thenReturn(validTokenOAuth2AuthorizedClient());
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
@@ -98,12 +88,10 @@ class OAuth2AccessTokenInterceptorTests {
 
 	@Test
 	void shouldAcquireValidTokenFromServiceId() {
-		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientService,
-				mockClientRegistrationRepository);
 		when(mockOAuth2AuthorizedClientManager.authorize(
 				argThat((OAuth2AuthorizeRequest request) -> ("test").equals(request.getClientRegistrationId()))))
 						.thenReturn(validTokenOAuth2AuthorizedClient());
-		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientManager);
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
@@ -111,13 +99,12 @@ class OAuth2AccessTokenInterceptorTests {
 	}
 
 	@Test
-	void shouldAcquireValidTokenFromSpecifiedClientId() {
+	void shouldAcquireValidTokenFromSpecifiedClientRegistrationId() {
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(DEFAULT_CLIENT_REGISTRATION_ID,
-				mockOAuth2AuthorizedClientService, mockClientRegistrationRepository);
+				mockOAuth2AuthorizedClientManager);
 		when(mockOAuth2AuthorizedClientManager
 				.authorize(argThat((OAuth2AuthorizeRequest request) -> (DEFAULT_CLIENT_REGISTRATION_ID)
 						.equals(request.getClientRegistrationId())))).thenReturn(validTokenOAuth2AuthorizedClient());
-		oAuth2AccessTokenInterceptor.setAuthorizedClientManager(mockOAuth2AuthorizedClientManager);
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
