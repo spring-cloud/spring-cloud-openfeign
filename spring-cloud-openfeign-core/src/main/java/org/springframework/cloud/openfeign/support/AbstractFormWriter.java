@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign.support;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
@@ -61,10 +62,16 @@ public abstract class AbstractFormWriter extends AbstractWriter {
 	protected abstract String writeAsString(Object object) throws IOException;
 
 	private boolean isTypeOrCollection(Object object, Predicate<Object> isType) {
+		if (object == null) {
+			return false;
+		}
 		if (object.getClass().isArray()) {
-			Object[] array = (Object[]) object;
-
-			return array.length > 1 && isType.test(array[0]);
+			int len = Array.getLength(object);
+			Object[] array = new Object[len];
+			for (int i = 0; i < len; i++) {
+				array[i] = Array.get(object, i);
+			}
+			return len > 1 && isType.test(array[0]);
 		}
 		else if (object instanceof Iterable) {
 			Iterable<?> iterable = (Iterable<?>) object;
