@@ -205,7 +205,7 @@
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java</artifactId>
-			<version>3.19.3</version>
+			<version>3.19.6</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
