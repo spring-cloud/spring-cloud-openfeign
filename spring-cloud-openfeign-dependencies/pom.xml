@@ -17,16 +17,9 @@
 	<properties>
 		<feign.version>11.8</feign.version>
 		<feign-form.version>3.8.0</feign-form.version>
-		<!-- Deprecated - reached EOL -->
-		<spring-security-oauth2-autoconfigure.version>2.5.2</spring-security-oauth2-autoconfigure.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>org.springframework.security.oauth.boot</groupId>
-				<artifactId>spring-security-oauth2-autoconfigure</artifactId>
-				<version>${spring-security-oauth2-autoconfigure.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-openfeign-core</artifactId>
