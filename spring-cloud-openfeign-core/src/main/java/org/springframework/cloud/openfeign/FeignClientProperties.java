@@ -147,6 +147,8 @@ public class FeignClientProperties {
 
 		private Boolean followRedirects;
 
+		private String url;
+
 		public Logger.Level getLoggerLevel() {
 			return loggerLevel;
 		}
@@ -283,6 +285,14 @@ public class FeignClientProperties {
 			this.followRedirects = followRedirects;
 		}
 
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -303,14 +313,14 @@ public class FeignClientProperties {
 					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters)
 					&& Objects.equals(capabilities, that.capabilities)
 					&& Objects.equals(queryMapEncoder, that.queryMapEncoder) && Objects.equals(metrics, that.metrics)
-					&& Objects.equals(followRedirects, that.followRedirects);
+					&& Objects.equals(followRedirects, that.followRedirects) && Objects.equals(url, that.url);
 		}
 
 		@Override
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
 					decode404, encoder, decoder, contract, exceptionPropagationPolicy, defaultQueryParameters,
-					defaultRequestHeaders, capabilities, queryMapEncoder, metrics, followRedirects);
+					defaultRequestHeaders, capabilities, queryMapEncoder, metrics, followRedirects, url);
 		}
 
 	}

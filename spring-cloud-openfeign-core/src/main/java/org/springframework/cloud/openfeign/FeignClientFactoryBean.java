@@ -424,7 +424,7 @@ public class FeignClientFactoryBean
 				url = name;
 			}
 			url += cleanPath();
-			return (T) loadBalance(builder, context, new HardCodedTarget<>(type, name, url));
+			return (T) loadBalance(builder, context, (HardCodedTarget<T>) resolveTarget(context, contextId));
 		}
 		if (StringUtils.hasText(url) && !url.startsWith("http")) {
 			url = "http://" + url;
@@ -465,6 +465,17 @@ public class FeignClientFactoryBean
 			}
 		}
 		return path;
+	}
+
+	private <T> HardCodedTarget<T> resolveTarget(FeignContext context, String contextId) {
+		if (refreshableClient) {
+			RefreshableUrl refreshableUrl = context.getInstance(contextId,
+					RefreshableUrl.class.getCanonicalName() + "-" + contextId, RefreshableUrl.class);
+			if (Objects.nonNull(refreshableUrl) && Objects.nonNull(refreshableUrl.getUrl())) {
+				return new RefreshableHardCodedTarget<>(type, name, refreshableUrl);
+			}
+		}
+		return new HardCodedTarget(type, name, url);
 	}
 
 	@Override

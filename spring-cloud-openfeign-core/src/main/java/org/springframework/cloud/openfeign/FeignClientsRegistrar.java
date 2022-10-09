@@ -256,6 +256,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
 
 		registerOptionsBeanDefinition(registry, contextId);
+		registerUrlBeanDefinition(registry, contextId);
 	}
 
 	private void validate(Map<String, Object> attributes) {
@@ -427,16 +428,33 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	 */
 	private void registerOptionsBeanDefinition(BeanDefinitionRegistry registry, String contextId) {
 		if (isClientRefreshEnabled()) {
-			String beanName = Request.Options.class.getCanonicalName() + "-" + contextId;
-			BeanDefinitionBuilder definitionBuilder = BeanDefinitionBuilder
-					.genericBeanDefinition(OptionsFactoryBean.class);
-			definitionBuilder.setScope("refresh");
-			definitionBuilder.addPropertyValue("contextId", contextId);
-			BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(definitionBuilder.getBeanDefinition(),
-					beanName);
-			definitionHolder = ScopedProxyUtils.createScopedProxy(definitionHolder, registry, true);
-			BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
+			registerRefreshableBeanDefinition(registry, contextId, Request.Options.class, OptionsFactoryBean.class);
 		}
+	}
+
+	/**
+	 * This method is meant to create {@link RefreshableUrl} beans definition with
+	 * refreshScope.
+	 * @param registry spring bean definition registry
+	 * @param contextId name of feign client
+	 */
+	private void registerUrlBeanDefinition(BeanDefinitionRegistry registry, String contextId) {
+		if (isClientRefreshEnabled()) {
+			registerRefreshableBeanDefinition(registry, contextId, RefreshableUrl.class,
+					RefreshableUrlFactoryBean.class);
+		}
+	}
+
+	private void registerRefreshableBeanDefinition(BeanDefinitionRegistry registry, String contextId, Class<?> beanType,
+			Class<?> factoryBeanType) {
+		String beanName = beanType.getCanonicalName() + "-" + contextId;
+		BeanDefinitionBuilder definitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(factoryBeanType);
+		definitionBuilder.setScope("refresh");
+		definitionBuilder.addPropertyValue("contextId", contextId);
+		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(definitionBuilder.getBeanDefinition(),
+				beanName);
+		definitionHolder = ScopedProxyUtils.createScopedProxy(definitionHolder, registry, true);
+		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
 	}
 
 	private boolean isClientRefreshEnabled() {
