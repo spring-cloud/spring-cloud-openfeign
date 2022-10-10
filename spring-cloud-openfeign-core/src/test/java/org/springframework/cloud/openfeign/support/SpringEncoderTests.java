@@ -179,7 +179,7 @@ class SpringEncoderTests {
 				.isEqualTo(MULTIPART_FORM_DATA_VALUE);
 		assertThat(((List) request.headers().get(CONTENT_LENGTH)).get(0))
 				.as("Request Content-Length is not equal to 186").isEqualTo("186");
-		assertThat(new String(request.requestBody().asBytes())).as("Body content cannot be decoded").contains("hi");
+		assertThat(new String(request.body())).as("Body content cannot be decoded").contains("hi");
 	}
 
 	@Test
@@ -190,7 +190,7 @@ class SpringEncoderTests {
 		request.header(CONTENT_TYPE, APPLICATION_FORM_URLENCODED_VALUE);
 		String body = "test";
 		encoder.encode(body, String.class, request);
-		assertThat(new String(request.requestBody().asBytes())).as("Body content cannot be decoded").contains(body);
+		assertThat(new String(request.body())).as("Body content cannot be decoded").contains(body);
 	}
 
 	@Test

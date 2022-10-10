@@ -30,7 +30,7 @@ import org.springframework.security.oauth2.common.OAuth2RefreshToken;
  */
 public class MockOAuth2AccessToken implements OAuth2AccessToken {
 
-	private String value;
+	private final String value;
 
 	public MockOAuth2AccessToken(String value) {
 		this.value = value;

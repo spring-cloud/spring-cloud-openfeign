@@ -68,7 +68,7 @@ class FeignBuilderCustomizerTests {
 		Assertions.assertNotNull(feignBuilderCaptor.getValue());
 		Feign.Builder builder = feignBuilderCaptor.getValue();
 		assertFeignBuilderField(builder, "logLevel", Logger.Level.HEADERS);
-		assertFeignBuilderField(builder, "decode404", true);
+		assertFeignBuilderField(builder, "dismiss404", true);
 
 		context.close();
 	}
@@ -95,7 +95,7 @@ class FeignBuilderCustomizerTests {
 		Assertions.assertNotNull(feignBuilderCaptor.getValue());
 		Feign.Builder builder = feignBuilderCaptor.getValue();
 		assertFeignBuilderField(builder, "logLevel", Logger.Level.FULL);
-		assertFeignBuilderField(builder, "decode404", true);
+		assertFeignBuilderField(builder, "dismiss404", true);
 
 		context.close();
 	}
@@ -116,7 +116,7 @@ class FeignBuilderCustomizerTests {
 		Assertions.assertNotNull(feignBuilderCaptor.getValue());
 		Feign.Builder builder = feignBuilderCaptor.getValue();
 		assertFeignBuilderField(builder, "logLevel", Logger.Level.BASIC);
-		assertFeignBuilderField(builder, "decode404", true);
+		assertFeignBuilderField(builder, "dismiss404", true);
 		assertFeignBuilderField(builder, "closeAfterDecode", false);
 
 		context.close();
@@ -178,7 +178,7 @@ class FeignBuilderCustomizerTests {
 
 		@Bean
 		FeignBuilderCustomizer feignBuilderCustomizer2() {
-			return Feign.Builder::decode404;
+			return Feign.Builder::dismiss404;
 		}
 
 		@Bean
@@ -221,7 +221,7 @@ class FeignBuilderCustomizerTests {
 
 		@Bean
 		FeignBuilderCustomizer feignBuilderCustomizer2() {
-			return Feign.Builder::decode404;
+			return Feign.Builder::dismiss404;
 		}
 
 		@Bean

@@ -15,7 +15,7 @@
 	<name>spring-cloud-openfeign-dependencies</name>
 	<description>Spring Cloud OpenFeign Dependencies</description>
 	<properties>
-		<feign.version>11.8</feign.version>
+		<feign.version>11.10</feign.version>
 		<feign-form.version>3.8.0</feign-form.version>
 		<!-- Deprecated - reached EOL -->
 		<spring-security-oauth2-autoconfigure.version>2.5.2</spring-security-oauth2-autoconfigure.version>
