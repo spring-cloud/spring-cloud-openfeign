@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,7 @@ import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.a
 /**
  * @author Jonatan Ivanov
  * @author Hyeonmin Park
+ * @author Olga Maciaszek-Sharma
  */
 class FeignClientConfigurationTests {
 
@@ -80,9 +82,9 @@ class FeignClientConfigurationTests {
 		config.setErrorDecoder(ErrorDecoder.class);
 		List<Class<RequestInterceptor>> requestInterceptors = Lists.list(RequestInterceptor.class);
 		config.setRequestInterceptors(requestInterceptors);
-		Map<String, Collection<String>> defaultRequestHeaders = Maps.newHashMap("default", Lists.emptyList());
+		Map<String, Collection<String>> defaultRequestHeaders = Maps.newHashMap("default", Collections.emptyList());
 		config.setDefaultRequestHeaders(defaultRequestHeaders);
-		Map<String, Collection<String>> defaultQueryParameters = Maps.newHashMap("default", Lists.emptyList());
+		Map<String, Collection<String>> defaultQueryParameters = Maps.newHashMap("default", Collections.emptyList());
 		config.setDefaultQueryParameters(defaultQueryParameters);
 		config.setDecode404(true);
 		config.setDecoder(Decoder.class);

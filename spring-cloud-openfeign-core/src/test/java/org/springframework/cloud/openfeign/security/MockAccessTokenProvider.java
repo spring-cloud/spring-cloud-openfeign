@@ -32,7 +32,7 @@ import org.springframework.security.oauth2.common.OAuth2RefreshToken;
  */
 public class MockAccessTokenProvider implements AccessTokenProvider {
 
-	private OAuth2AccessToken token;
+	private final OAuth2AccessToken token;
 
 	public MockAccessTokenProvider(OAuth2AccessToken token) {
 		this.token = token;

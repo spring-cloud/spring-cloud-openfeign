@@ -79,7 +79,7 @@ public class FeignClientFactoryBean
 	 * lifecycle race condition.
 	 ***********************************/
 
-	private static Log LOG = LogFactory.getLog(FeignClientFactoryBean.class);
+	private static final Log LOG = LogFactory.getLog(FeignClientFactoryBean.class);
 
 	private Class<?> type;
 
@@ -215,7 +215,7 @@ public class FeignClientFactoryBean
 			builder.queryMapEncoder(queryMapEncoder);
 		}
 		if (decode404) {
-			builder.decode404();
+			builder.dismiss404();
 		}
 		ExceptionPropagationPolicy exceptionPropagationPolicy = getInheritedAwareOptional(context,
 				ExceptionPropagationPolicy.class);
@@ -270,7 +270,7 @@ public class FeignClientFactoryBean
 
 		if (config.getDecode404() != null) {
 			if (config.getDecode404()) {
-				builder.decode404();
+				builder.dismiss404();
 			}
 		}
 

@@ -44,7 +44,7 @@ import org.springframework.security.oauth2.client.token.grant.password.ResourceO
 @Deprecated // spring-security-oauth2 reached EOL
 public class OAuth2FeignRequestInterceptorBuilder {
 
-	private AccessTokenProvider accessTokenProvider;
+	private final AccessTokenProvider accessTokenProvider;
 
 	private final List<ClientHttpRequestInterceptor> accessTokenProviderInterceptors = new ArrayList<>();
 

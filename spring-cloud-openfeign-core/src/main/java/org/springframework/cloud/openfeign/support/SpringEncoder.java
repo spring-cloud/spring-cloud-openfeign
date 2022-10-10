@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -49,7 +50,6 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 import org.springframework.web.multipart.MultipartFile;
 
-import static org.springframework.cloud.openfeign.support.FeignUtils.getHeaders;
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
@@ -158,7 +158,7 @@ public class SpringEncoder implements Encoder {
 				request.headers(null);
 				// converters can modify headers, so update the request
 				// with the modified headers
-				request.headers(getHeaders(outputMessage.getHeaders()));
+				request.headers(new LinkedHashMap<>(outputMessage.getHeaders()));
 
 				// do not use charset for binary data and protobuf
 				Charset charset;
