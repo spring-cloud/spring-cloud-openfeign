@@ -79,26 +79,7 @@ public class SpringEncoder implements Encoder {
 	private final ObjectProvider<HttpMessageConverterCustomizer> customizers;
 
 	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
-		this(new SpringFormEncoder(), messageConverters);
-	}
-
-	/**
-	 * @deprecated in favour of
-	 * {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
-	 */
-	@Deprecated
-	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters) {
-		this(springFormEncoder, messageConverters, new FeignEncoderProperties());
-	}
-
-	/**
-	 * @deprecated in favour of
-	 * {@link SpringEncoder#SpringEncoder(SpringFormEncoder, ObjectFactory, FeignEncoderProperties, ObjectProvider)}
-	 */
-	@Deprecated
-	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters,
-			FeignEncoderProperties encoderProperties) {
-		this(springFormEncoder, messageConverters, encoderProperties, new EmptyObjectProvider<>());
+		this(new SpringFormEncoder(), messageConverters, new FeignEncoderProperties(), new EmptyObjectProvider<>());
 	}
 
 	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters,

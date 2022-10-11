@@ -21,10 +21,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import feign.QueryMap;
-
-import org.springframework.core.annotation.AliasFor;
-
 /**
  * Spring MVC equivalent of OpenFeign's {@link feign.QueryMap} parameter annotation.
  *
@@ -35,19 +31,5 @@ import org.springframework.core.annotation.AliasFor;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER })
 public @interface SpringQueryMap {
-
-	/**
-	 * @see QueryMap#encoded()
-	 * @return alias for {@link #encoded()}.
-	 */
-	@AliasFor("encoded")
-	boolean value() default false;
-
-	/**
-	 * @see QueryMap#encoded()
-	 * @return Specifies whether parameter names and values are already encoded.
-	 */
-	@AliasFor("value")
-	boolean encoded() default false;
 
 }

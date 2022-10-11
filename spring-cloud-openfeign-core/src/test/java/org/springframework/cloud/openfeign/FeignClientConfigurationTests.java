@@ -62,7 +62,7 @@ class FeignClientConfigurationTests {
 		assertThat(config.getRequestInterceptors()).isNull();
 		assertThat(config.getDefaultRequestHeaders()).isNull();
 		assertThat(config.getDefaultQueryParameters()).isNull();
-		assertThat(config.getDecode404()).isNull();
+		assertThat(config.getDismiss404()).isNull();
 		assertThat(config.getDecoder()).isNull();
 		assertThat(config.getEncoder()).isNull();
 		assertThat(config.getContract()).isNull();
@@ -86,7 +86,7 @@ class FeignClientConfigurationTests {
 		config.setDefaultRequestHeaders(defaultRequestHeaders);
 		Map<String, Collection<String>> defaultQueryParameters = Maps.newHashMap("default", Collections.emptyList());
 		config.setDefaultQueryParameters(defaultQueryParameters);
-		config.setDecode404(true);
+		config.setDismiss404(true);
 		config.setDecoder(Decoder.class);
 		config.setEncoder(Encoder.class);
 		config.setContract(Contract.class);
@@ -105,7 +105,7 @@ class FeignClientConfigurationTests {
 		assertThat(config.getRequestInterceptors()).isSameAs(requestInterceptors);
 		assertThat(config.getDefaultRequestHeaders()).isSameAs(defaultRequestHeaders);
 		assertThat(config.getDefaultQueryParameters()).isSameAs(defaultQueryParameters);
-		assertThat(config.getDecode404()).isTrue();
+		assertThat(config.getDismiss404()).isTrue();
 		assertThat(config.getDecoder()).isSameAs(Decoder.class);
 		assertThat(config.getEncoder()).isSameAs(Encoder.class);
 		assertThat(config.getContract()).isSameAs(Contract.class);
@@ -125,7 +125,7 @@ class FeignClientConfigurationTests {
 		FeignClientProperties.FeignClientConfiguration configTwo = new FeignClientProperties.FeignClientConfiguration();
 		FeignClientProperties.FeignClientConfiguration configThree = new FeignClientProperties.FeignClientConfiguration();
 		FeignClientProperties.FeignClientConfiguration differentConfig = new FeignClientProperties.FeignClientConfiguration();
-		differentConfig.setDecode404(true);
+		differentConfig.setDismiss404(true);
 
 		assertEqualsReflexivity(configOne);
 

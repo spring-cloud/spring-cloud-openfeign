@@ -72,7 +72,7 @@ public class FeignClientBuilder {
 			this.feignClientFactoryBean.setInheritParentContext(true);
 			// preset default values - these values resemble the default values on the
 			// FeignClient annotation
-			this.url("").path("").decode404(false);
+			this.url("").path("").dismiss404(false);
 		}
 
 		public Builder<T> url(final String url) {
@@ -102,8 +102,8 @@ public class FeignClientBuilder {
 			return this;
 		}
 
-		public Builder<T> decode404(final boolean decode404) {
-			this.feignClientFactoryBean.setDecode404(decode404);
+		public Builder<T> dismiss404(final boolean dismiss404) {
+			this.feignClientFactoryBean.setDismiss404(dismiss404);
 			return this;
 		}
 
