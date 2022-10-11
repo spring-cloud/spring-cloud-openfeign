@@ -20,7 +20,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.beans.BeansFeignClientTests.Hello;
 import org.springframework.web.bind.annotation.GetMapping;
 
-@FeignClient(value = "otherapp", qualifier = "uniquequalifier")
+@FeignClient(value = "otherapp", qualifiers = { "uniquequalifier" })
 public interface TestClient {
 
 	@GetMapping("/hello")

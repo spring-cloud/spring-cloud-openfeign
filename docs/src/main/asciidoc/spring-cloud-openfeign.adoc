@@ -191,7 +191,7 @@ spring:
 						requestInterceptors:
 							- com.example.FooRequestInterceptor
 							- com.example.BarRequestInterceptor
-						decode404: false
+						dismiss404: false
 						encoder: com.example.SimpleEncoder
 						decoder: com.example.SimpleDecoder
 						contract: com.example.SimpleContract
@@ -664,10 +664,6 @@ public interface DemoClient {
 You can also disable the feature via property `spring.cloud.openfeign.cache.enabled=false`.
 
 === Feign @QueryMap support
-
-The OpenFeign `@QueryMap` annotation provides support for POJOs to be used as
-GET parameter maps. Unfortunately, the default OpenFeign QueryMap annotation is
-incompatible with Spring because it lacks a `value` property.
 
 Spring Cloud OpenFeign provides an equivalent `@SpringQueryMap` annotation, which
 is used to annotate a POJO or Map parameter as a query parameter map.
