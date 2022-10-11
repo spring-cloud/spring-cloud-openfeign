@@ -42,7 +42,7 @@ import static org.springframework.cloud.openfeign.support.FeignHttpClientPropert
 @DirtiesContext
 class FeignHttpClientPropertiesTests {
 
-	private AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+	private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
 	@AfterEach
 	void clear() {

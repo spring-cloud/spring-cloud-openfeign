@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationContext;
  * @author Sven Döring
  * @author Matt King
  * @author Sam Kruglov
+ * @author Olga Maciaszek-Sharma
  */
 public class FeignClientBuilder {
 
@@ -54,7 +55,7 @@ public class FeignClientBuilder {
 	 */
 	public static final class Builder<T> {
 
-		private FeignClientFactoryBean feignClientFactoryBean;
+		private final FeignClientFactoryBean feignClientFactoryBean;
 
 		private Builder(final ApplicationContext applicationContext, final Class<T> type, final String name) {
 			this(applicationContext, new FeignClientFactoryBean(), type, name);

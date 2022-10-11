@@ -39,7 +39,7 @@ import org.springframework.http.ResponseEntity;
  */
 public class ResponseEntityDecoder implements Decoder {
 
-	private Decoder decoder;
+	private final Decoder decoder;
 
 	public ResponseEntityDecoder(Decoder decoder) {
 		this.decoder = decoder;
