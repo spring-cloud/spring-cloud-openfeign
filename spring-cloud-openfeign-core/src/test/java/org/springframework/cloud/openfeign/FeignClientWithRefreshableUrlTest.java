@@ -111,7 +111,7 @@ public class FeignClientWithRefreshableUrlTest {
 	@Configuration
 	@EnableAutoConfiguration
 	@EnableConfigurationProperties(FeignClientProperties.class)
-	@EnableFeignClients(clients = { Application.RefreshableUrlClient.class, Application.NonRefreshableUrlClient.class, Application.RefreshableClientWithFixUrl.class })
+	@EnableFeignClients(clients = {Application.RefreshableUrlClient.class, Application.NonRefreshableUrlClient.class, Application.RefreshableClientWithFixUrl.class})
 	protected static class Application {
 
 		@Bean
