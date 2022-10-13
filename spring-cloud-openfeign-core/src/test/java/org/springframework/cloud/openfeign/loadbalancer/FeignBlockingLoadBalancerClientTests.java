@@ -185,12 +185,12 @@ class FeignBlockingLoadBalancerClientTests {
 	private String read(Response response) throws IOException {
 		BufferedReader reader = new BufferedReader(
 				new InputStreamReader(response.body().asInputStream(), StandardCharsets.UTF_8));
-		String outputString = "";
+		StringBuilder outputString = new StringBuilder();
 		String line;
 		while ((line = reader.readLine()) != null) {
-			outputString += line;
+			outputString.append(line);
 		}
-		return outputString;
+		return outputString.toString();
 	}
 
 	private Request testRequest() {

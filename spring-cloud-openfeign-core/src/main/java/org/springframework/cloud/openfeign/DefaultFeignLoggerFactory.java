@@ -21,10 +21,11 @@ import feign.slf4j.Slf4jLogger;
 
 /**
  * @author Venil Noronha
+ * @author Olga Maciaszek-Sharma
  */
 public class DefaultFeignLoggerFactory implements FeignLoggerFactory {
 
-	private Logger logger;
+	private final Logger logger;
 
 	public DefaultFeignLoggerFactory(Logger logger) {
 		this.logger = logger;

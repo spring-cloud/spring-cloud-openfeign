@@ -36,7 +36,7 @@ import feign.Response;
  */
 public class OptionsTestClient implements Client {
 
-	private static ObjectMapper mapper;
+	private final static ObjectMapper mapper;
 
 	static {
 		mapper = new ObjectMapper();
@@ -69,13 +69,13 @@ public class OptionsTestClient implements Client {
 
 	static class OptionsResponseForTests {
 
-		private long connectTimeout;
+		private final long connectTimeout;
 
-		private TimeUnit connectTimeoutUnit;
+		private final TimeUnit connectTimeoutUnit;
 
-		private long readTimeout;
+		private final long readTimeout;
 
-		private TimeUnit readTimeoutUnit;
+		private final TimeUnit readTimeoutUnit;
 
 		OptionsResponseForTests(long connectTimeout, TimeUnit connectTimeoutUnit, long readTimeout,
 				TimeUnit readTimeoutUnit) {

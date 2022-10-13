@@ -108,7 +108,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 	private ResourceLoader resourceLoader = new DefaultResourceLoader();
 
-	private boolean decodeSlash;
+	private final boolean decodeSlash;
 
 	public SpringMvcContract() {
 		this(Collections.emptyList());

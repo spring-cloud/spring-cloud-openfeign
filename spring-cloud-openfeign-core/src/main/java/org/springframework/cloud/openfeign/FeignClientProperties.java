@@ -129,7 +129,7 @@ public class FeignClientProperties {
 
 		private Map<String, Collection<String>> defaultQueryParameters;
 
-		private Boolean decode404;
+		private Boolean dismiss404;
 
 		private Class<Decoder> decoder;
 
@@ -213,12 +213,12 @@ public class FeignClientProperties {
 			this.defaultQueryParameters = defaultQueryParameters;
 		}
 
-		public Boolean getDecode404() {
-			return decode404;
+		public Boolean getDismiss404() {
+			return dismiss404;
 		}
 
-		public void setDecode404(Boolean decode404) {
-			this.decode404 = decode404;
+		public void setDismiss404(Boolean dismiss404) {
+			this.dismiss404 = dismiss404;
 		}
 
 		public Class<Decoder> getDecoder() {
@@ -306,7 +306,7 @@ public class FeignClientProperties {
 					&& Objects.equals(readTimeout, that.readTimeout) && Objects.equals(retryer, that.retryer)
 					&& Objects.equals(errorDecoder, that.errorDecoder)
 					&& Objects.equals(requestInterceptors, that.requestInterceptors)
-					&& Objects.equals(decode404, that.decode404) && Objects.equals(encoder, that.encoder)
+					&& Objects.equals(dismiss404, that.dismiss404) && Objects.equals(encoder, that.encoder)
 					&& Objects.equals(decoder, that.decoder) && Objects.equals(contract, that.contract)
 					&& Objects.equals(exceptionPropagationPolicy, that.exceptionPropagationPolicy)
 					&& Objects.equals(defaultRequestHeaders, that.defaultRequestHeaders)
@@ -319,7 +319,7 @@ public class FeignClientProperties {
 		@Override
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
-					decode404, encoder, decoder, contract, exceptionPropagationPolicy, defaultQueryParameters,
+					dismiss404, encoder, decoder, contract, exceptionPropagationPolicy, defaultQueryParameters,
 					defaultRequestHeaders, capabilities, queryMapEncoder, metrics, followRedirects, url);
 		}
 
