@@ -147,6 +147,9 @@ public class FeignClientProperties {
 
 		private Boolean followRedirects;
 
+		/**
+		 * Feign client host URL config definition placeholder.
+		 */
 		private String url;
 
 		public Logger.Level getLoggerLevel() {
