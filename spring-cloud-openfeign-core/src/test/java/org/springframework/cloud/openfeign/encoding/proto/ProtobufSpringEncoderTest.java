@@ -47,7 +47,6 @@ import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
-import static feign.Request.Body.encoded;
 import static feign.Request.HttpMethod.POST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -56,6 +55,7 @@ import static org.assertj.core.api.Assertions.fail;
  * Test {@link SpringEncoder} with {@link ProtobufHttpMessageConverter}
  *
  * @author ScienJus
+ * @author Olga Maciaszek-Sharma
  */
 @ExtendWith(MockitoExtension.class)
 class ProtobufSpringEncoderTest {
@@ -64,7 +64,7 @@ class ProtobufSpringEncoderTest {
 	private HttpClient httpClient;
 
 	// a protobuf object with some content
-	private org.springframework.cloud.openfeign.encoding.proto.Request request = org.springframework.cloud.openfeign.encoding.proto.Request
+	private final org.springframework.cloud.openfeign.encoding.proto.Request request = org.springframework.cloud.openfeign.encoding.proto.Request
 			.newBuilder().setId(1000000)
 			.setMsg("Erlang/OTP 最初是爱立信为开发电信设备系统设计的编程语言平台，" + "电信设备(路由器、接入网关、…)典型设计是通过背板连接主控板卡与多块业务板卡的分布式系统。").build();
 
@@ -88,7 +88,7 @@ class ProtobufSpringEncoderTest {
 		RequestTemplate requestTemplate = newRequestTemplate();
 		newEncoder().encode(this.request, Request.class, requestTemplate);
 		// set a charset
-		requestTemplate.body(encoded(requestTemplate.requestBody().asBytes(), StandardCharsets.UTF_8));
+		requestTemplate.body(requestTemplate.body(), StandardCharsets.UTF_8);
 		HttpEntity entity = toApacheHttpEntity(requestTemplate);
 		byte[] bytes = read(entity.getContent(), (int) entity.getContentLength());
 

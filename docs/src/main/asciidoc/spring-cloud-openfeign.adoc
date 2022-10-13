@@ -191,7 +191,7 @@ spring:
 						requestInterceptors:
 							- com.example.FooRequestInterceptor
 							- com.example.BarRequestInterceptor
-						decode404: false
+						dismiss404: false
 						encoder: com.example.SimpleEncoder
 						decoder: com.example.SimpleDecoder
 						contract: com.example.SimpleContract
@@ -665,10 +665,6 @@ You can also disable the feature via property `spring.cloud.openfeign.cache.enab
 
 === Feign @QueryMap support
 
-The OpenFeign `@QueryMap` annotation provides support for POJOs to be used as
-GET parameter maps. Unfortunately, the default OpenFeign QueryMap annotation is
-incompatible with Spring because it lacks a `value` property.
-
 Spring Cloud OpenFeign provides an equivalent `@SpringQueryMap` annotation, which
 is used to annotate a POJO or Map parameter as a query parameter map.
 
@@ -787,18 +783,21 @@ ObjectProvider<TestFeignClient> testFeignClient;
 
 === Spring Data Support
 
-You may consider enabling Jackson Modules for the support `org.springframework.data.domain.Page` and `org.springframework.data.domain.Sort` decoding.
+If Jackson Databind and Spring Data Commons are on the classpath, converters for `org.springframework.data.domain.Page` and `org.springframework.data.domain.Sort` will be added automatically.
 
+To disable this behaviour set
 [source,java]
 ----
-spring.cloud.openfeign.autoconfiguration.jackson.enabled=true
+spring.cloud.openfeign.autoconfiguration.jackson.enabled=false
 ----
 
+See `org.springframework.cloud.openfeign.FeignAutoConfiguration.FeignJacksonConfiguration` for details.
+
 === Spring `@RefreshScope` Support
-If Feign client refresh is enabled, each feign client is created with:
+If Feign client refresh is enabled, each Feign client is created with:
 
 * `feign.Request.Options` as a refresh-scoped bean. This means properties such as `connectTimeout` and `readTimeout` can be refreshed against any Feign client instance.
-* with url wrapped under `org.springframework.cloud.openfeign.RefreshableUrl`. This means url of feign client if defined
+* with url wrapped under `org.springframework.cloud.openfeign.RefreshableUrl`. This means url of Feign client if defined
 with the property `spring.cloud.openfeign.client.config.{client-name}.url` can be refreshed against any Feign client instance.
 
 The above properties can be refreshed through `POST /actuator/refresh`.

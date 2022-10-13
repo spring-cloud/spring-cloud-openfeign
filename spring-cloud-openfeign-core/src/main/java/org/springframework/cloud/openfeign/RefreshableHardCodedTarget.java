@@ -19,9 +19,10 @@ package org.springframework.cloud.openfeign;
 import feign.Target;
 
 /**
- * This target is meant to provide url wrapped under {@link RefreshableUrl}.
+ * This target provides url wrapped under {@link Target}.
  *
  * @author Jasbir Singh
+ * @since 4.0.0
  */
 public class RefreshableHardCodedTarget<T> extends Target.HardCodedTarget<T> {
 

@@ -221,7 +221,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(clazz, () -> {
 			factoryBean.setUrl(getUrl(beanFactory, attributes));
 			factoryBean.setPath(getPath(beanFactory, attributes));
-			factoryBean.setDecode404(Boolean.parseBoolean(String.valueOf(attributes.get("decode404"))));
+			factoryBean.setDismiss404(Boolean.parseBoolean(String.valueOf(attributes.get("dismiss404"))));
 			Object fallback = attributes.get("fallback");
 			if (fallback != null) {
 				factoryBean.setFallback(fallback instanceof Class ? (Class<?>) fallback
@@ -255,8 +255,8 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className, qualifiers);
 		BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
 
-		registerOptionsBeanDefinition(registry, contextId);
-		registerUrlBeanDefinition(registry, contextId);
+		registerRefreshableBeanDefinition(registry, contextId, Request.Options.class, OptionsFactoryBean.class);
+		registerRefreshableBeanDefinition(registry, contextId, RefreshableUrl.class, RefreshableUrlFactoryBean.class);
 	}
 
 	private void validate(Map<String, Object> attributes) {
@@ -421,40 +421,24 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	}
 
 	/**
-	 * This method is meant to create {@link Request.Options} beans definition with
-	 * refreshScope.
+	 * This method is meant to register beans definition with refreshScope.
 	 * @param registry spring bean definition registry
 	 * @param contextId name of feign client
+	 * @param beanType type of bean
+	 * @param factoryBeanType points to a relevant bean factory
 	 */
-	private void registerOptionsBeanDefinition(BeanDefinitionRegistry registry, String contextId) {
-		if (isClientRefreshEnabled()) {
-			registerRefreshableBeanDefinition(registry, contextId, Request.Options.class, OptionsFactoryBean.class);
-		}
-	}
-
-	/**
-	 * This method is meant to create {@link RefreshableUrl} beans definition with
-	 * refreshScope.
-	 * @param registry spring bean definition registry
-	 * @param contextId name of feign client
-	 */
-	private void registerUrlBeanDefinition(BeanDefinitionRegistry registry, String contextId) {
-		if (isClientRefreshEnabled()) {
-			registerRefreshableBeanDefinition(registry, contextId, RefreshableUrl.class,
-					RefreshableUrlFactoryBean.class);
-		}
-	}
-
 	private void registerRefreshableBeanDefinition(BeanDefinitionRegistry registry, String contextId, Class<?> beanType,
 			Class<?> factoryBeanType) {
-		String beanName = beanType.getCanonicalName() + "-" + contextId;
-		BeanDefinitionBuilder definitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(factoryBeanType);
-		definitionBuilder.setScope("refresh");
-		definitionBuilder.addPropertyValue("contextId", contextId);
-		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(definitionBuilder.getBeanDefinition(),
-				beanName);
-		definitionHolder = ScopedProxyUtils.createScopedProxy(definitionHolder, registry, true);
-		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
+		if (isClientRefreshEnabled()) {
+			String beanName = beanType.getCanonicalName() + "-" + contextId;
+			BeanDefinitionBuilder definitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(factoryBeanType);
+			definitionBuilder.setScope("refresh");
+			definitionBuilder.addPropertyValue("contextId", contextId);
+			BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(definitionBuilder.getBeanDefinition(),
+					beanName);
+			definitionHolder = ScopedProxyUtils.createScopedProxy(definitionHolder, registry, true);
+			BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
+		}
 	}
 
 	private boolean isClientRefreshEnabled() {

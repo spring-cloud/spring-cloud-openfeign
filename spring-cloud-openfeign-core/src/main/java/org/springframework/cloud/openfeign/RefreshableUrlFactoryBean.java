@@ -24,10 +24,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- * This factory bean is meant to create {@link RefreshableUrl} instance as per the
- * applicable configurations.
+ * This factory bean creates {@link RefreshableUrl} instance as per the applicable configurations.
  *
  * @author Jasbir Singh
+ * @since 4.0.0
  */
 public class RefreshableUrlFactoryBean implements FactoryBean<RefreshableUrl>, ApplicationContextAware {
 

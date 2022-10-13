@@ -54,37 +54,43 @@ public class FeignClientWithRefreshableUrlTest {
 	private FeignClientWithRefreshableUrlTest.Application.NonRefreshableUrlClient nonRefreshableUrlClient;
 
 	@Autowired
-	private FeignClientWithRefreshableUrlTest.Application.MalformedUrlClient malformedUrlClient;
+	private FeignClientWithRefreshableUrlTest.Application.RefreshableClientWithFixUrl refreshableClientWithFixUrl;
 
 	@Autowired
 	private FeignClientProperties clientProperties;
 
 	@Test
-	public void withoutConfigUrlFromProperties() {
+	public void shouldInstantiateRefreshableClientWhenUrlFromFeignClientName() {
 		UrlTestClient.UrlResponseForTests response = nonRefreshableUrlClient.nonRefreshable();
 		assertThat(response.getUrl()).isEqualTo("http://nonRefreshableClient/nonRefreshable");
 	}
 
 	@Test
-	public void targetShouldBeHardCodedTarget() {
+	public void shouldInstantiateRefreshableClientWhenTargetIsHardCodedTarget() {
 		UrlTestClient.UrlResponseForTests response = nonRefreshableUrlClient.nonRefreshable();
 		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
 	}
 
 	@Test
-	public void withConfigUrlFromProperties() {
+	public void shouldInstantiateRefreshableClientWhenUrlFromFeignClientUrl() {
+		UrlTestClient.UrlResponseForTests response = refreshableClientWithFixUrl.fixPath();
+		assertThat(response.getUrl()).isEqualTo("http://localhost:8081/fixPath");
+	}
+
+	@Test
+	public void shouldInstantiateRefreshableClientWhenUrlFromProperties() {
 		UrlTestClient.UrlResponseForTests response = refreshableUrlClient.refreshable();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:8082/refreshable");
 	}
 
 	@Test
-	public void targetShouldBeRefreshableHardCodedTarget() {
+	public void shouldInstantiateRefreshableClientWhenTargetIsRefreshableHardCodedTarget() {
 		UrlTestClient.UrlResponseForTests response = refreshableUrlClient.refreshable();
 		assertThat(response.getTargetType()).isEqualTo(RefreshableHardCodedTarget.class);
 	}
 
 	@Test
-	public void urlShouldChangeAfterContextRefresh() {
+	public void shouldInstantiateRefreshableClientWhenUrlFromPropertiesAndThenUpdateUrlWhenContextRefresh() {
 		UrlTestClient.UrlResponseForTests response = refreshableUrlClient.refreshable();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:8082/refreshable");
 
@@ -105,8 +111,7 @@ public class FeignClientWithRefreshableUrlTest {
 	@Configuration
 	@EnableAutoConfiguration
 	@EnableConfigurationProperties(FeignClientProperties.class)
-	@EnableFeignClients(clients = { Application.RefreshableUrlClient.class, Application.NonRefreshableUrlClient.class,
-			Application.MalformedUrlClient.class })
+	@EnableFeignClients(clients = {Application.RefreshableUrlClient.class, Application.NonRefreshableUrlClient.class, Application.RefreshableClientWithFixUrl.class})
 	protected static class Application {
 
 		@Bean
@@ -130,14 +135,12 @@ public class FeignClientWithRefreshableUrlTest {
 
 		}
 
-		@FeignClient(name = "malformedUrlClient")
-		protected interface MalformedUrlClient {
+		@FeignClient(name = "refreshableClientWithFixUrl", url = "http://localhost:8081")
+		protected interface RefreshableClientWithFixUrl {
 
-			@GetMapping("/nonReachablePath")
-			UrlTestClient.UrlResponseForTests nonReachablePath();
+			@GetMapping("/fixPath")
+			UrlTestClient.UrlResponseForTests fixPath();
 
 		}
-
 	}
-
 }
