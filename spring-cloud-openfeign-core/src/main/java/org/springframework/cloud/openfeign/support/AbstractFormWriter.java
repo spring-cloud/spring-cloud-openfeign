@@ -67,8 +67,11 @@ public abstract class AbstractFormWriter extends AbstractWriter {
 		}
 		if (object.getClass().isArray()) {
 			int len = Array.getLength(object);
-			Object one = Array.get(object, 0);
-			return len > 1 && one != null && isType.test(one);
+			if (len > 0) {
+				Object one = Array.get(object, 0);
+				return len > 1 && one != null && isType.test(one);
+			}
+			return false;
 		}
 		else if (object instanceof Iterable) {
 			Iterable<?> iterable = (Iterable<?>) object;
