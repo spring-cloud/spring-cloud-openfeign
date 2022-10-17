@@ -120,7 +120,8 @@ public class FeignAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass({ Module.class, Page.class, Sort.class })
-	@ConditionalOnProperty(value = "spring.cloud.openfeign.autoconfiguration.jackson.enabled", havingValue = "true")
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.autoconfiguration.jackson.enabled", havingValue = "true",
+			matchIfMissing = true)
 	protected static class FeignJacksonConfiguration {
 
 		@Bean

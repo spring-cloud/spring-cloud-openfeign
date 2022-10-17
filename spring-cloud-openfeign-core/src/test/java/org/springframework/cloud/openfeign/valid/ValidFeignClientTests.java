@@ -498,7 +498,7 @@ class ValidFeignClientTests {
 
 	}
 
-	@FeignClient(name = "localapp2", decode404 = true)
+	@FeignClient(name = "localapp2", dismiss404 = true)
 	protected interface DecodingTestClient {
 
 		@GetMapping("/notFound")

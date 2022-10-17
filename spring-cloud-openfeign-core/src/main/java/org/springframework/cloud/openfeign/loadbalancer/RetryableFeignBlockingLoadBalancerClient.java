@@ -245,12 +245,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 		return new HttpRequest() {
 			@Override
 			public HttpMethod getMethod() {
-				return HttpMethod.resolve(request.httpMethod().name());
-			}
-
-			@Override
-			public String getMethodValue() {
-				return getMethod().name();
+				return HttpMethod.valueOf(request.httpMethod().name());
 			}
 
 			@Override
