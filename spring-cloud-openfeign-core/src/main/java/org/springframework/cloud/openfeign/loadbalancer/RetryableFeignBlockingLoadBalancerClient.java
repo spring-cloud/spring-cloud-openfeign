@@ -249,11 +249,6 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			}
 
 			@Override
-			public String getMethodValue() {
-				return getMethod().name();
-			}
-
-			@Override
 			public URI getURI() {
 				return URI.create(request.url());
 			}
