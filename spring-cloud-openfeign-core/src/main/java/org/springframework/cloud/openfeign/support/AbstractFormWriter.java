@@ -33,6 +33,7 @@ import static feign.form.ContentProcessor.CRLF;
 
 /**
  * @author Darren Foong
+ * @author Wu Daifu
  */
 public abstract class AbstractFormWriter extends AbstractWriter {
 
