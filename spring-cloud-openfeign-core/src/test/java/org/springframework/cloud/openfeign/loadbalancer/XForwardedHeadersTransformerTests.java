@@ -37,8 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests for
- * {@link XForwardedHeadersTransformer}.
+ * Tests for {@link XForwardedHeadersTransformer}.
  *
  * @author changjin wei(魏昌进)
  */
