@@ -65,6 +65,7 @@ import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils
  * load-balanced with Spring Cloud LoadBalancer.
  *
  * @author Olga Maciaszek-Sharma
+ * @author Wonsik Cheung
  * @since 2.2.6
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })

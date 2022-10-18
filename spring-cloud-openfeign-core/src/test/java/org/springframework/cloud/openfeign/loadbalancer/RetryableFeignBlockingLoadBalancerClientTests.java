@@ -71,6 +71,7 @@ import static org.mockito.Mockito.when;
  * @see <a href=
  * "https://github.com/spring-cloud/spring-cloud-commons/blob/main/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
  * @author Olga Maciaszek-Sharma
+ * @author Wonsik Cheung
  */
 @ExtendWith(MockitoExtension.class)
 class RetryableFeignBlockingLoadBalancerClientTests {
