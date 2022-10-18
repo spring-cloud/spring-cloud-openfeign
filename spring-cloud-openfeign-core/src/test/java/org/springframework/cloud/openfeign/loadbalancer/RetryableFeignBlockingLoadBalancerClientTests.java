@@ -55,6 +55,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -72,6 +73,7 @@ import static org.mockito.Mockito.when;
  * @see <a href=
  * "https://github.com/spring-cloud/spring-cloud-commons/blob/main/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
  * @author Olga Maciaszek-Sharma
+ * @author Wonsik Cheung
  */
 @ExtendWith(MockitoExtension.class)
 class RetryableFeignBlockingLoadBalancerClientTests {
@@ -158,6 +160,20 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 
 		verify(loadBalancerClient, times(2)).reconstructURI(serviceInstance, URI.create("http://test/path"));
 		verify(delegate, times(2)).execute(any(), any());
+	}
+
+	@Test
+	void shouldNotRetryOnDisabled() throws IOException {
+		properties.getRetry().setEnabled(false);
+		Request request = testRequest();
+		when(delegate.execute(any(), any())).thenThrow(new IOException());
+		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
+				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+
+		assertThatThrownBy(() -> feignBlockingLoadBalancerClient.execute(request, new Request.Options()))
+				.isInstanceOf(IOException.class);
+
+		verify(delegate, times(1)).execute(any(), any());
 	}
 
 	@Test

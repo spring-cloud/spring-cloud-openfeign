@@ -65,6 +65,7 @@ import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils
  * load-balanced with Spring Cloud LoadBalancer.
  *
  * @author Olga Maciaszek-Sharma
+ * @author Wonsik Cheung
  * @since 2.2.6
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -201,8 +202,10 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			retryTemplate.setListeners(retryListeners);
 		}
 
-		retryTemplate.setRetryPolicy(retryPolicy == null ? new NeverRetryPolicy()
-				: new InterceptorRetryPolicy(toHttpRequest(request), retryPolicy, loadBalancerClient, serviceId));
+		retryTemplate.setRetryPolicy(
+				!loadBalancerClientFactory.getProperties(serviceId).getRetry().isEnabled() || retryPolicy == null
+						? new NeverRetryPolicy() : new InterceptorRetryPolicy(toHttpRequest(request), retryPolicy,
+								loadBalancerClient, serviceId));
 		return retryTemplate;
 	}
 
