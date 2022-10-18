@@ -27,10 +27,10 @@ import org.springframework.http.MediaType;
 /**
  * @author Wu Daifu
  */
-public class AbstractFormWriterTest {
+class AbstractFormWriterTests {
 
 	@Test
-	public void testIsApplicable() {
+	void shouldCorrectlyResolveIfApplicableForCollection() {
 		MockFormWriter formWriter = new MockFormWriter();
 		Object object = new Object();
 		Assertions.assertFalse(formWriter.isApplicable(object));
