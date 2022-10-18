@@ -29,7 +29,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import feign.*;
+import feign.Client;
+import feign.Request;
+import feign.Response;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -166,14 +168,13 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		Request request = testRequest();
 		when(delegate.execute(any(), any())).thenThrow(new IOException());
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 
 		assertThatThrownBy(() -> feignBlockingLoadBalancerClient.execute(request, new Request.Options()))
-			.isInstanceOf(IOException.class);
+				.isInstanceOf(IOException.class);
 
 		verify(delegate, times(1)).execute(any(), any());
 	}
-
 
 	@Test
 	void shouldExposeResponseBodyOnRetry() throws IOException {
