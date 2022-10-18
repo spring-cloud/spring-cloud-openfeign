@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
  *
  * @author changjin wei(魏昌进)
  */
-public class XForwardedHeadersTransformerTests {
+class XForwardedHeadersTransformerTests {
 
 	private final LoadBalancerClientFactory loadBalancerClientFactory = mock(LoadBalancerClientFactory.class);
 
