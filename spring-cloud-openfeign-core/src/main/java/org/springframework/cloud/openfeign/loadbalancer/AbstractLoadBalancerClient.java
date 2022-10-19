@@ -19,6 +19,11 @@ package org.springframework.cloud.openfeign.loadbalancer;
 import java.io.IOException;
 import java.util.Set;
 
+import feign.Client;
+import feign.Request;
+import feign.Request.Options;
+import feign.Response;
+
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.DefaultRequest;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -26,15 +31,10 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancerLifecycle;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 
-import feign.Client;
-import feign.Request;
-import feign.Request.Options;
-import feign.Response;
-
 /**
  * An abstract {@link Client} implementation that uses {@link LoadBalancerClient} to select a
  * {@link ServiceInstance} to use while resolving the request host.
- * 
+ *
  * @author liubao
  */
 public abstract class AbstractLoadBalancerClient<T> implements Client {
