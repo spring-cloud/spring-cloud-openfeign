@@ -65,10 +65,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author John Niang
  */
-@SpringBootTest(classes = AsyncCircuitBreakerTest.Application.class, webEnvironment = RANDOM_PORT,
+@SpringBootTest(classes = AsyncCircuitBreakerTests.Application.class, webEnvironment = RANDOM_PORT,
 		properties = "feign.circuitbreaker.enabled=true")
 @AutoConfigureMockMvc
-class AsyncCircuitBreakerTest {
+class AsyncCircuitBreakerTests {
 
 	@Autowired
 	MockMvc mvc;
@@ -99,11 +99,9 @@ class AsyncCircuitBreakerTest {
 	@Test
 	void shouldProxyHeaderWhenHeaderSetAndCleanRequestAttributesAfterReturn() throws Exception {
 		shouldNotProxyAnyHeadersWithoutHeaderSet();
-		Future<ServletRequestAttributes> future = asyncCircuitBreakerExecutor.submit(() -> (ServletRequestAttributes)
-			RequestContextHolder.getRequestAttributes());
-		assertThat(future.get())
-			.as("the RequestAttributes has been cleared")
-			.isNull();
+		Future<ServletRequestAttributes> future = asyncCircuitBreakerExecutor
+				.submit(() -> (ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
+		assertThat(future.get()).as("the RequestAttributes has been cleared").isNull();
 	}
 
 	@EnableAutoConfiguration
@@ -119,7 +117,7 @@ class AsyncCircuitBreakerTest {
 
 		@Bean
 		CircuitBreakerFactory<Duration, ConfigBuilder<Duration>> circuitBreakerFactory(
-			@Qualifier("asyncWorker") ExecutorService asyncCircuitBreakerExecutor) {
+				@Qualifier("asyncWorker") ExecutorService asyncCircuitBreakerExecutor) {
 			return new CircuitBreakerFactory<Duration, ConfigBuilder<Duration>>() {
 
 				Function<String, Duration> defaultConfiguration = id -> Duration.ofMillis(1000);
