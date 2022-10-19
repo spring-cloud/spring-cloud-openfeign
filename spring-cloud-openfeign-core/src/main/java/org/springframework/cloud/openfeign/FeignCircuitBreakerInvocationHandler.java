@@ -36,6 +36,14 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import static feign.Util.checkNotNull;
 
+/**
+ * @author Grzejszczak
+ * @author Sharma
+ * @author Niang
+ * @author Bohutskyi
+ * @author kim
+ * @author Vicasong
+ */
 class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 
 	private final CircuitBreakerFactory factory;
@@ -136,7 +144,8 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 			}
 			catch (Throwable throwable) {
 				throw new RuntimeException(throwable);
-			} finally {
+			}
+			finally {
 				if (isAsync) {
 					RequestContextHolder.resetRequestAttributes();
 				}
