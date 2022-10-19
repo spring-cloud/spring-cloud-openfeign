@@ -419,7 +419,10 @@ public class FeignClientUsingPropertiesTests {
 			Map<String, String> form = (Map<String, String>) o;
 			StringBuilder builder = new StringBuilder();
 			form.forEach((key, value) -> {
-				builder.append(key + "=" + value + "&");
+				builder.append(key);
+				builder.append("=");
+				builder.append(value);
+				builder.append("&");
 			});
 
 			requestTemplate.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);

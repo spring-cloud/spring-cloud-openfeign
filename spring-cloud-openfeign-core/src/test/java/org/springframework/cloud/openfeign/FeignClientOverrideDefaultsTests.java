@@ -35,6 +35,7 @@ import feign.codec.ErrorDecoder;
 import feign.micrometer.MicrometerCapability;
 import feign.optionals.OptionalDecoder;
 import feign.querymap.BeanQueryMapEncoder;
+import feign.querymap.FieldQueryMapEncoder;
 import feign.slf4j.Slf4jLogger;
 import org.junit.jupiter.api.Test;
 
@@ -49,6 +50,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * @author Spencer Gibb
@@ -127,8 +129,10 @@ class FeignClientOverrideDefaultsTests {
 
 	@Test
 	void overrideQueryMapEncoder() {
-		QueryMapEncoder.Default.class.cast(context.getInstance("foo", QueryMapEncoder.class));
-		BeanQueryMapEncoder.class.cast(context.getInstance("bar", QueryMapEncoder.class));
+		assertThatCode(() -> {
+			FieldQueryMapEncoder.class.cast(context.getInstance("foo", QueryMapEncoder.class));
+			BeanQueryMapEncoder.class.cast(context.getInstance("bar", QueryMapEncoder.class));
+		}).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -208,7 +212,7 @@ class FeignClientOverrideDefaultsTests {
 
 		@Bean
 		public Logger feignLogger() {
-			return new Logger.JavaLogger();
+			return new Logger.JavaLogger(FooConfiguration.class);
 		}
 
 		@Bean
@@ -218,7 +222,7 @@ class FeignClientOverrideDefaultsTests {
 
 		@Bean
 		public QueryMapEncoder queryMapEncoder() {
-			return new feign.QueryMapEncoder.Default();
+			return new FieldQueryMapEncoder();
 		}
 
 	}

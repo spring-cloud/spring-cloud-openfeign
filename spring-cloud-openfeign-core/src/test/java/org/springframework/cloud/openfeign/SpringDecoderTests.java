@@ -67,9 +67,9 @@ class SpringDecoderTests extends FeignClientFactoryBean {
 		return testClient(false);
 	}
 
-	public TestClient testClient(boolean decode404) {
+	public TestClient testClient(boolean dismiss404) {
 		setType(this.getClass());
-		setDecode404(decode404);
+		setDismiss404(dismiss404);
 		return feign(this.context).target(TestClient.class, "http://localhost:" + this.port);
 	}
 

@@ -18,7 +18,7 @@ package org.springframework.cloud.openfeign.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.Collections;
 
 import feign.MethodMetadata;
 
@@ -30,8 +30,10 @@ import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
 
 /**
- * @{link CookieValue} annotation processor.
+ * {@link CookieValue} annotation processor.
+ *
  * @author Gong Yi
+ * @author Olga Maciaszek-Sharma
  *
  */
 public class CookieValueParameterProcessor implements AnnotatedParameterProcessor {
@@ -51,8 +53,8 @@ public class CookieValueParameterProcessor implements AnnotatedParameterProcesso
 		String name = cookie.value().trim();
 		checkState(emptyToNull(name) != null, "Cookie.name() was empty on parameter %s", parameterIndex);
 		context.setParameterName(name);
-		String cookieExpression = data.template().headers().getOrDefault(HttpHeaders.COOKIE, Arrays.asList("")).stream()
-				.findFirst().orElse("");
+		String cookieExpression = data.template().headers()
+				.getOrDefault(HttpHeaders.COOKIE, Collections.singletonList("")).stream().findFirst().orElse("");
 		if (cookieExpression.length() == 0) {
 			cookieExpression = String.format("%s={%s}", name, name);
 		}

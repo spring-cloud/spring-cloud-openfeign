@@ -79,7 +79,7 @@ public class FeignClientFactoryBean
 	 * lifecycle race condition.
 	 ***********************************/
 
-	private static Log LOG = LogFactory.getLog(FeignClientFactoryBean.class);
+	private static final Log LOG = LogFactory.getLog(FeignClientFactoryBean.class);
 
 	private Class<?> type;
 
@@ -91,7 +91,7 @@ public class FeignClientFactoryBean
 
 	private String path;
 
-	private boolean decode404;
+	private boolean dismiss404;
 
 	private boolean inheritParentContext = true;
 
@@ -214,8 +214,8 @@ public class FeignClientFactoryBean
 		if (queryMapEncoder != null) {
 			builder.queryMapEncoder(queryMapEncoder);
 		}
-		if (decode404) {
-			builder.decode404();
+		if (dismiss404) {
+			builder.dismiss404();
 		}
 		ExceptionPropagationPolicy exceptionPropagationPolicy = getInheritedAwareOptional(context,
 				ExceptionPropagationPolicy.class);
@@ -268,9 +268,9 @@ public class FeignClientFactoryBean
 			}
 		}
 
-		if (config.getDecode404() != null) {
-			if (config.getDecode404()) {
-				builder.decode404();
+		if (config.getDismiss404() != null) {
+			if (config.getDismiss404()) {
+				builder.dismiss404();
 			}
 		}
 
@@ -517,12 +517,12 @@ public class FeignClientFactoryBean
 		this.path = path;
 	}
 
-	public boolean isDecode404() {
-		return decode404;
+	public boolean isDismiss404() {
+		return dismiss404;
 	}
 
-	public void setDecode404(boolean decode404) {
-		this.decode404 = decode404;
+	public void setDismiss404(boolean dismiss404) {
+		this.dismiss404 = dismiss404;
 	}
 
 	public boolean isInheritParentContext() {
@@ -577,7 +577,7 @@ public class FeignClientFactoryBean
 		}
 		FeignClientFactoryBean that = (FeignClientFactoryBean) o;
 		return Objects.equals(applicationContext, that.applicationContext)
-				&& Objects.equals(beanFactory, that.beanFactory) && decode404 == that.decode404
+				&& Objects.equals(beanFactory, that.beanFactory) && dismiss404 == that.dismiss404
 				&& inheritParentContext == that.inheritParentContext && Objects.equals(fallback, that.fallback)
 				&& Objects.equals(fallbackFactory, that.fallbackFactory) && Objects.equals(name, that.name)
 				&& Objects.equals(path, that.path) && Objects.equals(type, that.type) && Objects.equals(url, that.url)
@@ -589,15 +589,16 @@ public class FeignClientFactoryBean
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(applicationContext, beanFactory, decode404, inheritParentContext, fallback, fallbackFactory,
-				name, path, type, url, readTimeoutMillis, connectTimeoutMillis, followRedirects, refreshableClient);
+		return Objects.hash(applicationContext, beanFactory, dismiss404, inheritParentContext, fallback,
+				fallbackFactory, name, path, type, url, readTimeoutMillis, connectTimeoutMillis, followRedirects,
+				refreshableClient);
 	}
 
 	@Override
 	public String toString() {
 		return new StringBuilder("FeignClientFactoryBean{").append("type=").append(type).append(", ").append("name='")
 				.append(name).append("', ").append("url='").append(url).append("', ").append("path='").append(path)
-				.append("', ").append("decode404=").append(decode404).append(", ").append("inheritParentContext=")
+				.append("', ").append("dismiss404=").append(dismiss404).append(", ").append("inheritParentContext=")
 				.append(inheritParentContext).append(", ").append("applicationContext=").append(applicationContext)
 				.append(", ").append("beanFactory=").append(beanFactory).append(", ").append("fallback=")
 				.append(fallback).append(", ").append("fallbackFactory=").append(fallbackFactory).append("}")

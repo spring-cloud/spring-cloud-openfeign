@@ -80,7 +80,7 @@ final class LoadBalancerUtils {
 	static RequestData buildRequestData(Request request) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		request.headers().forEach((key, value) -> requestHeaders.put(key, new ArrayList<>(value)));
-		return new RequestData(HttpMethod.resolve(request.httpMethod().name()), URI.create(request.url()),
+		return new RequestData(HttpMethod.valueOf(request.httpMethod().name()), URI.create(request.url()),
 				requestHeaders, null, new HashMap<>());
 	}
 

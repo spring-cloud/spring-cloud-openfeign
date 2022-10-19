@@ -92,8 +92,8 @@ class FeignClientBuilderTests {
 		// on this builder class.
 		// (2) Or a new field was added and the builder class has to be extended with this
 		// new field.
-		assertThat(methodNames).containsExactly("contextId", "decode404", "fallback", "fallbackFactory", "name", "path",
-				"url");
+		assertThat(methodNames).containsExactly("contextId", "dismiss404", "fallback", "fallbackFactory", "name",
+				"path", "url");
 	}
 
 	@Test
@@ -110,7 +110,7 @@ class FeignClientBuilderTests {
 		// and:
 		assertFactoryBeanField(builder, "url", getDefaultValueFromFeignClientAnnotation("url"));
 		assertFactoryBeanField(builder, "path", getDefaultValueFromFeignClientAnnotation("path"));
-		assertFactoryBeanField(builder, "decode404", getDefaultValueFromFeignClientAnnotation("decode404"));
+		assertFactoryBeanField(builder, "dismiss404", getDefaultValueFromFeignClientAnnotation("dismiss404"));
 		assertFactoryBeanField(builder, "fallback", getDefaultValueFromFeignClientAnnotation("fallback"));
 		assertFactoryBeanField(builder, "fallbackFactory", getDefaultValueFromFeignClientAnnotation("fallbackFactory"));
 	}
@@ -119,7 +119,7 @@ class FeignClientBuilderTests {
 	void forType_allFieldsSetOnBuilder() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder.forType(TestFeignClient.class, "TestClient")
-				.decode404(true).url("Url/").path("/Path").contextId("TestContext");
+				.dismiss404(true).url("Url/").path("/Path").contextId("TestContext");
 
 		// then:
 		assertFactoryBeanField(builder, "applicationContext", this.applicationContext);
@@ -130,7 +130,7 @@ class FeignClientBuilderTests {
 		// and:
 		assertFactoryBeanField(builder, "url", "http://Url/");
 		assertFactoryBeanField(builder, "path", "/Path");
-		assertFactoryBeanField(builder, "decode404", true);
+		assertFactoryBeanField(builder, "dismiss404", true);
 
 	}
 
@@ -138,7 +138,7 @@ class FeignClientBuilderTests {
 	void forType_clientFactoryBeanProvided() {
 		// when:
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder
-				.forType(TestFeignClient.class, new FeignClientFactoryBean(), "TestClient").decode404(true)
+				.forType(TestFeignClient.class, new FeignClientFactoryBean(), "TestClient").dismiss404(true)
 				.path("Path/").url("Url/").contextId("TestContext").customize(Feign.Builder::doNotCloseAfterDecode);
 
 		// then:
@@ -150,7 +150,7 @@ class FeignClientBuilderTests {
 		// and:
 		assertFactoryBeanField(builder, "url", "http://Url/");
 		assertFactoryBeanField(builder, "path", "/Path");
-		assertFactoryBeanField(builder, "decode404", true);
+		assertFactoryBeanField(builder, "dismiss404", true);
 		List<FeignBuilderCustomizer> additionalCustomizers = getFactoryBeanField(builder, "additionalCustomizers");
 		assertThat(additionalCustomizers).hasSize(1);
 	}
