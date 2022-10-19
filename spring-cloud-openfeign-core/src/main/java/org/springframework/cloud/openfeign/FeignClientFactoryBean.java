@@ -48,6 +48,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
+import org.springframework.cloud.openfeign.loadbalancer.AbstractLoadBalancerClient;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.loadbalancer.RetryableFeignBlockingLoadBalancerClient;
 import org.springframework.context.ApplicationContext;
@@ -432,15 +433,10 @@ public class FeignClientFactoryBean
 		String url = this.url + cleanPath();
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
-			if (client instanceof FeignBlockingLoadBalancerClient) {
+			if (client instanceof AbstractLoadBalancerClient) {
 				// not load balancing because we have a url,
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
-				client = ((FeignBlockingLoadBalancerClient) client).getDelegate();
-			}
-			if (client instanceof RetryableFeignBlockingLoadBalancerClient) {
-				// not load balancing because we have a url,
-				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
-				client = ((RetryableFeignBlockingLoadBalancerClient) client).getDelegate();
+				client = ((AbstractLoadBalancerClient) client).getDelegate();
 			}
 			builder.client(client);
 		}

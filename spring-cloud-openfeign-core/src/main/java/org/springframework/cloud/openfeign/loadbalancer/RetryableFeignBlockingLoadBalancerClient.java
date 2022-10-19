@@ -68,17 +68,11 @@ import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils
  * @since 2.2.6
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class RetryableFeignBlockingLoadBalancerClient implements Client {
+public class RetryableFeignBlockingLoadBalancerClient extends AbstractLoadBalancerClient<RetryableRequestContext> {
 
 	private static final Log LOG = LogFactory.getLog(RetryableFeignBlockingLoadBalancerClient.class);
 
-	private final Client delegate;
-
-	private final LoadBalancerClient loadBalancerClient;
-
 	private final LoadBalancedRetryFactory loadBalancedRetryFactory;
-
-	private final LoadBalancerClientFactory loadBalancerClientFactory;
 
 	/**
 	 * @deprecated in favour of
@@ -88,18 +82,14 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties,
 			LoadBalancerClientFactory loadBalancerClientFactory) {
-		this.delegate = delegate;
-		this.loadBalancerClient = loadBalancerClient;
+		super(delegate, loadBalancerClient, loadBalancerClientFactory);
 		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
-		this.loadBalancerClientFactory = loadBalancerClientFactory;
 	}
 
 	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory) {
-		this.delegate = delegate;
-		this.loadBalancerClient = loadBalancerClient;
+		super(delegate, loadBalancerClient, loadBalancerClientFactory);
 		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
-		this.loadBalancerClientFactory = loadBalancerClientFactory;
 	}
 
 	@Override
@@ -164,9 +154,9 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
 					retrievedServiceInstance);
 			LoadBalancerProperties loadBalancerProperties = loadBalancerClientFactory.getProperties(serviceId);
-			Response response = LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing(delegate, options,
-					feignRequest, lbRequest, lbResponse, supportedLifecycleProcessors, retrievedServiceInstance != null,
-					loadBalancerProperties.isUseRawStatusCodeInResponseData());
+			Response response = executeWithLoadBalancerLifecycleProcessing(options, feignRequest,
+					supportedLifecycleProcessors, lbRequest, lbResponse, retrievedServiceInstance != null,
+					loadBalancerProperties);
 			int responseStatus = response.status();
 			if (retryPolicy != null && retryPolicy.retryableStatusCode(responseStatus)) {
 				if (LOG.isDebugEnabled()) {
@@ -207,6 +197,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 	}
 
 	// Visible for Sleuth instrumentation
+	@Override
 	public Client getDelegate() {
 		return delegate;
 	}

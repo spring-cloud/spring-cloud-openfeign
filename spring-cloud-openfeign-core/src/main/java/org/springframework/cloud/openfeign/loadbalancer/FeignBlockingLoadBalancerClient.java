@@ -42,7 +42,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 
 import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils.buildRequestData;
-import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing;
 
 /**
  * A {@link Client} implementation that uses {@link LoadBalancerClient} to select a
@@ -52,15 +51,9 @@ import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils
  * @since 2.2.0
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class FeignBlockingLoadBalancerClient implements Client {
+public class FeignBlockingLoadBalancerClient extends AbstractLoadBalancerClient<RequestDataContext> {
 
 	private static final Log LOG = LogFactory.getLog(FeignBlockingLoadBalancerClient.class);
-
-	private final Client delegate;
-
-	private final LoadBalancerClient loadBalancerClient;
-
-	private final LoadBalancerClientFactory loadBalancerClientFactory;
 
 	/**
 	 * @deprecated in favour of
@@ -69,16 +62,12 @@ public class FeignBlockingLoadBalancerClient implements Client {
 	@Deprecated
 	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancerProperties properties, LoadBalancerClientFactory loadBalancerClientFactory) {
-		this.delegate = delegate;
-		this.loadBalancerClient = loadBalancerClient;
-		this.loadBalancerClientFactory = loadBalancerClientFactory;
+		super(delegate, loadBalancerClient, loadBalancerClientFactory);
 	}
 
 	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancerClientFactory loadBalancerClientFactory) {
-		this.delegate = delegate;
-		this.loadBalancerClient = loadBalancerClient;
-		this.loadBalancerClientFactory = loadBalancerClientFactory;
+		super(delegate, loadBalancerClient, loadBalancerClientFactory);
 	}
 
 	@Override
@@ -111,8 +100,8 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri).toString();
 		Request newRequest = buildRequest(request, reconstructedUrl);
 		LoadBalancerProperties loadBalancerProperties = loadBalancerClientFactory.getProperties(serviceId);
-		return executeWithLoadBalancerLifecycleProcessing(delegate, options, newRequest, lbRequest, lbResponse,
-				supportedLifecycleProcessors, loadBalancerProperties.isUseRawStatusCodeInResponseData());
+		return executeWithLoadBalancerLifecycleProcessing(options, newRequest, supportedLifecycleProcessors, lbRequest,
+				lbResponse, true, loadBalancerProperties);
 	}
 
 	protected Request buildRequest(Request request, String reconstructedUrl) {
@@ -121,6 +110,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 	}
 
 	// Visible for Sleuth instrumentation
+	@Override
 	public Client getDelegate() {
 		return delegate;
 	}
