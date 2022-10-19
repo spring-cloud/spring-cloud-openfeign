@@ -33,13 +33,13 @@ class AbstractFormWriterTests {
 		MockFormWriter formWriter = new MockFormWriter();
 		Object object = new Object();
 		Assertions.assertFalse(formWriter.isApplicable(object));
-		object = new Object[]{new Object(), new Object()};
+		object = new Object[] { new Object(), new Object() };
 		Assertions.assertFalse(formWriter.isApplicable(object));
 		object = new UserPojo();
 		Assertions.assertTrue(formWriter.isApplicable(object));
-		object = new UserPojo[] {new UserPojo(), new UserPojo()};
+		object = new UserPojo[] { new UserPojo(), new UserPojo() };
 		Assertions.assertTrue(formWriter.isApplicable(object));
-		object = new byte[] {'1', '2'};
+		object = new byte[] { '1', '2' };
 		Assertions.assertFalse(formWriter.isApplicable(object));
 	}
 
@@ -54,9 +54,11 @@ class AbstractFormWriterTests {
 		protected String writeAsString(Object object) throws IOException {
 			return null;
 		}
+
 	}
 
 	class UserPojo {
-	}
-}
 
+	}
+
+}
