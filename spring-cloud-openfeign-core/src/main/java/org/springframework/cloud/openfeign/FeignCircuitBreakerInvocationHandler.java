@@ -37,8 +37,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import static feign.Util.checkNotNull;
 
 /**
- * @author Grzejszczak
- * @author Sharma
+ * @author Marcin Grzejszczak
+ * @author Olga Maciaszek-Sharma
  * @author Niang
  * @author Bohutskyi
  * @author kim
@@ -163,7 +163,7 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 	 * @return cached methods map for fallback invoking
 	 */
 	static Map<Method, Method> toFallbackMethod(Map<Method, InvocationHandlerFactory.MethodHandler> dispatch) {
-		Map<Method, Method> result = new LinkedHashMap<Method, Method>();
+		Map<Method, Method> result = new LinkedHashMap<>();
 		for (Method method : dispatch.keySet()) {
 			method.setAccessible(true);
 			result.put(method, method);
