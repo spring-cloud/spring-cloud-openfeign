@@ -17,8 +17,8 @@
 package org.springframework.cloud.openfeign;
 
 /**
- * This class wraps url inside an object so that relevant proxy instance can be
- * created using {@link RefreshableUrlFactoryBean}.
+ * This class wraps url inside an object so that relevant proxy instance can be created
+ * using {@link RefreshableUrlFactoryBean}.
  *
  * @author Jasbir Singh
  * @since 4.0.0

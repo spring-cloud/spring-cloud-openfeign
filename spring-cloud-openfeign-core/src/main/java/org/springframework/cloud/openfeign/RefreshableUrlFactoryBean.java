@@ -22,9 +22,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.StringUtils;
 
 /**
- * This factory bean creates {@link RefreshableUrl} instance as per the applicable configurations.
+ * This factory bean creates {@link RefreshableUrl} instance as per the applicable
+ * configurations.
  *
  * @author Jasbir Singh
  * @since 4.0.0
@@ -58,7 +60,7 @@ public class RefreshableUrlFactoryBean implements FactoryBean<RefreshableUrl>, A
 			return new RefreshableUrl(null);
 		}
 		FeignClientProperties.FeignClientConfiguration configuration = properties.getConfig().get(contextId);
-		if (Objects.isNull(configuration) || Objects.isNull(configuration.getUrl())) {
+		if (Objects.isNull(configuration) || !StringUtils.hasText(configuration.getUrl())) {
 			return new RefreshableUrl(null);
 		}
 

@@ -42,6 +42,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Jonatan Ivanov
  * @author Olga Maciaszek-Sharma
  * @author Hyeonmin Park
+ * @author Jasbir Singh
  */
 @ConfigurationProperties("spring.cloud.openfeign.client")
 public class FeignClientProperties {
@@ -148,7 +149,8 @@ public class FeignClientProperties {
 		private Boolean followRedirects;
 
 		/**
-		 * Feign client host URL config definition placeholder.
+		 * Allows setting Feign client host URL. This value will only be taken into
+		 * account if the url is not set in the @FeignClient annotation.
 		 */
 		private String url;
 

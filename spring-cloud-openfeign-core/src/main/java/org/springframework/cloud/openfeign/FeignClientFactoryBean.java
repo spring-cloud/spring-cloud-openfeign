@@ -411,8 +411,7 @@ public class FeignClientFactoryBean
 		FeignContext context = beanFactory != null ? beanFactory.getBean(FeignContext.class)
 				: applicationContext.getBean(FeignContext.class);
 		Feign.Builder builder = feign(context);
-
-		if (!StringUtils.hasText(url)) {
+		if (!StringUtils.hasText(url) && !isUrlAvailableInConfig(contextId)) {
 
 			if (LOG.isInfoEnabled()) {
 				LOG.info("For '" + name + "' URL not provided. Will try picking an instance via load-balancing.");
@@ -424,7 +423,7 @@ public class FeignClientFactoryBean
 				url = name;
 			}
 			url += cleanPath();
-			return (T) loadBalance(builder, context, (HardCodedTarget<T>) resolveTarget(context, contextId));
+			return (T) loadBalance(builder, context, new HardCodedTarget<>(type, name, url));
 		}
 		if (StringUtils.hasText(url) && !url.startsWith("http")) {
 			url = "http://" + url;
@@ -448,7 +447,7 @@ public class FeignClientFactoryBean
 		applyBuildCustomizers(context, builder);
 
 		Targeter targeter = get(context, Targeter.class);
-		return (T) targeter.target(this, builder, context, new HardCodedTarget<>(type, name, url));
+		return (T) targeter.target(this, builder, context, (HardCodedTarget<T>) resolveTarget(context, contextId, url));
 	}
 
 	private String cleanPath() {
@@ -467,15 +466,36 @@ public class FeignClientFactoryBean
 		return path;
 	}
 
-	private <T> HardCodedTarget<T> resolveTarget(FeignContext context, String contextId) {
+	private <T> HardCodedTarget<T> resolveTarget(FeignContext context, String contextId, String url) {
+		if (StringUtils.hasText(url)) {
+			return new HardCodedTarget(type, name, url);
+		}
+
 		if (refreshableClient) {
 			RefreshableUrl refreshableUrl = context.getInstance(contextId,
 					RefreshableUrl.class.getCanonicalName() + "-" + contextId, RefreshableUrl.class);
-			if (Objects.nonNull(refreshableUrl) && Objects.nonNull(refreshableUrl.getUrl())) {
+			if (Objects.nonNull(refreshableUrl) && StringUtils.hasText(refreshableUrl.getUrl())) {
 				return new RefreshableHardCodedTarget<>(type, name, refreshableUrl);
 			}
 		}
-		return new HardCodedTarget(type, name, url);
+		FeignClientProperties.FeignClientConfiguration config = findConfigByKey(contextId);
+		if (Objects.isNull(config) || !StringUtils.hasText(config.getUrl())) {
+			throw new IllegalStateException(
+					"Provide Feign client URL either in @FeignClient() or in config properties.");
+		}
+
+		return new HardCodedTarget(type, name, FeignClientsRegistrar.getUrl(config.getUrl()));
+	}
+
+	private boolean isUrlAvailableInConfig(String contextId) {
+		FeignClientProperties.FeignClientConfiguration config = findConfigByKey(contextId);
+		return Objects.nonNull(config) && StringUtils.hasText(config.getUrl());
+	}
+
+	private FeignClientProperties.FeignClientConfiguration findConfigByKey(String configKey) {
+		FeignClientProperties properties = beanFactory != null ? beanFactory.getBean(FeignClientProperties.class)
+				: applicationContext.getBean(FeignClientProperties.class);
+		return properties.getConfig().get(configKey);
 	}
 
 	@Override

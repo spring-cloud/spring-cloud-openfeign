@@ -421,7 +421,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	}
 
 	/**
-	 * This method is meant to register beans definition with refreshScope.
+	 * This method registers beans definition with refreshScope.
 	 * @param registry spring bean definition registry
 	 * @param contextId name of feign client
 	 * @param beanType type of bean

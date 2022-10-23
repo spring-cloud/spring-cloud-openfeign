@@ -179,6 +179,7 @@ spring:
 			client:
 				config:
 					feignName:
+                        url: http://remote-service.com
 						connectTimeout: 5000
 						readTimeout: 5000
 						loggerLevel: full
@@ -798,7 +799,7 @@ If Feign client refresh is enabled, each Feign client is created with:
 
 * `feign.Request.Options` as a refresh-scoped bean. This means properties such as `connectTimeout` and `readTimeout` can be refreshed against any Feign client instance.
 * with url wrapped under `org.springframework.cloud.openfeign.RefreshableUrl`. This means url of Feign client if defined
-with the property `spring.cloud.openfeign.client.config.{client-name}.url` can be refreshed against any Feign client instance.
+with the property `spring.cloud.openfeign.client.config.{feignName}.url` can be refreshed against any Feign client instance.
 
 The above properties can be refreshed through `POST /actuator/refresh`.
 
@@ -857,6 +858,37 @@ Alternatively, you can use `LoadBalancerFeignRequestTransformer.DEFAULT_ORDER` t
 spring.cloud.loadbalancer.x-forwarded.enabled=true
 ----
 
+=== Supported Ways To Provide URL To A Feign Client
+URL to a Feign client can be provided in any of the following ways:
+
+|===
+|Case |Example |Details
+
+|Url is provided in the `@FeignClient` annotation.
+|`@FeignClient(name="testClient", url="http://localhost:8081")`
+|Url will be resolved from url attribute of annotation without load balancing.
+
+|Url is provided in the `@FeignClient` annotation as well as in
+configuration properties.
+|`@FeignClient(name="testClient", url="http://localhost:8081")` and property defined in application.yml as
+`spring.cloud.openfeign.client.config.testClient.url=http://localhost:8081`
+|Url will be resolved from url attribute of annotation without load balancing.
+Url provided in the configuration properties remains unused.
+
+|Url is not provided in the `@FeignClient` annotation but provided in configuration properties.
+| `@FeignClient(name="testClient")` and property defined in application.yml as
+`spring.cloud.openfeign.client.config.testClient.url=http://localhost:8081`
+|Url will be resolved from configuration properties without load balancing. if
+`spring.cloud.openfeign.client.refresh-enabled=true` then url defined in configuration properties can be refreshed as described in <<Spring `@RefreshScope` Support,Spring RefreshScope Support>>.
+
+|Url is neither provided in the `@FeignClient` annotation nor in configuration properties.
+|`@FeignClient(name="testClient")`
+|Url will be resolved from name attribute of annotation with load balancing.
+
+|===
+----
+spring.cloud.openfeign.client.refresh-enabled=true
+----
 == Configuration properties
 
 To see the list of all Spring Cloud OpenFeign related configuration properties please check link:appendix.html[the Appendix page].
