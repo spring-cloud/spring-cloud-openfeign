@@ -23,6 +23,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -30,6 +31,7 @@ import org.springframework.cloud.loadbalancer.config.BlockingLoadBalancerClientA
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -39,6 +41,7 @@ import org.springframework.context.annotation.Import;
  *
  * @author Olga Maciaszek-Sharma
  * @author Nguyen Ky Thanh
+ * @author changjin wei(魏昌进)
  * @since 2.2.0
  */
 @ConditionalOnClass(Feign.class)
@@ -53,5 +56,12 @@ import org.springframework.context.annotation.Import;
 @Import({ HttpClientFeignLoadBalancerConfiguration.class, OkHttpFeignLoadBalancerConfiguration.class,
 		HttpClient5FeignLoadBalancerConfiguration.class, DefaultFeignLoadBalancerConfiguration.class })
 public class FeignLoadBalancerAutoConfiguration {
+
+	@Bean
+	@ConditionalOnBean(LoadBalancerClientFactory.class)
+	@ConditionalOnMissingBean(XForwardedHeadersTransformer.class)
+	public XForwardedHeadersTransformer xForwarderHeadersFeignTransformer(LoadBalancerClientFactory factory) {
+		return new XForwardedHeadersTransformer(factory);
+	}
 
 }

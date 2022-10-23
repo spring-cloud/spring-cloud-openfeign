@@ -67,6 +67,7 @@ import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils
  *
  * @author Olga Maciaszek-Sharma
  * @author changjin wei(魏昌进)
+ * @author Wonsik Cheung
  * @since 2.2.6
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -184,6 +185,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			}
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
 					retrievedServiceInstance);
+			LoadBalancerProperties loadBalancerProperties = loadBalancerClientFactory.getProperties(serviceId);
 			Response response = LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing(delegate, options,
 					feignRequest, lbRequest, lbResponse, supportedLifecycleProcessors,
 					retrievedServiceInstance != null);
@@ -231,8 +233,10 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			retryTemplate.setListeners(retryListeners);
 		}
 
-		retryTemplate.setRetryPolicy(retryPolicy == null ? new NeverRetryPolicy()
-				: new InterceptorRetryPolicy(toHttpRequest(request), retryPolicy, loadBalancerClient, serviceId));
+		retryTemplate.setRetryPolicy(
+				!loadBalancerClientFactory.getProperties(serviceId).getRetry().isEnabled() || retryPolicy == null
+						? new NeverRetryPolicy() : new InterceptorRetryPolicy(toHttpRequest(request), retryPolicy,
+								loadBalancerClient, serviceId));
 		return retryTemplate;
 	}
 
@@ -246,11 +250,6 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			@Override
 			public HttpMethod getMethod() {
 				return HttpMethod.valueOf(request.httpMethod().name());
-			}
-
-			@Override
-			public String getMethodValue() {
-				return getMethod().name();
 			}
 
 			@Override

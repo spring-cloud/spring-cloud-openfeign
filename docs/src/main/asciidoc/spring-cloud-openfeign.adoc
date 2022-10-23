@@ -848,6 +848,15 @@ For `Request`, you need to implement and define `LoadBalancerFeignRequestTransfo
 If multiple transformers are defined, they are applied in the order in which beans are defined.
 Alternatively, you can use `LoadBalancerFeignRequestTransformer.DEFAULT_ORDER` to specify the order.
 
+=== X-Forwarded Headers Support
+
+`X-Forwarded-Host` and `X-Forwarded-Proto` support can be enabled by setting following flag:
+
+[source,properties]
+----
+spring.cloud.loadbalancer.x-forwarded.enabled=true
+----
+
 == Configuration properties
 
 To see the list of all Spring Cloud OpenFeign related configuration properties please check link:appendix.html[the Appendix page].

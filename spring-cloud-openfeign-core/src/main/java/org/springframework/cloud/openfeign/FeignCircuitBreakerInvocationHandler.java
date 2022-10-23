@@ -36,6 +36,14 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import static feign.Util.checkNotNull;
 
+/**
+ * @author Marcin Grzejszczak
+ * @author Olga Maciaszek-Sharma
+ * @author Niang
+ * @author Bohutskyi
+ * @author kim
+ * @author Vicasong
+ */
 class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 
 	private final CircuitBreakerFactory factory;
@@ -122,9 +130,13 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 
 	private Supplier<Object> asSupplier(final Method method, final Object[] args) {
 		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+		final Thread caller = Thread.currentThread();
 		return () -> {
+			boolean isAsync = caller != Thread.currentThread();
 			try {
-				RequestContextHolder.setRequestAttributes(requestAttributes);
+				if (isAsync) {
+					RequestContextHolder.setRequestAttributes(requestAttributes);
+				}
 				return dispatch.get(method).invoke(args);
 			}
 			catch (RuntimeException throwable) {
@@ -132,6 +144,11 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 			}
 			catch (Throwable throwable) {
 				throw new RuntimeException(throwable);
+			}
+			finally {
+				if (isAsync) {
+					RequestContextHolder.resetRequestAttributes();
+				}
 			}
 		};
 	}
@@ -146,7 +163,7 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 	 * @return cached methods map for fallback invoking
 	 */
 	static Map<Method, Method> toFallbackMethod(Map<Method, InvocationHandlerFactory.MethodHandler> dispatch) {
-		Map<Method, Method> result = new LinkedHashMap<Method, Method>();
+		Map<Method, Method> result = new LinkedHashMap<>();
 		for (Method method : dispatch.keySet()) {
 			method.setAccessible(true);
 			result.put(method, method);

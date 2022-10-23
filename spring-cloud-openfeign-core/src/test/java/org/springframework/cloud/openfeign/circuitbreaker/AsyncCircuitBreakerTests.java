@@ -19,6 +19,9 @@ package org.springframework.cloud.openfeign.circuitbreaker;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import feign.RequestInterceptor;
@@ -27,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,6 +44,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,6 +52,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -58,13 +64,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author John Niang
  */
-@SpringBootTest(classes = AsyncCircuitBreakerTest.Application.class, webEnvironment = RANDOM_PORT,
+@SpringBootTest(classes = AsyncCircuitBreakerTests.Application.class, webEnvironment = RANDOM_PORT,
 		properties = "spring.cloud.openfeign.circuitbreaker.enabled=true")
 @AutoConfigureMockMvc
-class AsyncCircuitBreakerTest {
+class AsyncCircuitBreakerTests {
 
 	@Autowired
 	MockMvc mvc;
+
+	@Autowired
+	@Qualifier("asyncWorker")
+	ExecutorService asyncCircuitBreakerExecutor;
 
 	@Test
 	void shouldWorkNormally() throws Exception {
@@ -85,14 +95,28 @@ class AsyncCircuitBreakerTest {
 				authorization)).andDo(print()).andExpect(status().isOk()).andExpect(content().string(authorization));
 	}
 
+	@Test
+	void shouldProxyHeaderWhenHeaderSetAndCleanRequestAttributesAfterReturn() throws Exception {
+		shouldNotProxyAnyHeadersWithoutHeaderSet();
+		Future<ServletRequestAttributes> future = asyncCircuitBreakerExecutor
+				.submit(() -> (ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
+		assertThat(future.get()).as("the RequestAttributes has been cleared").isNull();
+	}
+
 	@EnableAutoConfiguration
 	@Configuration(proxyBeanMethods = false)
 	@EnableFeignClients(clients = { TestClient.class })
 	@Import({ NoSecurityConfiguration.class, TestController.class })
 	static class Application {
 
+		@Bean(name = "asyncWorker", destroyMethod = "shutdown")
+		ExecutorService asyncCircuitBreakerExecutor() {
+			return Executors.newSingleThreadExecutor(new CustomizableThreadFactory("async"));
+		}
+
 		@Bean
-		CircuitBreakerFactory<Duration, ConfigBuilder<Duration>> circuitBreakerFactory() {
+		CircuitBreakerFactory<Duration, ConfigBuilder<Duration>> circuitBreakerFactory(
+				@Qualifier("asyncWorker") ExecutorService asyncCircuitBreakerExecutor) {
 			return new CircuitBreakerFactory<Duration, ConfigBuilder<Duration>>() {
 
 				Function<String, Duration> defaultConfiguration = id -> Duration.ofMillis(1000);
@@ -100,7 +124,7 @@ class AsyncCircuitBreakerTest {
 				@Override
 				public CircuitBreaker create(String id) {
 					Duration timeout = super.getConfigurations().computeIfAbsent(id, defaultConfiguration);
-					return new AsyncCircuitBreaker(timeout);
+					return new AsyncCircuitBreaker(timeout, asyncCircuitBreakerExecutor);
 				}
 
 				@Override
