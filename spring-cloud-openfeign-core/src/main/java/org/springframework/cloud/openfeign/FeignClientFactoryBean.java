@@ -447,7 +447,7 @@ public class FeignClientFactoryBean
 		applyBuildCustomizers(context, builder);
 
 		Targeter targeter = get(context, Targeter.class);
-		return (T) targeter.target(this, builder, context, (HardCodedTarget<T>) resolveTarget(context, contextId, url));
+		return targeter.target(this, builder, context, (HardCodedTarget<T>) resolveTarget(context, contextId, url));
 	}
 
 	private String cleanPath() {

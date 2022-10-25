@@ -886,9 +886,7 @@ Url provided in the configuration properties remains unused.
 |Url will be resolved from name attribute of annotation with load balancing.
 
 |===
-----
-spring.cloud.openfeign.client.refresh-enabled=true
-----
+
 == Configuration properties
 
 To see the list of all Spring Cloud OpenFeign related configuration properties please check link:appendix.html[the Appendix page].
