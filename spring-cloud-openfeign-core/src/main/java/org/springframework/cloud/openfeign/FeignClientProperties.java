@@ -42,6 +42,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Jonatan Ivanov
  * @author Olga Maciaszek-Sharma
  * @author Hyeonmin Park
+ * @author Jasbir Singh
  */
 @ConfigurationProperties("spring.cloud.openfeign.client")
 public class FeignClientProperties {
@@ -146,6 +147,12 @@ public class FeignClientProperties {
 		private MetricsProperties metrics;
 
 		private Boolean followRedirects;
+
+		/**
+		 * Allows setting Feign client host URL. This value will only be taken into
+		 * account if the url is not set in the @FeignClient annotation.
+		 */
+		private String url;
 
 		public Logger.Level getLoggerLevel() {
 			return loggerLevel;
@@ -283,6 +290,14 @@ public class FeignClientProperties {
 			this.followRedirects = followRedirects;
 		}
 
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -303,14 +318,14 @@ public class FeignClientProperties {
 					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters)
 					&& Objects.equals(capabilities, that.capabilities)
 					&& Objects.equals(queryMapEncoder, that.queryMapEncoder) && Objects.equals(metrics, that.metrics)
-					&& Objects.equals(followRedirects, that.followRedirects);
+					&& Objects.equals(followRedirects, that.followRedirects) && Objects.equals(url, that.url);
 		}
 
 		@Override
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
 					dismiss404, encoder, decoder, contract, exceptionPropagationPolicy, defaultQueryParameters,
-					defaultRequestHeaders, capabilities, queryMapEncoder, metrics, followRedirects);
+					defaultRequestHeaders, capabilities, queryMapEncoder, metrics, followRedirects, url);
 		}
 
 	}
