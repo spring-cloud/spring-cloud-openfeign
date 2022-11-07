@@ -79,7 +79,7 @@ class FeignClientBuilderTests {
 
 	@Test
 	void safetyCheckForNewFieldsOnTheFeignClientAnnotation() {
-		final List<String> methodNames = new ArrayList();
+		final List<String> methodNames = new ArrayList<>();
 		for (final Method method : FeignClient.class.getMethods()) {
 			methodNames.add(method.getName());
 		}
@@ -168,7 +168,7 @@ class FeignClientBuilderTests {
 		final FeignClientBuilder.Builder builder = this.feignClientBuilder.forType(TestClient.class, "TestClient");
 		// expect: 'the build will fail right after calling build() with the mocked
 		// unusual exception'
-		assertThatExceptionOfType(ClosedFileSystemException.class).isThrownBy(() -> builder.build());
+		assertThatExceptionOfType(ClosedFileSystemException.class).isThrownBy(builder::build);
 	}
 
 	private interface TestFeignClient {

@@ -76,6 +76,7 @@ class FeignHttpClientConfigurationTests {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private Lookup<ConnectionSocketFactory> getConnectionSocketFactoryLookup(
 			HttpClientConnectionManager connectionManager) {
 		DefaultHttpClientConnectionOperator connectionOperator = (DefaultHttpClientConnectionOperator) this
@@ -84,8 +85,7 @@ class FeignHttpClientConfigurationTests {
 	}
 
 	private X509TrustManager getX509TrustManager(Lookup<ConnectionSocketFactory> socketFactoryRegistry) {
-		ConnectionSocketFactory connectionSocketFactory = (ConnectionSocketFactory) socketFactoryRegistry
-				.lookup("https");
+		ConnectionSocketFactory connectionSocketFactory = socketFactoryRegistry.lookup("https");
 		SSLSocketFactory sslSocketFactory = (SSLSocketFactory) this.getField(connectionSocketFactory, "socketfactory");
 		SSLContextSpi sslContext = (SSLContextSpi) this.getField(sslSocketFactory, "context");
 		return (X509TrustManager) this.getField(sslContext, "trustManager");
@@ -94,8 +94,7 @@ class FeignHttpClientConfigurationTests {
 	protected <T> Object getField(Object target, String name) {
 		Field field = ReflectionUtils.findField(target.getClass(), name);
 		ReflectionUtils.makeAccessible(field);
-		Object value = ReflectionUtils.getField(field, target);
-		return value;
+		return ReflectionUtils.getField(field, target);
 	}
 
 }

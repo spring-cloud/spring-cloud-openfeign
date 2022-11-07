@@ -69,6 +69,7 @@ public class MatrixVariableParameterProcessor implements AnnotatedParameterProce
 		return true;
 	}
 
+	@SuppressWarnings("unchecked")
 	private String expandMap(Object object) {
 		Map<String, Object> paramMap = (Map) object;
 

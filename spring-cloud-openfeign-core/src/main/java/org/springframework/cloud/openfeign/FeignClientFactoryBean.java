@@ -407,6 +407,7 @@ public class FeignClientFactoryBean
 	 * @return a {@link Feign} client created with the specified data and the context
 	 * information
 	 */
+	@SuppressWarnings("unchecked")
 	<T> T getTarget() {
 		FeignContext context = beanFactory != null ? beanFactory.getBean(FeignContext.class)
 				: applicationContext.getBean(FeignContext.class);
@@ -447,7 +448,7 @@ public class FeignClientFactoryBean
 		applyBuildCustomizers(context, builder);
 
 		Targeter targeter = get(context, Targeter.class);
-		return targeter.target(this, builder, context, (HardCodedTarget<T>) resolveTarget(context, contextId, url));
+		return targeter.target(this, builder, context, resolveTarget(context, contextId, url));
 	}
 
 	private String cleanPath() {
@@ -466,6 +467,7 @@ public class FeignClientFactoryBean
 		return path;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> HardCodedTarget<T> resolveTarget(FeignContext context, String contextId, String url) {
 		if (StringUtils.hasText(url)) {
 			return new HardCodedTarget(type, name, url);

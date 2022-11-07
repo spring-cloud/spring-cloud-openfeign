@@ -68,8 +68,7 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 		if (supports(object)) {
 			Map<String, Object> queryMap = new HashMap<>();
 
-			if (object instanceof Pageable) {
-				Pageable pageable = (Pageable) object;
+			if (object instanceof Pageable pageable) {
 
 				if (pageable.isPaged()) {
 					queryMap.put(pageParameter, pageable.getPageNumber());
@@ -80,8 +79,7 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 					applySort(queryMap, pageable.getSort());
 				}
 			}
-			else if (object instanceof Sort) {
-				Sort sort = (Sort) object;
+			else if (object instanceof Sort sort) {
 				applySort(queryMap, sort);
 			}
 			return queryMap;

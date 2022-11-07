@@ -87,17 +87,17 @@ public class SpringDecoder implements Decoder {
 		}
 
 		@Override
-		public HttpStatus getStatusCode() throws IOException {
+		public HttpStatus getStatusCode() {
 			return HttpStatus.valueOf(response.status());
 		}
 
 		@Override
-		public int getRawStatusCode() throws IOException {
+		public int getRawStatusCode() {
 			return response.status();
 		}
 
 		@Override
-		public String getStatusText() throws IOException {
+		public String getStatusText() {
 			return response.reason();
 		}
 

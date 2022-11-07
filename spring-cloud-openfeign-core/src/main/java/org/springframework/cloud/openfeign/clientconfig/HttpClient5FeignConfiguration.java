@@ -19,7 +19,6 @@ package org.springframework.cloud.openfeign.clientconfig;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 
@@ -112,10 +111,7 @@ public class HttpClient5FeignConfiguration {
 				sslContext.init(null, new TrustManager[] { new DisabledValidationTrustManager() }, new SecureRandom());
 				sslConnectionSocketFactoryBuilder.setSslContext(sslContext);
 			}
-			catch (NoSuchAlgorithmException e) {
-				LOG.warn("Error creating SSLContext", e);
-			}
-			catch (KeyManagementException e) {
+			catch (NoSuchAlgorithmException | KeyManagementException e) {
 				LOG.warn("Error creating SSLContext", e);
 			}
 		}
@@ -131,10 +127,10 @@ public class HttpClient5FeignConfiguration {
 		DisabledValidationTrustManager() {
 		}
 
-		public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+		public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
 		}
 
-		public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+		public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
 		}
 
 		public X509Certificate[] getAcceptedIssuers() {

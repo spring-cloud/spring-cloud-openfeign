@@ -116,7 +116,7 @@ class SpringEncoderTests {
 		assertThat(encoder).isNotNull();
 		RequestTemplate request = new RequestTemplate();
 
-		ParameterizedTypeReference<List<String>> stringListType = new ParameterizedTypeReference<List<String>>() {
+		ParameterizedTypeReference<List<String>> stringListType = new ParameterizedTypeReference<>() {
 		};
 
 		request.header(HttpEncoding.CONTENT_TYPE, "application/mygenerictype");
@@ -305,8 +305,7 @@ class SpringEncoderTests {
 			}
 
 			private boolean isStringList(Type type) {
-				if (type instanceof ParameterizedType) {
-					ParameterizedType parameterizedType = (ParameterizedType) type;
+				if (type instanceof ParameterizedType parameterizedType) {
 					return parameterizedType.getRawType() == List.class
 							&& parameterizedType.getActualTypeArguments()[0] == String.class;
 				}

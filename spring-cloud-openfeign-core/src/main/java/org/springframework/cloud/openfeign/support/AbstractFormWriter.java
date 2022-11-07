@@ -74,8 +74,7 @@ public abstract class AbstractFormWriter extends AbstractWriter {
 			}
 			return false;
 		}
-		else if (object instanceof Iterable) {
-			Iterable<?> iterable = (Iterable<?>) object;
+		else if (object instanceof Iterable<?> iterable) {
 			Iterator<?> iterator = iterable.iterator();
 
 			return iterator.hasNext() && isType.test(iterator.next());

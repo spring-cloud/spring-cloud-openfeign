@@ -195,12 +195,12 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 	@Override
 	protected void processAnnotationOnMethod(MethodMetadata data, Annotation methodAnnotation, Method method) {
-		if (CollectionFormat.class.isInstance(methodAnnotation)) {
+		if (methodAnnotation instanceof CollectionFormat) {
 			CollectionFormat collectionFormat = findMergedAnnotation(method, CollectionFormat.class);
 			data.template().collectionFormat(collectionFormat.value());
 		}
 
-		if (!RequestMapping.class.isInstance(methodAnnotation)
+		if (!(methodAnnotation instanceof RequestMapping)
 				&& !methodAnnotation.annotationType().isAnnotationPresent(RequestMapping.class)) {
 			return;
 		}

@@ -111,6 +111,7 @@ class FeignClientsRegistrarTests {
 				.doesNotThrowAnyException();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	@DisabledForJreRange(min = JRE.JAVA_16)
 	void shouldResolveNullUrl() {

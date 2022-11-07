@@ -35,7 +35,7 @@ public final class Request extends com.google.protobuf.GeneratedMessageV3 implem
 	// @@protoc_insertion_point(class_scope:Request)
 	private static final Request DEFAULT_INSTANCE;
 
-	private static final com.google.protobuf.Parser<Request> PARSER = new com.google.protobuf.AbstractParser<Request>() {
+	private static final com.google.protobuf.Parser<Request> PARSER = new com.google.protobuf.AbstractParser<>() {
 		public Request parsePartialFrom(com.google.protobuf.CodedInputStream input,
 				com.google.protobuf.ExtensionRegistryLite extensionRegistry)
 				throws com.google.protobuf.InvalidProtocolBufferException {
@@ -275,10 +275,9 @@ public final class Request extends com.google.protobuf.GeneratedMessageV3 implem
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof Request)) {
+		if (!(obj instanceof Request other)) {
 			return super.equals(obj);
 		}
-		Request other = (Request) obj;
 
 		boolean result = true;
 		result = result && (getId() == other.getId());
@@ -313,8 +312,7 @@ public final class Request extends com.google.protobuf.GeneratedMessageV3 implem
 
 	@Override
 	protected Builder newBuilderForType(BuilderParent parent) {
-		Builder builder = new Builder(parent);
-		return builder;
+		return new Builder(parent);
 	}
 
 	@Override

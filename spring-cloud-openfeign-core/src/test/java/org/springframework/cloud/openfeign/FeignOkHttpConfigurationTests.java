@@ -75,8 +75,7 @@ class FeignOkHttpConfigurationTests {
 	protected Object getField(Object target, String name) {
 		Field field = ReflectionUtils.findField(target.getClass(), name);
 		ReflectionUtils.makeAccessible(field);
-		Object value = ReflectionUtils.getField(field, target);
-		return value;
+		return ReflectionUtils.getField(field, target);
 	}
 
 }

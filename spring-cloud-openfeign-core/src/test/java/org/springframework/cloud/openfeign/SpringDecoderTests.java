@@ -254,7 +254,7 @@ class SpringDecoderTests extends FeignClientFactoryBean {
 
 		@Override
 		public ResponseEntity<String> getNotFound() {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body((String) null);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 
 		@Override

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import feign.MethodMetadata;
@@ -115,7 +116,7 @@ class SpringMvcContractTests {
 				Method isNamePresent = ReflectionUtils.findMethod(parameters[0].getClass(), "isNamePresent");
 				return Boolean.TRUE.equals(isNamePresent.invoke(parameters[0]));
 			}
-			catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+			catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ignored) {
 			}
 		}
 		return false;
@@ -827,7 +828,7 @@ class SpringMvcContractTests {
 	}
 
 	@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
-	public class TestObject {
+	public static class TestObject {
 
 		public String something;
 
@@ -852,10 +853,10 @@ class SpringMvcContractTests {
 
 			TestObject that = (TestObject) o;
 
-			if (number != null ? !number.equals(that.number) : that.number != null) {
+			if (!Objects.equals(number, that.number)) {
 				return false;
 			}
-			if (something != null ? !something.equals(that.something) : that.something != null) {
+			if (!Objects.equals(something, that.something)) {
 				return false;
 			}
 

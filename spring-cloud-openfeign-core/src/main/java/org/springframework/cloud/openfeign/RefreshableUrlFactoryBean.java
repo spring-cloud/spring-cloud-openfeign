@@ -50,7 +50,7 @@ public class RefreshableUrlFactoryBean implements FactoryBean<RefreshableUrl>, A
 	}
 
 	@Override
-	public RefreshableUrl getObject() throws Exception {
+	public RefreshableUrl getObject() {
 		if (refreshableUrl != null) {
 			return refreshableUrl;
 		}

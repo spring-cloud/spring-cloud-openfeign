@@ -247,7 +247,7 @@ public class SpringEncoder implements Encoder {
 		}
 
 		@Override
-		public OutputStream getBody() throws IOException {
+		public OutputStream getBody() {
 			return outputStream;
 		}
 

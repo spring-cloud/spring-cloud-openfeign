@@ -70,8 +70,7 @@ public class ResponseEntityDecoder implements Decoder {
 	}
 
 	private boolean isHttpEntity(Type type) {
-		if (type instanceof Class) {
-			Class c = (Class) type;
+		if (type instanceof Class c) {
 			return HttpEntity.class.isAssignableFrom(c);
 		}
 		return false;

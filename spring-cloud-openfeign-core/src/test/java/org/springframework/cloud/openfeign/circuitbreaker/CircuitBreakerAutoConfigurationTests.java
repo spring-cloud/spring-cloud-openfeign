@@ -44,6 +44,7 @@ public class CircuitBreakerAutoConfigurationTests {
 		@Autowired
 		CircuitBreakerNameResolver nameResolver;
 
+		@SuppressWarnings("rawtypes")
 		@Test
 		public void assertDefaultNamingStrategy() throws Exception {
 			Target target = mock(Target.class);
@@ -65,6 +66,7 @@ public class CircuitBreakerAutoConfigurationTests {
 		@Autowired
 		CircuitBreakerNameResolver nameResolver;
 
+		@SuppressWarnings("rawtypes")
 		@Test
 		public void assertAlphanumericNamingStrategy() throws Exception {
 			Target target = mock(Target.class);

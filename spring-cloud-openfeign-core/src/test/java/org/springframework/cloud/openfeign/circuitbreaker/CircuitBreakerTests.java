@@ -232,6 +232,7 @@ class CircuitBreakerTests {
 			return new MyCircuitBreaker();
 		}
 
+		@SuppressWarnings("rawtypes")
 		@Bean
 		CircuitBreakerFactory circuitBreakerFactory(MyCircuitBreaker myCircuitBreaker) {
 			return new CircuitBreakerFactory() {

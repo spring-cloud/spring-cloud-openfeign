@@ -57,6 +57,7 @@ class FeignClientUsingConfigurerTest {
 	@Autowired
 	private FeignContext context;
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	void testFeignClient() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
@@ -80,6 +81,7 @@ class FeignClientUsingConfigurerTest {
 		return ReflectionUtils.getField(builderField, builder);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void testNoInheritFeignClient() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
@@ -96,6 +98,7 @@ class FeignClientUsingConfigurerTest {
 				.hasAtLeastOneElementOfType(MicrometerCapability.class);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void testNoInheritFeignClient_ignoreProperties() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory

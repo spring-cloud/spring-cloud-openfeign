@@ -51,7 +51,7 @@ public class OptionsFactoryBean implements FactoryBean<Request.Options>, Applica
 	}
 
 	@Override
-	public Request.Options getObject() throws Exception {
+	public Request.Options getObject() {
 		if (options != null) {
 			return options;
 		}

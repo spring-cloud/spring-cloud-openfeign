@@ -76,7 +76,7 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 	}
 
 	@Override
-	public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+	public Object invoke(final Object proxy, final Method method, final Object[] args) {
 		// early exit if the invoked method is from java.lang.Object
 		// code is the same as ReflectiveFeign.FeignInvocationHandler
 		if ("equals".equals(method.getName())) {
@@ -173,8 +173,7 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof FeignCircuitBreakerInvocationHandler) {
-			FeignCircuitBreakerInvocationHandler other = (FeignCircuitBreakerInvocationHandler) obj;
+		if (obj instanceof FeignCircuitBreakerInvocationHandler other) {
 			return this.target.equals(other.target);
 		}
 		return false;

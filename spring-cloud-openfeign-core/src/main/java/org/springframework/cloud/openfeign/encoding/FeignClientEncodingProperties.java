@@ -40,7 +40,7 @@ public class FeignClientEncodingProperties {
 	private int minRequestSize = 2048;
 
 	public String[] getMimeTypes() {
-		return this.mimeTypes;
+		return mimeTypes;
 	}
 
 	public void setMimeTypes(String[] mimeTypes) {
@@ -48,7 +48,7 @@ public class FeignClientEncodingProperties {
 	}
 
 	public int getMinRequestSize() {
-		return this.minRequestSize;
+		return minRequestSize;
 	}
 
 	public void setMinRequestSize(int minRequestSize) {
@@ -64,20 +64,19 @@ public class FeignClientEncodingProperties {
 			return false;
 		}
 		FeignClientEncodingProperties that = (FeignClientEncodingProperties) o;
-		return Arrays.equals(this.mimeTypes, that.mimeTypes)
-				&& Objects.equals(this.minRequestSize, that.minRequestSize);
+		return Arrays.equals(mimeTypes, that.mimeTypes) && Objects.equals(minRequestSize, that.minRequestSize);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.mimeTypes, this.minRequestSize);
+		return Objects.hash(Arrays.hashCode(mimeTypes), minRequestSize);
 	}
 
 	@Override
 	public String toString() {
 		return new StringBuilder("FeignClientEncodingProperties{").append("mimeTypes=")
-				.append(Arrays.toString(this.mimeTypes)).append(", ").append("minRequestSize=")
-				.append(this.minRequestSize).append("}").toString();
+				.append(Arrays.toString(mimeTypes)).append(", ").append("minRequestSize=").append(minRequestSize)
+				.append("}").toString();
 	}
 
 }

@@ -90,13 +90,14 @@ class ApacheHttpClientConfigurationTests {
 	@Test
 	void testHttpClientWithFeign() {
 		Client delegate = feignClient.getDelegate();
-		assertThat(ApacheHttpClient.class.isInstance(delegate)).isTrue();
+		assertThat(delegate instanceof ApacheHttpClient).isTrue();
 		ApacheHttpClient apacheHttpClient = (ApacheHttpClient) delegate;
 		HttpClient httpClient = getField(apacheHttpClient, "client");
 		MockingDetails httpClientDetails = mockingDetails(httpClient);
 		assertThat(httpClientDetails.isMock()).isTrue();
 	}
 
+	@SuppressWarnings("unchecked")
 	protected <T> T getField(Object target, String name) {
 		Field field = ReflectionUtils.findField(target.getClass(), name);
 		ReflectionUtils.makeAccessible(field);

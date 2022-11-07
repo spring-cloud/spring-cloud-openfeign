@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign.valid;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -573,7 +572,7 @@ class ValidFeignClientTests {
 				}
 
 				@Override
-				public OtherArg parse(String text, Locale locale) throws ParseException {
+				public OtherArg parse(String text, Locale locale) {
 					return new OtherArg(text);
 				}
 			});

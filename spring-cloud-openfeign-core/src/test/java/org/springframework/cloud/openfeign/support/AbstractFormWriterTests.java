@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +41,7 @@ class AbstractFormWriterTests {
 		Assertions.assertFalse(formWriter.isApplicable(object));
 	}
 
-	class MockFormWriter extends AbstractFormWriter {
+	static class MockFormWriter extends AbstractFormWriter {
 
 		@Override
 		protected MediaType getContentType() {
@@ -51,13 +49,13 @@ class AbstractFormWriterTests {
 		}
 
 		@Override
-		protected String writeAsString(Object object) throws IOException {
+		protected String writeAsString(Object object) {
 			return null;
 		}
 
 	}
 
-	class UserPojo {
+	static class UserPojo {
 
 	}
 

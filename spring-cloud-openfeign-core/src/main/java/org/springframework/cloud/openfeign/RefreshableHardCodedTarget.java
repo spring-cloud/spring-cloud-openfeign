@@ -26,8 +26,9 @@ import feign.Target;
  */
 public class RefreshableHardCodedTarget<T> extends Target.HardCodedTarget<T> {
 
-	private RefreshableUrl refreshableUrl;
+	private final RefreshableUrl refreshableUrl;
 
+	@SuppressWarnings("unchecked")
 	public RefreshableHardCodedTarget(Class type, String name, RefreshableUrl refreshableUrl) {
 		super(type, name, refreshableUrl.getUrl());
 		this.refreshableUrl = refreshableUrl;

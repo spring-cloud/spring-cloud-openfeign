@@ -144,8 +144,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 					new RetryableRequestContext(null, buildRequestData(request), hint));
 			// On retries the policy will choose the server and set it in the context
 			// and extract the server and update the request being made
-			if (context instanceof LoadBalancedRetryContext) {
-				LoadBalancedRetryContext lbContext = (LoadBalancedRetryContext) context;
+			if (context instanceof LoadBalancedRetryContext lbContext) {
 				ServiceInstance serviceInstance = lbContext.getServiceInstance();
 				if (serviceInstance == null) {
 					if (LOG.isDebugEnabled()) {

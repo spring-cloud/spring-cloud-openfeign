@@ -47,12 +47,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  */
-@SpringBootTest(classes = FeignHttpClientUrlTestsWithRetryableLoadBalancer.TestConfig.class,
+@SpringBootTest(classes = FeignHttpClientUrlWithRetryableLoadBalancerTests.TestConfig.class,
 		webEnvironment = DEFINED_PORT,
 		value = { "spring.application.name=feignclienturlwithretryableloadbalancertest",
 				"spring.cloud.openfeign.hystrix.enabled=false", "spring.cloud.openfeign.okhttp.enabled=false" })
 @DirtiesContext
-class FeignHttpClientUrlTestsWithRetryableLoadBalancer {
+class FeignHttpClientUrlWithRetryableLoadBalancerTests {
 
 	static int port;
 

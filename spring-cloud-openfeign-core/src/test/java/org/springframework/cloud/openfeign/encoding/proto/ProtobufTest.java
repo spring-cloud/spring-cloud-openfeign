@@ -27,8 +27,14 @@ public final class ProtobufTest {
 	private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
 
 	static {
-		String[] descriptorData = { "\n\023protobuf_test.proto\"\"\n\007Request\022\n\n\002id\030\001"
-				+ " \001(\005\022\013\n\003msg\030\002 \001(\tB\024\n\020feign.httpclientP\001b" + "\006proto3" };
+		String[] descriptorData = { """
+
+				\023protobuf_test.proto""
+				\007Request\022
+
+				\002id\030\001 \001(\005\022\013
+				\003msg\030\002 \001(\tB\024
+				\020feign.httpclientP\001b\006proto3""" };
 		com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner = new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
 			public com.google.protobuf.ExtensionRegistry assignDescriptors(
 					com.google.protobuf.Descriptors.FileDescriptor root) {

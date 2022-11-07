@@ -177,6 +177,7 @@ public class FeignAutoConfiguration {
 			return new AlphanumericCircuitBreakerNameResolver();
 		}
 
+		@SuppressWarnings("rawtypes")
 		@Bean
 		@ConditionalOnMissingBean
 		@ConditionalOnBean(CircuitBreakerFactory.class)
@@ -211,6 +212,7 @@ public class FeignAutoConfiguration {
 	// SC loadbalancer is not on the class path.
 	// see corresponding configurations in FeignLoadBalancerAutoConfiguration
 	// for load-balanced clients.
+	@SuppressWarnings("rawtypes")
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttpClient.class)
 	@ConditionalOnMissingBean(CloseableHttpClient.class)

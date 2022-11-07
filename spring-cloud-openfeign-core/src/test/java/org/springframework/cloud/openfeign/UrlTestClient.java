@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -43,7 +42,7 @@ public class UrlTestClient implements Client {
 	}
 
 	@Override
-	public Response execute(Request request, Request.Options options) throws IOException {
+	public Response execute(Request request, Request.Options options) {
 		return Response.builder().status(200).request(request).headers(headers()).body(prepareResponse(request))
 				.build();
 	}

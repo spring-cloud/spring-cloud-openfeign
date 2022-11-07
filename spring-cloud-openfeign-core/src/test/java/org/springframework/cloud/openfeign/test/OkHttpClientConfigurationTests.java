@@ -72,13 +72,14 @@ class OkHttpClientConfigurationTests {
 	@Test
 	void testHttpClientWithFeign() {
 		Client delegate = feignClient.getDelegate();
-		assertThat(feign.okhttp.OkHttpClient.class.isInstance(delegate)).isTrue();
+		assertThat(delegate instanceof feign.okhttp.OkHttpClient).isTrue();
 		feign.okhttp.OkHttpClient okHttpClient = (feign.okhttp.OkHttpClient) delegate;
 		OkHttpClient httpClient = getField(okHttpClient, "delegate");
 		MockingDetails httpClientDetails = mockingDetails(httpClient);
 		assertThat(httpClientDetails.isMock()).isTrue();
 	}
 
+	@SuppressWarnings("unchecked")
 	protected <T> T getField(Object target, String name) {
 		Object value = ReflectionTestUtils.getField(target, target.getClass(), name);
 		return (T) value;

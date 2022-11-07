@@ -106,7 +106,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 			host = new URI(url).getHost();
 
 		}
-		catch (URISyntaxException e) {
+		catch (URISyntaxException ignored) {
 		}
 		Assert.state(host != null, "Service id not legal hostname (" + name + ")");
 		return name;
@@ -187,9 +187,8 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		}
 
 		for (BeanDefinition candidateComponent : candidateComponents) {
-			if (candidateComponent instanceof AnnotatedBeanDefinition) {
+			if (candidateComponent instanceof AnnotatedBeanDefinition beanDefinition) {
 				// verify annotated class is an interface
-				AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
 				AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
 				Assert.isTrue(annotationMetadata.isInterface(), "@FeignClient can only be specified on an interface");
 
@@ -204,6 +203,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void registerFeignClient(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata,
 			Map<String, Object> attributes) {
 		String className = annotationMetadata.getClassName();

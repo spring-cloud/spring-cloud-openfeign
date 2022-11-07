@@ -117,7 +117,7 @@ class AsyncCircuitBreakerTests {
 		@Bean
 		CircuitBreakerFactory<Duration, ConfigBuilder<Duration>> circuitBreakerFactory(
 				@Qualifier("asyncWorker") ExecutorService asyncCircuitBreakerExecutor) {
-			return new CircuitBreakerFactory<Duration, ConfigBuilder<Duration>>() {
+			return new CircuitBreakerFactory<>() {
 
 				Function<String, Duration> defaultConfiguration = id -> Duration.ofMillis(1000);
 

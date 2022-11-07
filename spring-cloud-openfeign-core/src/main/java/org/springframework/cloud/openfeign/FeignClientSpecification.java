@@ -64,18 +64,18 @@ public class FeignClientSpecification implements NamedContextFactory.Specificati
 			return false;
 		}
 		FeignClientSpecification that = (FeignClientSpecification) o;
-		return Objects.equals(this.name, that.name) && Arrays.equals(this.configuration, that.configuration);
+		return Objects.equals(name, that.name) && Arrays.equals(configuration, that.configuration);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.name, this.configuration);
+		return Objects.hash(name, Arrays.hashCode(configuration));
 	}
 
 	@Override
 	public String toString() {
-		return new StringBuilder("FeignClientSpecification{").append("name='").append(this.name).append("', ")
-				.append("configuration=").append(Arrays.toString(this.configuration)).append("}").toString();
+		return new StringBuilder("FeignClientSpecification{").append("name='").append(name).append("', ")
+				.append("configuration=").append(Arrays.toString(configuration)).append("}").toString();
 	}
 
 }

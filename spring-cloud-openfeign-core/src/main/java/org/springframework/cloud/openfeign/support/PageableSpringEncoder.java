@@ -79,8 +79,7 @@ public class PageableSpringEncoder implements Encoder {
 	public void encode(Object object, Type bodyType, RequestTemplate template) throws EncodeException {
 
 		if (supports(object)) {
-			if (object instanceof Pageable) {
-				Pageable pageable = (Pageable) object;
+			if (object instanceof Pageable pageable) {
 
 				if (pageable.isPaged()) {
 					template.query(pageParameter, String.valueOf(pageable.getPageNumber()));
@@ -91,8 +90,7 @@ public class PageableSpringEncoder implements Encoder {
 					applySort(template, pageable.getSort());
 				}
 			}
-			else if (object instanceof Sort) {
-				Sort sort = (Sort) object;
+			else if (object instanceof Sort sort) {
 				applySort(template, sort);
 			}
 		}
