@@ -46,8 +46,8 @@ import static org.mockito.Mockito.mock;
 class FeignAutoConfigurationTests {
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class))
-			.withPropertyValues("spring.cloud.openfeign.httpclient.enabled=false");
+		.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class))
+		.withPropertyValues("spring.cloud.openfeign.httpclient.hc5.enabled=false");
 
 	@Test
 	void shouldInstantiateDefaultTargeterWhenFeignCircuitBreakerIsDisabled() {

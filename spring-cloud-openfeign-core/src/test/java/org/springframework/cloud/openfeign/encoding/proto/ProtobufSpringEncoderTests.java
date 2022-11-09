@@ -25,15 +25,15 @@ import java.util.List;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import feign.RequestTemplate;
-import feign.httpclient.ApacheHttpClient;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.message.BasicStatusLine;
+import feign.hc5.ApacheHttp5Client;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.ProtocolVersion;
+import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -58,45 +58,48 @@ import static org.assertj.core.api.Assertions.fail;
  * @author Olga Maciaszek-Sharma
  */
 @ExtendWith(MockitoExtension.class)
-class ProtobufSpringEncoderTest {
+class ProtobufSpringEncoderTests {
 
 	@Mock
 	private HttpClient httpClient;
 
 	// a protobuf object with some content
 	private final org.springframework.cloud.openfeign.encoding.proto.Request request = org.springframework.cloud.openfeign.encoding.proto.Request
-			.newBuilder().setId(1000000)
-			.setMsg("Erlang/OTP 最初是爱立信为开发电信设备系统设计的编程语言平台，" + "电信设备(路由器、接入网关、…)典型设计是通过背板连接主控板卡与多块业务板卡的分布式系统。").build();
+		.newBuilder().setId(1000000)
+		.setMsg("Erlang/OTP 最初是爱立信为开发电信设备系统设计的编程语言平台，" + "电信设备(路由器、接入网关、…)典型设计是通过背板连接主控板卡与多块业务板卡的分布式系统。")
+		.build();
 
 	@Test
 	void testProtobuf() throws IOException {
 		// protobuf convert to request by feign and ProtobufHttpMessageConverter
 		RequestTemplate requestTemplate = newRequestTemplate();
-		newEncoder().encode(this.request, Request.class, requestTemplate);
+		requestTemplate.target("http://example.com");
+		newEncoder().encode(request, Request.class, requestTemplate);
 		HttpEntity entity = toApacheHttpEntity(requestTemplate);
 		byte[] bytes = read(entity.getContent(), (int) entity.getContentLength());
 
-		assertThat(this.request.toByteArray()).isEqualTo(bytes);
+		assertThat(request.toByteArray()).isEqualTo(bytes);
 		org.springframework.cloud.openfeign.encoding.proto.Request copy = org.springframework.cloud.openfeign.encoding.proto.Request
-				.parseFrom(bytes);
-		assertThat(copy).isEqualTo(this.request);
+			.parseFrom(bytes);
+		assertThat(copy).isEqualTo(request);
 	}
 
 	@Test
 	void testProtobufWithCharsetWillFail() throws IOException {
 		// protobuf convert to request by feign and ProtobufHttpMessageConverter
 		RequestTemplate requestTemplate = newRequestTemplate();
-		newEncoder().encode(this.request, Request.class, requestTemplate);
+		requestTemplate.target("http://example.com");
+		newEncoder().encode(request, Request.class, requestTemplate);
 		// set a charset
 		requestTemplate.body(requestTemplate.body(), StandardCharsets.UTF_8);
 		HttpEntity entity = toApacheHttpEntity(requestTemplate);
 		byte[] bytes = read(entity.getContent(), (int) entity.getContentLength());
 
 		// http request-body is different with original protobuf body
-		assertThat(this.request.toByteArray().length).isNotEqualTo(bytes.length);
+		assertThat(request.toByteArray().length).isNotEqualTo(bytes.length);
 		try {
 			org.springframework.cloud.openfeign.encoding.proto.Request copy = org.springframework.cloud.openfeign.encoding.proto.Request
-					.parseFrom(bytes);
+				.parseFrom(bytes);
 			fail("Expected an InvalidProtocolBufferException to be thrown");
 		}
 		catch (InvalidProtocolBufferException e) {
@@ -117,16 +120,21 @@ class ProtobufSpringEncoderTest {
 	}
 
 	private HttpEntity toApacheHttpEntity(RequestTemplate requestTemplate) throws IOException {
-		final List<HttpUriRequest> request = new ArrayList<>(1);
-		BDDMockito.given(this.httpClient.execute(ArgumentMatchers.any()))
-				.will((Answer<HttpResponse>) invocationOnMock -> {
-					request.add((HttpUriRequest) invocationOnMock.getArguments()[0]);
-					return new BasicHttpResponse(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, null));
-				});
-		new ApacheHttpClient(this.httpClient).execute(requestTemplate.resolve(new HashMap<>()).request(),
-				new feign.Request.Options());
-		HttpUriRequest httpUriRequest = request.get(0);
-		return ((HttpEntityEnclosingRequestBase) httpUriRequest).getEntity();
+		final List<ClassicHttpRequest> request = new ArrayList<>(1);
+		BDDMockito.given(httpClient.execute(ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any(HttpContext.class)))
+			.will((Answer<HttpResponse>) invocationOnMock -> {
+				request.add((ClassicHttpRequest) invocationOnMock.getArguments()[1]);
+				try (ClassicHttpResponse response = new BasicClassicHttpResponse(200)) {
+					response.setVersion(new ProtocolVersion("http", 1, 1));
+					return response;
+				}
+			});
+		new ApacheHttp5Client(httpClient).execute(requestTemplate.resolve(new HashMap<>())
+				.request(),
+			new feign.Request.Options());
+		ClassicHttpRequest httpUriRequest = request.get(0);
+		return httpUriRequest.getEntity();
 	}
 
 	private byte[] read(InputStream in, int length) throws IOException {

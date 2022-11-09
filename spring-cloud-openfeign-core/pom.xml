@@ -114,11 +114,6 @@
 		</dependency>
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
-			<artifactId>feign-httpclient</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-hc5</artifactId>
 			<optional>true</optional>
 		</dependency>
