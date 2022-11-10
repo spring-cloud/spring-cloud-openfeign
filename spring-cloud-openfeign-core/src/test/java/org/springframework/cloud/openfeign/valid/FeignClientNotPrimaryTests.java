@@ -47,8 +47,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(classes = FeignClientNotPrimaryTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=feignclientnotprimarytest",
-				"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
-				"spring.cloud.openfeign.httpclient.enabled=false", "spring.cloud.openfeign.okhttp.enabled=false" })
+				"spring.cloud.openfeign.httpclient.hc5.enabled=false", "spring.cloud.openfeign.okhttp.enabled=false" })
 @DirtiesContext
 class FeignClientNotPrimaryTests {
 

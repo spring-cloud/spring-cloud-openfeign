@@ -48,7 +48,7 @@ import static org.mockito.Mockito.mockingDetails;
  */
 @SpringBootTest(properties = { "spring.cloud.openfeign.okhttp.enabled: true",
 		"spring.cloud.httpclientfactories.ok.enabled: true", "spring.cloud.openfeign.okhttp.enabled: true",
-		"spring.cloud.openfeign.httpclient.enabled: false", "spring.cloud.loadbalancer.retry.enabled=false" })
+		"spring.cloud.openfeign.httpclient.hc5.enabled: false", "spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
 class OkHttpClientConfigurationTests {
 

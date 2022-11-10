@@ -20,7 +20,6 @@ import java.util.Map;
 
 import feign.Client;
 import feign.hc5.ApacheHttp5Client;
-import feign.httpclient.ApacheHttpClient;
 import feign.okhttp.OkHttpClient;
 import org.junit.jupiter.api.Test;
 
@@ -43,22 +42,15 @@ class FeignLoadBalancerAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateDefaultFeignBlockingLoadBalancerClientWhenHttpClientDisabled() {
-		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.enabled=false",
+		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.hc5.enabled=false",
 				"spring.cloud.loadbalancer.retry.enabled=false");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalanced(context, Client.Default.class);
 	}
 
 	@Test
-	void shouldInstantiateHttpFeignClientWhenEnabled() {
-		ConfigurableApplicationContext context = initContext("spring.cloud.loadbalancer.retry.enabled=false");
-		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
-		assertLoadBalanced(context, ApacheHttpClient.class);
-	}
-
-	@Test
 	void shouldInstantiateOkHttpFeignClientWhenEnabled() {
-		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.enabled=false",
+		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.hc5.enabled=false",
 				"spring.cloud.openfeign.okhttp.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false",
 				"spring.cloud.openfeign.httpclient.okhttp.read-timeout=9s");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
@@ -74,18 +66,8 @@ class FeignLoadBalancerAutoConfigurationTests {
 	}
 
 	@Test
-	void shouldInstantiateHttpFeignClient5WhenEnabled() {
-		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.enabled=false",
-				"spring.cloud.openfeign.okhttp.enabled=false", "spring.cloud.openfeign.httpclient.hc5.enabled=true",
-				"spring.cloud.loadbalancer.retry.enabled=false");
-		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
-		assertLoadBalanced(context, ApacheHttp5Client.class);
-	}
-
-	@Test
-	void shouldInstantiateHttpFeignClient5WhenBothHttpClientAndHttpClient5Enabled() {
-		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.enabled=true",
-				"spring.cloud.openfeign.okhttp.enabled=false", "spring.cloud.openfeign.httpclient.hc5.enabled=true",
+	void shouldInstantiateHttpFeignClient5WhenAvailableAndOkHttpDisabled() {
+		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.okhttp.enabled=false",
 				"spring.cloud.loadbalancer.retry.enabled=false");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalanced(context, ApacheHttp5Client.class);
@@ -93,21 +75,14 @@ class FeignLoadBalancerAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateRetryableDefaultFeignBlockingLoadBalancerClientWhenHttpClientDisabled() {
-		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.enabled=false");
+		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.hc5.enabled=false");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalancedWithRetries(context, Client.Default.class);
 	}
 
 	@Test
-	void shouldInstantiateRetryableHttpFeignClientWhenEnabled() {
-		ConfigurableApplicationContext context = initContext();
-		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
-		assertLoadBalancedWithRetries(context, ApacheHttpClient.class);
-	}
-
-	@Test
 	void shouldInstantiateRetryableOkHttpFeignClientWhenEnabled() {
-		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.enabled=false",
+		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.hc5.enabled=false",
 				"spring.cloud.openfeign.okhttp.enabled=true");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalancedWithRetries(context, OkHttpClient.class);
@@ -115,16 +90,7 @@ class FeignLoadBalancerAutoConfigurationTests {
 
 	@Test
 	void shouldInstantiateRetryableHttpFeignClient5WhenEnabled() {
-		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.enabled=false",
-				"spring.cloud.openfeign.okhttp.enabled=false", "spring.cloud.openfeign.httpclient.hc5.enabled=true");
-		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
-		assertLoadBalancedWithRetries(context, ApacheHttp5Client.class);
-	}
-
-	@Test
-	void shouldInstantiateRetryableHttpFeignClient5WhenBothHttpClientAndHttpClient5Enabled() {
-		ConfigurableApplicationContext context = initContext("spring.cloud.openfeign.httpclient.enabled=true",
-				"spring.cloud.openfeign.okhttp.enabled=false", "spring.cloud.openfeign.httpclient.hc5.enabled=true");
+		ConfigurableApplicationContext context = initContext();
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		assertLoadBalancedWithRetries(context, ApacheHttp5Client.class);
 	}

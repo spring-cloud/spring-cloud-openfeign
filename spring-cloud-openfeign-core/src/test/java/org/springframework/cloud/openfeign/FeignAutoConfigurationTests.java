@@ -47,7 +47,7 @@ class FeignAutoConfigurationTests {
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class))
-			.withPropertyValues("spring.cloud.openfeign.httpclient.enabled=false");
+			.withPropertyValues("spring.cloud.openfeign.httpclient.hc5.enabled=false");
 
 	@Test
 	void shouldInstantiateDefaultTargeterWhenFeignCircuitBreakerIsDisabled() {

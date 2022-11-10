@@ -16,13 +16,10 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.Module;
@@ -31,17 +28,9 @@ import feign.Client;
 import feign.Feign;
 import feign.Target;
 import feign.hc5.ApacheHttp5Client;
-import feign.httpclient.ApacheHttpClient;
 import feign.okhttp.OkHttpClient;
 import jakarta.annotation.PreDestroy;
 import okhttp3.ConnectionPool;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.impl.client.CloseableHttpClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,8 +43,6 @@ import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.cloud.client.actuator.HasFeatures;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
-import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionManagerFactory;
-import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.security.OAuth2AccessTokenInterceptor;
@@ -93,8 +80,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 @EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class,
 		FeignEncoderProperties.class })
 public class FeignAutoConfiguration {
-
-	private static final Log LOG = LogFactory.getLog(FeignAutoConfiguration.class);
 
 	@Autowired(required = false)
 	private List<FeignClientSpecification> configurations = new ArrayList<>();
@@ -212,75 +197,6 @@ public class FeignAutoConfiguration {
 	// SC loadbalancer is not on the class path.
 	// see corresponding configurations in FeignLoadBalancerAutoConfiguration
 	// for load-balanced clients.
-	@SuppressWarnings("rawtypes")
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(ApacheHttpClient.class)
-	@ConditionalOnMissingBean(CloseableHttpClient.class)
-	@ConditionalOnProperty(value = "spring.cloud.openfeign.httpclient.enabled", matchIfMissing = true)
-	@Conditional(HttpClient5DisabledConditions.class)
-	protected static class HttpClientFeignConfiguration {
-
-		private final Timer connectionManagerTimer = new Timer(
-				"FeignApacheHttpClientConfiguration.connectionManagerTimer", true);
-
-		@Autowired(required = false)
-		private RegistryBuilder registryBuilder;
-
-		private CloseableHttpClient httpClient;
-
-		@Bean
-		@ConditionalOnMissingBean(HttpClientConnectionManager.class)
-		public HttpClientConnectionManager connectionManager(
-				ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
-				FeignHttpClientProperties httpClientProperties) {
-			final HttpClientConnectionManager connectionManager = connectionManagerFactory.newConnectionManager(
-					httpClientProperties.isDisableSslValidation(), httpClientProperties.getMaxConnections(),
-					httpClientProperties.getMaxConnectionsPerRoute(), httpClientProperties.getTimeToLive(),
-					httpClientProperties.getTimeToLiveUnit(), this.registryBuilder);
-			this.connectionManagerTimer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					connectionManager.closeExpiredConnections();
-				}
-			}, 30000, httpClientProperties.getConnectionTimerRepeat());
-			return connectionManager;
-		}
-
-		@Bean
-		public CloseableHttpClient httpClient(ApacheHttpClientFactory httpClientFactory,
-				HttpClientConnectionManager httpClientConnectionManager,
-				FeignHttpClientProperties httpClientProperties) {
-			RequestConfig defaultRequestConfig = RequestConfig.custom()
-					.setConnectTimeout(httpClientProperties.getConnectionTimeout())
-					.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build();
-			this.httpClient = httpClientFactory.createBuilder().setConnectionManager(httpClientConnectionManager)
-					.setDefaultRequestConfig(defaultRequestConfig).build();
-			return this.httpClient;
-		}
-
-		@Bean
-		@ConditionalOnMissingBean(Client.class)
-		public Client feignClient(HttpClient httpClient) {
-			return new ApacheHttpClient(httpClient);
-		}
-
-		@PreDestroy
-		public void destroy() {
-			this.connectionManagerTimer.cancel();
-			if (this.httpClient != null) {
-				try {
-					this.httpClient.close();
-				}
-				catch (IOException e) {
-					if (LOG.isErrorEnabled()) {
-						LOG.error("Could not correctly close httpClient.");
-					}
-				}
-			}
-		}
-
-	}
-
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(OkHttpClient.class)
 	@ConditionalOnMissingBean(okhttp3.OkHttpClient.class)
@@ -328,10 +244,15 @@ public class FeignAutoConfiguration {
 
 	}
 
+	// the following configuration is for alternate feign clients if
+	// SC loadbalancer is not on the class path.
+	// see corresponding configurations in FeignLoadBalancerAutoConfiguration
+	// for load-balanced clients.
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ApacheHttp5Client.class)
 	@ConditionalOnMissingBean(org.apache.hc.client5.http.impl.classic.CloseableHttpClient.class)
-	@ConditionalOnProperty(value = "spring.cloud.openfeign.httpclient.hc5.enabled", havingValue = "true")
+	@ConditionalOnProperty(value = "spring.cloud.openfeign.httpclient.hc5.enabled", havingValue = "true",
+			matchIfMissing = true)
 	@Import(org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.class)
 	protected static class HttpClient5FeignConfiguration {
 

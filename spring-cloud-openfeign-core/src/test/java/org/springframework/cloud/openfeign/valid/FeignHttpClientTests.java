@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign.valid;
 import java.util.Objects;
 
 import feign.Client;
+import feign.hc5.ApacheHttp5Client;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +90,7 @@ class FeignHttpClientTests {
 		assertThat(feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
 		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) feignClient;
 		Client delegate = client.getDelegate();
-		assertThat(delegate).isInstanceOf(feign.httpclient.ApacheHttpClient.class);
+		assertThat(delegate).isInstanceOf(ApacheHttp5Client.class);
 	}
 
 	@Test
