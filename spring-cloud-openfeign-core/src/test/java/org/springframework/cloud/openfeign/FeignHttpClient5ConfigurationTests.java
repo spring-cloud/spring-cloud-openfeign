@@ -48,9 +48,8 @@ class FeignHttpClient5ConfigurationTests {
 	@Test
 	void shoulcInstantiateHttpClient5WhenDependenciesPresentAndPropertyEnabled() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-			.properties("spring.cloud.openfeign.httpclient.hc5.enabled=true")
-			.web(WebApplicationType.NONE)
-			.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
+				.properties("spring.cloud.openfeign.httpclient.hc5.enabled=true").web(WebApplicationType.NONE)
+				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
 
 		verifyHc5BeansAvailable(context);
 
@@ -62,9 +61,8 @@ class FeignHttpClient5ConfigurationTests {
 	@Test
 	void hc5ShouldWinIfTheBothVersionsAvailable() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-			.properties("spring.cloud.openfeign.httpclient.hc5.enabled=true")
-			.web(WebApplicationType.NONE)
-			.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
+				.properties("spring.cloud.openfeign.httpclient.hc5.enabled=true").web(WebApplicationType.NONE)
+				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
 
 		Client client = context.getBean(Client.class);
 		assertThat(client).isInstanceOf(ApacheHttp5Client.class);

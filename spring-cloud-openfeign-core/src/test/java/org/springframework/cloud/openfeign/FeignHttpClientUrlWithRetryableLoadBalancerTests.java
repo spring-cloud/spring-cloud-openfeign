@@ -160,8 +160,7 @@ class FeignHttpClientUrlWithRetryableLoadBalancerTests {
 					ReflectionUtils.makeAccessible(field);
 					Client client = (Client) ReflectionUtils.getField(field, feign);
 					if (target.name().equals("localappurl")) {
-						assertThat(client).isInstanceOf(ApacheHttp5Client.class)
-							.as("client was wrong type");
+						assertThat(client).isInstanceOf(ApacheHttp5Client.class).as("client was wrong type");
 					}
 					return feign.target(target);
 				}

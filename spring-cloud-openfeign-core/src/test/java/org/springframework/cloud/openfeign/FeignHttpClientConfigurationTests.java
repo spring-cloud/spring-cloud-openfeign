@@ -28,6 +28,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.impl.conn.DefaultHttpClientConnectionOperator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
@@ -41,6 +42,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Ryan Baxter
  */
+// TODO: Bring back when there's corresponding HttpClient 5 support in Commons
+@Disabled
 class FeignHttpClientConfigurationTests {
 
 	private ConfigurableApplicationContext context;

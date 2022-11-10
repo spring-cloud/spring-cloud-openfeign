@@ -43,7 +43,8 @@ class FeignCompressionTests {
 						"spring.cloud.openfeign.compression.request.enabled=true",
 						"spring.cloud.openfeign.okhttp.enabled=false")
 				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
-					FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class))
+						FeignContentGzipEncodingAutoConfiguration.class,
+						FeignAcceptGzipEncodingAutoConfiguration.class))
 				.run(context -> {
 					FeignContext feignContext = context.getBean(FeignContext.class);
 					Map<String, RequestInterceptor> interceptors = feignContext.getInstances("foo",
@@ -55,4 +56,5 @@ class FeignCompressionTests {
 							.isInstanceOf(FeignContentGzipEncodingInterceptor.class);
 				});
 	}
+
 }

@@ -96,9 +96,9 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
  * @author Olga Maciaszek-Sharma
  */
 @SpringBootTest(classes = ValidFeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
-	value = {"spring.application.name=feignclienttest",
-		"spring.cloud.openfeign.httpclient.hc5.enabled=false", "spring.cloud.openfeign.okhttp.enabled=false",
-		"spring.cloud.openfeign.circuitbreaker.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false"})
+		value = { "spring.application.name=feignclienttest", "spring.cloud.openfeign.httpclient.hc5.enabled=false",
+				"spring.cloud.openfeign.okhttp.enabled=false", "spring.cloud.openfeign.circuitbreaker.enabled=true",
+				"spring.cloud.loadbalancer.retry.enabled=false" })
 @DirtiesContext
 class ValidFeignClientTests {
 
