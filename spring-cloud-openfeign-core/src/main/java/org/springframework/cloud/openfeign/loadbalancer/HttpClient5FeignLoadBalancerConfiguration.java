@@ -43,6 +43,7 @@ import org.springframework.context.annotation.Import;
  *
  * @author Nguyen Ky Thanh
  * @author changjin wei(魏昌进)
+ * @author Olga Maciaszek-Sharma
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(ApacheHttp5Client.class)

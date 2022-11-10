@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Ryan Baxter
  * @author Biju Kunjummen
+ * @author Olga Maciaszek-Sharma
  */
 class FeignCompressionTests {
 
