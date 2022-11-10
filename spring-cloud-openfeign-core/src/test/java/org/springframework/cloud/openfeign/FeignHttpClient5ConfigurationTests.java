@@ -23,12 +23,14 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Nguyen Ky Thanh
@@ -46,9 +48,8 @@ class FeignHttpClient5ConfigurationTests {
 	}
 
 	@Test
-	void shoulcInstantiateHttpClient5WhenDependenciesPresentAndPropertyEnabled() {
-		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.properties("spring.cloud.openfeign.httpclient.hc5.enabled=true").web(WebApplicationType.NONE)
+	void shouldInstantiateHttpClient5ByDefaultWhenDependenciesPresent() {
+		ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
 				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
 
 		verifyHc5BeansAvailable(context);
@@ -59,13 +60,13 @@ class FeignHttpClient5ConfigurationTests {
 	}
 
 	@Test
-	void hc5ShouldWinIfTheBothVersionsAvailable() {
+	void shouldNotInstantiateHttpClient5ByWhenDependenciesPresentButPropertyDisabled() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.properties("spring.cloud.openfeign.httpclient.hc5.enabled=true").web(WebApplicationType.NONE)
+				.properties("spring.cloud.openfeign.httpclient.hc5.enabled=false").web(WebApplicationType.NONE)
 				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
 
-		Client client = context.getBean(Client.class);
-		assertThat(client).isInstanceOf(ApacheHttp5Client.class);
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
+				.isThrownBy(() -> context.getBean(CloseableHttpClient.class));
 
 		if (context != null) {
 			context.close();
