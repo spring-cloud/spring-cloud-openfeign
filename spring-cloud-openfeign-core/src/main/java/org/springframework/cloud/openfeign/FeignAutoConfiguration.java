@@ -233,7 +233,7 @@ public class FeignAutoConfiguration {
 		}
 
 		@Bean
-		public okhttp3.OkHttpClient client(okhttp3.OkHttpClient.Builder builder, ConnectionPool connectionPool,
+		public okhttp3.OkHttpClient okHttpClient(okhttp3.OkHttpClient.Builder builder, ConnectionPool connectionPool,
 				FeignHttpClientProperties httpClientProperties) {
 			boolean followRedirects = httpClientProperties.isFollowRedirects();
 			int connectTimeout = httpClientProperties.getConnectionTimeout();

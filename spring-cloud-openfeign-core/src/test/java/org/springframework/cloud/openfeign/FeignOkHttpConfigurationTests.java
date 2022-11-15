@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ReflectionUtils;
 
@@ -47,8 +46,7 @@ class FeignOkHttpConfigurationTests {
 						"spring.cloud.openfeign.okhttp.enabled=true",
 						"spring.cloud.openfeign.httpclient.hc5.enabled=false",
 						"spring.cloud.openfeign.httpclient.okhttp.read-timeout=9s")
-				.web(WebApplicationType.NONE).sources(HttpClientConfiguration.class, FeignAutoConfiguration.class)
-				.run();
+				.web(WebApplicationType.NONE).sources(FeignAutoConfiguration.class).run();
 	}
 
 	@AfterEach

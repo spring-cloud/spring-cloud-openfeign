@@ -16,10 +16,7 @@
 
 package org.springframework.cloud.openfeign.test;
 
-import java.util.concurrent.TimeUnit;
-
 import feign.Client;
-import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockingDetails;
@@ -28,10 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.commons.httpclient.DefaultOkHttpClientConnectionPoolFactory;
-import org.springframework.cloud.commons.httpclient.DefaultOkHttpClientFactory;
-import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
-import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.context.annotation.Bean;
@@ -53,21 +46,7 @@ import static org.mockito.Mockito.mockingDetails;
 class OkHttpClientConfigurationTests {
 
 	@Autowired
-	OkHttpClientFactory okHttpClientFactory;
-
-	@Autowired
-	OkHttpClientConnectionPoolFactory connectionPoolFactory;
-
-	@Autowired
 	FeignBlockingLoadBalancerClient feignClient;
-
-	@Test
-	void testFactories() {
-		assertThat(connectionPoolFactory).isInstanceOf(OkHttpClientConnectionPoolFactory.class);
-		assertThat(connectionPoolFactory).isInstanceOf(TestConfig.MyOkHttpClientConnectionPoolFactory.class);
-		assertThat(okHttpClientFactory).isInstanceOf(OkHttpClientFactory.class);
-		assertThat(okHttpClientFactory).isInstanceOf(TestConfig.MyOkHttpClientFactory.class);
-	}
 
 	@Test
 	void testHttpClientWithFeign() {
@@ -95,35 +74,8 @@ class OkHttpClientConfigurationTests {
 	static class TestConfig {
 
 		@Bean
-		public OkHttpClientConnectionPoolFactory connectionPoolFactory() {
-			return new MyOkHttpClientConnectionPoolFactory();
-		}
-
-		@Bean
-		public OkHttpClientFactory clientFactory(OkHttpClient.Builder builder) {
-			return new MyOkHttpClientFactory(builder);
-		}
-
-		@Bean
 		public OkHttpClient client() {
 			return mock(OkHttpClient.class);
-		}
-
-		static class MyOkHttpClientConnectionPoolFactory extends DefaultOkHttpClientConnectionPoolFactory {
-
-			@Override
-			public ConnectionPool create(int maxIdleConnections, long keepAliveDuration, TimeUnit timeUnit) {
-				return new ConnectionPool();
-			}
-
-		}
-
-		static class MyOkHttpClientFactory extends DefaultOkHttpClientFactory {
-
-			MyOkHttpClientFactory(OkHttpClient.Builder builder) {
-				super(builder);
-			}
-
 		}
 
 	}

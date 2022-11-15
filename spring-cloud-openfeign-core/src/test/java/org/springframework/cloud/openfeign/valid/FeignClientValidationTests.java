@@ -19,7 +19,6 @@ package org.springframework.cloud.openfeign.valid;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
-import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -62,7 +61,7 @@ class FeignClientValidationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
+	@Import({ FeignAutoConfiguration.class })
 	@EnableFeignClients(clients = GoodUrlConfiguration.Client.class)
 	protected static class GoodUrlConfiguration {
 
@@ -78,7 +77,7 @@ class FeignClientValidationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
+	@Import({ FeignAutoConfiguration.class })
 	@EnableFeignClients(clients = PlaceholderUrlConfiguration.Client.class)
 	protected static class PlaceholderUrlConfiguration {
 
@@ -94,7 +93,7 @@ class FeignClientValidationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ FeignAutoConfiguration.class, HttpClientConfiguration.class })
+	@Import({ FeignAutoConfiguration.class })
 	@EnableFeignClients(clients = GoodServiceIdConfiguration.Client.class)
 	protected static class GoodServiceIdConfiguration {
 
