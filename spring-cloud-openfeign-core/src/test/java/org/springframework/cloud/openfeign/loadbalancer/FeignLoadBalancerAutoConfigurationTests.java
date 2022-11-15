@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.cloud.loadbalancer.blocking.client.BlockingLoadBalancerClient;
 import org.springframework.cloud.loadbalancer.config.BlockingLoadBalancerClientAutoConfiguration;
 import org.springframework.cloud.loadbalancer.config.LoadBalancerAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,8 +97,8 @@ class FeignLoadBalancerAutoConfigurationTests {
 
 	private ConfigurableApplicationContext initContext(String... properties) {
 		return new SpringApplicationBuilder().web(WebApplicationType.NONE).properties(properties)
-				.sources(HttpClientConfiguration.class, LoadBalancerAutoConfiguration.class,
-						BlockingLoadBalancerClientAutoConfiguration.class, FeignLoadBalancerAutoConfiguration.class)
+				.sources(LoadBalancerAutoConfiguration.class, BlockingLoadBalancerClientAutoConfiguration.class,
+						FeignLoadBalancerAutoConfiguration.class, FeignAutoConfiguration.class)
 				.run();
 	}
 

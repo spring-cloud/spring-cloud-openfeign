@@ -30,11 +30,9 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClientsProperties;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
-import org.springframework.cloud.openfeign.clientconfig.OkHttpFeignConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 /**
  * Configuration instantiating a {@link LoadBalancerClient}-based {@link Client} object
@@ -48,7 +46,6 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnClass(OkHttpClient.class)
 @ConditionalOnProperty("spring.cloud.openfeign.okhttp.enabled")
 @ConditionalOnBean({ LoadBalancerClient.class, LoadBalancerClientFactory.class })
-@Import(OkHttpFeignConfiguration.class)
 @EnableConfigurationProperties(LoadBalancerClientsProperties.class)
 class OkHttpFeignLoadBalancerConfiguration {
 

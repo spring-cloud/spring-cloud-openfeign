@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,7 +49,7 @@ class FeignHttpClient5ConfigurationTests {
 	@Test
 	void shouldInstantiateHttpClient5ByDefaultWhenDependenciesPresent() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
-				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
+				.sources(FeignAutoConfiguration.class).run();
 
 		verifyHc5BeansAvailable(context);
 
@@ -63,7 +62,7 @@ class FeignHttpClient5ConfigurationTests {
 	void shouldNotInstantiateHttpClient5ByWhenDependenciesPresentButPropertyDisabled() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.properties("spring.cloud.openfeign.httpclient.hc5.enabled=false").web(WebApplicationType.NONE)
-				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
+				.sources(FeignAutoConfiguration.class).run();
 
 		assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
 				.isThrownBy(() -> context.getBean(CloseableHttpClient.class));
