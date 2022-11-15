@@ -17,10 +17,20 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Method;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import com.fasterxml.jackson.databind.Module;
 import feign.Capability;
@@ -31,6 +41,8 @@ import feign.hc5.ApacheHttp5Client;
 import feign.okhttp.OkHttpClient;
 import jakarta.annotation.PreDestroy;
 import okhttp3.ConnectionPool;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,8 +55,6 @@ import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.cloud.client.actuator.HasFeatures;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
-import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory;
-import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.cloud.openfeign.security.OAuth2AccessTokenInterceptor;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
@@ -80,6 +90,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 @EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class,
 		FeignEncoderProperties.class })
 public class FeignAutoConfiguration {
+
+	private static final Log LOG = LogFactory.getLog(FeignAutoConfiguration.class);
 
 	@Autowired(required = false)
 	private List<FeignClientSpecification> configurations = new ArrayList<>();
@@ -206,26 +218,49 @@ public class FeignAutoConfiguration {
 		private okhttp3.OkHttpClient okHttpClient;
 
 		@Bean
-		@ConditionalOnMissingBean(ConnectionPool.class)
-		public ConnectionPool httpClientConnectionPool(FeignHttpClientProperties httpClientProperties,
-				OkHttpClientConnectionPoolFactory connectionPoolFactory) {
-			int maxTotalConnections = httpClientProperties.getMaxConnections();
-			long timeToLive = httpClientProperties.getTimeToLive();
-			TimeUnit ttlUnit = httpClientProperties.getTimeToLiveUnit();
-			return connectionPoolFactory.create(maxTotalConnections, timeToLive, ttlUnit);
+		@ConditionalOnMissingBean
+		public okhttp3.OkHttpClient.Builder okHttpClientBuilder() {
+			return new okhttp3.OkHttpClient.Builder();
 		}
 
 		@Bean
-		public okhttp3.OkHttpClient client(OkHttpClientFactory httpClientFactory, ConnectionPool connectionPool,
+		@ConditionalOnMissingBean(ConnectionPool.class)
+		public ConnectionPool httpClientConnectionPool(FeignHttpClientProperties httpClientProperties) {
+			int maxTotalConnections = httpClientProperties.getMaxConnections();
+			long timeToLive = httpClientProperties.getTimeToLive();
+			TimeUnit ttlUnit = httpClientProperties.getTimeToLiveUnit();
+			return new ConnectionPool(maxTotalConnections, timeToLive, ttlUnit);
+		}
+
+		@Bean
+		public okhttp3.OkHttpClient client(okhttp3.OkHttpClient.Builder builder, ConnectionPool connectionPool,
 				FeignHttpClientProperties httpClientProperties) {
 			boolean followRedirects = httpClientProperties.isFollowRedirects();
 			int connectTimeout = httpClientProperties.getConnectionTimeout();
 			boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
 			Duration readTimeout = httpClientProperties.getOkHttp().getReadTimeout();
-			this.okHttpClient = httpClientFactory.createBuilder(disableSslValidation)
-					.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS).followRedirects(followRedirects)
-					.readTimeout(readTimeout).connectionPool(connectionPool).build();
+			if (disableSslValidation) {
+				disableSsl(builder);
+			}
+			this.okHttpClient = builder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+					.followRedirects(followRedirects).readTimeout(readTimeout).connectionPool(connectionPool).build();
 			return this.okHttpClient;
+		}
+
+		private void disableSsl(okhttp3.OkHttpClient.Builder builder) {
+			try {
+				X509TrustManager disabledTrustManager = new DisableValidationTrustManager();
+				TrustManager[] trustManagers = new TrustManager[1];
+				trustManagers[0] = disabledTrustManager;
+				SSLContext sslContext = SSLContext.getInstance("SSL");
+				sslContext.init(null, trustManagers, new java.security.SecureRandom());
+				SSLSocketFactory disabledSSLSocketFactory = sslContext.getSocketFactory();
+				builder.sslSocketFactory(disabledSSLSocketFactory, disabledTrustManager);
+				builder.hostnameVerifier(new TrustAllHostnames());
+			}
+			catch (NoSuchAlgorithmException | KeyManagementException e) {
+				LOG.warn("Error setting SSLSocketFactory in OKHttpClient", e);
+			}
 		}
 
 		@PreDestroy
@@ -240,6 +275,38 @@ public class FeignAutoConfiguration {
 		@ConditionalOnMissingBean(Client.class)
 		public Client feignClient(okhttp3.OkHttpClient client) {
 			return new OkHttpClient(client);
+		}
+
+		/**
+		 * A {@link X509TrustManager} that does not validate SSL certificates.
+		 */
+		class DisableValidationTrustManager implements X509TrustManager {
+
+			@Override
+			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
+			}
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+				return new X509Certificate[0];
+			}
+
+		}
+
+		/**
+		 * A {@link HostnameVerifier} that does not validate any hostnames.
+		 */
+		class TrustAllHostnames implements HostnameVerifier {
+
+			@Override
+			public boolean verify(String s, SSLSession sslSession) {
+				return true;
+			}
+
 		}
 
 	}
