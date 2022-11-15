@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
-import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ReflectionUtils;
 
@@ -63,7 +62,8 @@ class FeignOkHttpConfigurationTests {
 	void disableSslTest() {
 		OkHttpClient httpClient = context.getBean(OkHttpClient.class);
 		HostnameVerifier hostnameVerifier = (HostnameVerifier) this.getField(httpClient, "hostnameVerifier");
-		assertThat(hostnameVerifier instanceof OkHttpClientFactory.TrustAllHostnames).isTrue();
+		assertThat(hostnameVerifier instanceof FeignAutoConfiguration.OkHttpFeignConfiguration.TrustAllHostnames)
+				.isTrue();
 	}
 
 	@Test
