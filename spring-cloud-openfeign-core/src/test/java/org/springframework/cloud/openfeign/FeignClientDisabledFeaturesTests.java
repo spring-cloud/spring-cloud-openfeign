@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jonatan Ivanov
  */
 @DirtiesContext
-@ActiveProfiles("no-metrics")
+@ActiveProfiles("no-micrometer")
 @SpringBootTest(classes = FeignClientDisabledFeaturesTests.TestConfiguration.class)
 class FeignClientDisabledFeaturesTests {
 

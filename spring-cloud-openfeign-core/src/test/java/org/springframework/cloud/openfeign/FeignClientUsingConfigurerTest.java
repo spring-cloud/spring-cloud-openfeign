@@ -23,7 +23,7 @@ import feign.Capability;
 import feign.Feign;
 import feign.Logger;
 import feign.RequestInterceptor;
-import feign.micrometer.MicrometerCapability;
+import feign.micrometer.MicrometerObservationCapability;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +71,7 @@ class FeignClientUsingConfigurerTest {
 
 		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
 		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
-				.hasAtLeastOneElementOfType(MicrometerCapability.class);
+				.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
 	}
 
 	private Object getBuilderValue(Feign.Builder builder, String member) {
@@ -95,7 +95,7 @@ class FeignClientUsingConfigurerTest {
 
 		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
 		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
-				.hasAtLeastOneElementOfType(MicrometerCapability.class);
+				.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -110,7 +110,7 @@ class FeignClientUsingConfigurerTest {
 
 		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
 		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
-				.hasAtLeastOneElementOfType(MicrometerCapability.class);
+				.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
 	}
 
 	@EnableAutoConfiguration

@@ -25,7 +25,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 /**
  * @author Jonatan Ivanov
  */
-class FeignClientMetricsEnabledCondition implements Condition {
+class FeignClientMicrometerEnabledCondition implements Condition {
 
 	@Override
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
@@ -38,9 +38,9 @@ class FeignClientMetricsEnabledCondition implements Condition {
 				FeignClientProperties.FeignClientConfiguration feignClientConfig = feignClientConfigMap
 						.get(context.getEnvironment().getProperty("spring.cloud.openfeign.client.name"));
 				if (feignClientConfig != null) {
-					FeignClientProperties.MetricsProperties metrics = feignClientConfig.getMetrics();
-					if (metrics != null && metrics.getEnabled() != null) {
-						return metrics.getEnabled();
+					FeignClientProperties.MicrometerProperties micrometer = feignClientConfig.getMicrometer();
+					if (micrometer != null && micrometer.getEnabled() != null) {
+						return micrometer.getEnabled();
 					}
 				}
 			}

@@ -33,6 +33,7 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import feign.micrometer.MicrometerCapability;
+import feign.micrometer.MicrometerObservationCapability;
 import feign.optionals.OptionalDecoder;
 import feign.querymap.BeanQueryMapEncoder;
 import feign.querymap.FieldQueryMapEncoder;
@@ -149,19 +150,38 @@ class FeignClientOverrideDefaultsTests {
 	}
 
 	@Test
-	void shouldOverrideMicrometerCapability() {
+	void shouldOverrideMicrometerCapabilities() {
+		// override micrometerCapability
 		assertThat(context.getInstance("foo", MicrometerCapability.class))
 				.isExactlyInstanceOf(TestMicrometerCapability.class);
+		assertThat(context.getInstance("foo", MicrometerObservationCapability.class))
+				.isExactlyInstanceOf(MicrometerObservationCapability.class);
 		Map<String, Capability> fooCapabilities = context.getInstances("foo", Capability.class);
-		assertThat(fooCapabilities).hasSize(1);
+		assertThat(fooCapabilities).hasSize(2);
 		assertThat(fooCapabilities.get("micrometerCapability")).isExactlyInstanceOf(TestMicrometerCapability.class);
+		assertThat(fooCapabilities.get("micrometerObservationCapability"))
+				.isExactlyInstanceOf(MicrometerObservationCapability.class);
 
-		assertThat(context.getInstance("bar", MicrometerCapability.class))
-				.isExactlyInstanceOf(TestMicrometerCapability.class);
+		// override micrometerObservationCapability
+		assertThat(context.getInstance("bar", MicrometerObservationCapability.class))
+				.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
 		Map<String, Capability> barCapabilities = context.getInstances("bar", Capability.class);
-		assertThat(barCapabilities).hasSize(2);
-		assertThat(barCapabilities.get("micrometerCapability")).isExactlyInstanceOf(TestMicrometerCapability.class);
-		assertThat(barCapabilities.get("noOpCapability")).isExactlyInstanceOf(NoOpCapability.class);
+		assertThat(barCapabilities).hasSize(1);
+		assertThat(barCapabilities.get("micrometerCapability")).isNull();
+		assertThat(barCapabilities.get("micrometerObservationCapability"))
+				.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
+
+		// override both + an extra capability
+		assertThat(context.getInstance("baz", MicrometerCapability.class))
+				.isExactlyInstanceOf(TestMicrometerCapability.class);
+		assertThat(context.getInstance("baz", MicrometerObservationCapability.class))
+				.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
+		Map<String, Capability> bazCapabilities = context.getInstances("baz", Capability.class);
+		assertThat(bazCapabilities).hasSize(3);
+		assertThat(bazCapabilities.get("micrometerCapability")).isExactlyInstanceOf(TestMicrometerCapability.class);
+		assertThat(bazCapabilities.get("micrometerObservationCapability"))
+				.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
+		assertThat(bazCapabilities.get("noOpCapability")).isExactlyInstanceOf(NoOpCapability.class);
 	}
 
 	@FeignClient(name = "foo", url = "https://foo", configuration = FooConfiguration.class)
@@ -180,8 +200,16 @@ class FeignClientOverrideDefaultsTests {
 
 	}
 
+	@FeignClient(name = "baz", url = "https://baz", configuration = BazConfiguration.class)
+	interface BazClient {
+
+		@GetMapping("/baz")
+		String get();
+
+	}
+
 	@Configuration(proxyBeanMethods = false)
-	@EnableFeignClients(clients = { FooClient.class, BarClient.class })
+	@EnableFeignClients(clients = { FooClient.class, BarClient.class, BazClient.class })
 	@EnableAutoConfiguration
 	protected static class TestConfiguration {
 
@@ -191,6 +219,35 @@ class FeignClientOverrideDefaultsTests {
 			};
 		}
 
+	}
+
+	static class FooConfiguration {
+
+		@Bean
+		Decoder feignDecoder() {
+			return new Decoder.Default();
+		}
+
+		@Bean
+		Encoder feignEncoder() {
+			return new Encoder.Default();
+		}
+
+		@Bean
+		Logger feignLogger() {
+			return new Logger.JavaLogger(FooConfiguration.class);
+		}
+
+		@Bean
+		Contract feignContract() {
+			return new Contract.Default();
+		}
+
+		@Bean
+		QueryMapEncoder queryMapEncoder() {
+			return new FieldQueryMapEncoder();
+		}
+
 		@Bean
 		MicrometerCapability micrometerCapability() {
 			return new TestMicrometerCapability();
@@ -198,36 +255,7 @@ class FeignClientOverrideDefaultsTests {
 
 	}
 
-	public static class FooConfiguration {
-
-		@Bean
-		public Decoder feignDecoder() {
-			return new Decoder.Default();
-		}
-
-		@Bean
-		public Encoder feignEncoder() {
-			return new Encoder.Default();
-		}
-
-		@Bean
-		public Logger feignLogger() {
-			return new Logger.JavaLogger(FooConfiguration.class);
-		}
-
-		@Bean
-		public Contract feignContract() {
-			return new Contract.Default();
-		}
-
-		@Bean
-		public QueryMapEncoder queryMapEncoder() {
-			return new FieldQueryMapEncoder();
-		}
-
-	}
-
-	public static class BarConfiguration {
+	static class BarConfiguration {
 
 		@Bean
 		Logger.Level feignLevel() {
@@ -255,18 +283,45 @@ class FeignClientOverrideDefaultsTests {
 		}
 
 		@Bean
-		public QueryMapEncoder queryMapEncoder() {
+		QueryMapEncoder queryMapEncoder() {
 			return new BeanQueryMapEncoder();
 		}
 
 		@Bean
-		public ExceptionPropagationPolicy exceptionPropagationPolicy() {
+		ExceptionPropagationPolicy exceptionPropagationPolicy() {
 			return ExceptionPropagationPolicy.UNWRAP;
 		}
 
 		@Bean
-		public Capability noOpCapability() {
+		MicrometerObservationCapability micrometerObservationCapability() {
+			return new TestMicrometerObservationCapability();
+		}
+
+	}
+
+	static class BazConfiguration {
+
+		@Bean
+		MicrometerObservationCapability micrometerObservationCapability() {
+			return new TestMicrometerObservationCapability();
+		}
+
+		@Bean
+		MicrometerCapability micrometerCapability() {
+			return new TestMicrometerCapability();
+		}
+
+		@Bean
+		Capability noOpCapability() {
 			return new NoOpCapability();
+		}
+
+	}
+
+	private static class TestMicrometerObservationCapability extends feign.micrometer.MicrometerObservationCapability {
+
+		TestMicrometerObservationCapability() {
+			super(null);
 		}
 
 	}

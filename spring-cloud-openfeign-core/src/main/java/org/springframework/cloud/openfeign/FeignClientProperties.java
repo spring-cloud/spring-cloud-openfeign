@@ -144,7 +144,7 @@ public class FeignClientProperties {
 
 		private Class<QueryMapEncoder> queryMapEncoder;
 
-		private MetricsProperties metrics;
+		private MicrometerProperties micrometer;
 
 		private Boolean followRedirects;
 
@@ -274,12 +274,12 @@ public class FeignClientProperties {
 			this.queryMapEncoder = queryMapEncoder;
 		}
 
-		public MetricsProperties getMetrics() {
-			return metrics;
+		public MicrometerProperties getMicrometer() {
+			return micrometer;
 		}
 
-		public void setMetrics(MetricsProperties metrics) {
-			this.metrics = metrics;
+		public void setMicrometer(MicrometerProperties micrometer) {
+			this.micrometer = micrometer;
 		}
 
 		public Boolean isFollowRedirects() {
@@ -317,7 +317,8 @@ public class FeignClientProperties {
 					&& Objects.equals(defaultRequestHeaders, that.defaultRequestHeaders)
 					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters)
 					&& Objects.equals(capabilities, that.capabilities)
-					&& Objects.equals(queryMapEncoder, that.queryMapEncoder) && Objects.equals(metrics, that.metrics)
+					&& Objects.equals(queryMapEncoder, that.queryMapEncoder)
+					&& Objects.equals(micrometer, that.micrometer)
 					&& Objects.equals(followRedirects, that.followRedirects) && Objects.equals(url, that.url);
 		}
 
@@ -325,15 +326,15 @@ public class FeignClientProperties {
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
 					dismiss404, encoder, decoder, contract, exceptionPropagationPolicy, defaultQueryParameters,
-					defaultRequestHeaders, capabilities, queryMapEncoder, metrics, followRedirects, url);
+					defaultRequestHeaders, capabilities, queryMapEncoder, micrometer, followRedirects, url);
 		}
 
 	}
 
 	/**
-	 * Metrics configuration for Feign Client.
+	 * Micrometer configuration for Feign Client.
 	 */
-	public static class MetricsProperties {
+	public static class MicrometerProperties {
 
 		private Boolean enabled = true;
 
@@ -354,7 +355,7 @@ public class FeignClientProperties {
 				return false;
 			}
 
-			MetricsProperties that = (MetricsProperties) o;
+			MicrometerProperties that = (MicrometerProperties) o;
 			return Objects.equals(enabled, that.enabled);
 		}
 
