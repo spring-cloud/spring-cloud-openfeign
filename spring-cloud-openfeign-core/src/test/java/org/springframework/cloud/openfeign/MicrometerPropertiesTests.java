@@ -27,19 +27,21 @@ import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.a
 import static org.springframework.cloud.openfeign.test.EqualsAndHashCodeAssert.assertHashCodeConsistency;
 
 /**
+ * Tests for {@link FeignClientProperties.MicrometerProperties}
+ *
  * @author Jonatan Ivanov
  */
-class MetricsPropertiesTests {
+class MicrometerPropertiesTests {
 
 	@Test
 	void shouldBeEnabledByDefault() {
-		FeignClientProperties.MetricsProperties properties = new FeignClientProperties.MetricsProperties();
+		FeignClientProperties.MicrometerProperties properties = new FeignClientProperties.MicrometerProperties();
 		assertThat(properties.getEnabled()).isTrue();
 	}
 
 	@Test
 	void shouldBeDisabledWhenSet() {
-		FeignClientProperties.MetricsProperties properties = new FeignClientProperties.MetricsProperties();
+		FeignClientProperties.MicrometerProperties properties = new FeignClientProperties.MicrometerProperties();
 		properties.setEnabled(false);
 		assertThat(properties.getEnabled()).isFalse();
 	}
@@ -50,10 +52,10 @@ class MetricsPropertiesTests {
 	 */
 	@Test
 	void shouldHaveSomewhatValidEqualsAndHashCode() {
-		FeignClientProperties.MetricsProperties propertyOne = new FeignClientProperties.MetricsProperties();
-		FeignClientProperties.MetricsProperties propertyTwo = new FeignClientProperties.MetricsProperties();
-		FeignClientProperties.MetricsProperties propertyThree = new FeignClientProperties.MetricsProperties();
-		FeignClientProperties.MetricsProperties differentProperty = new FeignClientProperties.MetricsProperties();
+		FeignClientProperties.MicrometerProperties propertyOne = new FeignClientProperties.MicrometerProperties();
+		FeignClientProperties.MicrometerProperties propertyTwo = new FeignClientProperties.MicrometerProperties();
+		FeignClientProperties.MicrometerProperties propertyThree = new FeignClientProperties.MicrometerProperties();
+		FeignClientProperties.MicrometerProperties differentProperty = new FeignClientProperties.MicrometerProperties();
 		differentProperty.setEnabled(false);
 
 		assertEqualsReflexivity(propertyOne);

@@ -57,9 +57,9 @@
 			"defaultValue": "false"
 		},
 		{
-			"name": "spring.cloud.openfeign.metrics.enabled",
+			"name": "spring.cloud.openfeign.micrometer.enabled",
 			"type": "java.lang.Boolean",
-			"description": "Enables metrics capability for Feign.",
+			"description": "Enables Micrometer capabilities for Feign.",
 			"defaultValue": "true"
 		},
 		{

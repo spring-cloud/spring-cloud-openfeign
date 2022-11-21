@@ -29,8 +29,10 @@ import feign.codec.Encoder;
 import feign.form.MultipartFormContentProcessor;
 import feign.form.spring.SpringFormEncoder;
 import feign.micrometer.MicrometerCapability;
+import feign.micrometer.MicrometerObservationCapability;
 import feign.optionals.OptionalDecoder;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -235,16 +237,24 @@ public class FeignClientsConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnBean(type = "io.micrometer.core.instrument.MeterRegistry")
-	@ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
-	@ConditionalOnProperty(name = "spring.cloud.openfeign.metrics.enabled", matchIfMissing = true)
-	@Conditional(FeignClientMetricsEnabledCondition.class)
-	protected static class MetricsConfiguration {
+	@ConditionalOnProperty(name = "spring.cloud.openfeign.micrometer.enabled", matchIfMissing = true)
+	@Conditional(FeignClientMicrometerEnabledCondition.class)
+	protected static class MicrometerConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public MicrometerCapability micrometerCapability(MeterRegistry meterRegistry) {
-			return new MicrometerCapability(meterRegistry);
+		@ConditionalOnClass(name = "feign.micrometer.MicrometerObservationCapability")
+		@ConditionalOnBean(type = "io.micrometer.observation.ObservationRegistry")
+		public MicrometerObservationCapability micrometerObservationCapability(ObservationRegistry registry) {
+			return new MicrometerObservationCapability(registry);
+		}
+
+		@Bean
+		@ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
+		@ConditionalOnBean(type = "io.micrometer.core.instrument.MeterRegistry")
+		@ConditionalOnMissingBean({ MicrometerCapability.class, MicrometerObservationCapability.class })
+		public MicrometerCapability micrometerCapability(MeterRegistry registry) {
+			return new MicrometerCapability(registry);
 		}
 
 	}

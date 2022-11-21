@@ -44,7 +44,7 @@ import feign.Retryer;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
-import feign.micrometer.MicrometerCapability;
+import feign.micrometer.MicrometerObservationCapability;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledForJreRange;
@@ -244,7 +244,7 @@ public class FeignClientUsingPropertiesTests {
 		assertThat(response).isEqualTo("OK");
 		List<Capability> capabilities = (List) ReflectionTestUtils.getField(feignBuilder, "capabilities");
 		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
-				.hasAtLeastOneElementOfType(MicrometerCapability.class);
+				.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
 	}
 
 	@Test

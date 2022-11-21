@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
  * @author Jonatan Ivanov
  */
 @ExtendWith({ MockitoExtension.class })
-class FeignClientMetricsEnabledConditionTests {
+class FeignClientMicrometerEnabledConditionTests {
 
 	@Mock
 	private ConditionContext context;
@@ -59,7 +59,7 @@ class FeignClientMetricsEnabledConditionTests {
 	@Mock
 	private Environment environment;
 
-	private final FeignClientMetricsEnabledCondition condition = new FeignClientMetricsEnabledCondition();
+	private final FeignClientMicrometerEnabledCondition condition = new FeignClientMicrometerEnabledCondition();
 
 	@BeforeEach
 	void setUp() {
@@ -142,7 +142,7 @@ class FeignClientMetricsEnabledConditionTests {
 	}
 
 	@Test
-	void shouldMatchWhenMetricsConfigurationIsMissing() {
+	void shouldMatchWhenMicrometerConfigurationIsMissing() {
 		FeignClientProperties feignClientProperties = mock(FeignClientProperties.class);
 		FeignClientProperties.FeignClientConfiguration feignClientConfig = mock(
 				FeignClientProperties.FeignClientConfiguration.class);
@@ -150,7 +150,7 @@ class FeignClientMetricsEnabledConditionTests {
 		when(context.getEnvironment()).thenReturn(environment);
 		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
-		when(feignClientConfig.getMetrics()).thenReturn(null);
+		when(feignClientConfig.getMicrometer()).thenReturn(null);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
 		verify(environment).getProperty("spring.cloud.openfeign.client.name");
@@ -165,7 +165,7 @@ class FeignClientMetricsEnabledConditionTests {
 		when(context.getEnvironment()).thenReturn(environment);
 		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
-		when(feignClientConfig.getMetrics()).thenReturn(new FeignClientProperties.MetricsProperties());
+		when(feignClientConfig.getMicrometer()).thenReturn(new FeignClientProperties.MicrometerProperties());
 
 		assertThat(condition.matches(context, metadata)).isTrue();
 		verify(environment).getProperty("spring.cloud.openfeign.client.name");
@@ -180,16 +180,16 @@ class FeignClientMetricsEnabledConditionTests {
 		when(context.getEnvironment()).thenReturn(environment);
 		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
-		FeignClientProperties.MetricsProperties metricsProperties = new FeignClientProperties.MetricsProperties();
-		metricsProperties.setEnabled(null);
-		when(feignClientConfig.getMetrics()).thenReturn(metricsProperties);
+		FeignClientProperties.MicrometerProperties micrometer = new FeignClientProperties.MicrometerProperties();
+		micrometer.setEnabled(null);
+		when(feignClientConfig.getMicrometer()).thenReturn(micrometer);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
 		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
-	void shouldMatchWhenMetricsConfigurationIsEnabled() {
+	void shouldMatchWhenMicrometerConfigurationIsEnabled() {
 		FeignClientProperties feignClientProperties = mock(FeignClientProperties.class);
 		FeignClientProperties.FeignClientConfiguration feignClientConfig = mock(
 				FeignClientProperties.FeignClientConfiguration.class);
@@ -197,16 +197,16 @@ class FeignClientMetricsEnabledConditionTests {
 		when(context.getEnvironment()).thenReturn(environment);
 		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
-		FeignClientProperties.MetricsProperties metricsProperties = new FeignClientProperties.MetricsProperties();
-		metricsProperties.setEnabled(true);
-		when(feignClientConfig.getMetrics()).thenReturn(metricsProperties);
+		FeignClientProperties.MicrometerProperties micrometer = new FeignClientProperties.MicrometerProperties();
+		micrometer.setEnabled(true);
+		when(feignClientConfig.getMicrometer()).thenReturn(micrometer);
 
 		assertThat(condition.matches(context, metadata)).isTrue();
 		verify(environment).getProperty("spring.cloud.openfeign.client.name");
 	}
 
 	@Test
-	void shouldNotMatchWhenMetricsConfigurationIsEnabled() {
+	void shouldNotMatchWhenMicrometerConfigurationIsEnabled() {
 		FeignClientProperties feignClientProperties = mock(FeignClientProperties.class);
 		FeignClientProperties.FeignClientConfiguration feignClientConfig = mock(
 				FeignClientProperties.FeignClientConfiguration.class);
@@ -214,9 +214,9 @@ class FeignClientMetricsEnabledConditionTests {
 		when(context.getEnvironment()).thenReturn(environment);
 		when(environment.getProperty("spring.cloud.openfeign.client.name")).thenReturn("foo");
 		when(feignClientProperties.getConfig()).thenReturn(Maps.newHashMap("foo", feignClientConfig));
-		FeignClientProperties.MetricsProperties metricsProperties = new FeignClientProperties.MetricsProperties();
-		metricsProperties.setEnabled(false);
-		when(feignClientConfig.getMetrics()).thenReturn(metricsProperties);
+		FeignClientProperties.MicrometerProperties micrometer = new FeignClientProperties.MicrometerProperties();
+		micrometer.setEnabled(false);
+		when(feignClientConfig.getMicrometer()).thenReturn(micrometer);
 
 		assertThat(condition.matches(context, metadata)).isFalse();
 		verify(environment).getProperty("spring.cloud.openfeign.client.name");

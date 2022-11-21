@@ -23,9 +23,9 @@ feignClient:
 management.endpoints.web.expose: '*'
 
 ---
-spring.config.activate.on-profile: no-metrics
-spring.cloud.openfeign.metrics.enabled: false
+spring.config.activate.on-profile: no-micrometer
+spring.cloud.openfeign.micrometer.enabled: false
 
 ---
-spring.config.activate.on-profile: no-foo-metrics
-spring.cloud.openfeign.client.config.foo.metrics.enabled: false
+spring.config.activate.on-profile: no-foo-micrometer
+spring.cloud.openfeign.client.config.foo.micrometer.enabled: false

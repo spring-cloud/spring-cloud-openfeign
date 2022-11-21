@@ -22,6 +22,7 @@ import feign.Capability;
 import feign.Contract;
 import feign.RequestLine;
 import feign.micrometer.MicrometerCapability;
+import feign.micrometer.MicrometerObservationCapability;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jonatan Ivanov
  */
 @DirtiesContext
-@ActiveProfiles("no-foo-metrics")
+@ActiveProfiles("no-foo-micrometer")
 @SpringBootTest(classes = FeignClientDisabledClientLevelFeaturesTests.TestConfiguration.class)
 class FeignClientDisabledClientLevelFeaturesTests {
 
@@ -62,12 +63,15 @@ class FeignClientDisabledClientLevelFeaturesTests {
 	@Test
 	void capabilitiesShouldNotBeAvailableWhenDisabled() {
 		assertThat(context.getInstance("foo", MicrometerCapability.class)).isNull();
+		assertThat(context.getInstance("foo", MicrometerObservationCapability.class)).isNull();
 		assertThat(context.getInstances("foo", Capability.class)).isEmpty();
 
-		assertThat(context.getInstance("bar", MicrometerCapability.class)).isNotNull();
+		assertThat(context.getInstance("bar", MicrometerCapability.class)).isNull();
+		assertThat(context.getInstance("bar", MicrometerObservationCapability.class)).isNotNull();
 		Map<String, Capability> barCapabilities = context.getInstances("bar", Capability.class);
 		assertThat(barCapabilities).hasSize(2);
-		assertThat(barCapabilities.get("micrometerCapability")).isExactlyInstanceOf(MicrometerCapability.class);
+		assertThat(barCapabilities.get("micrometerObservationCapability"))
+				.isExactlyInstanceOf(MicrometerObservationCapability.class);
 		assertThat(barCapabilities.get("noOpCapability")).isExactlyInstanceOf(NoOpCapability.class);
 	}
 

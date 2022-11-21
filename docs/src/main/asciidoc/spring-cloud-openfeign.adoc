@@ -121,7 +121,8 @@ Spring Cloud OpenFeign provides the following beans by default for feign (`BeanT
 * `Decoder` feignDecoder: `ResponseEntityDecoder` (which wraps a `SpringDecoder`)
 * `Encoder` feignEncoder: `SpringEncoder`
 * `Logger` feignLogger: `Slf4jLogger`
-* `MicrometerCapability` micrometerCapability: If `feign-micrometer` is on the classpath and `MeterRegistry` is available
+* `MicrometerObservationCapability` micrometerObservationCapability: If `feign-micrometer` is on the classpath and `ObservationRegistry` is available
+* `MicrometerCapability` micrometerCapability: If `feign-micrometer` is on the classpath, `MeterRegistry` is available and `ObservationRegistry` is not available
 * `CachingCapability` cachingCapability: If `@EnableCaching` annotation is used. Can be disabled via `spring.cloud.openfeign.cache.enabled`.
 * `Contract` feignContract: `SpringMvcContract`
 * `Feign.Builder` feignBuilder: `FeignCircuitBreaker.Builder`
@@ -146,7 +147,7 @@ Spring Cloud OpenFeign _does not_ provide the following beans by default for fei
 * `Collection<RequestInterceptor>`
 * `SetterFactory`
 * `QueryMapEncoder`
-* `Capability` (`MicrometerCapability` and `CachingCapability` are provided by default)
+* `Capability` (`MicrometerObservationCapability` and `CachingCapability` are provided by default)
 
 A bean of `Retryer.NEVER_RETRY` with the type `Retryer` is created by default, which will disable retrying.
 Notice this retrying behavior is different from the Feign default one, where it will automatically retry IOExceptions,
@@ -204,7 +205,7 @@ spring:
 							- com.example.FooCapability
 							- com.example.BarCapability
 						queryMapEncoder: com.example.SimpleQueryMapEncoder
-						metrics.enabled: false
+						micrometer.enabled: false
 ----
 
 Default configurations can be specified in the `@EnableFeignClients` attribute `defaultConfiguration` in a similar manner as described above. The difference is that this configuration will apply to _all_ feign clients.
@@ -311,12 +312,12 @@ class FooController {
 	private FooClient adminClient;
 
 	@Autowired
-	public FooController(Client client, Encoder encoder, Decoder decoder, Contract contract, MicrometerCapability micrometerCapability) {
+	public FooController(Client client, Encoder encoder, Decoder decoder, Contract contract, MicrometerObservationCapability micrometerObservationCapability) {
 		this.fooClient = Feign.builder().client(client)
 				.encoder(encoder)
 				.decoder(decoder)
 				.contract(contract)
-				.addCapability(micrometerCapability)
+				.addCapability(micrometerObservationCapability)
 				.requestInterceptor(new BasicAuthRequestInterceptor("user", "user"))
 				.target(FooClient.class, "https://PROD-SVC");
 
@@ -324,7 +325,7 @@ class FooController {
 				.encoder(encoder)
 				.decoder(decoder)
 				.contract(contract)
-				.addCapability(micrometerCapability)
+				.addCapability(micrometerObservationCapability)
 				.requestInterceptor(new BasicAuthRequestInterceptor("admin", "admin"))
 				.target(FooClient.class, "https://PROD-SVC");
 	}
@@ -602,7 +603,7 @@ public class FooConfiguration {
 === Feign Capability support
 
 The Feign capabilities expose core Feign components so that these components can be modified. For example, the capabilities can take the `Client`, _decorate_ it, and give the decorated instance back to Feign.
-The support for metrics libraries is a good real-life example for this. See <<feign-metrics>>.
+The support for Micrometer is a good real-life example for this. See <<micrometer-support>>.
 
 Creating one or more `Capability` beans and placing them in a `@FeignClient` configuration lets you register them and modify the behavior of the involved client.
 
@@ -617,29 +618,42 @@ public class FooConfiguration {
 }
 ----
 
-=== Feign metrics
+=== Micrometer Support
 
-If all of the following conditions are true, a `MicrometerCapability` bean is created and registered so that your Feign client publishes metrics to Micrometer:
+If all of the following conditions are true, a `MicrometerObservationCapability` bean is created and registered so that your Feign client is observable by Micrometer:
 
 * `feign-micrometer` is on the classpath
-* A `MeterRegistry` bean is available
-* feign metrics properties are set to `true` (by default)
-	- `spring.cloud.openfeign.metrics.enabled=true` (for all clients)
-	- `spring.cloud.openfeign.client.config.feignName.metrics.enabled=true` (for a single client)
+* A `ObservationRegistry` bean is available
+* feign micrometer properties are set to `true` (by default)
+	- `spring.cloud.openfeign.micrometer.enabled=true` (for all clients)
+	- `spring.cloud.openfeign.client.config.feignName.micrometer.enabled=true` (for a single client)
 
-NOTE: If your application already uses Micrometer, enabling metrics is as simple as putting `feign-micrometer` onto your classpath.
+NOTE: If your application already uses Micrometer, enabling this feature is as simple as putting `feign-micrometer` onto your classpath.
 
 You can also disable the feature by either:
 
 * excluding `feign-micrometer` from your classpath
-* setting one of the feign metrics properties to `false`
-	- `spring.cloud.openfeign.metrics.enabled=false`
-	- `spring.cloud.openfeign.client.config.feignName.metrics.enabled=false`
+* setting one of the feign micrometer properties to `false`
+	- `spring.cloud.openfeign.micrometer.enabled=false`
+	- `spring.cloud.openfeign.client.config.feignName.micrometer.enabled=false`
 
-NOTE: `spring.cloud.openfeign.metrics.enabled=false` disables metrics support for *all* Feign clients regardless of the value of the client-level flags: `spring.cloud.openfeign.client.config.feignName.metrics.enabled`.
-If you want to enable or disable merics per client, don't set `spring.cloud.openfeign.metrics.enabled` and use `spring.cloud.openfeign.client.config.feignName.metrics.enabled`.
+NOTE: `spring.cloud.openfeign.micrometer.enabled=false` disables Micrometer support for *all* Feign clients regardless of the value of the client-level flags: `spring.cloud.openfeign.client.config.feignName.micrometer.enabled`.
+If you want to enable or disable Micrometer support per client, don't set `spring.cloud.openfeign.micrometer.enabled` and use `spring.cloud.openfeign.client.config.feignName.micrometer.enabled`.
 
-You can also customize the `MicrometerCapability` by registering your own bean:
+You can also customize the `MicrometerObservationCapability` by registering your own bean:
+
+[source,java,indent=0]
+----
+@Configuration
+public class FooConfiguration {
+	@Bean
+	public MicrometerObservationCapability micrometerObservationCapability(ObservationRegistry registry) {
+		return new MicrometerObservationCapability(registry);
+	}
+}
+----
+
+It is still possible to use `MicrometerCapability` with Feign (metrics-only support), you need to disable Micrometer support (`spring.cloud.openfeign.micrometer.enabled=false`) and create a `MicrometerCapability` bean:
 
 [source,java,indent=0]
 ----

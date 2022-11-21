@@ -29,7 +29,7 @@
 |spring.cloud.openfeign.httpclient.ok-http.read-timeout | `60s` | {@link OkHttpClient} read timeout; defaults to 60 seconds.
 |spring.cloud.openfeign.httpclient.time-to-live | `900` | 
 |spring.cloud.openfeign.httpclient.time-to-live-unit |  | 
-|spring.cloud.openfeign.metrics.enabled | `true` | Enables metrics capability for Feign.
+|spring.cloud.openfeign.micrometer.enabled | `true` | Enables Micrometer capabilities for Feign.
 |spring.cloud.openfeign.oauth2.enabled | `false` | Enables feign interceptor for managing oauth2 access token.
 |spring.cloud.openfeign.oauth2.load-balanced | `false` | Enables load balancing for oauth2 access token provider.
 |spring.cloud.openfeign.okhttp.enabled | `false` | Enables the use of the OK HTTP Client by Feign.

@@ -69,7 +69,7 @@ class FeignClientConfigurationTests {
 		assertThat(config.getExceptionPropagationPolicy()).isNull();
 		assertThat(config.getCapabilities()).isNull();
 		assertThat(config.getQueryMapEncoder()).isNull();
-		assertThat(config.getMetrics()).isNull();
+		assertThat(config.getMicrometer()).isNull();
 	}
 
 	@Test
@@ -94,8 +94,8 @@ class FeignClientConfigurationTests {
 		List<Class<Capability>> capabilities = Lists.list(Capability.class);
 		config.setCapabilities(capabilities);
 		config.setQueryMapEncoder(QueryMapEncoder.class);
-		FeignClientProperties.MetricsProperties metrics = new FeignClientProperties.MetricsProperties();
-		config.setMetrics(metrics);
+		FeignClientProperties.MicrometerProperties micrometer = new FeignClientProperties.MicrometerProperties();
+		config.setMicrometer(micrometer);
 
 		assertThat(config.getLoggerLevel()).isSameAs(Logger.Level.FULL);
 		assertThat(config.getConnectTimeout()).isEqualTo(21);
@@ -112,7 +112,7 @@ class FeignClientConfigurationTests {
 		assertThat(config.getExceptionPropagationPolicy()).isSameAs(ExceptionPropagationPolicy.UNWRAP);
 		assertThat(config.getCapabilities()).isSameAs(capabilities);
 		assertThat(config.getQueryMapEncoder()).isSameAs(QueryMapEncoder.class);
-		assertThat(config.getMetrics()).isSameAs(metrics);
+		assertThat(config.getMicrometer()).isSameAs(micrometer);
 	}
 
 	/**
