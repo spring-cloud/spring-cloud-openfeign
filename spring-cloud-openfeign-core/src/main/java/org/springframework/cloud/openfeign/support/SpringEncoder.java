@@ -236,7 +236,7 @@ public class SpringEncoder implements Encoder {
 				.anyMatch(mediaType -> mediaType.includes(contentType));
 	}
 
-	private final class FeignOutputMessage implements HttpOutputMessage {
+	protected final class FeignOutputMessage implements HttpOutputMessage {
 
 		private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
