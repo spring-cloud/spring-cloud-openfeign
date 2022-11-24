@@ -55,11 +55,13 @@ import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.cloud.client.actuator.HasFeatures;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.openfeign.aot.FeignChildContextInitializer;
 import org.springframework.cloud.openfeign.security.OAuth2AccessTokenInterceptor;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.SortJacksonModule;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -102,10 +104,16 @@ public class FeignAutoConfiguration {
 	}
 
 	@Bean
-	public FeignContext feignContext() {
-		FeignContext context = new FeignContext();
+	public FeignClientFactory feignContext() {
+		FeignClientFactory context = new FeignClientFactory();
 		context.setConfigurations(this.configurations);
 		return context;
+	}
+
+	@Bean
+	static FeignChildContextInitializer feignChildContextInitializer(ApplicationContext parentContext,
+		FeignClientFactory feignClientFactory) {
+		return new FeignChildContextInitializer(parentContext, feignClientFactory);
 	}
 
 	@Bean
@@ -116,7 +124,7 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass({ Module.class, Page.class, Sort.class })
+	@ConditionalOnClass({Module.class, Page.class, Sort.class})
 	@ConditionalOnProperty(value = "spring.cloud.openfeign.autoconfiguration.jackson.enabled", havingValue = "true",
 			matchIfMissing = true)
 	protected static class FeignJacksonConfiguration {

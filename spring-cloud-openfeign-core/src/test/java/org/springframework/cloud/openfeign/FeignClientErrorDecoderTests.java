@@ -50,7 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FeignClientErrorDecoderTests {
 
 	@Autowired
-	private FeignContext context;
+	private FeignClientFactory context;
 
 	@Autowired
 	private FooClient foo;

@@ -24,7 +24,7 @@ import feign.Target;
  */
 public interface Targeter {
 
-	<T> T target(FeignClientFactoryBean factory, Feign.Builder feign, FeignContext context,
+	<T> T target(FeignClientFactoryBean factory, Feign.Builder feign, FeignClientFactory context,
 			Target.HardCodedTarget<T> target);
 
 }

@@ -53,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SpringDecoderTests extends FeignClientFactoryBean {
 
 	@Autowired
-	FeignContext context;
+	FeignClientFactory context;
 
 	@LocalServerPort
 	private int port = 0;

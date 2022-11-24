@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.openfeign.FeignContext;
+import org.springframework.cloud.openfeign.FeignClientFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -52,7 +52,7 @@ class PageableSpringQueryMapEncoderTests {
 	public static final String SORT_1 = "sort1";
 
 	@Autowired
-	private FeignContext context;
+	private FeignClientFactory context;
 
 	protected String getPageParameter() {
 		return "page";

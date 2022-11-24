@@ -55,7 +55,7 @@ class FeignClientUsingConfigurerTest {
 	private ConfigurableListableBeanFactory beanFactory;
 
 	@Autowired
-	private FeignContext context;
+	private FeignClientFactory context;
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test

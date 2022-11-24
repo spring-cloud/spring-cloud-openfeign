@@ -45,7 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FeignClientDisabledFeaturesTests {
 
 	@Autowired
-	private FeignContext context;
+	private FeignClientFactory context;
 
 	@Autowired
 	private FooClient foo;

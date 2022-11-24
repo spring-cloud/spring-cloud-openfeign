@@ -52,7 +52,7 @@ public class FeignClientFactoryTests {
 	public void testChildContexts() {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
-		FeignContext context = new FeignContext();
+		FeignClientFactory context = new FeignClientFactory();
 		context.setApplicationContext(parent);
 		context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class), getSpec("bar", BarConfig.class)));
 
@@ -103,11 +103,11 @@ public class FeignClientFactoryTests {
 		}
 
 		@Bean
-		FeignContext feignContext() {
-			FeignContext feignContext = new FeignContext();
-			feignContext.setConfigurations(Collections.singletonList(
+		FeignClientFactory feignContext() {
+			FeignClientFactory feignClientFactory = new FeignClientFactory();
+			feignClientFactory.setConfigurations(Collections.singletonList(
 					new FeignClientSpecification("test", new Class[] { LoadBalancerAutoConfiguration.class })));
-			return feignContext;
+			return feignClientFactory;
 		}
 
 		@Bean

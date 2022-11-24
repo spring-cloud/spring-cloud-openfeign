@@ -47,8 +47,8 @@ class FeignCompressionTests {
 						FeignContentGzipEncodingAutoConfiguration.class,
 						FeignAcceptGzipEncodingAutoConfiguration.class))
 				.run(context -> {
-					FeignContext feignContext = context.getBean(FeignContext.class);
-					Map<String, RequestInterceptor> interceptors = feignContext.getInstances("foo",
+					FeignClientFactory feignClientFactory = context.getBean(FeignClientFactory.class);
+					Map<String, RequestInterceptor> interceptors = feignClientFactory.getInstances("foo",
 							RequestInterceptor.class);
 					assertThat(interceptors.size()).isEqualTo(2);
 					assertThat(interceptors.get("feignAcceptGzipEncodingInterceptor"))

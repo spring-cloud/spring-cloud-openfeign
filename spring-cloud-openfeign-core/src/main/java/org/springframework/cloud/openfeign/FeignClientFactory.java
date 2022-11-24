@@ -31,10 +31,11 @@ import org.springframework.lang.Nullable;
  * @author Dave Syer
  * @author Matt King
  * @author Jasbir Singh
+ * @author Olga Maciaszek-Sharma
  */
-public class FeignContext extends NamedContextFactory<FeignClientSpecification> {
+public class FeignClientFactory extends NamedContextFactory<FeignClientSpecification> {
 
-	public FeignContext() {
+	public FeignClientFactory() {
 		super(FeignClientsConfiguration.class, "spring.cloud.openfeign", "spring.cloud.openfeign.client.name");
 	}
 

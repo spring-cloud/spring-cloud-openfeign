@@ -30,18 +30,18 @@ import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FeignContextTest {
+class FeignClientFactoryTest {
 
 	@Test
 	void getInstanceWithoutAncestors_verifyNullForMissing() {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
 
-		FeignContext feignContext = new FeignContext();
-		feignContext.setApplicationContext(parent);
-		feignContext.setConfigurations(Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
+		FeignClientFactory feignClientFactory = new FeignClientFactory();
+		feignClientFactory.setApplicationContext(parent);
+		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
 
-		Logger.Level level = feignContext.getInstanceWithoutAncestors("empty", Logger.Level.class);
+		Logger.Level level = feignClientFactory.getInstanceWithoutAncestors("empty", Logger.Level.class);
 
 		assertThat(level).as("Logger was not null").isNull();
 	}
@@ -55,11 +55,11 @@ class FeignContextTest {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
 
-		FeignContext feignContext = new FeignContext();
-		feignContext.setApplicationContext(parent);
-		feignContext.setConfigurations(Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
+		FeignClientFactory feignClientFactory = new FeignClientFactory();
+		feignClientFactory.setApplicationContext(parent);
+		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
 
-		Collection<RequestInterceptor> interceptors = feignContext
+		Collection<RequestInterceptor> interceptors = feignClientFactory
 				.getInstancesWithoutAncestors("empty", RequestInterceptor.class).values();
 
 		assertThat(interceptors).as("Interceptors is not empty").isEmpty();
@@ -70,11 +70,11 @@ class FeignContextTest {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
 
-		FeignContext feignContext = new FeignContext();
-		feignContext.setApplicationContext(parent);
-		feignContext.setConfigurations(Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
+		FeignClientFactory feignClientFactory = new FeignClientFactory();
+		feignClientFactory.setApplicationContext(parent);
+		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
 
-		Logger.Level level = feignContext.getInstanceWithoutAncestors("demo", Logger.Level.class);
+		Logger.Level level = feignClientFactory.getInstanceWithoutAncestors("demo", Logger.Level.class);
 
 		assertThat(level).isEqualTo(Logger.Level.FULL);
 	}
@@ -84,11 +84,11 @@ class FeignContextTest {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
 
-		FeignContext feignContext = new FeignContext();
-		feignContext.setApplicationContext(parent);
-		feignContext.setConfigurations(Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
+		FeignClientFactory feignClientFactory = new FeignClientFactory();
+		feignClientFactory.setApplicationContext(parent);
+		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
 
-		Collection<RequestInterceptor> interceptors = feignContext
+		Collection<RequestInterceptor> interceptors = feignClientFactory
 				.getInstancesWithoutAncestors("demo", RequestInterceptor.class).values();
 
 		assertThat(interceptors.size()).isEqualTo(1);

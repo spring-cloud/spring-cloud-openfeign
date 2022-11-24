@@ -63,7 +63,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 class FeignClientOverrideDefaultsTests {
 
 	@Autowired
-	private FeignContext context;
+	private FeignClientFactory context;
 
 	@Autowired
 	private FooClient foo;

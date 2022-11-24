@@ -87,7 +87,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 public class FeignClientUsingPropertiesTests {
 
 	@Autowired
-	FeignContext context;
+	FeignClientFactory context;
 
 	@Autowired
 	private ApplicationContext applicationContext;

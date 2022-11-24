@@ -50,7 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GzipDecodingTests extends FeignClientFactoryBean {
 
 	@Autowired
-	FeignContext context;
+	FeignClientFactory context;
 
 	@Value("${local.server.port}")
 	private int port = 0;
