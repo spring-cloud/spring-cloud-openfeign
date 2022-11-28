@@ -162,12 +162,11 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 			else {
 				name = "default." + metadata.getClassName();
 			}
-			registerClientConfiguration(registry, name, defaultAttrs.get("defaultConfiguration"));
+			registerClientConfiguration(registry, name, "default", defaultAttrs.get("defaultConfiguration"));
 		}
 	}
 
 	public void registerFeignClients(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
-
 		LinkedHashSet<BeanDefinition> candidateComponents = new LinkedHashSet<>();
 		Map<String, Object> attrs = metadata.getAnnotationAttributes(EnableFeignClients.class.getName());
 		final Class<?>[] clients = attrs == null ? null : (Class<?>[]) attrs.get("clients");
@@ -193,10 +192,11 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 				Assert.isTrue(annotationMetadata.isInterface(), "@FeignClient can only be specified on an interface");
 
 				Map<String, Object> attributes = annotationMetadata
-						.getAnnotationAttributes(FeignClient.class.getCanonicalName());
+					.getAnnotationAttributes(FeignClient.class.getCanonicalName());
 
 				String name = getClientName(attributes);
-				registerClientConfiguration(registry, name, attributes.get("configuration"));
+				String className = annotationMetadata.getClassName();
+				registerClientConfiguration(registry, name, className, attributes.get("configuration"));
 
 				registerFeignClient(registry, annotationMetadata, attributes);
 			}
@@ -209,7 +209,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		String className = annotationMetadata.getClassName();
 		Class clazz = ClassUtils.resolveClassName(className, null);
 		ConfigurableBeanFactory beanFactory = registry instanceof ConfigurableBeanFactory
-				? (ConfigurableBeanFactory) registry : null;
+			? (ConfigurableBeanFactory) registry : null;
 		String contextId = getContextId(beanFactory, attributes);
 		String name = getName(attributes);
 		FeignClientFactoryBean factoryBean = new FeignClientFactoryBean();
@@ -218,6 +218,14 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		factoryBean.setContextId(contextId);
 		factoryBean.setType(clazz);
 		factoryBean.setRefreshableClient(isClientRefreshEnabled());
+
+		String[] qualifiers = getQualifiers(attributes);
+		if (ObjectUtils.isEmpty(qualifiers)) {
+			qualifiers = new String[] {contextId + "FeignClient"};
+		}
+		// This is done so that there's a way to retrieve qualifiers while generating AOT code
+		factoryBean.setQualifiers(qualifiers);
+
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(clazz, () -> {
 			factoryBean.setUrl(getUrl(beanFactory, attributes));
 			factoryBean.setPath(getPath(beanFactory, attributes));
@@ -225,7 +233,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 			Object fallback = attributes.get("fallback");
 			if (fallback != null) {
 				factoryBean.setFallback(fallback instanceof Class ? (Class<?>) fallback
-						: ClassUtils.resolveClassName(fallback.toString(), null));
+					: ClassUtils.resolveClassName(fallback.toString(), null));
 			}
 			Object fallbackFactory = attributes.get("fallbackFactory");
 			if (fallbackFactory != null) {
@@ -246,11 +254,6 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		boolean primary = (Boolean) attributes.get("primary");
 
 		beanDefinition.setPrimary(primary);
-
-		String[] qualifiers = getQualifiers(attributes);
-		if (ObjectUtils.isEmpty(qualifiers)) {
-			qualifiers = new String[] { contextId + "FeignClient" };
-		}
 
 		BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className, qualifiers);
 		BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
@@ -407,12 +410,13 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 				"Either 'name' or 'value' must be provided in @" + FeignClient.class.getSimpleName());
 	}
 
-	private void registerClientConfiguration(BeanDefinitionRegistry registry, Object name, Object configuration) {
+	private void registerClientConfiguration(BeanDefinitionRegistry registry, Object name, Object className, Object configuration) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(FeignClientSpecification.class);
 		builder.addConstructorArgValue(name);
+		builder.addConstructorArgValue(className);
 		builder.addConstructorArgValue(configuration);
 		registry.registerBeanDefinition(name + "." + FeignClientSpecification.class.getSimpleName(),
-				builder.getBeanDefinition());
+			builder.getBeanDefinition());
 	}
 
 	@Override

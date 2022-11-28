@@ -66,6 +66,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
@@ -111,7 +112,7 @@ public class FeignAutoConfiguration {
 	}
 
 	@Bean
-	static FeignChildContextInitializer feignChildContextInitializer(ApplicationContext parentContext,
+	static FeignChildContextInitializer feignChildContextInitializer(GenericApplicationContext parentContext,
 		FeignClientFactory feignClientFactory) {
 		return new FeignChildContextInitializer(parentContext, feignClientFactory);
 	}

@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Olga Maciaszek-Sharma
  */
 @ExtendWith(OutputCaptureExtension.class)
-class FeignChildContextInitializerTests {
+public class FeignChildContextInitializerTests {
 
 	private static final Log LOG = LogFactory.getLog(FeignChildContextInitializerTests.class);
 

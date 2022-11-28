@@ -113,6 +113,8 @@ public class FeignClientFactoryBean
 
 	private final List<FeignBuilderCustomizer> additionalCustomizers = new ArrayList<>();
 
+	private String[] qualifiers = new String[] {};
+
 	@Override
 	public void afterPropertiesSet() {
 		Assert.hasText(contextId, "Context id must be set");
@@ -598,6 +600,14 @@ public class FeignClientFactoryBean
 
 	public void setRefreshableClient(boolean refreshableClient) {
 		this.refreshableClient = refreshableClient;
+	}
+
+	public String[] getQualifiers() {
+		return qualifiers;
+	}
+
+	public void setQualifiers(String[] qualifiers) {
+		this.qualifiers = qualifiers;
 	}
 
 	@Override

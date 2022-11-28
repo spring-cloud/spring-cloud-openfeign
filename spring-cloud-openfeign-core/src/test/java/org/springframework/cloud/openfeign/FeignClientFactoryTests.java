@@ -54,7 +54,7 @@ public class FeignClientFactoryTests {
 		parent.refresh();
 		FeignClientFactory context = new FeignClientFactory();
 		context.setApplicationContext(parent);
-		context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class), getSpec("bar", BarConfig.class)));
+		context.setConfigurations(Arrays.asList(getSpec("foo", null, FooConfig.class), getSpec("bar", null, BarConfig.class)));
 
 		Foo foo = context.getInstance("foo", Foo.class);
 		assertThat(foo).as("foo was null").isNotNull();
@@ -77,14 +77,14 @@ public class FeignClientFactoryTests {
 		Proxy target = context.getBean(FeignClientFactoryBean.class).getTarget();
 		Object invocationHandler = ReflectionTestUtils.getField(target, "h");
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
-				.getField(invocationHandler, "dispatch");
+			.getField(invocationHandler, "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
 		Object client = ReflectionTestUtils.getField(dispatch.get(key), "client");
 		assertThat(client).isInstanceOf(Client.Default.class);
 	}
 
-	private FeignClientSpecification getSpec(String name, Class<?> configClass) {
-		return new FeignClientSpecification(name, new Class[] { configClass });
+	private FeignClientSpecification getSpec(String name, String className, Class<?> configClass) {
+		return new FeignClientSpecification(name, className, new Class[] {configClass});
 	}
 
 	interface TestType {
@@ -106,7 +106,7 @@ public class FeignClientFactoryTests {
 		FeignClientFactory feignContext() {
 			FeignClientFactory feignClientFactory = new FeignClientFactory();
 			feignClientFactory.setConfigurations(Collections.singletonList(
-					new FeignClientSpecification("test", new Class[] { LoadBalancerAutoConfiguration.class })));
+				new FeignClientSpecification("test", null, new Class[] {LoadBalancerAutoConfiguration.class})));
 			return feignClientFactory;
 		}
 

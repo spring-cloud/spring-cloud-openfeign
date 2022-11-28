@@ -39,15 +39,15 @@ class FeignClientFactoryTest {
 
 		FeignClientFactory feignClientFactory = new FeignClientFactory();
 		feignClientFactory.setApplicationContext(parent);
-		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
+		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("empty", null, EmptyConfiguration.class)));
 
 		Logger.Level level = feignClientFactory.getInstanceWithoutAncestors("empty", Logger.Level.class);
 
 		assertThat(level).as("Logger was not null").isNull();
 	}
 
-	private FeignClientSpecification getSpec(String name, Class<?> configClass) {
-		return new FeignClientSpecification(name, new Class[] { configClass });
+	private FeignClientSpecification getSpec(String name, String className, Class<?> configClass) {
+		return new FeignClientSpecification(name, className, new Class[] {configClass});
 	}
 
 	@Test
@@ -57,7 +57,7 @@ class FeignClientFactoryTest {
 
 		FeignClientFactory feignClientFactory = new FeignClientFactory();
 		feignClientFactory.setApplicationContext(parent);
-		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("empty", EmptyConfiguration.class)));
+		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("empty", null, EmptyConfiguration.class)));
 
 		Collection<RequestInterceptor> interceptors = feignClientFactory
 				.getInstancesWithoutAncestors("empty", RequestInterceptor.class).values();
@@ -72,7 +72,7 @@ class FeignClientFactoryTest {
 
 		FeignClientFactory feignClientFactory = new FeignClientFactory();
 		feignClientFactory.setApplicationContext(parent);
-		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
+		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("demo", null, DemoConfiguration.class)));
 
 		Logger.Level level = feignClientFactory.getInstanceWithoutAncestors("demo", Logger.Level.class);
 
@@ -86,7 +86,7 @@ class FeignClientFactoryTest {
 
 		FeignClientFactory feignClientFactory = new FeignClientFactory();
 		feignClientFactory.setApplicationContext(parent);
-		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("demo", DemoConfiguration.class)));
+		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("demo", null, DemoConfiguration.class)));
 
 		Collection<RequestInterceptor> interceptors = feignClientFactory
 				.getInstancesWithoutAncestors("demo", RequestInterceptor.class).values();
