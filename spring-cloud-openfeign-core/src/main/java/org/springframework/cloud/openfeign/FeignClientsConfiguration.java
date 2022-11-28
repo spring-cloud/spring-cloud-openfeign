@@ -238,19 +238,18 @@ public class FeignClientsConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnProperty(name = "spring.cloud.openfeign.micrometer.enabled", matchIfMissing = true)
+	@ConditionalOnClass({ MicrometerObservationCapability.class, MicrometerCapability.class, MeterRegistry.class })
 	@Conditional(FeignClientMicrometerEnabledCondition.class)
 	protected static class MicrometerConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		@ConditionalOnClass(name = "feign.micrometer.MicrometerObservationCapability")
 		@ConditionalOnBean(type = "io.micrometer.observation.ObservationRegistry")
 		public MicrometerObservationCapability micrometerObservationCapability(ObservationRegistry registry) {
 			return new MicrometerObservationCapability(registry);
 		}
 
 		@Bean
-		@ConditionalOnClass(name = "feign.micrometer.MicrometerCapability")
 		@ConditionalOnBean(type = "io.micrometer.core.instrument.MeterRegistry")
 		@ConditionalOnMissingBean({ MicrometerCapability.class, MicrometerObservationCapability.class })
 		public MicrometerCapability micrometerCapability(MeterRegistry registry) {

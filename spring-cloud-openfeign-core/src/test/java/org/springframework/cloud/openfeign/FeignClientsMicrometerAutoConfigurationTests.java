@@ -63,15 +63,14 @@ class FeignClientsMicrometerAutoConfigurationTests {
 	}
 
 	@Test
-	void shouldProvideMicrometerCapabilityIfMicrometerObservationCapabilityIsNotOnClasspath() {
-		contextRunner.withClassLoader(new FilteredClassLoader(MicrometerObservationCapability.class))
-				.run(context -> assertThat(context).doesNotHaveBean(MicrometerObservationCapability.class)
-						.hasSingleBean(MicrometerCapability.class));
+	void shouldNotProvideMicrometerCapabilitiesIfFeignMicrometerSupportIsMissing() {
+		contextRunner.withClassLoader(new FilteredClassLoader("feign.micrometer")).run(context -> assertThat(context)
+				.doesNotHaveBean(MicrometerObservationCapability.class).doesNotHaveBean(MicrometerCapability.class));
 	}
 
 	@Test
 	void shouldNotProvideMicrometerCapabilitiesIfMicrometerSupportIsMissing() {
-		contextRunner.withClassLoader(new FilteredClassLoader("feign.micrometer")).run(context -> assertThat(context)
+		contextRunner.withClassLoader(new FilteredClassLoader("io.micrometer")).run(context -> assertThat(context)
 				.doesNotHaveBean(MicrometerObservationCapability.class).doesNotHaveBean(MicrometerCapability.class));
 	}
 
