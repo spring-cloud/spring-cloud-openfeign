@@ -56,12 +56,12 @@ import org.springframework.cloud.client.actuator.HasFeatures;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.openfeign.aot.FeignChildContextInitializer;
+import org.springframework.cloud.openfeign.aot.FeignClientBeanFactoryInitializationAotProcessor;
 import org.springframework.cloud.openfeign.security.OAuth2AccessTokenInterceptor;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.cloud.openfeign.support.PageJacksonModule;
 import org.springframework.cloud.openfeign.support.SortJacksonModule;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -115,6 +115,12 @@ public class FeignAutoConfiguration {
 	static FeignChildContextInitializer feignChildContextInitializer(GenericApplicationContext parentContext,
 		FeignClientFactory feignClientFactory) {
 		return new FeignChildContextInitializer(parentContext, feignClientFactory);
+	}
+
+	@Bean
+	static FeignClientBeanFactoryInitializationAotProcessor feignClientBeanFactoryInitializationCodeGenerator(GenericApplicationContext applicationContext,
+		FeignClientFactory feignClientFactory) {
+		return new FeignClientBeanFactoryInitializationAotProcessor(applicationContext, feignClientFactory);
 	}
 
 	@Bean
