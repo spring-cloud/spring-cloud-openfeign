@@ -205,11 +205,65 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 
 	@SuppressWarnings("unchecked")
 	private void registerFeignClient(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata,
-			Map<String, Object> attributes) {
+		Map<String, Object> attributes) {
 		String className = annotationMetadata.getClassName();
-		Class clazz = ClassUtils.resolveClassName(className, null);
+		// TODO: document change and correct AOT and contract usage
+		if (String.valueOf(false)
+			.equals(environment.getProperty("spring.cloud.openfeign.lazy-attributes-resolution", String.valueOf(false)))) {
+			eagerlyRegisterFeignClientBeanDefinition(className, attributes, registry);
+		}
+		else {
+			lazilyRegisterFeignClientBeanDefinition(className, attributes, registry);
+		}
+	}
+
+	private void eagerlyRegisterFeignClientBeanDefinition(String className, Map<String, Object> attributes, BeanDefinitionRegistry registry) {
+		// TODO: verify with prod method
+		validate(attributes);
+		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(FeignClientFactoryBean.class);
+		validate(attributes);
+		definition.addPropertyValue("url", getUrl(null, attributes));
+		definition.addPropertyValue("path", getPath(null, attributes));
+		String name = getName(attributes);
+		definition.addPropertyValue("name", name);
+		String contextId = getContextId(null, attributes);
+		definition.addPropertyValue("contextId", contextId);
+		definition.addPropertyValue("type", className);
+		definition.addPropertyValue("dismiss404", Boolean.parseBoolean(String.valueOf(attributes.get("dismiss404"))));
+		Object fallback = attributes.get("fallback");
+		if (fallback != null) {
+			definition.addPropertyValue("fallback", (fallback instanceof Class ? fallback
+				: ClassUtils.resolveClassName(fallback.toString(), null)));
+		}
+		Object fallbackFactory = attributes.get("fallbackFactory");
+		if (fallbackFactory != null) {
+			definition.addPropertyValue("fallbackFactory", fallbackFactory instanceof Class ? fallbackFactory
+				: ClassUtils.resolveClassName(fallbackFactory.toString(), null));
+		}
+		definition.addPropertyValue("fallbackFactory", attributes.get("fallbackFactory"));
+		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+		String[] qualifiers = getQualifiers(attributes);
+		if (ObjectUtils.isEmpty(qualifiers)) {
+			qualifiers = new String[] {contextId + "FeignClient"};
+		}
+		// This is done so that there's a way to retrieve qualifiers while generating AOT code
+		definition.addPropertyValue("qualifiers", qualifiers);
+		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
+		beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, className);
+		// has a default, won't be null
+		boolean primary = (Boolean) attributes.get("primary");
+		beanDefinition.setPrimary(primary);
+		BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className, qualifiers);
+		BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
+		registerRefreshableBeanDefinition(registry, contextId, Request.Options.class, OptionsFactoryBean.class);
+		registerRefreshableBeanDefinition(registry, contextId, RefreshableUrl.class, RefreshableUrlFactoryBean.class);
+	}
+
+	private void lazilyRegisterFeignClientBeanDefinition(String className, Map<String, Object> attributes, BeanDefinitionRegistry registry) {
+		// TODO: verify with prod method
 		ConfigurableBeanFactory beanFactory = registry instanceof ConfigurableBeanFactory
 			? (ConfigurableBeanFactory) registry : null;
+		Class clazz = ClassUtils.resolveClassName(className, null);
 		String contextId = getContextId(beanFactory, attributes);
 		String name = getName(attributes);
 		FeignClientFactoryBean factoryBean = new FeignClientFactoryBean();
@@ -238,14 +292,13 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 			Object fallbackFactory = attributes.get("fallbackFactory");
 			if (fallbackFactory != null) {
 				factoryBean.setFallbackFactory(fallbackFactory instanceof Class ? (Class<?>) fallbackFactory
-						: ClassUtils.resolveClassName(fallbackFactory.toString(), null));
+					: ClassUtils.resolveClassName(fallbackFactory.toString(), null));
 			}
 			return factoryBean.getObject();
 		});
 		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
 		definition.setLazyInit(true);
 		validate(attributes);
-
 		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
 		beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, className);
 		beanDefinition.setAttribute("feignClientsRegistrarFactoryBean", factoryBean);

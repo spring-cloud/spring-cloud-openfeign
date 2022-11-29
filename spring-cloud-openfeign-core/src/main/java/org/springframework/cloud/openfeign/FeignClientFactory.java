@@ -16,11 +16,14 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.cloud.context.named.NamedContextFactory;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.lang.Nullable;
 
 /**
@@ -35,8 +38,15 @@ import org.springframework.lang.Nullable;
  */
 public class FeignClientFactory extends NamedContextFactory<FeignClientSpecification> {
 
+	private Map<String, ApplicationContextInitializer<GenericApplicationContext>> applicationContextInitializers;
+
 	public FeignClientFactory() {
+		this(new HashMap<>());
+	}
+
+	public FeignClientFactory(Map<String, ApplicationContextInitializer<GenericApplicationContext>> applicationContextInitializers) {
 		super(FeignClientsConfiguration.class, "spring.cloud.openfeign", "spring.cloud.openfeign.client.name");
+		this.applicationContextInitializers = applicationContextInitializers;
 	}
 
 	@Nullable
@@ -58,4 +68,26 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 		return getContext(contextName).getBean(beanName, type);
 	}
 
+	@SuppressWarnings("unchecked")
+	public FeignClientFactory withApplicationContextInitializers(
+		Map<String, Object> applicationContextInitializers) {
+		Map<String, ApplicationContextInitializer<GenericApplicationContext>> convertedInitializers = new HashMap<>();
+		applicationContextInitializers.keySet()
+			.forEach(contextId -> convertedInitializers.put(contextId,
+				(ApplicationContextInitializer<GenericApplicationContext>) applicationContextInitializers
+					.get(contextId)));
+		return new FeignClientFactory(convertedInitializers);
+	}
+
+	public void initializeChildContexts() {
+		applicationContextInitializers.keySet().forEach(contextId -> {
+			GenericApplicationContext childContext = buildContext(contextId);
+			applicationContextInitializers.get(contextId).initialize(childContext);
+			addContext(contextId, childContext);
+			childContext.refresh();
+		});
+		// Ensure the contexts are only initialized once after Aot processing
+		applicationContextInitializers = new HashMap<>();
+	}
 }
+

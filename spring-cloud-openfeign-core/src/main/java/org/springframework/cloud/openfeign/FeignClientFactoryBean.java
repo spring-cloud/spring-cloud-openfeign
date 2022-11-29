@@ -115,6 +115,13 @@ public class FeignClientFactoryBean
 
 	private String[] qualifiers = new String[] {};
 
+	// For AOT testing
+	public FeignClientFactoryBean() {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Creating a FeignClientFactoryBean.");
+		}
+	}
+
 	@Override
 	public void afterPropertiesSet() {
 		Assert.hasText(contextId, "Context id must be set");
@@ -411,9 +418,10 @@ public class FeignClientFactoryBean
 	 */
 	@SuppressWarnings("unchecked")
 	<T> T getTarget() {
-		FeignClientFactory context = beanFactory != null ? beanFactory.getBean(FeignClientFactory.class)
-				: applicationContext.getBean(FeignClientFactory.class);
-		Feign.Builder builder = feign(context);
+		FeignClientFactory feignClientFactory = beanFactory != null ? beanFactory.getBean(FeignClientFactory.class)
+			: applicationContext.getBean(FeignClientFactory.class);
+		feignClientFactory.initializeChildContexts();
+		Feign.Builder builder = feign(feignClientFactory);
 		if (!StringUtils.hasText(url) && !isUrlAvailableInConfig(contextId)) {
 
 			if (LOG.isInfoEnabled()) {
@@ -426,13 +434,13 @@ public class FeignClientFactoryBean
 				url = name;
 			}
 			url += cleanPath();
-			return (T) loadBalance(builder, context, new HardCodedTarget<>(type, name, url));
+			return (T) loadBalance(builder, feignClientFactory, new HardCodedTarget<>(type, name, url));
 		}
 		if (StringUtils.hasText(url) && !url.startsWith("http")) {
 			url = "http://" + url;
 		}
 		String url = this.url + cleanPath();
-		Client client = getOptional(context, Client.class);
+		Client client = getOptional(feignClientFactory, Client.class);
 		if (client != null) {
 			if (client instanceof FeignBlockingLoadBalancerClient) {
 				// not load balancing because we have a url,
@@ -447,10 +455,10 @@ public class FeignClientFactoryBean
 			builder.client(client);
 		}
 
-		applyBuildCustomizers(context, builder);
+		applyBuildCustomizers(feignClientFactory, builder);
 
-		Targeter targeter = get(context, Targeter.class);
-		return targeter.target(this, builder, context, resolveTarget(context, contextId, url));
+		Targeter targeter = get(feignClientFactory, Targeter.class);
+		return targeter.target(this, builder, feignClientFactory, resolveTarget(feignClientFactory, contextId, url));
 	}
 
 	private String cleanPath() {

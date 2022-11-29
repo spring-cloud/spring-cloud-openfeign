@@ -16,12 +16,9 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.support.RegisteredBean;
-import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.cloud.openfeign.FeignClientFactory;
 import org.springframework.cloud.openfeign.FeignClientSpecification;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.aot.ApplicationContextAotGenerator;
 import org.springframework.context.support.GenericApplicationContext;
@@ -35,22 +32,16 @@ import org.springframework.util.Assert;
  * @author Olga Maciaszek-Sharma
  * @since 4.0.0
  */
-public class FeignChildContextInitializer implements BeanRegistrationAotProcessor, ApplicationListener<WebServerInitializedEvent> {
+public class FeignChildContextInitializer implements BeanRegistrationAotProcessor {
 
 	private final ApplicationContext applicationContext;
 
 	private final FeignClientFactory feignClientFactory;
 
-	private final Map<String, ApplicationContextInitializer<GenericApplicationContext>> applicationContextInitializers;
 
 	public FeignChildContextInitializer(ApplicationContext applicationContext, FeignClientFactory feignClientFactory) {
-		this(applicationContext, feignClientFactory, new HashMap<>());
-	}
-
-	public FeignChildContextInitializer(ApplicationContext applicationContext, FeignClientFactory feignClientFactory, Map<String, ApplicationContextInitializer<GenericApplicationContext>> applicationContextInitializers) {
 		this.applicationContext = applicationContext;
 		this.feignClientFactory = feignClientFactory;
-		this.applicationContextInitializers = applicationContextInitializers;
 	}
 
 	@Override
@@ -58,7 +49,7 @@ public class FeignChildContextInitializer implements BeanRegistrationAotProcesso
 		Assert.isInstanceOf(ConfigurableApplicationContext.class, applicationContext);
 		ConfigurableApplicationContext context = ((ConfigurableApplicationContext) applicationContext);
 		BeanFactory applicationBeanFactory = context.getBeanFactory();
-		if (!(registeredBean.getBeanClass().equals(getClass())
+		if (!((registeredBean.getBeanClass().equals(FeignClientFactory.class))
 			&& registeredBean.getBeanFactory().equals(applicationBeanFactory))) {
 			return null;
 		}
@@ -81,34 +72,6 @@ public class FeignChildContextInitializer implements BeanRegistrationAotProcesso
 			.collect(Collectors.toSet());
 	}
 
-	@SuppressWarnings("unchecked")
-	public FeignChildContextInitializer withApplicationContextInitializers(
-		Map<String, Object> applicationContextInitializers) {
-		Map<String, ApplicationContextInitializer<GenericApplicationContext>> convertedInitializers = new HashMap<>();
-		applicationContextInitializers.keySet()
-			.forEach(contextId -> convertedInitializers.put(contextId,
-				(ApplicationContextInitializer<GenericApplicationContext>) applicationContextInitializers
-					.get(contextId)));
-		return new FeignChildContextInitializer(applicationContext, feignClientFactory,
-			convertedInitializers);
-	}
-
-	@Override
-	public void onApplicationEvent(WebServerInitializedEvent event) {
-		if (applicationContext.equals(event.getApplicationContext())) {
-			applicationContextInitializers.keySet().forEach(contextId -> {
-				GenericApplicationContext childContext = feignClientFactory.buildContext(contextId);
-				applicationContextInitializers.get(contextId).initialize(childContext);
-				feignClientFactory.addContext(contextId, childContext);
-				childContext.refresh();
-			});
-		}
-	}
-
-	@Override
-	public boolean isBeanExcludedFromAotProcessing() {
-		return false;
-	}
 
 	private static class AotContribution implements BeanRegistrationAotContribution {
 
@@ -140,8 +103,8 @@ public class FeignChildContextInitializer implements BeanRegistrationAotProcesso
 						method.addJavadoc("Use AOT child context management initialization")
 							.addModifiers(Modifier.PRIVATE, Modifier.STATIC)
 							.addParameter(RegisteredBean.class, "registeredBean")
-							.addParameter(FeignChildContextInitializer.class, "instance")
-							.returns(FeignChildContextInitializer.class)
+							.addParameter(FeignClientFactory.class, "instance")
+							.returns(FeignClientFactory.class)
 							.addStatement("$T<String, Object> initializers = new $T<>()", Map.class, HashMap.class);
 						generatedInitializerClassNames.keySet()
 							.forEach(contextId -> method.addStatement("initializers.put($S, new $L())", contextId,

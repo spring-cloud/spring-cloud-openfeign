@@ -9,6 +9,8 @@ import javax.lang.model.element.Modifier;
 
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.generate.MethodReference;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
@@ -16,7 +18,6 @@ import org.springframework.beans.factory.aot.BeanFactoryInitializationCode;
 import org.springframework.beans.factory.aot.BeanRegistrationExcludeFilter;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -50,7 +51,8 @@ public class FeignClientBeanFactoryInitializationAotProcessor implements BeanReg
 
 	@Override
 	public boolean isExcludedFromAotProcessing(RegisteredBean registeredBean) {
-		return feignClientBeanDefinitions
+		return registeredBean.getBeanClass()
+			.equals(FeignClientFactoryBean.class) || feignClientBeanDefinitions
 			.containsKey(registeredBean.getBeanClass().getName());
 	}
 
@@ -66,10 +68,11 @@ public class FeignClientBeanFactoryInitializationAotProcessor implements BeanReg
 
 	@Override
 	public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
-		if (!feignClientBeanDefinitions.isEmpty()) {
-			return new AotContribution(feignClientBeanDefinitions);
+		BeanFactory applicationBeanFactory = context.getBeanFactory();
+		if (feignClientBeanDefinitions.isEmpty() || !beanFactory.equals(applicationBeanFactory)) {
+			return null;
 		}
-		return null;
+		return new AotContribution(feignClientBeanDefinitions);
 	}
 
 	private static class AotContribution implements BeanFactoryInitializationAotContribution {
@@ -88,13 +91,10 @@ public class FeignClientBeanFactoryInitializationAotProcessor implements BeanReg
 					Assert.notNull(beanDefinition, "beanDefinition cannot be null");
 					Assert.isInstanceOf(GenericBeanDefinition.class, beanDefinition);
 					GenericBeanDefinition registeredBeanDefinition = (GenericBeanDefinition) beanDefinition;
-					Object factoryBeanObject = registeredBeanDefinition.getAttribute("feignClientsRegistrarFactoryBean");
-					Assert.isInstanceOf(FeignClientFactoryBean.class, factoryBeanObject);
-					FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) factoryBeanObject;
-					Assert.notNull(factoryBean, "factoryBean  cannot be null");
+					MutablePropertyValues feignClientProperties = registeredBeanDefinition.getPropertyValues();
 					return beanFactoryInitializationCode.getMethods()
-						.add(buildMethodName(factoryBean.getType().getSimpleName()),
-							method -> generateFeignClientRegistrationMethod(method, factoryBean, registeredBeanDefinition))
+						.add(buildMethodName((String) feignClientProperties.get("type")),
+							method -> generateFeignClientRegistrationMethod(method, feignClientProperties, registeredBeanDefinition))
 						.getName();
 				}).collect(Collectors.toSet());
 			MethodReference initializerMethod = beanFactoryInitializationCode.getMethods()
@@ -113,35 +113,32 @@ public class FeignClientBeanFactoryInitializationAotProcessor implements BeanReg
 			feignClientRegistrationMethods.forEach(feignClientRegistrationMethod -> method.addStatement("$N(registry)", feignClientRegistrationMethod));
 		}
 
-		private void generateFeignClientRegistrationMethod(MethodSpec.Builder method, FeignClientFactoryBean registeredFactoryBean, GenericBeanDefinition registeredBeanDefinition) {
-			String qualifiers = "{\"" + String.join("\",\"", registeredFactoryBean.getQualifiers()) + "\"}";
+		private void generateFeignClientRegistrationMethod(MethodSpec.Builder method, MutablePropertyValues feignClientPropertyValues, GenericBeanDefinition registeredBeanDefinition) {
+			Object feignQualifiers = feignClientPropertyValues.get("qualifiers");
+			Assert.notNull(feignQualifiers, "Feign qualifiers cannot be null");
+			String qualifiers = "{\"" + String.join("\",\"", (String[]) feignQualifiers) + "\"}";
 			method
-				.addJavadoc("register Feign Client: $L", registeredBeanDefinition.getBeanClassName())
+				.addJavadoc("register Feign Client: $L", feignClientPropertyValues.get("type"))
 				.addModifiers(Modifier.PUBLIC, Modifier.STATIC)
 				.addParameter(BeanDefinitionRegistry.class, "registry")
-				.addStatement("Class clazz = $T.resolveClassName(\"$L\", null)", ClassUtils.class, registeredBeanDefinition.getBeanClassName())
-				.addStatement("$T beanFactory = registry instanceof $T ? ($T) registry : null",
-					ConfigurableBeanFactory.class, ConfigurableBeanFactory.class, ConfigurableBeanFactory.class)
-				.addStatement("$T factoryBean = new $T()", FeignClientFactoryBean.class, FeignClientFactoryBean.class)
-				.addStatement("factoryBean.setBeanFactory(beanFactory)")
-				.addStatement("factoryBean.setName(\"$L\")", registeredFactoryBean.getName())
-				.addStatement("factoryBean.setContextId(\"$L\")", registeredFactoryBean.getContextId())
-				.addStatement("factoryBean.setType($T.class)", registeredFactoryBean.getType())
-				.addStatement("factoryBean.setUrl($L)", registeredFactoryBean.getUrl())
-				.addStatement("factoryBean.setPath($L)", registeredFactoryBean.getPath())
-				.addStatement("factoryBean.setDismiss404($L)", registeredFactoryBean.isDismiss404())
-				.addStatement("factoryBean.setFallback($T.class)", registeredFactoryBean.getFallback())
-				.addStatement("factoryBean.setFallbackFactory($T.class)", registeredFactoryBean.getFallbackFactory())
-				.addStatement("$T definition = $T.genericBeanDefinition(clazz, () -> factoryBean.getObject())", BeanDefinitionBuilder.class,
-					BeanDefinitionBuilder.class)
+				.addStatement("Class clazz = $T.resolveClassName(\"$L\", null)", ClassUtils.class, feignClientPropertyValues.get("type"))
+				.addStatement("$T definition = $T.genericBeanDefinition($T.class)", BeanDefinitionBuilder.class,
+					BeanDefinitionBuilder.class, FeignClientFactoryBean.class)
+				.addStatement("definition.addPropertyValue(\"name\",\"$L\")", feignClientPropertyValues.get("name"))
+				.addStatement("definition.addPropertyValue(\"contextId\", \"$L\")", feignClientPropertyValues.get("contextId"))
+				.addStatement("definition.addPropertyValue(\"type\", clazz)")
+				.addStatement("definition.addPropertyValue(\"url\", \"$L\")", feignClientPropertyValues.get("url"))
+				.addStatement("definition.addPropertyValue(\"path\", \"$L\")", feignClientPropertyValues.get("path"))
+				.addStatement("definition.addPropertyValue(\"dismiss404\", $L)", feignClientPropertyValues.get("dismiss404"))
+				.addStatement("definition.addPropertyValue(\"fallback\", $T.class)", feignClientPropertyValues.get("fallback"))
+				.addStatement("definition.addPropertyValue(\"fallbackFactory\", $T.class)", feignClientPropertyValues.get("fallbackFactory"))
 				.addStatement("definition.setAutowireMode($L)", registeredBeanDefinition.getAutowireMode())
-				.addStatement("definition.setLazyInit($L)", registeredBeanDefinition.getLazyInit())
+				.addStatement("definition.setLazyInit($L)", registeredBeanDefinition.getLazyInit() != null ? registeredBeanDefinition.getLazyInit() : false)
 				.addStatement("$T beanDefinition = definition.getBeanDefinition()", AbstractBeanDefinition.class)
-				.addStatement("beanDefinition.setAttribute(\"$L\", $T.class)", FactoryBean.OBJECT_TYPE_ATTRIBUTE, registeredFactoryBean.getType())
-				.addStatement("beanDefinition.setAttribute(\"feignClientsRegistrarFactoryBean\", factoryBean)")
+				.addStatement("beanDefinition.setAttribute(\"$L\", clazz)", FactoryBean.OBJECT_TYPE_ATTRIBUTE)
 				.addStatement("beanDefinition.setPrimary($L)", registeredBeanDefinition.isPrimary())
 				.addStatement("$T holder = new $T(beanDefinition, \"$L\",  new String[]$L)", BeanDefinitionHolder.class,
-					BeanDefinitionHolder.class, registeredBeanDefinition.getBeanClassName(), qualifiers)
+					BeanDefinitionHolder.class, feignClientPropertyValues.get("type"), qualifiers)
 				.addStatement("$T.registerBeanDefinition(holder, registry) ", BeanDefinitionReaderUtils.class);
 		}
 	}

@@ -10,13 +10,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.springframework.aot.AotDetector;
 import org.springframework.aot.test.generate.TestGenerationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
 import org.springframework.boot.context.annotation.UserConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebApplicationContext;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -31,6 +34,7 @@ import org.springframework.core.test.tools.CompileWithForkedClassLoader;
 import org.springframework.core.test.tools.TestCompiler;
 import org.springframework.javapoet.ClassName;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,9 +44,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Olga Maciaszek-Sharma
  */
 @ExtendWith(OutputCaptureExtension.class)
-public class FeignChildContextInitializerTests {
+public class FeignAotTests {
 
-	private static final Log LOG = LogFactory.getLog(FeignChildContextInitializerTests.class);
+	private static final Log LOG = LogFactory.getLog(FeignAotTests.class);
 
 	@BeforeEach
 	@AfterEach
@@ -59,7 +63,8 @@ public class FeignChildContextInitializerTests {
 			AnnotationConfigServletWebApplicationContext::new)
 			.withConfiguration(AutoConfigurations.of(ServletWebServerFactoryAutoConfiguration.class,
 				FeignAutoConfiguration.class))
-			.withConfiguration(UserConfigurations.of(TestFeignConfiguration.class));
+			.withConfiguration(UserConfigurations.of(TestFeignConfiguration.class))
+			.withPropertyValues("logging.level.org.springframework.cloud=DEBUG");
 		contextRunner.prepare(context -> {
 			TestGenerationContext generationContext = new TestGenerationContext(TestTarget.class);
 			ClassName className = new ApplicationContextAotGenerator().processAheadOfTime(
@@ -71,9 +76,17 @@ public class FeignChildContextInitializerTests {
 				ApplicationContextInitializer<GenericApplicationContext> initializer = compiled
 					.getInstance(ApplicationContextInitializer.class, className.toString());
 				initializer.initialize(freshApplicationContext);
-				assertThat(output).isNotEmpty();
-
-				// TODO
+				assertThat(output).contains("Creating a FeignClientFactoryBean.");
+				assertThat(output).contains("Refreshing FeignClientFactory-test-with-config",
+					"Refreshing FeignClientFactory-test");
+				assertThat(output).doesNotContain("Instantiating bean from Test custom config",
+					"Instantiating bean from default custom config");
+				TestPropertyValues.of(AotDetector.AOT_ENABLED + "=true")
+					.applyToSystemProperties(freshApplicationContext::refresh);
+				assertThat(output).contains("Instantiating bean from Test custom config",
+					"Instantiating bean from default custom config");
+				assertThat(freshApplicationContext.getBean(TestFeignClient.class)).isNotNull();
+				assertThat(freshApplicationContext.getBean(TestFeignClientWithConfig.class)).isNotNull();
 			});
 		});
 	}
@@ -86,13 +99,21 @@ public class FeignChildContextInitializerTests {
 	@EnableFeignClients(clients = {TestFeignClient.class, TestFeignClientWithConfig.class}, defaultConfiguration = DefaultConfiguration.class)
 	public static class TestFeignConfiguration {
 
+		@Autowired
+		TestFeignClient testFeignClient;
+
+		@Autowired
+		TestFeignClientWithConfig testFeignClientWithConfig;
+
 	}
 
 	public static class TestConfiguration {
 
 		@Bean
 		TestBean testBean() {
-			LOG.debug("Instantiating bean from Test custom config");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Instantiating bean from Test custom config");
+			}
 			return new TestBean();
 		}
 
@@ -102,7 +123,9 @@ public class FeignChildContextInitializerTests {
 
 		@Bean
 		TestBean defaultTestBean() {
-			LOG.debug("Instantiating bean from default custom config");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Instantiating bean from default custom config");
+			}
 			return new TestBean();
 		}
 
@@ -112,9 +135,10 @@ public class FeignChildContextInitializerTests {
 
 	}
 
-	@FeignClient("test")
+	@FeignClient(value = "test", dismiss404 = true, url = "http://example.com")
 	interface TestFeignClient {
 
+		@GetMapping
 		void test();
 
 	}
@@ -123,6 +147,7 @@ public class FeignChildContextInitializerTests {
 	@FeignClient(value = "test-with-config", configuration = TestConfiguration.class)
 	interface TestFeignClientWithConfig {
 
+		@GetMapping
 		void test();
 
 	}
