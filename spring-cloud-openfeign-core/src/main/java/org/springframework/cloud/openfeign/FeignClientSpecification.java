@@ -24,18 +24,22 @@ import org.springframework.cloud.context.named.NamedContextFactory;
 /**
  * @author Dave Syer
  * @author Gregor Zurowski
+ * @author Olga Maciaszek-Sharma
  */
 public class FeignClientSpecification implements NamedContextFactory.Specification {
 
 	private String name;
 
+	private String className;
+
 	private Class<?>[] configuration;
 
-	FeignClientSpecification() {
+	public FeignClientSpecification() {
 	}
 
-	public FeignClientSpecification(String name, Class<?>[] configuration) {
+	public FeignClientSpecification(String name, String className, Class<?>[] configuration) {
 		this.name = name;
+		this.className = className;
 		this.configuration = configuration;
 	}
 
@@ -45,6 +49,14 @@ public class FeignClientSpecification implements NamedContextFactory.Specificati
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getClassName() {
+		return className;
+	}
+
+	public void setClassName(String className) {
+		this.className = className;
 	}
 
 	public Class<?>[] getConfiguration() {
@@ -60,22 +72,24 @@ public class FeignClientSpecification implements NamedContextFactory.Specificati
 		if (this == o) {
 			return true;
 		}
-		if (o == null || getClass() != o.getClass()) {
+		if (!(o instanceof FeignClientSpecification that)) {
 			return false;
 		}
-		FeignClientSpecification that = (FeignClientSpecification) o;
-		return Objects.equals(name, that.name) && Arrays.equals(configuration, that.configuration);
+		return Objects.equals(name, that.name) && Objects.equals(className, that.className)
+				&& Arrays.equals(configuration, that.configuration);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, Arrays.hashCode(configuration));
+		int result = Objects.hash(name, className);
+		result = 31 * result + Arrays.hashCode(configuration);
+		return result;
 	}
 
 	@Override
 	public String toString() {
-		return new StringBuilder("FeignClientSpecification{").append("name='").append(name).append("', ")
-				.append("configuration=").append(Arrays.toString(configuration)).append("}").toString();
+		return "FeignClientSpecification{" + "name='" + name + "', " + "className='" + className + "', "
+				+ "configuration=" + Arrays.toString(configuration) + "}";
 	}
 
 }

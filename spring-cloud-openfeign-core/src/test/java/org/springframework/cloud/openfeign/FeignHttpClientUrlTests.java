@@ -153,7 +153,7 @@ class FeignHttpClientUrlTests {
 		public Targeter feignTargeter() {
 			return new Targeter() {
 				@Override
-				public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign, FeignContext context,
+				public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign, FeignClientFactory context,
 						Target.HardCodedTarget<T> target) {
 					Field field = ReflectionUtils.findField(Feign.Builder.class, "client");
 					ReflectionUtils.makeAccessible(field);

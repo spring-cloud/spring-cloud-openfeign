@@ -41,21 +41,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author matt king
  * @author Jonatan Ivanov
+ * @author Olga Maciaszek-Sharma
  */
 @DirtiesContext
-@SpringBootTest(classes = FeignClientUsingConfigurerTest.Application.class, value = {
+@SpringBootTest(classes = LazyInitFeignClientUsingConfigurerTests.Application.class, value = {
+		"spring.cloud.openfeign.lazy-attributes-resolution=true",
 		"spring.cloud.openfeign.client.config.default.loggerLevel=full",
 		"spring.cloud.openfeign.client.config.default.requestInterceptors[0]=org.springframework.cloud.openfeign.FeignClientUsingPropertiesTests.FooRequestInterceptor",
 		"spring.cloud.openfeign.client.config.default.requestInterceptors[1]=org.springframework.cloud.openfeign.FeignClientUsingPropertiesTests.BarRequestInterceptor" })
-class FeignClientUsingConfigurerTest {
+class LazyInitFeignClientUsingConfigurerTests {
 
-	private static final String BEAN_NAME_PREFIX = "org.springframework.cloud.openfeign.FeignClientUsingConfigurerTest$";
+	private static final String BEAN_NAME_PREFIX = "org.springframework.cloud.openfeign.LazyInitFeignClientUsingConfigurerTests$";
 
 	@Autowired
 	private ConfigurableListableBeanFactory beanFactory;
 
 	@Autowired
-	private FeignContext context;
+	private FeignClientFactory context;
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test

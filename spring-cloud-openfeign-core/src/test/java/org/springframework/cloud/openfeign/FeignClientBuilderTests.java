@@ -158,7 +158,8 @@ class FeignClientBuilderTests {
 	@Test
 	void forType_build() {
 		// given:
-		Mockito.when(this.applicationContext.getBean(FeignContext.class)).thenThrow(new ClosedFileSystemException()); // throw
+		Mockito.when(this.applicationContext.getBean(FeignClientFactory.class))
+				.thenThrow(new ClosedFileSystemException()); // throw
 		// an
 		// unusual
 		// exception

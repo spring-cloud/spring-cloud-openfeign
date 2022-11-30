@@ -67,7 +67,7 @@ public class FeignClientWithRefreshableOptionsTest {
 	private FeignClientProperties clientProperties;
 
 	@Test
-	public void overridedOptionsBeanShouldBePresentInsteadOfRefreshable() {
+	public void overriddenOptionsBeanShouldBePresentInsteadOfRefreshable() {
 		OptionsTestClient.OptionsResponseForTests options = overrideOptionsClient.override();
 		assertConnectionAndReadTimeout(options, 1, 1);
 	}

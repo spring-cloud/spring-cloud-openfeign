@@ -228,7 +228,7 @@
 						<artifactId>maven-surefire-plugin</artifactId>
 						<configuration>
 							<!-- Sets the VM argument line used when unit tests are run. -->
-							<argLine>${surefireArgLine}</argLine>
+							<argLine>${surefireArgLine} --add-opens=java.base/java.net=ALL-UNNAMED</argLine>
 						</configuration>
 					</plugin>
 				</plugins>

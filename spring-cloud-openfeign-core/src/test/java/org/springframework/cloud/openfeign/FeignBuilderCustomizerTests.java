@@ -162,8 +162,8 @@ class FeignBuilderCustomizerTests {
 	protected static class SampleConfiguration2 {
 
 		@Bean
-		FeignContext feignContext() {
-			return new FeignContext();
+		FeignClientFactory feignContext() {
+			return new FeignClientFactory();
 		}
 
 		@Bean
@@ -198,8 +198,8 @@ class FeignBuilderCustomizerTests {
 	protected static class SampleConfiguration3 {
 
 		@Bean
-		FeignContext feignContext() {
-			return new FeignContext();
+		FeignClientFactory feignContext() {
+			return new FeignClientFactory();
 		}
 
 		@Bean

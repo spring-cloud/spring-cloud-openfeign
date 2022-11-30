@@ -79,6 +79,12 @@
 			"type": "java.lang.String",
 			"description": "Provides a clientId to be used with OAuth2.",
 			"defaultValue": ""
+		},
+		{
+			"name": "spring.cloud.openfeign.lazy-attributes-resolution",
+			"type": "java.lang.Boolean",
+			"description": "Switches @FeignClient attributes resolution mode to lazy.",
+			"defaultValue": "false"
 		}
 	]
 }

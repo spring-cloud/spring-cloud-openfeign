@@ -78,6 +78,15 @@ TIP: To use `@EnableFeignClients` annotation on `@Configuration`-annotated-class
 or list them explicitly:
 `@EnableFeignClients(clients = InventoryServiceFeignClient.class)`
 
+[[attribute-resolution-mode]]
+==== Attribute resolution mode
+
+While creating `Feign` client beans, we resolve the values passed via the `@FeignClient` annotation. As of `4.x`, the values are being resolved eagerly. This is a good solution for most use-cases, and it also allows for AOT support.
+
+If you need the attributes to be resolved lazily, set the `spring.cloud.openfeign.lazy-attributes-resolution` property value to `true`.
+
+TIP: For Spring Cloud Contract test integration, lazy attribute resolution should be used.
+
 [[spring-cloud-feign-overriding-defaults]]
 === Overriding Feign Defaults
 
@@ -904,6 +913,17 @@ The URL provided in the configuration properties remains unused.
 |The URL is resolved from `name` attribute of annotation, with load balancing.
 
 |===
+
+=== AOT and Native Image Support
+
+Spring Cloud OpenFeign supports Spring AOT transformations and native images, however, only with refresh mode disabled, Feign clients refresh disabled (default setting) and <<attribute-resolution-mode,lazy `@FeignClient` attribute resolution>> disabled (default setting).
+
+WARNING: If you want to run Spring Cloud OpenFeign clients in AOT or native image modes, make sure to set `spring.cloud.refresh.enabled` to `false`.
+
+TIP: If you want to run Spring Cloud OpenFeign clients in AOT or native image modes, ensure `spring.cloud.openfeign.client.refresh-enabled` has not been set to `true`.
+
+TIP: If you want to run Spring Cloud OpenFeign clients in AOT or native image modes, ensure `spring.cloud.openfeign.lazy-attributes-resolution` has not been set to `true`.
+
 
 == Configuration properties
 

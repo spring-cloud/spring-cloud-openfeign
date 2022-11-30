@@ -34,7 +34,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.cloud.openfeign.FeignContext;
+import org.springframework.cloud.openfeign.FeignClientFactory;
 import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -77,7 +77,7 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 class SpringEncoderTests {
 
 	@Autowired
-	private FeignContext context;
+	private FeignClientFactory context;
 
 	@Autowired
 	@Qualifier("myHttpMessageConverter")

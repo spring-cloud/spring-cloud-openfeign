@@ -16,11 +16,14 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.cloud.context.named.NamedContextFactory;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.lang.Nullable;
 
 /**
@@ -31,11 +34,18 @@ import org.springframework.lang.Nullable;
  * @author Dave Syer
  * @author Matt King
  * @author Jasbir Singh
+ * @author Olga Maciaszek-Sharma
  */
-public class FeignContext extends NamedContextFactory<FeignClientSpecification> {
+public class FeignClientFactory extends NamedContextFactory<FeignClientSpecification> {
 
-	public FeignContext() {
-		super(FeignClientsConfiguration.class, "spring.cloud.openfeign", "spring.cloud.openfeign.client.name");
+	public FeignClientFactory() {
+		this(new HashMap<>());
+	}
+
+	public FeignClientFactory(
+			Map<String, ApplicationContextInitializer<GenericApplicationContext>> applicationContextInitializers) {
+		super(FeignClientsConfiguration.class, "spring.cloud.openfeign", "spring.cloud.openfeign.client.name",
+				applicationContextInitializers);
 	}
 
 	@Nullable
@@ -55,6 +65,16 @@ public class FeignContext extends NamedContextFactory<FeignClientSpecification> 
 
 	public <T> T getInstance(String contextName, String beanName, Class<T> type) {
 		return getContext(contextName).getBean(beanName, type);
+	}
+
+	@SuppressWarnings("unchecked")
+	public FeignClientFactory withApplicationContextInitializers(Map<String, Object> applicationContextInitializers) {
+		Map<String, ApplicationContextInitializer<GenericApplicationContext>> convertedInitializers = new HashMap<>();
+		applicationContextInitializers.keySet()
+				.forEach(contextId -> convertedInitializers.put(contextId,
+						(ApplicationContextInitializer<GenericApplicationContext>) applicationContextInitializers
+								.get(contextId)));
+		return new FeignClientFactory(convertedInitializers);
 	}
 
 }

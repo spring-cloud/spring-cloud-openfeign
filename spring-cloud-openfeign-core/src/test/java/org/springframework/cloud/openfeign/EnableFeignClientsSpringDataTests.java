@@ -34,11 +34,11 @@ import org.springframework.test.annotation.DirtiesContext;
 class EnableFeignClientsSpringDataTests {
 
 	@Autowired
-	private FeignContext feignContext;
+	private FeignClientFactory feignClientFactory;
 
 	@Test
 	void encoderDefaultCorrect() {
-		PageableSpringEncoder.class.cast(this.feignContext.getInstance("foo", Encoder.class));
+		PageableSpringEncoder.class.cast(this.feignClientFactory.getInstance("foo", Encoder.class));
 	}
 
 	@Configuration(proxyBeanMethods = false)

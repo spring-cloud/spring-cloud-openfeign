@@ -44,6 +44,10 @@ import okhttp3.ConnectionPool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.RuntimeHintsRegistrar;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -55,6 +59,8 @@ import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.cloud.client.actuator.HasFeatures;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.openfeign.aot.FeignChildContextInitializer;
+import org.springframework.cloud.openfeign.aot.FeignClientBeanFactoryInitializationAotProcessor;
 import org.springframework.cloud.openfeign.security.OAuth2AccessTokenInterceptor;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
@@ -64,12 +70,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.util.ClassUtils;
 
 /**
  * @author Spencer Gibb
@@ -102,10 +110,22 @@ public class FeignAutoConfiguration {
 	}
 
 	@Bean
-	public FeignContext feignContext() {
-		FeignContext context = new FeignContext();
+	public FeignClientFactory feignContext() {
+		FeignClientFactory context = new FeignClientFactory();
 		context.setConfigurations(this.configurations);
 		return context;
+	}
+
+	@Bean
+	static FeignChildContextInitializer feignChildContextInitializer(GenericApplicationContext parentContext,
+			FeignClientFactory feignClientFactory) {
+		return new FeignChildContextInitializer(parentContext, feignClientFactory);
+	}
+
+	@Bean
+	static FeignClientBeanFactoryInitializationAotProcessor feignClientBeanFactoryInitializationCodeGenerator(
+			GenericApplicationContext applicationContext, FeignClientFactory feignClientFactory) {
+		return new FeignClientBeanFactoryInitializationAotProcessor(applicationContext, feignClientFactory);
 	}
 
 	@Bean
@@ -355,6 +375,20 @@ public class FeignAutoConfiguration {
 			return new OAuth2AccessTokenInterceptor(clientRegistrationId, oAuth2AuthorizedClientManager);
 		}
 
+	}
+
+}
+
+class FeignHints implements RuntimeHintsRegistrar {
+
+	@Override
+	public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+		if (!ClassUtils.isPresent("feign.Feign", classLoader)) {
+			return;
+		}
+		hints.reflection().registerType(TypeReference.of(FeignClientFactoryBean.class),
+				hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+						MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
 	}
 
 }

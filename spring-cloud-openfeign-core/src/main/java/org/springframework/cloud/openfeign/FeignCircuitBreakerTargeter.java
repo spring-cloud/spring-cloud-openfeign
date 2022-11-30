@@ -39,7 +39,7 @@ class FeignCircuitBreakerTargeter implements Targeter {
 	}
 
 	@Override
-	public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign, FeignContext context,
+	public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign, FeignClientFactory context,
 			Target.HardCodedTarget<T> target) {
 		if (!(feign instanceof FeignCircuitBreaker.Builder builder)) {
 			return feign.target(target);
@@ -56,20 +56,20 @@ class FeignCircuitBreakerTargeter implements Targeter {
 		return builder(name, builder).target(target);
 	}
 
-	private <T> T targetWithFallbackFactory(String feignClientName, FeignContext context,
+	private <T> T targetWithFallbackFactory(String feignClientName, FeignClientFactory context,
 			Target.HardCodedTarget<T> target, FeignCircuitBreaker.Builder builder, Class<?> fallbackFactoryClass) {
 		FallbackFactory<? extends T> fallbackFactory = (FallbackFactory<? extends T>) getFromContext("fallbackFactory",
 				feignClientName, context, fallbackFactoryClass, FallbackFactory.class);
 		return builder(feignClientName, builder).target(target, fallbackFactory);
 	}
 
-	private <T> T targetWithFallback(String feignClientName, FeignContext context, Target.HardCodedTarget<T> target,
-			FeignCircuitBreaker.Builder builder, Class<?> fallback) {
+	private <T> T targetWithFallback(String feignClientName, FeignClientFactory context,
+			Target.HardCodedTarget<T> target, FeignCircuitBreaker.Builder builder, Class<?> fallback) {
 		T fallbackInstance = getFromContext("fallback", feignClientName, context, fallback, target.type());
 		return builder(feignClientName, builder).target(target, fallbackInstance);
 	}
 
-	private <T> T getFromContext(String fallbackMechanism, String feignClientName, FeignContext context,
+	private <T> T getFromContext(String fallbackMechanism, String feignClientName, FeignClientFactory context,
 			Class<?> beanType, Class<T> targetType) {
 		Object fallbackInstance = context.getInstance(feignClientName, beanType);
 		if (fallbackInstance == null) {

@@ -113,13 +113,22 @@ public class FeignClientFactoryBean
 
 	private final List<FeignBuilderCustomizer> additionalCustomizers = new ArrayList<>();
 
+	private String[] qualifiers = new String[] {};
+
+	// For AOT testing
+	public FeignClientFactoryBean() {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Creating a FeignClientFactoryBean.");
+		}
+	}
+
 	@Override
 	public void afterPropertiesSet() {
 		Assert.hasText(contextId, "Context id must be set");
 		Assert.hasText(name, "Name must be set");
 	}
 
-	protected Feign.Builder feign(FeignContext context) {
+	protected Feign.Builder feign(FeignClientFactory context) {
 		FeignLoggerFactory loggerFactory = get(context, FeignLoggerFactory.class);
 		Logger logger = loggerFactory.create(type);
 
@@ -137,7 +146,7 @@ public class FeignClientFactoryBean
 		return builder;
 	}
 
-	private void applyBuildCustomizers(FeignContext context, Feign.Builder builder) {
+	private void applyBuildCustomizers(FeignClientFactory context, Feign.Builder builder) {
 		Map<String, FeignBuilderCustomizer> customizerMap = context.getInstances(contextId,
 				FeignBuilderCustomizer.class);
 
@@ -148,7 +157,7 @@ public class FeignClientFactoryBean
 		additionalCustomizers.forEach(customizer -> customizer.customize(builder));
 	}
 
-	protected void configureFeign(FeignContext context, Feign.Builder builder) {
+	protected void configureFeign(FeignClientFactory context, Feign.Builder builder) {
 		FeignClientProperties properties = beanFactory != null ? beanFactory.getBean(FeignClientProperties.class)
 				: applicationContext.getBean(FeignClientProperties.class);
 
@@ -172,7 +181,7 @@ public class FeignClientFactoryBean
 		}
 	}
 
-	protected void configureUsingConfiguration(FeignContext context, Feign.Builder builder) {
+	protected void configureUsingConfiguration(FeignClientFactory context, Feign.Builder builder) {
 		Logger.Level level = getInheritedAwareOptional(context, Logger.Level.class);
 		if (level != null) {
 			builder.logLevel(level);
@@ -340,7 +349,7 @@ public class FeignClientFactoryBean
 		}
 	}
 
-	protected <T> T get(FeignContext context, Class<T> type) {
+	protected <T> T get(FeignClientFactory context, Class<T> type) {
 		T instance = context.getInstance(contextId, type);
 		if (instance == null) {
 			throw new IllegalStateException("No bean found of type " + type + " for " + contextId);
@@ -348,11 +357,11 @@ public class FeignClientFactoryBean
 		return instance;
 	}
 
-	protected <T> T getOptional(FeignContext context, Class<T> type) {
+	protected <T> T getOptional(FeignClientFactory context, Class<T> type) {
 		return context.getInstance(contextId, type);
 	}
 
-	protected <T> T getInheritedAwareOptional(FeignContext context, Class<T> type) {
+	protected <T> T getInheritedAwareOptional(FeignClientFactory context, Class<T> type) {
 		if (inheritParentContext) {
 			return getOptional(context, type);
 		}
@@ -361,7 +370,7 @@ public class FeignClientFactoryBean
 		}
 	}
 
-	protected <T> Map<String, T> getInheritedAwareInstances(FeignContext context, Class<T> type) {
+	protected <T> Map<String, T> getInheritedAwareInstances(FeignClientFactory context, Class<T> type) {
 		if (inheritParentContext) {
 			return context.getInstances(contextId, type);
 		}
@@ -370,7 +379,7 @@ public class FeignClientFactoryBean
 		}
 	}
 
-	protected <T> T loadBalance(Feign.Builder builder, FeignContext context, HardCodedTarget<T> target) {
+	protected <T> T loadBalance(Feign.Builder builder, FeignClientFactory context, HardCodedTarget<T> target) {
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
 			builder.client(client);
@@ -389,7 +398,7 @@ public class FeignClientFactoryBean
 	 * @param contextId name of feign client
 	 * @return returns Options found in context
 	 */
-	protected Request.Options getOptionsByName(FeignContext context, String contextId) {
+	protected Request.Options getOptionsByName(FeignClientFactory context, String contextId) {
 		if (refreshableClient) {
 			return context.getInstance(contextId, Request.Options.class.getCanonicalName() + "-" + contextId,
 					Request.Options.class);
@@ -409,9 +418,9 @@ public class FeignClientFactoryBean
 	 */
 	@SuppressWarnings("unchecked")
 	<T> T getTarget() {
-		FeignContext context = beanFactory != null ? beanFactory.getBean(FeignContext.class)
-				: applicationContext.getBean(FeignContext.class);
-		Feign.Builder builder = feign(context);
+		FeignClientFactory feignClientFactory = beanFactory != null ? beanFactory.getBean(FeignClientFactory.class)
+				: applicationContext.getBean(FeignClientFactory.class);
+		Feign.Builder builder = feign(feignClientFactory);
 		if (!StringUtils.hasText(url) && !isUrlAvailableInConfig(contextId)) {
 
 			if (LOG.isInfoEnabled()) {
@@ -424,13 +433,13 @@ public class FeignClientFactoryBean
 				url = name;
 			}
 			url += cleanPath();
-			return (T) loadBalance(builder, context, new HardCodedTarget<>(type, name, url));
+			return (T) loadBalance(builder, feignClientFactory, new HardCodedTarget<>(type, name, url));
 		}
 		if (StringUtils.hasText(url) && !url.startsWith("http")) {
 			url = "http://" + url;
 		}
 		String url = this.url + cleanPath();
-		Client client = getOptional(context, Client.class);
+		Client client = getOptional(feignClientFactory, Client.class);
 		if (client != null) {
 			if (client instanceof FeignBlockingLoadBalancerClient) {
 				// not load balancing because we have a url,
@@ -445,10 +454,10 @@ public class FeignClientFactoryBean
 			builder.client(client);
 		}
 
-		applyBuildCustomizers(context, builder);
+		applyBuildCustomizers(feignClientFactory, builder);
 
-		Targeter targeter = get(context, Targeter.class);
-		return targeter.target(this, builder, context, resolveTarget(context, contextId, url));
+		Targeter targeter = get(feignClientFactory, Targeter.class);
+		return targeter.target(this, builder, feignClientFactory, resolveTarget(feignClientFactory, contextId, url));
 	}
 
 	private String cleanPath() {
@@ -468,7 +477,7 @@ public class FeignClientFactoryBean
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private <T> HardCodedTarget<T> resolveTarget(FeignContext context, String contextId, String url) {
+	private <T> HardCodedTarget<T> resolveTarget(FeignClientFactory context, String contextId, String url) {
 		if (StringUtils.hasText(url)) {
 			return new HardCodedTarget(type, name, url);
 		}
@@ -598,6 +607,14 @@ public class FeignClientFactoryBean
 
 	public void setRefreshableClient(boolean refreshableClient) {
 		this.refreshableClient = refreshableClient;
+	}
+
+	public String[] getQualifiers() {
+		return qualifiers;
+	}
+
+	public void setQualifiers(String[] qualifiers) {
+		this.qualifiers = qualifiers;
 	}
 
 	@Override

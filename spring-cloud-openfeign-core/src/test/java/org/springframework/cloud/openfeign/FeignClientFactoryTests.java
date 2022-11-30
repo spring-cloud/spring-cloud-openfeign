@@ -52,9 +52,10 @@ public class FeignClientFactoryTests {
 	public void testChildContexts() {
 		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
 		parent.refresh();
-		FeignContext context = new FeignContext();
+		FeignClientFactory context = new FeignClientFactory();
 		context.setApplicationContext(parent);
-		context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class), getSpec("bar", BarConfig.class)));
+		context.setConfigurations(
+				Arrays.asList(getSpec("foo", null, FooConfig.class), getSpec("bar", null, BarConfig.class)));
 
 		Foo foo = context.getInstance("foo", Foo.class);
 		assertThat(foo).as("foo was null").isNotNull();
@@ -83,8 +84,8 @@ public class FeignClientFactoryTests {
 		assertThat(client).isInstanceOf(Client.Default.class);
 	}
 
-	private FeignClientSpecification getSpec(String name, Class<?> configClass) {
-		return new FeignClientSpecification(name, new Class[] { configClass });
+	private FeignClientSpecification getSpec(String name, String className, Class<?> configClass) {
+		return new FeignClientSpecification(name, className, new Class[] { configClass });
 	}
 
 	interface TestType {
@@ -103,11 +104,11 @@ public class FeignClientFactoryTests {
 		}
 
 		@Bean
-		FeignContext feignContext() {
-			FeignContext feignContext = new FeignContext();
-			feignContext.setConfigurations(Collections.singletonList(
-					new FeignClientSpecification("test", new Class[] { LoadBalancerAutoConfiguration.class })));
-			return feignContext;
+		FeignClientFactory feignContext() {
+			FeignClientFactory feignClientFactory = new FeignClientFactory();
+			feignClientFactory.setConfigurations(Collections.singletonList(
+					new FeignClientSpecification("test", null, new Class[] { LoadBalancerAutoConfiguration.class })));
+			return feignClientFactory;
 		}
 
 		@Bean
