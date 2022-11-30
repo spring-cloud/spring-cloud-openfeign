@@ -25,6 +25,7 @@ import javax.lang.model.element.Modifier;
 
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.generate.MethodReference;
+import org.springframework.aot.hint.ProxyHints;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -100,16 +101,20 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 		@Override
 		public void applyTo(GenerationContext generationContext,
 				BeanFactoryInitializationCode beanFactoryInitializationCode) {
+			ProxyHints proxyHints = generationContext.getRuntimeHints().proxies();
 			Set<String> feignClientRegistrationMethods = feignClientBeanDefinitions.values().stream()
 					.map(beanDefinition -> {
 						Assert.notNull(beanDefinition, "beanDefinition cannot be null");
 						Assert.isInstanceOf(GenericBeanDefinition.class, beanDefinition);
 						GenericBeanDefinition registeredBeanDefinition = (GenericBeanDefinition) beanDefinition;
 						MutablePropertyValues feignClientProperties = registeredBeanDefinition.getPropertyValues();
+						String className = (String) feignClientProperties.get("type");
+						Assert.notNull(className, "className cannot be null");
+						Class clazz = ClassUtils.resolveClassName(className, null);
+						proxyHints.registerJdkProxy(clazz);
 						return beanFactoryInitializationCode.getMethods()
-								.add(buildMethodName((String) feignClientProperties.get("type")),
-										method -> generateFeignClientRegistrationMethod(method, feignClientProperties,
-												registeredBeanDefinition))
+								.add(buildMethodName(className), method -> generateFeignClientRegistrationMethod(method,
+										feignClientProperties, registeredBeanDefinition))
 								.getName();
 					}).collect(Collectors.toSet());
 			MethodReference initializerMethod = beanFactoryInitializationCode.getMethods()

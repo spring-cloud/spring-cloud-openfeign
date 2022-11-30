@@ -71,7 +71,7 @@ import org.springframework.util.StringUtils;
 class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
 	// patterned after Spring Integration IntegrationComponentScanRegistrar
-	// and RibbonClientsConfigurationRegistgrar
+	// and RibbonClientsConfigurationRegistrar
 
 	private ResourceLoader resourceLoader;
 

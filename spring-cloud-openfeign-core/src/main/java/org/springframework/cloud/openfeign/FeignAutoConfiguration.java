@@ -44,6 +44,10 @@ import okhttp3.ConnectionPool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.RuntimeHintsRegistrar;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -73,6 +77,7 @@ import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2A
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.util.ClassUtils;
 
 /**
  * @author Spencer Gibb
@@ -370,6 +375,20 @@ public class FeignAutoConfiguration {
 			return new OAuth2AccessTokenInterceptor(clientRegistrationId, oAuth2AuthorizedClientManager);
 		}
 
+	}
+
+}
+
+class FeignHints implements RuntimeHintsRegistrar {
+
+	@Override
+	public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+		if (!ClassUtils.isPresent("feign.Feign", classLoader)) {
+			return;
+		}
+		hints.reflection().registerType(TypeReference.of(FeignClientFactoryBean.class),
+				hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+						MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
 	}
 
 }

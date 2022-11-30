@@ -160,7 +160,6 @@ public class FeignAotTests {
 
 	}
 
-	// TODO: verify other annotation parameters
 	@FeignClient(value = "test-with-config", configuration = TestConfiguration.class)
 	interface TestFeignClientWithConfig {
 
