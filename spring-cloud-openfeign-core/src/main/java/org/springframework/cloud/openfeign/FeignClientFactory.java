@@ -44,7 +44,8 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 		this(new HashMap<>());
 	}
 
-	public FeignClientFactory(Map<String, ApplicationContextInitializer<GenericApplicationContext>> applicationContextInitializers) {
+	public FeignClientFactory(
+			Map<String, ApplicationContextInitializer<GenericApplicationContext>> applicationContextInitializers) {
 		super(FeignClientsConfiguration.class, "spring.cloud.openfeign", "spring.cloud.openfeign.client.name");
 		this.applicationContextInitializers = applicationContextInitializers;
 	}
@@ -69,13 +70,12 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 	}
 
 	@SuppressWarnings("unchecked")
-	public FeignClientFactory withApplicationContextInitializers(
-		Map<String, Object> applicationContextInitializers) {
+	public FeignClientFactory withApplicationContextInitializers(Map<String, Object> applicationContextInitializers) {
 		Map<String, ApplicationContextInitializer<GenericApplicationContext>> convertedInitializers = new HashMap<>();
 		applicationContextInitializers.keySet()
-			.forEach(contextId -> convertedInitializers.put(contextId,
-				(ApplicationContextInitializer<GenericApplicationContext>) applicationContextInitializers
-					.get(contextId)));
+				.forEach(contextId -> convertedInitializers.put(contextId,
+						(ApplicationContextInitializer<GenericApplicationContext>) applicationContextInitializers
+								.get(contextId)));
 		return new FeignClientFactory(convertedInitializers);
 	}
 
@@ -89,5 +89,5 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 		// Ensure the contexts are only initialized once after Aot processing
 		applicationContextInitializers = new HashMap<>();
 	}
-}
 
+}

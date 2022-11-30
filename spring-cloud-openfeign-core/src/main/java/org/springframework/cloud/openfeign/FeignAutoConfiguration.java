@@ -113,13 +113,13 @@ public class FeignAutoConfiguration {
 
 	@Bean
 	static FeignChildContextInitializer feignChildContextInitializer(GenericApplicationContext parentContext,
-		FeignClientFactory feignClientFactory) {
+			FeignClientFactory feignClientFactory) {
 		return new FeignChildContextInitializer(parentContext, feignClientFactory);
 	}
 
 	@Bean
-	static FeignClientBeanFactoryInitializationAotProcessor feignClientBeanFactoryInitializationCodeGenerator(GenericApplicationContext applicationContext,
-		FeignClientFactory feignClientFactory) {
+	static FeignClientBeanFactoryInitializationAotProcessor feignClientBeanFactoryInitializationCodeGenerator(
+			GenericApplicationContext applicationContext, FeignClientFactory feignClientFactory) {
 		return new FeignClientBeanFactoryInitializationAotProcessor(applicationContext, feignClientFactory);
 	}
 
@@ -131,7 +131,7 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass({Module.class, Page.class, Sort.class})
+	@ConditionalOnClass({ Module.class, Page.class, Sort.class })
 	@ConditionalOnProperty(value = "spring.cloud.openfeign.autoconfiguration.jackson.enabled", havingValue = "true",
 			matchIfMissing = true)
 	protected static class FeignJacksonConfiguration {

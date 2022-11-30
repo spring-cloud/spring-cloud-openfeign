@@ -68,9 +68,14 @@ public class FeignClientSpecification implements NamedContextFactory.Specificati
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (!(o instanceof FeignClientSpecification that)) return false;
-		return Objects.equals(name, that.name) && Objects.equals(className, that.className) && Arrays.equals(configuration, that.configuration);
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof FeignClientSpecification that)) {
+			return false;
+		}
+		return Objects.equals(name, that.name) && Objects.equals(className, that.className)
+				&& Arrays.equals(configuration, that.configuration);
 	}
 
 	@Override
@@ -80,13 +85,10 @@ public class FeignClientSpecification implements NamedContextFactory.Specificati
 		return result;
 	}
 
-
 	@Override
 	public String toString() {
-		return "FeignClientSpecification{" + "name='"
-			+ name + "', "
-			+ "className='" + className + "', "
-			+ "configuration=" + Arrays.toString(configuration) + "}";
+		return "FeignClientSpecification{" + "name='" + name + "', " + "className='" + className + "', "
+				+ "configuration=" + Arrays.toString(configuration) + "}";
 	}
 
 }

@@ -47,7 +47,7 @@ class FeignClientFactoryTest {
 	}
 
 	private FeignClientSpecification getSpec(String name, String className, Class<?> configClass) {
-		return new FeignClientSpecification(name, className, new Class[] {configClass});
+		return new FeignClientSpecification(name, className, new Class[] { configClass });
 	}
 
 	@Test
