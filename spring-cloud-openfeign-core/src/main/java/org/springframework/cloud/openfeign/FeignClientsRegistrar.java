@@ -240,6 +240,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		}
 		definition.addPropertyValue("fallbackFactory", attributes.get("fallbackFactory"));
 		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+		definition.addPropertyValue("refreshableClient", isClientRefreshEnabled());
 		String[] qualifiers = getQualifiers(attributes);
 		if (ObjectUtils.isEmpty(qualifiers)) {
 			qualifiers = new String[] { contextId + "FeignClient" };

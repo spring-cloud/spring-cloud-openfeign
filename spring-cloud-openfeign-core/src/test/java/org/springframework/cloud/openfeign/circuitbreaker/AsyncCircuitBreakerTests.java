@@ -65,7 +65,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author John Niang
  */
 @SpringBootTest(classes = AsyncCircuitBreakerTests.Application.class, webEnvironment = RANDOM_PORT,
-		properties = "spring.cloud.openfeign.circuitbreaker.enabled=true")
+		properties = { "spring.cloud.openfeign.circuitbreaker.enabled=true",
+				"spring.cloud.openfeign.lazy-attributes-resolution=true" })
 @AutoConfigureMockMvc
 class AsyncCircuitBreakerTests {
 
