@@ -420,7 +420,6 @@ public class FeignClientFactoryBean
 	<T> T getTarget() {
 		FeignClientFactory feignClientFactory = beanFactory != null ? beanFactory.getBean(FeignClientFactory.class)
 				: applicationContext.getBean(FeignClientFactory.class);
-		feignClientFactory.initializeChildContexts();
 		Feign.Builder builder = feign(feignClientFactory);
 		if (!StringUtils.hasText(url) && !isUrlAvailableInConfig(contextId)) {
 

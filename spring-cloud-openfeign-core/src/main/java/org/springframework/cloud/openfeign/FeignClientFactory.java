@@ -38,16 +38,14 @@ import org.springframework.lang.Nullable;
  */
 public class FeignClientFactory extends NamedContextFactory<FeignClientSpecification> {
 
-	private Map<String, ApplicationContextInitializer<GenericApplicationContext>> applicationContextInitializers;
-
 	public FeignClientFactory() {
 		this(new HashMap<>());
 	}
 
 	public FeignClientFactory(
 			Map<String, ApplicationContextInitializer<GenericApplicationContext>> applicationContextInitializers) {
-		super(FeignClientsConfiguration.class, "spring.cloud.openfeign", "spring.cloud.openfeign.client.name");
-		this.applicationContextInitializers = applicationContextInitializers;
+		super(FeignClientsConfiguration.class, "spring.cloud.openfeign", "spring.cloud.openfeign.client.name",
+				applicationContextInitializers);
 	}
 
 	@Nullable
@@ -77,17 +75,6 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 						(ApplicationContextInitializer<GenericApplicationContext>) applicationContextInitializers
 								.get(contextId)));
 		return new FeignClientFactory(convertedInitializers);
-	}
-
-	public void initializeChildContexts() {
-		applicationContextInitializers.keySet().forEach(contextId -> {
-			GenericApplicationContext childContext = buildContext(contextId);
-			applicationContextInitializers.get(contextId).initialize(childContext);
-			addContext(contextId, childContext);
-			childContext.refresh();
-		});
-		// Ensure the contexts are only initialized once after Aot processing
-		applicationContextInitializers = new HashMap<>();
 	}
 
 }
