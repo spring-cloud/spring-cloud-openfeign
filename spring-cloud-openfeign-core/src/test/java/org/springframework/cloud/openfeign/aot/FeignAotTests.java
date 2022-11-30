@@ -55,7 +55,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests for {@link FeignChildContextInitializer}.
+ * AOT processing tests.
  *
  * @author Olga Maciaszek-Sharma
  */

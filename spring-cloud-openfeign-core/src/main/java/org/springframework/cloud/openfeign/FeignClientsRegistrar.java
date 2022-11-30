@@ -206,7 +206,6 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	private void registerFeignClient(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata,
 			Map<String, Object> attributes) {
 		String className = annotationMetadata.getClassName();
-		// TODO: document change and correct AOT and contract usage
 		if (String.valueOf(false).equals(
 				environment.getProperty("spring.cloud.openfeign.lazy-attributes-resolution", String.valueOf(false)))) {
 			eagerlyRegisterFeignClientBeanDefinition(className, attributes, registry);

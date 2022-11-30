@@ -52,7 +52,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
+ * A {@link BeanFactoryInitializationAotProcessor} that creates an
+ * {@link BeanFactoryInitializationAotContribution} that registers bean definitions and
+ * proxy hints for Feign client beans.
+ *
  * @author Olga Maciaszek-Sharma
+ * @since 4.0.0
  */
 public class FeignClientBeanFactoryInitializationAotProcessor
 		implements BeanRegistrationExcludeFilter, BeanFactoryInitializationAotProcessor {
