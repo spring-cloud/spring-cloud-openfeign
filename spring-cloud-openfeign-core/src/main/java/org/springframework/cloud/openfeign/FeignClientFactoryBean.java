@@ -32,6 +32,7 @@ import feign.Logger;
 import feign.QueryMapEncoder;
 import feign.Request;
 import feign.RequestInterceptor;
+import feign.ResponseInterceptor;
 import feign.Retryer;
 import feign.Target.HardCodedTarget;
 import feign.codec.Decoder;
@@ -219,6 +220,10 @@ public class FeignClientFactoryBean
 			AnnotationAwareOrderComparator.sort(interceptors);
 			builder.requestInterceptors(interceptors);
 		}
+		ResponseInterceptor responseInterceptor = getInheritedAwareOptional(context, ResponseInterceptor.class);
+		if (responseInterceptor != null) {
+			builder.responseInterceptor(responseInterceptor);
+		}
 		QueryMapEncoder queryMapEncoder = getInheritedAwareOptional(context, QueryMapEncoder.class);
 		if (queryMapEncoder != null) {
 			builder.queryMapEncoder(queryMapEncoder);
@@ -275,6 +280,10 @@ public class FeignClientFactoryBean
 				RequestInterceptor interceptor = getOrInstantiate(bean);
 				builder.requestInterceptor(interceptor);
 			}
+		}
+
+		if (config.getResponseInterceptor() != null) {
+			builder.responseInterceptor(getOrInstantiate(config.getResponseInterceptor()));
 		}
 
 		if (config.getDismiss404() != null) {

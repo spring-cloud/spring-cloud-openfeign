@@ -34,11 +34,13 @@ import java.util.stream.Stream;
 
 import feign.Capability;
 import feign.Feign;
+import feign.InvocationContext;
 import feign.InvocationHandlerFactory;
 import feign.QueryMapEncoder;
 import feign.Request;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import feign.ResponseInterceptor;
 import feign.RetryableException;
 import feign.Retryer;
 import feign.codec.EncodeException;
@@ -99,6 +101,8 @@ public class FeignClientUsingPropertiesTests {
 
 	private FeignClientFactoryBean barFactoryBean;
 
+	private FeignClientFactoryBean bazFactoryBean;
+
 	private FeignClientFactoryBean unwrapFactoryBean;
 
 	private FeignClientFactoryBean formFactoryBean;
@@ -115,6 +119,10 @@ public class FeignClientUsingPropertiesTests {
 		barFactoryBean = new FeignClientFactoryBean();
 		barFactoryBean.setContextId("bar");
 		barFactoryBean.setType(FeignClientFactoryBean.class);
+
+		bazFactoryBean = new FeignClientFactoryBean();
+		bazFactoryBean.setContextId("baz");
+		bazFactoryBean.setType(FeignClientFactoryBean.class);
 
 		unwrapFactoryBean = new FeignClientFactoryBean();
 		unwrapFactoryBean.setContextId("unwrap");
@@ -143,6 +151,11 @@ public class FeignClientUsingPropertiesTests {
 		return barFactoryBean.feign(context).target(BarClient.class, "http://localhost:" + port);
 	}
 
+	public PingClient pingClient() {
+		bazFactoryBean.setApplicationContext(applicationContext);
+		return bazFactoryBean.feign(context).target(PingClient.class, "http://localhost:" + port);
+	}
+
 	public UnwrapClient unwrapClient() {
 		unwrapFactoryBean.setApplicationContext(applicationContext);
 		return unwrapFactoryBean.feign(context).target(UnwrapClient.class, "http://localhost:" + port);
@@ -162,6 +175,12 @@ public class FeignClientUsingPropertiesTests {
 	@Test
 	public void testBar() {
 		assertThatThrownBy(() -> barClient().bar()).isInstanceOf(RetryableException.class);
+	}
+
+	@Test
+	public void testBaz() {
+		String response = pingClient().ping();
+		assertThat(response).isEqualTo("baz");
 	}
 
 	@Test
@@ -298,6 +317,13 @@ public class FeignClientUsingPropertiesTests {
 
 	}
 
+	protected interface PingClient {
+
+		@GetMapping(path = "/ping")
+		String ping();
+
+	}
+
 	protected interface UnwrapClient {
 
 		@GetMapping(path = "/bar") // intentionally /bar
@@ -355,6 +381,11 @@ public class FeignClientUsingPropertiesTests {
 			return "OK";
 		}
 
+		@GetMapping(path = "/ping")
+		public String ping() {
+			return "pong";
+		}
+
 		@PostMapping(path = "/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 		public String form(HttpServletRequest request) {
 			return request.getParameter("form");
@@ -390,6 +421,15 @@ public class FeignClientUsingPropertiesTests {
 		@Override
 		public void apply(RequestTemplate template) {
 			template.header("Bar", "Bar");
+		}
+
+	}
+
+	public static class BazResponseInterceptor implements ResponseInterceptor {
+
+		@Override
+		public Object aroundDecode(InvocationContext invocationContext) {
+			return "baz";
 		}
 
 	}

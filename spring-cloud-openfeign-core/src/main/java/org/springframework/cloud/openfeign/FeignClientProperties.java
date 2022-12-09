@@ -28,6 +28,7 @@ import feign.ExceptionPropagationPolicy;
 import feign.Logger;
 import feign.QueryMapEncoder;
 import feign.RequestInterceptor;
+import feign.ResponseInterceptor;
 import feign.Retryer;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
@@ -126,6 +127,8 @@ public class FeignClientProperties {
 
 		private List<Class<RequestInterceptor>> requestInterceptors;
 
+		private Class<ResponseInterceptor> responseInterceptor;
+
 		private Map<String, Collection<String>> defaultRequestHeaders;
 
 		private Map<String, Collection<String>> defaultQueryParameters;
@@ -200,6 +203,14 @@ public class FeignClientProperties {
 
 		public void setRequestInterceptors(List<Class<RequestInterceptor>> requestInterceptors) {
 			this.requestInterceptors = requestInterceptors;
+		}
+
+		public Class<ResponseInterceptor> getResponseInterceptor() {
+			return responseInterceptor;
+		}
+
+		public void setResponseInterceptor(Class<ResponseInterceptor> responseInterceptor) {
+			this.responseInterceptor = responseInterceptor;
 		}
 
 		public Map<String, Collection<String>> getDefaultRequestHeaders() {
@@ -311,6 +322,7 @@ public class FeignClientProperties {
 					&& Objects.equals(readTimeout, that.readTimeout) && Objects.equals(retryer, that.retryer)
 					&& Objects.equals(errorDecoder, that.errorDecoder)
 					&& Objects.equals(requestInterceptors, that.requestInterceptors)
+					&& Objects.equals(responseInterceptor, that.responseInterceptor)
 					&& Objects.equals(dismiss404, that.dismiss404) && Objects.equals(encoder, that.encoder)
 					&& Objects.equals(decoder, that.decoder) && Objects.equals(contract, that.contract)
 					&& Objects.equals(exceptionPropagationPolicy, that.exceptionPropagationPolicy)
@@ -325,8 +337,9 @@ public class FeignClientProperties {
 		@Override
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
-					dismiss404, encoder, decoder, contract, exceptionPropagationPolicy, defaultQueryParameters,
-					defaultRequestHeaders, capabilities, queryMapEncoder, micrometer, followRedirects, url);
+					responseInterceptor, dismiss404, encoder, decoder, contract, exceptionPropagationPolicy,
+					defaultQueryParameters, defaultRequestHeaders, capabilities, queryMapEncoder, micrometer,
+					followRedirects, url);
 		}
 
 	}
