@@ -827,14 +827,6 @@ TIP:: Using the `serviceId` as OAuth2 client registrationId is convenient for lo
 
 TIP:: If you do not want to use the default setup for the `OAuth2AuthorizedClientManager`, you can just instantiate a bean of this type in your configuration.
 
-=== Transform the load-balanced HTTP request
-
-You can use the selected `ServiceInstance` to transform the load-balanced HTTP Request.
-
-For `Request`, you need to implement and define `LoadBalancerFeignRequestTransformer`, as follows:
-
-[source,java,indent=0]
-----
 
 == Configuration properties
 
