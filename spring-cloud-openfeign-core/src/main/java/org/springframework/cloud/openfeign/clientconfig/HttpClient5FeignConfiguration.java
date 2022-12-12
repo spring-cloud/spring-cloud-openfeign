@@ -35,6 +35,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.LayeredConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.ssl.TLS;
@@ -110,6 +111,7 @@ public class HttpClient5FeignConfiguration {
 				final SSLContext sslContext = SSLContext.getInstance("SSL");
 				sslContext.init(null, new TrustManager[] { new DisabledValidationTrustManager() }, new SecureRandom());
 				sslConnectionSocketFactoryBuilder.setSslContext(sslContext);
+				sslConnectionSocketFactoryBuilder.setHostnameVerifier(NoopHostnameVerifier.INSTANCE);
 			}
 			catch (NoSuchAlgorithmException | KeyManagementException e) {
 				LOG.warn("Error creating SSLContext", e);
