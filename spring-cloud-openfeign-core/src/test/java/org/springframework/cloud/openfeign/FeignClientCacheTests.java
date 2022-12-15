@@ -41,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Sam Kruglov
+ * @author Dominique Villard
  */
 @SpringBootTest(classes = FeignClientCacheTests.TestConfiguration.class)
 @DirtiesContext

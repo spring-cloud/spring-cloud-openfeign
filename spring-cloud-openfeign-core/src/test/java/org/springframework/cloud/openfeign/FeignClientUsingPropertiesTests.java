@@ -81,6 +81,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author Ilia Ilinykh
  * @author Jonatan Ivanov
  * @author Hyeonmin Park
+ * @author Dominique Villard
  */
 @SuppressWarnings("FieldMayBeFinal")
 @SpringBootTest(classes = FeignClientUsingPropertiesTests.Application.class, webEnvironment = RANDOM_PORT)

@@ -44,6 +44,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Olga Maciaszek-Sharma
  * @author Hyeonmin Park
  * @author Jasbir Singh
+ * @author Dominique Villard
  */
 @ConfigurationProperties("spring.cloud.openfeign.client")
 public class FeignClientProperties {
