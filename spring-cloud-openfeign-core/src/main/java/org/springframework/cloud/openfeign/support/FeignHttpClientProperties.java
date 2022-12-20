@@ -27,6 +27,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Ryan Baxter
  * @author Nguyen Ky Thanh
  * @author Olga Maciaszek-Sharma
+ * @author changjin wei(魏昌进)
  */
 @ConfigurationProperties(prefix = "spring.cloud.openfeign.httpclient")
 public class FeignHttpClientProperties {
@@ -200,6 +201,16 @@ public class FeignHttpClientProperties {
 		public static final TimeUnit DEFAULT_SOCKET_TIMEOUT_UNIT = TimeUnit.SECONDS;
 
 		/**
+		 * Default value for connection request timeout.
+		 */
+		public static final int DEFAULT_CONNECTION_REQUEST_TIMEOUT = 5;
+
+		/**
+		 * Default value for connection request timeout unit.
+		 */
+		public static final TimeUnit DEFAULT_CONNECTION_REQUEST_TIMEOUT_UNIT = TimeUnit.SECONDS;
+
+		/**
 		 * Pool concurrency policies.
 		 */
 		private PoolConcurrencyPolicy poolConcurrencyPolicy = DEFAULT_POOL_CONCURRENCY_POLICY;
@@ -218,6 +229,16 @@ public class FeignHttpClientProperties {
 		 * Default value for socket timeout unit.
 		 */
 		private TimeUnit socketTimeoutUnit = DEFAULT_SOCKET_TIMEOUT_UNIT;
+
+		/**
+		 * Default value for connection request timeout.
+		 */
+		private int connectionRequestTimeout = DEFAULT_CONNECTION_REQUEST_TIMEOUT;
+
+		/**
+		 * Default value for connection request timeout unit.
+		 */
+		private TimeUnit connectionRequestTimeoutUnit = DEFAULT_CONNECTION_REQUEST_TIMEOUT_UNIT;
 
 		public PoolConcurrencyPolicy getPoolConcurrencyPolicy() {
 			return poolConcurrencyPolicy;
@@ -249,6 +270,22 @@ public class FeignHttpClientProperties {
 
 		public void setSocketTimeout(int socketTimeout) {
 			this.socketTimeout = socketTimeout;
+		}
+
+		public int getConnectionRequestTimeout() {
+			return connectionRequestTimeout;
+		}
+
+		public void setConnectionRequestTimeout(int connectionRequestTimeout) {
+			this.connectionRequestTimeout = connectionRequestTimeout;
+		}
+
+		public TimeUnit getConnectionRequestTimeoutUnit() {
+			return connectionRequestTimeoutUnit;
+		}
+
+		public void setConnectionRequestTimeoutUnit(TimeUnit connectionRequestTimeoutUnit) {
+			this.connectionRequestTimeoutUnit = connectionRequestTimeoutUnit;
 		}
 
 		/**
