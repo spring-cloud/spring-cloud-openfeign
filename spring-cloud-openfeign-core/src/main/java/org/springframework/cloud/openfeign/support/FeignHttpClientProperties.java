@@ -203,7 +203,7 @@ public class FeignHttpClientProperties {
 		/**
 		 * Default value for connection request timeout.
 		 */
-		public static final int DEFAULT_CONNECTION_REQUEST_TIMEOUT = 5;
+		public static final int DEFAULT_CONNECTION_REQUEST_TIMEOUT = 3;
 
 		/**
 		 * Default value for connection request timeout unit.
