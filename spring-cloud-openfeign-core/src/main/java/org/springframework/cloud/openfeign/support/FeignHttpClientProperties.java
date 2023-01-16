@@ -208,7 +208,7 @@ public class FeignHttpClientProperties {
 		/**
 		 * Default value for connection request timeout unit.
 		 */
-		public static final TimeUnit DEFAULT_CONNECTION_REQUEST_TIMEOUT_UNIT = TimeUnit.SECONDS;
+		public static final TimeUnit DEFAULT_CONNECTION_REQUEST_TIMEOUT_UNIT = TimeUnit.MINUTES;
 
 		/**
 		 * Pool concurrency policies.
