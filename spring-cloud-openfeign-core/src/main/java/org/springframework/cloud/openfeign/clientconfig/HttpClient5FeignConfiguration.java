@@ -55,6 +55,7 @@ import org.springframework.context.annotation.Configuration;
  * Default configuration for {@link CloseableHttpClient}.
  *
  * @author Nguyen Ky Thanh
+ * @author changjin wei(魏昌进)
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(CloseableHttpClient.class)
@@ -90,7 +91,11 @@ public class HttpClient5FeignConfiguration {
 				.setDefaultRequestConfig(RequestConfig.custom()
 						.setConnectTimeout(
 								Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
-						.setRedirectsEnabled(httpClientProperties.isFollowRedirects()).build())
+						.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
+						.setConnectionRequestTimeout(
+								Timeout.of(httpClientProperties.getHc5().getConnectionRequestTimeout(),
+										httpClientProperties.getHc5().getConnectionRequestTimeoutUnit()))
+						.build())
 				.build();
 		return httpClient5;
 	}
