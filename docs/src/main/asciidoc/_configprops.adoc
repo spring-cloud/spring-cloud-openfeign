@@ -20,6 +20,8 @@
 |feign.httpclient.disable-ssl-validation | `+++false+++` | 
 |feign.httpclient.enabled | `+++true+++` | Enables the use of the Apache HTTP Client by Feign.
 |feign.httpclient.follow-redirects | `+++true+++` | 
+|feign.httpclient.hc5.connection-request-timeout | `+++3+++` | Default value for connection request timeout.
+|feign.httpclient.hc5.connection-request-timeout-unit |  | Default value for connection request timeout unit.
 |feign.httpclient.hc5.enabled | `+++false+++` | Enables the use of the Apache HTTP Client 5 by Feign.
 |feign.httpclient.hc5.pool-concurrency-policy |  | Pool concurrency policies.
 |feign.httpclient.hc5.pool-reuse-policy |  | Pool connection re-use policies.

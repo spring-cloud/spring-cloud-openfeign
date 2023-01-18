@@ -78,16 +78,14 @@ class FeignHttpClientPropertiesTests {
 
 	@Test
 	void testCustomization() {
-		TestPropertyValues
-			.of("feign.httpclient.maxConnections=2", "feign.httpclient.connectionTimeout=2",
-						"feign.httpclient.maxConnectionsPerRoute=2", "feign.httpclient.timeToLive=2",
-						"feign.httpclient.disableSslValidation=true", "feign.httpclient.followRedirects=false",
-						"feign.httpclient.disableSslValidation=true", "feign.httpclient.followRedirects=false",
-						"feign.httpclient.hc5.poolConcurrencyPolicy=lax", "feign.httpclient.hc5.poolReusePolicy=lifo",
-						"feign.httpclient.hc5.socketTimeout=200", "feign.httpclient.hc5.socketTimeoutUnit=milliseconds",
-						"feign.httpclient.hc5.connectionRequestTimeout=200",
-						"feign.httpclient.hc5.connectionRequestTimeoutUnit=milliseconds")
-				.applyTo(this.context);
+		TestPropertyValues.of("feign.httpclient.maxConnections=2", "feign.httpclient.connectionTimeout=2",
+				"feign.httpclient.maxConnectionsPerRoute=2", "feign.httpclient.timeToLive=2",
+				"feign.httpclient.disableSslValidation=true", "feign.httpclient.followRedirects=false",
+				"feign.httpclient.disableSslValidation=true", "feign.httpclient.followRedirects=false",
+				"feign.httpclient.hc5.poolConcurrencyPolicy=lax", "feign.httpclient.hc5.poolReusePolicy=lifo",
+				"feign.httpclient.hc5.socketTimeout=200", "feign.httpclient.hc5.socketTimeoutUnit=milliseconds",
+				"feign.httpclient.hc5.connectionRequestTimeout=200",
+				"feign.httpclient.hc5.connectionRequestTimeoutUnit=milliseconds").applyTo(this.context);
 		setupContext();
 		assertThat(getProperties().getMaxConnections()).isEqualTo(2);
 		assertThat(getProperties().getConnectionTimeout()).isEqualTo(2);
