@@ -17,9 +17,11 @@
 package org.springframework.cloud.openfeign.support;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import feign.okhttp.OkHttpClient;
+import okhttp3.Protocol;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -336,12 +338,25 @@ public class FeignHttpClientProperties {
 		 */
 		private Duration readTimeout = Duration.ofSeconds(60);
 
+		/**
+		 * Configure the protocols used by this client to communicate with remote servers.
+		 */
+		private List<Protocol> protocols = List.of(Protocol.HTTP_2, Protocol.HTTP_1_1);
+
 		public Duration getReadTimeout() {
 			return readTimeout;
 		}
 
 		public void setReadTimeout(Duration readTimeout) {
 			this.readTimeout = readTimeout;
+		}
+
+		public List<Protocol> getProtocols() {
+			return protocols;
+		}
+
+		public void setProtocols(List<Protocol> protocols) {
+			this.protocols = protocols;
 		}
 
 	}

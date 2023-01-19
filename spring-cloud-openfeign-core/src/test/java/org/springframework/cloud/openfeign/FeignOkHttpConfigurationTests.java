@@ -17,10 +17,12 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Ryan Baxter
+ * @author changjin wei(魏昌进)
  */
 class FeignOkHttpConfigurationTests {
 
@@ -45,7 +48,8 @@ class FeignOkHttpConfigurationTests {
 				.properties("debug=true", "spring.cloud.openfeign.httpclient.disableSslValidation=true",
 						"spring.cloud.openfeign.okhttp.enabled=true",
 						"spring.cloud.openfeign.httpclient.hc5.enabled=false",
-						"spring.cloud.openfeign.httpclient.okhttp.read-timeout=9s")
+						"spring.cloud.openfeign.httpclient.okhttp.read-timeout=9s",
+						"spring.cloud.openfeign.httpclient.okhttp.protocols=H2_PRIOR_KNOWLEDGE")
 				.web(WebApplicationType.NONE).sources(FeignAutoConfiguration.class).run();
 	}
 
@@ -69,6 +73,13 @@ class FeignOkHttpConfigurationTests {
 		OkHttpClient httpClient = context.getBean(OkHttpClient.class);
 
 		assertThat(httpClient.readTimeoutMillis()).isEqualTo(9000);
+	}
+
+	@Test
+	void shouldProtocols() {
+		OkHttpClient httpClient = context.getBean(OkHttpClient.class);
+
+		assertThat(httpClient.protocols()).isEqualTo(List.of(Protocol.H2_PRIOR_KNOWLEDGE));
 	}
 
 	protected Object getField(Object target, String name) {

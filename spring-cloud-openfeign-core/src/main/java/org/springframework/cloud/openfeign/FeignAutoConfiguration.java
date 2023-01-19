@@ -41,6 +41,7 @@ import feign.hc5.ApacheHttp5Client;
 import feign.okhttp.OkHttpClient;
 import jakarta.annotation.PreDestroy;
 import okhttp3.ConnectionPool;
+import okhttp3.Protocol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -92,6 +93,7 @@ import org.springframework.util.ClassUtils;
  * @author Sam Kruglov
  * @author Wojciech Mąka
  * @author Dangzhicairang(小水牛)
+ * @author changjin wei(魏昌进)
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
@@ -259,11 +261,13 @@ public class FeignAutoConfiguration {
 			int connectTimeout = httpClientProperties.getConnectionTimeout();
 			boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
 			Duration readTimeout = httpClientProperties.getOkHttp().getReadTimeout();
+			List<Protocol> protocols = httpClientProperties.getOkHttp().getProtocols();
 			if (disableSslValidation) {
 				disableSsl(builder);
 			}
 			this.okHttpClient = builder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-					.followRedirects(followRedirects).readTimeout(readTimeout).connectionPool(connectionPool).build();
+					.followRedirects(followRedirects).readTimeout(readTimeout).connectionPool(connectionPool)
+					.protocols(protocols).build();
 			return this.okHttpClient;
 		}
 
