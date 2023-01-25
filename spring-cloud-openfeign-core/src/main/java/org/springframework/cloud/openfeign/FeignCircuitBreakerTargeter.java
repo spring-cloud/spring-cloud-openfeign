@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign;
 import feign.Feign;
 import feign.Target;
 
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.util.StringUtils;
 
@@ -78,10 +79,26 @@ class FeignCircuitBreakerTargeter implements Targeter {
 							beanType, feignClientName));
 		}
 
-		if (!targetType.isAssignableFrom(beanType)) {
-			throw new IllegalStateException(String.format("Incompatible " + fallbackMechanism
-					+ " instance. Fallback/fallbackFactory of type %s is not assignable to %s for feign client %s",
+		if (fallbackInstance instanceof FactoryBean<?> factoryBean) {
+			try {
+				fallbackInstance = factoryBean.getObject();
+			} catch (Exception e) {
+				throw new IllegalStateException(fallbackMechanism +" create fail", e);
+			}
+
+			if (!targetType.isAssignableFrom(fallbackInstance.getClass())) {
+				throw new IllegalStateException(String.format("Incompatible " + fallbackMechanism
+						+ " instance. Fallback/fallbackFactory of type %s is not assignable to %s for feign client %s",
+					fallbackInstance.getClass(), targetType, feignClientName));
+			}
+
+
+		} else {
+			if (!targetType.isAssignableFrom(beanType)) {
+				throw new IllegalStateException(String.format("Incompatible " + fallbackMechanism
+						+ " instance. Fallback/fallbackFactory of type %s is not assignable to %s for feign client %s",
 					beanType, targetType, feignClientName));
+			}
 		}
 		return (T) fallbackInstance;
 	}
