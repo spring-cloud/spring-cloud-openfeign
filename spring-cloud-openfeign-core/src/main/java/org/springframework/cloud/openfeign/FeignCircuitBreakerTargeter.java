@@ -82,22 +82,23 @@ class FeignCircuitBreakerTargeter implements Targeter {
 		if (fallbackInstance instanceof FactoryBean<?> factoryBean) {
 			try {
 				fallbackInstance = factoryBean.getObject();
-			} catch (Exception e) {
-				throw new IllegalStateException(fallbackMechanism +" create fail", e);
+			}
+			catch (Exception e) {
+				throw new IllegalStateException(fallbackMechanism + " create fail", e);
 			}
 
 			if (!targetType.isAssignableFrom(fallbackInstance.getClass())) {
 				throw new IllegalStateException(String.format("Incompatible " + fallbackMechanism
 						+ " instance. Fallback/fallbackFactory of type %s is not assignable to %s for feign client %s",
-					fallbackInstance.getClass(), targetType, feignClientName));
+						fallbackInstance.getClass(), targetType, feignClientName));
 			}
 
-
-		} else {
+		}
+		else {
 			if (!targetType.isAssignableFrom(beanType)) {
 				throw new IllegalStateException(String.format("Incompatible " + fallbackMechanism
 						+ " instance. Fallback/fallbackFactory of type %s is not assignable to %s for feign client %s",
-					beanType, targetType, feignClientName));
+						beanType, targetType, feignClientName));
 			}
 		}
 		return (T) fallbackInstance;
