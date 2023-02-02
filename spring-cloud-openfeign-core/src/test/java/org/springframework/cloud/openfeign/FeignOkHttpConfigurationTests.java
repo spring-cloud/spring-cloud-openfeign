@@ -17,8 +17,6 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Field;
-import java.util.List;
-
 import javax.net.ssl.HostnameVerifier;
 
 import okhttp3.OkHttpClient;
@@ -76,10 +74,10 @@ class FeignOkHttpConfigurationTests {
 	}
 
 	@Test
-	void shouldProtocols() {
+	void shouldResolveProtocolFromProperties() {
 		OkHttpClient httpClient = context.getBean(OkHttpClient.class);
 
-		assertThat(httpClient.protocols()).isEqualTo(List.of(Protocol.H2_PRIOR_KNOWLEDGE));
+		assertThat(httpClient.protocols()).containsExactly(Protocol.H2_PRIOR_KNOWLEDGE);
 	}
 
 	protected Object getField(Object target, String name) {

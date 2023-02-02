@@ -16,21 +16,31 @@
 
 package org.springframework.cloud.openfeign.protocol;
 
+import java.lang.reflect.Field;
+
 import feign.Client;
+import okhttp3.Protocol;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClients;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
+import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author changjin wei(魏昌进)
  */
-@SpringBootTest(classes = Application.ProtocolController.class, webEnvironment = WebEnvironment.RANDOM_PORT,
+@SpringBootTest(classes = FeignOkProtocolsTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest", "spring.cloud.openfeign.circuitbreaker.enabled=false",
 				"spring.cloud.openfeign.httpclient.hc5.enabled=false", "spring.cloud.openfeign.okhttp.enabled=true",
 				"spring.cloud.httpclientfactories.ok.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false",
@@ -41,21 +51,30 @@ class FeignOkProtocolsTests {
 	@Autowired
 	private Client feignClient;
 
-	@Autowired
-	private Application.ProtocolClient protocolClient;
-
 	@Test
-	void testFeignClientType() {
+	void shouldCreateCorrectFeignClientBeanWithProtocolFromProperties() {
 		assertThat(feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
 		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) feignClient;
 		Client delegate = client.getDelegate();
 		assertThat(delegate).isInstanceOf(feign.okhttp.OkHttpClient.class);
+		okhttp3.OkHttpClient OkHttpClient = (okhttp3.OkHttpClient) getField(delegate, "delegate");
+		assertThat(OkHttpClient.protocols()).containsExactly(Protocol.H2_PRIOR_KNOWLEDGE);
+
 	}
 
-	@Test
-	void shouldHttp2() {
-		String protocol = protocolClient.getProtocol();
-		assertThat(protocol).isEqualTo("HTTP/2.0");
+	protected Object getField(Object target, String name) {
+		Field field = ReflectionUtils.findField(target.getClass(), name);
+		ReflectionUtils.makeAccessible(field);
+		return ReflectionUtils.getField(field, target);
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@EnableAutoConfiguration
+	@RestController
+	@LoadBalancerClients
+	@Import(NoSecurityConfiguration.class)
+	public static class Application {
+
 	}
 
 }
