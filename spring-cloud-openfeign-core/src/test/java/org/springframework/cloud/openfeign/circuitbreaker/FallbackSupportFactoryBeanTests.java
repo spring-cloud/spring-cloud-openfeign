@@ -76,7 +76,7 @@ public class FallbackSupportFactoryBeanTests {
 			}).withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true");
 
 	@Test
-	public void shouldRunFallbackFromBeanOrFactoryBean() {
+	void shouldRunFallbackFromBeanOrFactoryBean() {
 		runner.run(ctx -> {
 			assertThat(ctx.getBean(OriginalFeign.class).get().equals(ORIGINAL_FALLBACK_MESSAGE)).isTrue();
 			assertThat(ctx.getBean(FactoryBeanFallbackFeign.class).get().equals(FACTORY_BEAN_FALLBACK_MESSAGE))
