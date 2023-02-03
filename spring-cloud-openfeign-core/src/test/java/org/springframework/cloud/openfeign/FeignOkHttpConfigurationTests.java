@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Field;
+
 import javax.net.ssl.HostnameVerifier;
 
 import okhttp3.OkHttpClient;
