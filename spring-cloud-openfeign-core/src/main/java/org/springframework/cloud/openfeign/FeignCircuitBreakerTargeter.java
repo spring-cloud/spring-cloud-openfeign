@@ -23,6 +23,9 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.util.StringUtils;
 
+/**
+ * @author 黄学敏（huangxuemin)
+ */
 @SuppressWarnings("unchecked")
 class FeignCircuitBreakerTargeter implements Targeter {
 
