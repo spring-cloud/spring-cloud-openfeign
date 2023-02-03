@@ -59,7 +59,6 @@ class FeignOkProtocolsTests {
 		assertThat(delegate).isInstanceOf(feign.okhttp.OkHttpClient.class);
 		okhttp3.OkHttpClient OkHttpClient = (okhttp3.OkHttpClient) getField(delegate, "delegate");
 		assertThat(OkHttpClient.protocols()).containsExactly(Protocol.H2_PRIOR_KNOWLEDGE);
-
 	}
 
 	protected Object getField(Object target, String name) {
@@ -73,7 +72,7 @@ class FeignOkProtocolsTests {
 	@RestController
 	@LoadBalancerClients
 	@Import(NoSecurityConfiguration.class)
-	public static class Application {
+	protected static class Application {
 
 	}
 
