@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-openfeign</artifactId>
-		<version>4.0.1-SNAPSHOT</version>
+		<version>4.0.2-SNAPSHOT</version>
 		<relativePath>..</relativePath> <!-- lookup parent from repository -->
 	</parent>
 	<artifactId>spring-cloud-openfeign-core</artifactId>
@@ -194,6 +194,11 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
