@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -261,7 +262,8 @@ public class FeignAutoConfiguration {
 			int connectTimeout = httpClientProperties.getConnectionTimeout();
 			boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
 			Duration readTimeout = httpClientProperties.getOkHttp().getReadTimeout();
-			List<Protocol> protocols = httpClientProperties.getOkHttp().getProtocols();
+			List<Protocol> protocols = httpClientProperties.getOkHttp().getProtocols().stream().map(Protocol::valueOf)
+					.collect(Collectors.toList());
 			if (disableSslValidation) {
 				disableSsl(builder);
 			}

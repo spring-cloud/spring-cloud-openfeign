@@ -40,13 +40,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author changjin wei(魏昌进)
  */
-@SpringBootTest(classes = FeignOkProtocolsTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
+@SpringBootTest(classes = FeignOkHttpProtocolsTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest", "spring.cloud.openfeign.circuitbreaker.enabled=false",
 				"spring.cloud.openfeign.httpclient.hc5.enabled=false", "spring.cloud.openfeign.okhttp.enabled=true",
 				"spring.cloud.httpclientfactories.ok.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false",
 				"server.http2.enabled=true", "spring.cloud.openfeign.httpclient.okhttp.protocols=H2_PRIOR_KNOWLEDGE" })
 @DirtiesContext
-class FeignOkProtocolsTests {
+class FeignOkHttpProtocolsTests {
 
 	@Autowired
 	private Client feignClient;
