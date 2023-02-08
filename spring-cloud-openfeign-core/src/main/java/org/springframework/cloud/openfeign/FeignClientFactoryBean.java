@@ -505,7 +505,10 @@ public class FeignClientFactoryBean
 					"Provide Feign client URL either in @FeignClient() or in config properties.");
 		}
 
-		return new HardCodedTarget(type, name, FeignClientsRegistrar.getUrl(config.getUrl()));
+		// TODO: create the appropriate target
+		return new PropertyBasedTarget(type, name, config);
+		// return new HardCodedTarget(type, name,
+		// FeignClientsRegistrar.getUrl(config.getUrl()));
 	}
 
 	private boolean isUrlAvailableInConfig(String contextId) {
