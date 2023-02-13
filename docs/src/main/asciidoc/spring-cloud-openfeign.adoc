@@ -925,6 +925,7 @@ TIP: If you want to run Spring Cloud OpenFeign clients in AOT or native image mo
 
 TIP: If you want to run Spring Cloud OpenFeign clients in AOT or native image modes, ensure `spring.cloud.openfeign.lazy-attributes-resolution` has not been set to `true`.
 
+TIP:  However, if you set the `url` value via properties, it is possible to override the `@FeignClient` `url` value by running the image with `-Dspring.cloud.openfeign.client.config.[clientId].url=[url]` flag. In order to enable overriding, a `url` value also has to be set via properties and not `@FeignClient` attribute during buildtime.
 
 == Configuration properties
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Jasbir Singh
+ * @author Olga Maciaszek-Sharma
  */
 @SpringBootTest
 @TestPropertySource("classpath:feign-properties.properties")
@@ -65,7 +66,7 @@ class NonRefreshableFeignClientUrlTests {
 	public void shouldInstantiateFeignClientWhenUrlFromProperties() {
 		UrlTestClient.UrlResponseForTests response = configBasedClient.test();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:9999/test");
-		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
+		assertThat(response.getTargetType()).isEqualTo(PropertyBasedTarget.class);
 	}
 
 	@Test

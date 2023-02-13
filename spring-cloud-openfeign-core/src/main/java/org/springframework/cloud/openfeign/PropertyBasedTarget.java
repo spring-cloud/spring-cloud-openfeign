@@ -19,9 +19,17 @@ package org.springframework.cloud.openfeign;
 import feign.Target;
 
 /**
+ * A {@link HardCodedTarget} implementation that resolves url from properties when the
+ * initial call is made. Using it allows specifying the url at runtime in an AOT-packaged
+ * application or a native image by setting the value of the
+ * `spring.cloud.openfeign.client.config.[clientId].url`.
+ *
  * @author Olga Maciaszek-Sharma
+ * @see FeignClientProperties.FeignClientConfiguration#getUrl()
  */
 public class PropertyBasedTarget<T> extends Target.HardCodedTarget<T> {
+
+	private String url;
 
 	private final FeignClientProperties.FeignClientConfiguration config;
 
@@ -32,7 +40,10 @@ public class PropertyBasedTarget<T> extends Target.HardCodedTarget<T> {
 
 	@Override
 	public String url() {
-		return config.getUrl();
+		if (url == null) {
+			url = config.getUrl();
+		}
+		return url;
 	}
 
 }
