@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign;
+package org.springframework.cloud.openfeign.encoding;
 
 import java.util.Map;
 
 import feign.RequestInterceptor;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingAutoConfiguration;
-import org.springframework.cloud.openfeign.encoding.FeignAcceptGzipEncodingInterceptor;
-import org.springframework.cloud.openfeign.encoding.FeignContentGzipEncodingAutoConfiguration;
-import org.springframework.cloud.openfeign.encoding.FeignContentGzipEncodingInterceptor;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignClientFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FeignCompressionTests {
 
 	@Test
-	void testInterceptors() {
+	void shouldAddCompressionInterceptors() {
 		new ApplicationContextRunner()
 				.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true",
 						"spring.cloud.openfeign.compression.request.enabled=true",
@@ -56,6 +57,33 @@ class FeignCompressionTests {
 					assertThat(interceptors.get("feignContentGzipEncodingInterceptor"))
 							.isInstanceOf(FeignContentGzipEncodingInterceptor.class);
 				});
+	}
+
+	@Test
+	void shouldNotAddInterceptorsIfFeignOkHttpClientPresent() {
+		new ApplicationContextRunner()
+				.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true",
+						"spring.cloud.openfeign.compression.request.enabled=true",
+						"spring.cloud.openfeign.okhttp.enabled=true", "spring.cloud.openfeign.httpclient.hc5.enabled")
+				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
+						FeignContentGzipEncodingAutoConfiguration.class,
+						FeignAcceptGzipEncodingAutoConfiguration.class))
+				.run(context -> {
+					FeignClientFactory feignClientFactory = context.getBean(FeignClientFactory.class);
+					Map<String, RequestInterceptor> interceptors = feignClientFactory.getInstances("foo",
+							RequestInterceptor.class);
+					assertThat(interceptors).isEmpty();
+				});
+	}
+
+	@Configuration
+	static class OkHttpClientConfiguration {
+
+		@Bean
+		OkHttpClient okHttpClient() {
+			return new OkHttpClient();
+		}
+
 	}
 
 }

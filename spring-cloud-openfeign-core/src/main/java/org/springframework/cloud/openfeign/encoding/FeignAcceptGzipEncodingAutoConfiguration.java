@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,18 @@ import feign.Feign;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * Configures the Feign response compression.
  *
  * @author Jakub Narloch
+ * @author Olga Maciaszek-Sharma
  * @see FeignAcceptGzipEncodingInterceptor
  */
 @Configuration(proxyBeanMethods = false)
@@ -41,8 +42,8 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnBean(Client.class)
 @ConditionalOnProperty("spring.cloud.openfeign.compression.response.enabled")
 // The OK HTTP client uses "transparent" compression.
-// If the accept-encoding header is present it disable transparent compression
-@ConditionalOnMissingBean(type = "okhttp3.OkHttpClient")
+// If the accept-encoding header is present, it disables transparent compression.
+@Conditional(OkHttpFeignClientBeanMissingCondition.class)
 @AutoConfigureAfter(FeignAutoConfiguration.class)
 public class FeignAcceptGzipEncodingAutoConfiguration {
 
