@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,12 +154,12 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 	}
 
 	/**
-	 * If the method param of InvocationHandler.invoke is not accessible, i.e in a
-	 * package-private interface, the fallback call will cause of access restrictions. But
-	 * methods in dispatch are copied methods. So setting access to dispatch method
-	 * doesn't take effect to the method in InvocationHandler.invoke. Use map to store a
-	 * copy of method to invoke the fallback to bypass this and reducing the count of
-	 * reflection calls.
+	 * If the method param of {@link InvocationHandler#invoke(Object, Method, Object[])}
+	 * is not accessible, i.e in a package-private interface, the fallback call will cause
+	 * of access restrictions. But methods in dispatch are copied methods. So setting
+	 * access to dispatch method doesn't take effect to the method in
+	 * InvocationHandler.invoke. Use map to store a copy of method to invoke the fallback
+	 * to bypass this and reducing the count of reflection calls.
 	 * @return cached methods map for fallback invoking
 	 */
 	static Map<Method, Method> toFallbackMethod(Map<Method, InvocationHandlerFactory.MethodHandler> dispatch) {

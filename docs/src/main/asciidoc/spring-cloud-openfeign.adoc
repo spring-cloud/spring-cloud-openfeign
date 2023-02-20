@@ -561,6 +561,8 @@ feign.compression.request.min-request-size=2048
 
 These properties allow you to be selective about the compressed media types and minimum request threshold length.
 
+TIP: Since the OkHttpClient uses "transparent" compression, that is disabled if the `content-encoding` or `accept-encoding` header is present, we do not enable compression when `feign.okhttp.OkHttpClient` is present on the classpath and `feign.okhttp.enabled` is set to `true`.
+
 === Feign logging
 
 A logger is created for each Feign client created. By default the name of the logger is the full class name of the interface used to create the Feign client. Feign logging only responds to the `DEBUG` level.
