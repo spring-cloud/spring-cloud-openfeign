@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Map;
 import feign.Client;
 import feign.RequestInterceptor;
 import feign.httpclient.ApacheHttpClient;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,18 +40,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Ryan Baxter
  * @author Biju Kunjummen
+ * @author Olga Maciaszek-Sharma
  */
 class FeignCompressionTests {
 
 	@Test
-	void testInterceptors() {
+	void shouldAddCompressionInterceptors() {
 		new ApplicationContextRunner()
 				.withPropertyValues("feign.compression.response.enabled=true", "feign.compression.request.enabled=true",
 						"feign.okhttp.enabled=false")
 				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
 						FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class,
 						HttpClientConfiguration.class, PlainConfig.class))
-				.run(context -> {
+				.withUserConfiguration(OkHttpClientConfiguration.class).run(context -> {
 					FeignContext feignContext = context.getBean(FeignContext.class);
 					Map<String, RequestInterceptor> interceptors = feignContext.getInstances("foo",
 							RequestInterceptor.class);
@@ -59,6 +61,22 @@ class FeignCompressionTests {
 							.isInstanceOf(FeignAcceptGzipEncodingInterceptor.class);
 					assertThat(interceptors.get("feignContentGzipEncodingInterceptor"))
 							.isInstanceOf(FeignContentGzipEncodingInterceptor.class);
+				});
+	}
+
+	@Test
+	void shouldNotAddInterceptorsIfFeignOkHttpClientPresent() {
+		new ApplicationContextRunner()
+				.withPropertyValues("feign.compression.response.enabled=true", "feign.compression.request.enabled=true",
+						"feign.okhttp.enabled=true")
+				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
+						FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class,
+						HttpClientConfiguration.class))
+				.run(context -> {
+					FeignContext feignContext = context.getBean(FeignContext.class);
+					Map<String, RequestInterceptor> interceptors = feignContext.getInstances("foo",
+							RequestInterceptor.class);
+					assertThat(interceptors).isEmpty();
 				});
 	}
 
@@ -81,6 +99,16 @@ class FeignCompressionTests {
 			 * loaded correctly.
 			 */
 			return (ApacheHttpClient) this.client;
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	static class OkHttpClientConfiguration {
+
+		@Bean
+		OkHttpClient okHttpClient() {
+			return new OkHttpClient();
 		}
 
 	}
