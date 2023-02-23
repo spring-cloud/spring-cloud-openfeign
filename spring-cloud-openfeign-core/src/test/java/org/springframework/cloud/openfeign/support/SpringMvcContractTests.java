@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.format.number.NumberStyleFormatter;
@@ -625,6 +627,16 @@ class SpringMvcContractTests {
 				.isEqualTo("cookie1={cookie1}; cookie2={cookie2}");
 	}
 
+	@Test
+	void shouldNotFailWhenBothPageableAndRequestBodyParamsInPostRequest() {
+		List<MethodMetadata> data = contract.parseAndValidateMetadata(TestTemplate_PageablePost.class);
+
+		assertThat(data.get(0).queryMapIndex().intValue()).isEqualTo(0);
+		assertThat(data.get(0).bodyIndex().intValue()).isEqualTo(1);
+		assertThat(data.get(1).queryMapIndex().intValue()).isEqualTo(1);
+		assertThat(data.get(1).bodyIndex().intValue()).isEqualTo(0);
+	}
+
 	private ConversionService getConversionService() {
 		FormattingConversionServiceFactoryBean conversionServiceFactoryBean = new FormattingConversionServiceFactoryBean();
 		conversionServiceFactoryBean.afterPropertiesSet();
@@ -823,6 +835,16 @@ class SpringMvcContractTests {
 
 		@GetMapping
 		String getTest(@RequestParam("amount") @NumberFormat(pattern = CUSTOM_PATTERN) BigDecimal amount);
+
+	}
+
+	public interface TestTemplate_PageablePost {
+
+		@PostMapping
+		Page<String> getPage(Pageable pageable, @RequestBody String body);
+
+		@PostMapping
+		Page<String> getPage(@RequestBody String body, Pageable pageable);
 
 	}
 
