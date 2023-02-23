@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -264,6 +265,16 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	@Override
 	protected boolean processAnnotationsOnParameter(MethodMetadata data, Annotation[] annotations, int paramIndex) {
 		boolean isHttpAnnotation = false;
+
+		try {
+			if (Pageable.class.isAssignableFrom(data.method().getParameterTypes()[paramIndex])) {
+				data.queryMapIndex(paramIndex);
+				return false;
+			}
+		}
+		catch (NoClassDefFoundError ignored) {
+			// Do nothing; added to avoid exceptions if optional dependency not present
+		}
 
 		AnnotatedParameterProcessor.AnnotatedParameterContext context = new SimpleAnnotatedParameterContext(data,
 				paramIndex);
