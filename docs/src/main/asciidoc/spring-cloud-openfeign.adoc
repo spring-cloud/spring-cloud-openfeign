@@ -413,11 +413,13 @@ You could configure it using configuration properties by doing the following
 
 [source,yaml,indent=0]
 ----
-feign:
-  circuitbreaker:
-    enabled: true
-    alphanumeric-ids:
-      enabled: true
+spring:
+  cloud:
+    openfeign
+      circuitbreaker:
+        enabled: true
+        alphanumeric-ids:
+          enabled: true
 resilience4j:
   circuitbreaker:
     instances:
