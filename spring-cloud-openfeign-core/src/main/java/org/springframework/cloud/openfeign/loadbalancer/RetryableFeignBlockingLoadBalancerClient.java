@@ -125,8 +125,8 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			// and extract the server and update the request being made
 			if (context instanceof LoadBalancedRetryContext) {
 				LoadBalancedRetryContext lbContext = (LoadBalancedRetryContext) context;
-				ServiceInstance serviceInstance = lbContext.getServiceInstance();
-				if (serviceInstance == null) {
+				retrievedServiceInstance = lbContext.getServiceInstance();
+				if (retrievedServiceInstance == null) {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Service instance retrieved from LoadBalancedRetryContext: was null. "
 								+ "Reattempting service instance selection");
