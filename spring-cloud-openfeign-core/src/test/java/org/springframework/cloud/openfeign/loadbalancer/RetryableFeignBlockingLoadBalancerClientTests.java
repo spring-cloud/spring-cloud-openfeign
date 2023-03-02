@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ import static org.mockito.Mockito.when;
  * "https://github.com/spring-cloud/spring-cloud-commons/blob/main/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
  * @author Olga Maciaszek-Sharma
  * @author Wonsik Cheung
+ * @author Andriy Pikozh
  */
 @ExtendWith(MockitoExtension.class)
 class RetryableFeignBlockingLoadBalancerClientTests {
