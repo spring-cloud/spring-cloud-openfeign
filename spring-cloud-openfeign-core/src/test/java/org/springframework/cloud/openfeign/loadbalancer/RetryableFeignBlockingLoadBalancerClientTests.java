@@ -184,6 +184,26 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 	}
 
 	@Test
+	void shouldReuseServerInstanceOnSameInstanceRetryWithBothSameAndNextRetries() throws IOException {
+		properties.getRetry().setMaxRetriesOnSameServiceInstance(1);
+		properties.getRetry().setMaxRetriesOnNextServiceInstance(1);
+		properties.getRetry().getRetryableStatusCodes().add(503);
+		Request request = testRequest();
+		Response response = testResponse(503);
+		when(delegate.execute(any(), any())).thenReturn(response);
+		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
+				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
+				.thenReturn(URI.create("http://testhost:80/path"));
+
+		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
+
+		verify(loadBalancerClient, times(2)).choose(eq("test"), any());
+		verify(loadBalancerClient, times(4)).reconstructURI(serviceInstance, URI.create("http://test/path"));
+		verify(delegate, times(4)).execute(any(), any());
+	}
+
+	@Test
 	void shouldNotRetryOnDisabled() throws IOException {
 		properties.getRetry().setEnabled(false);
 		Request request = testRequest();
