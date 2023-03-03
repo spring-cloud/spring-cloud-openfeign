@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ import static org.springframework.cloud.openfeign.loadbalancer.LoadBalancerUtils
  *
  * @author Olga Maciaszek-Sharma
  * @author Wonsik Cheung
+ * @author Andriy Pikozh
  * @since 2.2.6
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -125,8 +126,8 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			// and extract the server and update the request being made
 			if (context instanceof LoadBalancedRetryContext) {
 				LoadBalancedRetryContext lbContext = (LoadBalancedRetryContext) context;
-				ServiceInstance serviceInstance = lbContext.getServiceInstance();
-				if (serviceInstance == null) {
+				retrievedServiceInstance = lbContext.getServiceInstance();
+				if (retrievedServiceInstance == null) {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Service instance retrieved from LoadBalancedRetryContext: was null. "
 								+ "Reattempting service instance selection");
