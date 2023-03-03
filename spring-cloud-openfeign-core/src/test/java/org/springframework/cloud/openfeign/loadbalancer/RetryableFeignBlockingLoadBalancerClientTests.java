@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,7 @@ import static org.mockito.Mockito.when;
  * @author Olga Maciaszek-Sharma
  * @author changjin wei(魏昌进)
  * @author Wonsik Cheung
+ * @author Andriy Pikozh
  * @see <a href=
  * "https://github.com/spring-cloud/spring-cloud-commons/blob/main/spring-cloud-loadbalancer/src/test/java/org/springframework/cloud/loadbalancer/blocking/client/BlockingLoadBalancerClientTests.java">BlockingLoadBalancerClientTests</a>
  */
@@ -164,8 +165,49 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 
 		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
+		verify(loadBalancerClient, times(2)).choose(eq("test"), any());
 		verify(loadBalancerClient, times(2)).reconstructURI(serviceInstance, URI.create("http://test/path"));
 		verify(delegate, times(2)).execute(any(), any());
+	}
+
+	@Test
+	void shouldReuseServerInstanceOnSameInstanceRetry() throws IOException {
+		properties.getRetry().setMaxRetriesOnSameServiceInstance(1);
+		properties.getRetry().setMaxRetriesOnNextServiceInstance(0);
+		properties.getRetry().getRetryableStatusCodes().add(503);
+		Request request = testRequest();
+		Response response = testResponse(503);
+		when(delegate.execute(any(), any())).thenReturn(response);
+		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
+				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
+				.thenReturn(URI.create("http://testhost:80/path"));
+
+		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
+
+		verify(loadBalancerClient, times(1)).choose(eq("test"), any());
+		verify(loadBalancerClient, times(2)).reconstructURI(serviceInstance, URI.create("http://test/path"));
+		verify(delegate, times(2)).execute(any(), any());
+	}
+
+	@Test
+	void shouldReuseServerInstanceOnSameInstanceRetryWithBothSameAndNextRetries() throws IOException {
+		properties.getRetry().setMaxRetriesOnSameServiceInstance(1);
+		properties.getRetry().setMaxRetriesOnNextServiceInstance(1);
+		properties.getRetry().getRetryableStatusCodes().add(503);
+		Request request = testRequest();
+		Response response = testResponse(503);
+		when(delegate.execute(any(), any())).thenReturn(response);
+		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
+				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
+				.thenReturn(URI.create("http://testhost:80/path"));
+
+		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
+
+		verify(loadBalancerClient, times(2)).choose(eq("test"), any());
+		verify(loadBalancerClient, times(4)).reconstructURI(serviceInstance, URI.create("http://test/path"));
+		verify(delegate, times(4)).execute(any(), any());
 	}
 
 	@Test
