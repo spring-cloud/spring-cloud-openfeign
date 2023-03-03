@@ -117,7 +117,7 @@ class SpringMvcContractTests {
 				Method isNamePresent = ReflectionUtils.findMethod(parameters[0].getClass(), "isNamePresent");
 				return Boolean.TRUE.equals(isNamePresent.invoke(parameters[0]));
 			}
-			catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+			catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ignored) {
 			}
 		}
 		return false;
@@ -631,10 +631,20 @@ class SpringMvcContractTests {
 	void shouldNotFailWhenBothPageableAndRequestBodyParamsInPostRequest() {
 		List<MethodMetadata> data = contract.parseAndValidateMetadata(TestTemplate_PageablePost.class);
 
-		assertThat(data.get(0).queryMapIndex().intValue()).isEqualTo(0);
-		assertThat(data.get(0).bodyIndex().intValue()).isEqualTo(1);
-		assertThat(data.get(1).queryMapIndex().intValue()).isEqualTo(1);
-		assertThat(data.get(1).bodyIndex().intValue()).isEqualTo(0);
+		assertThat(data.get(2).queryMapIndex()).isEqualTo(1);
+		assertThat(data.get(2).bodyIndex()).isEqualTo(0);
+		assertThat(data.get(3).queryMapIndex()).isEqualTo(0);
+		assertThat(data.get(3).bodyIndex()).isEqualTo(1);
+	}
+
+	@Test
+	void shouldSetPageableAsBodyWhenQueryMapParamPresent() {
+		List<MethodMetadata> data = contract.parseAndValidateMetadata(TestTemplate_PageablePost.class);
+
+		assertThat(data.get(0).queryMapIndex()).isEqualTo(1);
+		assertThat(data.get(0).bodyIndex()).isEqualTo(0);
+		assertThat(data.get(1).queryMapIndex()).isEqualTo(0);
+		assertThat(data.get(1).bodyIndex()).isEqualTo(1);
 	}
 
 	private ConversionService getConversionService() {
@@ -845,6 +855,12 @@ class SpringMvcContractTests {
 
 		@PostMapping
 		Page<String> getPage(@RequestBody String body, Pageable pageable);
+
+		@PostMapping
+		Page<String> getPage(@SpringQueryMap TestObject pojo, Pageable pageable);
+
+		@PostMapping
+		Page<String> getPage(Pageable pageable, @SpringQueryMap TestObject pojo);
 
 	}
 

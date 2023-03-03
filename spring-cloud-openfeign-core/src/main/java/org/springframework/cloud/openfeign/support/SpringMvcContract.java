@@ -34,12 +34,14 @@ import feign.Contract;
 import feign.Feign;
 import feign.MethodMetadata;
 import feign.Param;
+import feign.QueryMap;
 import feign.Request;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.CollectionFormat;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.cloud.openfeign.annotation.CookieValueParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.MatrixVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
@@ -67,6 +69,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
@@ -158,7 +161,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 	private static TypeDescriptor getElementTypeDescriptor(TypeDescriptor typeDescriptor) {
 		TypeDescriptor elementTypeDescriptor = typeDescriptor.getElementTypeDescriptor();
-		// that means it's not a collection but it is iterable, gh-135
+		// that means it's not a collection, but it is iterable, gh-135
 		if (elementTypeDescriptor == null && Iterable.class.isAssignableFrom(typeDescriptor.getType())) {
 			ResolvableType type = typeDescriptor.getResolvableType().as(Iterable.class).getGeneric(0);
 			if (type.resolve() == null) {
@@ -268,8 +271,12 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 		try {
 			if (Pageable.class.isAssignableFrom(data.method().getParameterTypes()[paramIndex])) {
-				data.queryMapIndex(paramIndex);
-				return false;
+				// do not set a Pageable as QueryMap if there's an actual QueryMap param
+				// present
+				if (!queryMapParamPresent(data)) {
+					data.queryMapIndex(paramIndex);
+					return false;
+				}
 			}
 		}
 		catch (NoClassDefFoundError ignored) {
@@ -292,7 +299,11 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 			}
 		}
 
-		if (!isMultipartFormData(data) && isHttpAnnotation && data.indexToExpander().get(paramIndex) == null) {
+		if (!
+
+		isMultipartFormData(data) && isHttpAnnotation && data.indexToExpander().
+
+				get(paramIndex) == null) {
 			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
 			if (conversionService.canConvert(typeDescriptor, STRING_TYPE_DESCRIPTOR)) {
 				Param.Expander expander = convertingExpanderFactory.getExpander(typeDescriptor);
@@ -302,6 +313,20 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 			}
 		}
 		return isHttpAnnotation;
+	}
+
+	private boolean queryMapParamPresent(MethodMetadata data) {
+		Annotation[][] paramsAnnotations = data.method().getParameterAnnotations();
+		for (int i = 0; i < paramsAnnotations.length; i++) {
+			Annotation[] paramAnnotations = paramsAnnotations[i];
+			Class<?> parameterType = data.method().getParameterTypes()[i];
+			if (Arrays.stream(paramAnnotations).anyMatch(
+					annotation -> Map.class.isAssignableFrom(parameterType) && annotation instanceof RequestParam
+							|| annotation instanceof SpringQueryMap || annotation instanceof QueryMap)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void parseProduces(MethodMetadata md, Method method, RequestMapping annotation) {
