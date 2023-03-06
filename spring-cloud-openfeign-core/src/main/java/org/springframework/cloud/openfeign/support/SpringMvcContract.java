@@ -299,11 +299,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 			}
 		}
 
-		if (!
-
-		isMultipartFormData(data) && isHttpAnnotation && data.indexToExpander().
-
-				get(paramIndex) == null) {
+		if (!isMultipartFormData(data) && isHttpAnnotation && data.indexToExpander().get(paramIndex) == null) {
 			TypeDescriptor typeDescriptor = createTypeDescriptor(method, paramIndex);
 			if (conversionService.canConvert(typeDescriptor, STRING_TYPE_DESCRIPTOR)) {
 				Param.Expander expander = convertingExpanderFactory.getExpander(typeDescriptor);

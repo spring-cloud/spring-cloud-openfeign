@@ -631,20 +631,20 @@ class SpringMvcContractTests {
 	void shouldNotFailWhenBothPageableAndRequestBodyParamsInPostRequest() {
 		List<MethodMetadata> data = contract.parseAndValidateMetadata(TestTemplate_PageablePost.class);
 
-		assertThat(data.get(2).queryMapIndex()).isEqualTo(1);
-		assertThat(data.get(2).bodyIndex()).isEqualTo(0);
-		assertThat(data.get(3).queryMapIndex()).isEqualTo(0);
-		assertThat(data.get(3).bodyIndex()).isEqualTo(1);
+		assertThat(data.get(0).queryMapIndex()).isEqualTo(0);
+		assertThat(data.get(0).bodyIndex()).isEqualTo(1);
+		assertThat(data.get(1).queryMapIndex()).isEqualTo(1);
+		assertThat(data.get(1).bodyIndex()).isEqualTo(0);
 	}
 
 	@Test
 	void shouldSetPageableAsBodyWhenQueryMapParamPresent() {
-		List<MethodMetadata> data = contract.parseAndValidateMetadata(TestTemplate_PageablePost.class);
+		List<MethodMetadata> data = contract.parseAndValidateMetadata(TestTemplate_PageablePostWithQueryMap.class);
 
-		assertThat(data.get(0).queryMapIndex()).isEqualTo(1);
-		assertThat(data.get(0).bodyIndex()).isEqualTo(0);
-		assertThat(data.get(1).queryMapIndex()).isEqualTo(0);
-		assertThat(data.get(1).bodyIndex()).isEqualTo(1);
+		assertThat(data.get(0).queryMapIndex()).isEqualTo(0);
+		assertThat(data.get(0).bodyIndex()).isEqualTo(1);
+		assertThat(data.get(1).queryMapIndex()).isEqualTo(1);
+		assertThat(data.get(1).bodyIndex()).isEqualTo(0);
 	}
 
 	private ConversionService getConversionService() {
@@ -848,13 +848,17 @@ class SpringMvcContractTests {
 
 	}
 
-	public interface TestTemplate_PageablePost {
+	interface TestTemplate_PageablePost {
 
 		@PostMapping
 		Page<String> getPage(Pageable pageable, @RequestBody String body);
 
 		@PostMapping
 		Page<String> getPage(@RequestBody String body, Pageable pageable);
+
+	}
+
+	interface TestTemplate_PageablePostWithQueryMap {
 
 		@PostMapping
 		Page<String> getPage(@SpringQueryMap TestObject pojo, Pageable pageable);
