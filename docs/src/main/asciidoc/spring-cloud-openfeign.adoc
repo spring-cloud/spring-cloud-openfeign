@@ -199,6 +199,8 @@ feign:
 				queryMapEncoder: com.example.SimpleQueryMapEncoder
 				metrics.enabled: false
 ----
+`feignName` in this example refers to `@FeignClient` `value`, that is also aliased with `@FeginClient` `name` and `@FeignClient` `contextId`. In a load-balanced scenario, it also corresponds to the `serviceId` of the server app that will be used to retrieve the instances.
+
 
 Default configurations can be specified in the `@EnableFeignClients` attribute `defaultConfiguration` in a similar manner as described above. The difference is that this configuration will apply to _all_ feign clients.
 
