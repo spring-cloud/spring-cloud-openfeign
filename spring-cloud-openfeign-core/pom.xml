@@ -9,6 +9,9 @@
 		<version>3.1.7-SNAPSHOT</version>
 		<relativePath>..</relativePath> <!-- lookup parent from repository -->
 	</parent>
+	<scm>
+		<url>https://github.com/spring-cloud/spring-cloud-openfeign</url>
+	</scm>
 	<artifactId>spring-cloud-openfeign-core</artifactId>
 	<packaging>jar</packaging>
 	<name>Spring Cloud OpenFeign Core</name>

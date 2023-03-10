@@ -8,6 +8,9 @@
 		<artifactId>spring-cloud-openfeign</artifactId>
 		<version>3.1.7-SNAPSHOT</version>
 	</parent>
+	<scm>
+		<url>https://github.com/spring-cloud/spring-cloud-openfeign</url>
+	</scm>
 	<artifactId>spring-cloud-openfeign-docs</artifactId>
 	<packaging>jar</packaging>
 	<name>Spring Cloud OpenFeign Docs</name>
