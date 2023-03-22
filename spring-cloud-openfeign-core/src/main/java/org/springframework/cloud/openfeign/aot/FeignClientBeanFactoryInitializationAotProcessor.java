@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign.aot;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -25,7 +27,9 @@ import javax.lang.model.element.Modifier;
 
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.generate.MethodReference;
-import org.springframework.aot.hint.ProxyHints;
+import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
+import org.springframework.aot.hint.ReflectionHints;
+import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -47,6 +51,7 @@ import org.springframework.cloud.openfeign.FeignClientFactory;
 import org.springframework.cloud.openfeign.FeignClientFactoryBean;
 import org.springframework.cloud.openfeign.FeignClientSpecification;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.MethodParameter;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -65,6 +70,8 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 	private final GenericApplicationContext context;
 
 	private final Map<String, BeanDefinition> feignClientBeanDefinitions;
+
+	private final BindingReflectionHintsRegistrar bindingRegistrar = new BindingReflectionHintsRegistrar();
 
 	public FeignClientBeanFactoryInitializationAotProcessor(GenericApplicationContext context,
 			FeignClientFactory feignClientFactory) {
@@ -86,16 +93,36 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
+	@SuppressWarnings("NullableProblems")
 	@Override
 	public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
 		BeanFactory applicationBeanFactory = context.getBeanFactory();
 		if (feignClientBeanDefinitions.isEmpty() || !beanFactory.equals(applicationBeanFactory)) {
 			return null;
 		}
+
 		return new AotContribution(feignClientBeanDefinitions);
 	}
 
-	private static final class AotContribution implements BeanFactoryInitializationAotContribution {
+	private void registerMethodHints(ReflectionHints hints, Class<?> clazz) {
+		for (Method method : clazz.getDeclaredMethods()) {
+			registerMethodHints(hints, method);
+		}
+	}
+
+	private void registerMethodHints(ReflectionHints hints, Method method) {
+		for (Parameter parameter : method.getParameters()) {
+			bindingRegistrar.registerReflectionHints(hints,
+					MethodParameter.forParameter(parameter).getGenericParameterType());
+		}
+		MethodParameter returnTypeParameter = MethodParameter.forExecutable(method, -1);
+		if (!void.class.equals(returnTypeParameter.getParameterType())) {
+			bindingRegistrar.registerReflectionHints(hints, returnTypeParameter.getGenericParameterType());
+		}
+
+	}
+
+	private final class AotContribution implements BeanFactoryInitializationAotContribution {
 
 		private final Map<String, BeanDefinition> feignClientBeanDefinitions;
 
@@ -106,7 +133,7 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 		@Override
 		public void applyTo(GenerationContext generationContext,
 				BeanFactoryInitializationCode beanFactoryInitializationCode) {
-			ProxyHints proxyHints = generationContext.getRuntimeHints().proxies();
+			RuntimeHints hints = generationContext.getRuntimeHints();
 			Set<String> feignClientRegistrationMethods = feignClientBeanDefinitions.values().stream()
 					.map(beanDefinition -> {
 						Assert.notNull(beanDefinition, "beanDefinition cannot be null");
@@ -115,8 +142,9 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 						MutablePropertyValues feignClientProperties = registeredBeanDefinition.getPropertyValues();
 						String className = (String) feignClientProperties.get("type");
 						Assert.notNull(className, "className cannot be null");
-						Class clazz = ClassUtils.resolveClassName(className, null);
-						proxyHints.registerJdkProxy(clazz);
+						Class<?> clazz = ClassUtils.resolveClassName(className, null);
+						hints.proxies().registerJdkProxy(clazz);
+						registerMethodHints(hints.reflection(), clazz);
 						return beanFactoryInitializationCode.getMethods()
 								.add(buildMethodName(className), method -> generateFeignClientRegistrationMethod(method,
 										feignClientProperties, registeredBeanDefinition))
