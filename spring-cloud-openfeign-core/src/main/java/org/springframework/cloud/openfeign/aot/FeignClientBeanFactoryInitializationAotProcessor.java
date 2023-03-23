@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ import org.springframework.util.ClassUtils;
 /**
  * A {@link BeanFactoryInitializationAotProcessor} that creates an
  * {@link BeanFactoryInitializationAotContribution} that registers bean definitions and
- * proxy hints for Feign client beans.
+ * proxy and reflection hints for Feign client beans.
  *
  * @author Olga Maciaszek-Sharma
  * @since 4.0.0
@@ -100,7 +100,6 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 		if (feignClientBeanDefinitions.isEmpty() || !beanFactory.equals(applicationBeanFactory)) {
 			return null;
 		}
-
 		return new AotContribution(feignClientBeanDefinitions);
 	}
 
@@ -122,7 +121,8 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 
 	}
 
-	private final class AotContribution implements BeanFactoryInitializationAotContribution {
+	// Visible for tests
+	final class AotContribution implements BeanFactoryInitializationAotContribution {
 
 		private final Map<String, BeanDefinition> feignClientBeanDefinitions;
 
@@ -203,6 +203,11 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 							BeanDefinitionHolder.class, BeanDefinitionHolder.class,
 							feignClientPropertyValues.get("type"), qualifiers)
 					.addStatement("$T.registerBeanDefinition(holder, registry) ", BeanDefinitionReaderUtils.class);
+		}
+
+		// Visible for tests
+		Map<String, BeanDefinition> getFeignClientBeanDefinitions() {
+			return feignClientBeanDefinitions;
 		}
 
 	}
