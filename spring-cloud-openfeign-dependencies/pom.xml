@@ -48,6 +48,17 @@
 				<groupId>io.github.openfeign.form</groupId>
 				<artifactId>feign-form-spring</artifactId>
 				<version>${feign-form.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-fileupload</groupId>
+						<artifactId>commons-fileupload</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>1.5</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
