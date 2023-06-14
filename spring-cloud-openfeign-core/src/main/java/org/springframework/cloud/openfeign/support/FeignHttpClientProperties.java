@@ -16,10 +16,12 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import feign.http2client.Http2Client;
 import feign.okhttp.OkHttpClient;
 import okhttp3.Protocol;
 
@@ -100,6 +102,11 @@ public class FeignHttpClientProperties {
 	 */
 	private OkHttp okHttp = new OkHttp();
 
+	/**
+	 * Additional {@link Http2Client}-specific properties.
+	 */
+	private Http2Properties http2 = new Http2Properties();
+
 	public int getConnectionTimerRepeat() {
 		return connectionTimerRepeat;
 	}
@@ -178,6 +185,14 @@ public class FeignHttpClientProperties {
 
 	public void setOkHttp(OkHttp okHttp) {
 		this.okHttp = okHttp;
+	}
+
+	public Http2Properties getHttp2() {
+		return http2;
+	}
+
+	public void setHttp2(Http2Properties http2) {
+		this.http2 = http2;
 	}
 
 	public static class Hc5Properties {
@@ -358,6 +373,27 @@ public class FeignHttpClientProperties {
 
 		public void setProtocols(List<String> protocols) {
 			this.protocols = protocols;
+		}
+
+	}
+
+	/**
+	 * {@link Http2Client}-specific properties.
+	 */
+	public static class Http2Properties {
+
+		/**
+		 * Configure the protocols used by this client to communicate with remote servers.
+		 * Uses {@link String} value of {@link HttpClient.Version}.
+		 */
+		private String version = "HTTP_2";
+
+		public String getVersion() {
+			return version;
+		}
+
+		public void setVersion(String version) {
+			this.version = version;
 		}
 
 	}

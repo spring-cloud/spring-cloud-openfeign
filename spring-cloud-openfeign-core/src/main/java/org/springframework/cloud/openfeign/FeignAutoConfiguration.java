@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Method;
+import java.net.http.HttpClient;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -39,6 +40,7 @@ import feign.Client;
 import feign.Feign;
 import feign.Target;
 import feign.hc5.ApacheHttp5Client;
+import feign.http2client.Http2Client;
 import feign.okhttp.OkHttpClient;
 import jakarta.annotation.PreDestroy;
 import okhttp3.ConnectionPool;
@@ -379,6 +381,25 @@ public class FeignAutoConfiguration {
 				@Value("${spring.cloud.openfeign.oauth2.clientRegistrationId:}") String clientRegistrationId,
 				OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 			return new OAuth2AccessTokenInterceptor(clientRegistrationId, oAuth2AuthorizedClientManager);
+		}
+
+	}
+
+	// the following configuration is for alternate feign clients if
+	// SC loadbalancer is not on the class path.
+	// see corresponding configurations in FeignLoadBalancerAutoConfiguration
+	// for load-balanced clients.
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(Http2Client.class)
+	@ConditionalOnMissingBean(HttpClient.class)
+	@ConditionalOnProperty("spring.cloud.openfeign.http2client.enabled")
+	@Import(org.springframework.cloud.openfeign.clientconfig.Http2ClientFeignConfiguration.class)
+	protected static class Http2ClientFeignConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean(Client.class)
+		public Client feignClient(HttpClient httpClient) {
+			return new Http2Client(httpClient);
 		}
 
 	}

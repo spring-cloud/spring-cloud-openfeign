@@ -45,6 +45,12 @@
 			"defaultValue": "false"
 		},
 		{
+			"name": "spring.cloud.openfeign.http2client.enabled",
+			"type": "java.lang.Boolean",
+			"description": "Enables the use of the Java11 HTTP 2 Client by Feign.",
+			"defaultValue": "false"
+		},
+		{
 			"name": "spring.cloud.openfeign.compression.response.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the response from Feign to be compressed.",
