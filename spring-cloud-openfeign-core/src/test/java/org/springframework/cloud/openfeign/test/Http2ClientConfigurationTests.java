@@ -40,8 +40,8 @@ import static org.mockito.Mockito.mockingDetails;
 /**
  * @author changjin wei(魏昌进)
  */
-@SpringBootTest(properties = { "spring.cloud.openfeign.http2client.enabled: true",
-		"spring.cloud.openfeign.httpclient.hc5.enabled: false", "spring.cloud.loadbalancer.retry.enabled: false" })
+@SpringBootTest(properties = { "spring.cloud.openfeign.http2client.enabled= true",
+		"spring.cloud.openfeign.httpclient.hc5.enabled= false", "spring.cloud.loadbalancer.retry.enabled= false" })
 @DirtiesContext
 class Http2ClientConfigurationTests {
 
@@ -49,7 +49,7 @@ class Http2ClientConfigurationTests {
 	FeignBlockingLoadBalancerClient feignClient;
 
 	@Test
-	void testHttpClientWithFeign() {
+	void shouldInstantiateFeignHttp2Client() {
 		Client delegate = feignClient.getDelegate();
 		assertThat(delegate instanceof Http2Client).isTrue();
 		Http2Client http2Client = (Http2Client) delegate;

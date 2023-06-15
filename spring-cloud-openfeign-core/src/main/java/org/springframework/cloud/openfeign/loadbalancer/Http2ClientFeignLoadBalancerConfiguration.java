@@ -42,7 +42,7 @@ import org.springframework.context.annotation.Configuration;
  * @author changjin wei(魏昌进)
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass(Http2Client.class)
+@ConditionalOnClass({ Http2Client.class, HttpClient.class })
 @ConditionalOnBean({ LoadBalancerClient.class, LoadBalancerClientFactory.class })
 @ConditionalOnProperty("spring.cloud.openfeign.http2client.enabled")
 @EnableConfigurationProperties(LoadBalancerClientsProperties.class)
