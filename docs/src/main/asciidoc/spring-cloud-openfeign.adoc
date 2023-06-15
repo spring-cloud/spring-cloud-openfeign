@@ -140,10 +140,10 @@ If none of them is on the classpath, the default feign client is used.
 
 NOTE: `spring-cloud-starter-openfeign` supports `spring-cloud-starter-loadbalancer`. However, as is an optional dependency, you need to make sure it has been added to your project if you want to use it.
 
-The OkHttpClient and Apache HttpClient 5 Feign clients can be used by setting `spring.cloud.openfeign.okhttp.enabled` or `spring.cloud.openfeign.httpclient.hc5.enabled` to `true`, respectively, and having them on the classpath.
+The OkHttpClient, Apache HttpClient 5 and Http2Client Feign clients can be used by setting `spring.cloud.openfeign.okhttp.enabled` or `spring.cloud.openfeign.httpclient.hc5.enabled` or `spring.cloud.openfeign.http2client.enabled` to `true`, respectively, and having them on the classpath.
 You can customize the HTTP client used by providing a bean of either `org.apache.hc.client5.http.impl.classic.CloseableHttpClient` when using Apache HC5.
 
-You can further customise http clients by setting values in the `spring.cloud.openfeign.httpclient.xxx` properties. The ones prefixed just with `httpclient` will work for all the clients, the ones prefixed with `httpclient.hc5` to Apache HttpClient 5 and the ones prefixed with `httpclient.okhttp` to OkHttpClient. You can find a full list of properties you can customise in the appendix.
+You can further customise http clients by setting values in the `spring.cloud.openfeign.httpclient.xxx` properties. The ones prefixed just with `httpclient` will work for all the clients, the ones prefixed with `httpclient.hc5` to Apache HttpClient 5, the ones prefixed with `httpclient.okhttp` to OkHttpClient and the ones prefixed with `httpclient.http2` to Http2Client. You can find a full list of properties you can customise in the appendix.
 
 TIP: Starting with Spring Cloud OpenFeign 4, the Feign Apache HttpClient 4 is no longer supported. We suggest using Apache HttpClient 5 instead.
 
