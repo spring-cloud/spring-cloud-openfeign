@@ -390,7 +390,7 @@ public class FeignAutoConfiguration {
 	// see corresponding configurations in FeignLoadBalancerAutoConfiguration
 	// for load-balanced clients.
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass({Http2Client.class, HttpClient.class})
+	@ConditionalOnClass({ Http2Client.class, HttpClient.class })
 	@ConditionalOnMissingBean(HttpClient.class)
 	@ConditionalOnProperty("spring.cloud.openfeign.http2client.enabled")
 	@Import(org.springframework.cloud.openfeign.clientconfig.Http2ClientFeignConfiguration.class)

@@ -21,7 +21,6 @@ import java.net.http.HttpClient;
 import feign.Client;
 import feign.http2client.Http2Client;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockingDetails;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
@@ -34,8 +33,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockingDetails;
 
 /**
  * @author changjin wei(魏昌进)
@@ -48,14 +45,15 @@ class Http2ClientConfigurationTests {
 	@Autowired
 	FeignBlockingLoadBalancerClient feignClient;
 
+	private static final HttpClient defaultHttpClient = HttpClient.newHttpClient();
+
 	@Test
 	void shouldInstantiateFeignHttp2Client() {
 		Client delegate = feignClient.getDelegate();
 		assertThat(delegate instanceof Http2Client).isTrue();
 		Http2Client http2Client = (Http2Client) delegate;
 		HttpClient httpClient = getField(http2Client, "client");
-		MockingDetails httpClientDetails = mockingDetails(httpClient);
-		assertThat(httpClientDetails.isMock()).isTrue();
+		assertThat(httpClient).isEqualTo(defaultHttpClient);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -75,7 +73,7 @@ class Http2ClientConfigurationTests {
 
 		@Bean
 		public HttpClient client() {
-			return mock(HttpClient.class);
+			return defaultHttpClient;
 		}
 
 	}
