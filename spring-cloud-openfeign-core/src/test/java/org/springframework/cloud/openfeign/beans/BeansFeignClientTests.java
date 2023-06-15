@@ -53,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(classes = BeansFeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest", "spring.cloud.openfeign.httpclient.hc5.enabled=false",
-				"spring.cloud.openfeign.okhttp.enabled=false", "spring.cloud.openfeign.http2client.enabled=false" })
+				"spring.cloud.openfeign.okhttp.enabled=false" })
 @DirtiesContext
 public class BeansFeignClientTests {
 
