@@ -28,6 +28,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -69,7 +70,7 @@ public class PageJacksonModuleTests {
 	@Test
 	public void serializeAndDeserializeEmpty() throws JsonProcessingException {
 		// Given
-		PageImpl<Object> objects = new PageImpl<>(new ArrayList<>());
+		PageImpl<Object> objects = new PageImpl<>(new ArrayList<>(), Pageable.ofSize(1), 0);
 		String pageJson = objectMapper.writeValueAsString(objects);
 		// When
 		Page<?> result = objectMapper.readValue(pageJson, Page.class);
@@ -105,7 +106,7 @@ public class PageJacksonModuleTests {
 	@Test
 	public void serializeAndDeserializeEmptyCascade() throws JsonProcessingException {
 		// Given
-		PageImpl<Object> objects = new PageImpl<>(new ArrayList<>());
+		PageImpl<Object> objects = new PageImpl<>(new ArrayList<>(), Pageable.ofSize(1), 0);
 		String pageJson = objectMapper.writeValueAsString(objects);
 		// When
 		Page<?> result = objectMapper.readValue(pageJson, Page.class);
