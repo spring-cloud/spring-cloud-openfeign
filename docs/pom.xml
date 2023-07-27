@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-openfeign</artifactId>
-		<version>4.0.4</version>
+		<version>4.0.4-SNAPSHOT</version>
 	</parent>
 	<scm>
 		<url>https://github.com/spring-cloud/spring-cloud-openfeign</url>
