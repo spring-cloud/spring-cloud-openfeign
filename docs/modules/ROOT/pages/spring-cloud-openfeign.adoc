@@ -139,6 +139,7 @@ The OkHttpClient, Apache HttpClient 5 and Http2Client Feign clients can be used 
 You can customize the HTTP client used by providing a bean of either `org.apache.hc.client5.http.impl.classic.CloseableHttpClient` when using Apache HC5.
 
 You can further customise http clients by setting values in the `spring.cloud.openfeign.httpclient.xxx` properties. The ones prefixed just with `httpclient` will work for all the clients, the ones prefixed with `httpclient.hc5` to Apache HttpClient 5, the ones prefixed with `httpclient.okhttp` to OkHttpClient and the ones prefixed with `httpclient.http2` to Http2Client. You can find a full list of properties you can customise in the appendix.
+If you can not configure Apache HttpClient 5 by using properties, there is an `HttpClientBuilderCustomizer` interface for programmatic configuration.
 
 TIP: Starting with Spring Cloud OpenFeign 4, the Feign Apache HttpClient 4 is no longer supported. We suggest using Apache HttpClient 5 instead.
 

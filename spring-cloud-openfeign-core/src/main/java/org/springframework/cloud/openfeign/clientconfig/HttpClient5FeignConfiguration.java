@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
@@ -31,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
@@ -46,6 +48,7 @@ import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
@@ -56,6 +59,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Nguyen Ky Thanh
  * @author changjin wei(魏昌进)
+ * @author Kwangyong Kim
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(CloseableHttpClient.class)
@@ -85,18 +89,23 @@ public class HttpClient5FeignConfiguration {
 
 	@Bean
 	public CloseableHttpClient httpClient5(HttpClientConnectionManager connectionManager,
-			FeignHttpClientProperties httpClientProperties) {
-		httpClient5 = HttpClients.custom().disableCookieManagement().useSystemProperties()
-				.setConnectionManager(connectionManager).evictExpiredConnections()
-				.setDefaultRequestConfig(RequestConfig.custom()
-						.setConnectTimeout(
-								Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
-						.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
-						.setConnectionRequestTimeout(
-								Timeout.of(httpClientProperties.getHc5().getConnectionRequestTimeout(),
-										httpClientProperties.getHc5().getConnectionRequestTimeoutUnit()))
-						.build())
-				.build();
+			FeignHttpClientProperties httpClientProperties,
+			ObjectProvider<List<HttpClientBuilderCustomizer>> customizerProvider) {
+		HttpClientBuilder httpClientBuilder = HttpClients.custom().disableCookieManagement().useSystemProperties()
+			.setConnectionManager(connectionManager).evictExpiredConnections()
+			.setDefaultRequestConfig(RequestConfig.custom()
+				.setConnectTimeout(
+					Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
+				.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
+				.setConnectionRequestTimeout(
+					Timeout.of(httpClientProperties.getHc5().getConnectionRequestTimeout(),
+						httpClientProperties.getHc5().getConnectionRequestTimeoutUnit()))
+				.build());
+
+		customizerProvider.getIfAvailable(List::of)
+			.forEach(c -> c.customize(httpClientBuilder));
+
+		httpClient5 = httpClientBuilder.build();
 		return httpClient5;
 	}
 
@@ -146,4 +155,19 @@ public class HttpClient5FeignConfiguration {
 
 	}
 
+	/**
+	 * Callback interface that customize {@link HttpClientBuilder} objects before HttpClient created.
+	 *
+	 * @author Kwangyong Kim
+	 * @since 4.1.0
+	 */
+	public interface HttpClientBuilderCustomizer {
+
+		/**
+		 * Customize HttpClientBuilder.
+		 * @param builder the {@code HttpClientBuilder} to customize
+		 */
+		void customize(HttpClientBuilder builder);
+
+	}
 }
