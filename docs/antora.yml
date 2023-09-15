@@ -1,6 +1,6 @@
-name: PROJECT_WITHOUT_SPRING
+name: cloud-openfeign
 version: true
-title: PROJECT_NAME
+title: Spring Cloud OpenFeign
 nav:
   - modules/ROOT/nav.adoc
 ext:

@@ -1,9 +1,5 @@
-[[spring-cloud-openfeign]]
-= Spring Cloud OpenFeign
-
-*{spring-cloud-version}*
-
-
+[[features]]
+= Spring Cloud OpenFeign Features
 
 [[spring-cloud-feign]]
 == Declarative REST Client: Feign
@@ -846,7 +842,7 @@ If Feign client refresh is enabled, each Feign client is created with:
 
 * `feign.Request.Options` as a refresh-scoped bean. This means properties such as `connectTimeout` and `readTimeout` can be refreshed against any Feign client instance.
 * A url wrapped under `org.springframework.cloud.openfeign.RefreshableUrl`. This means the URL of Feign client, if defined
-with `spring.cloud.openfeign.client.config.{feignName}.url` property, can be refreshed against any Feign client instance.
+with `spring.cloud.openfeign.client.config.\{feignName}.url` property, can be refreshed against any Feign client instance.
 
 You can refresh these properties through `POST /actuator/refresh`.
 
