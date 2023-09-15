@@ -1,0 +1,6 @@
+[[observability-spans]]
+=== Observability - Spans
+
+Below you can find a list of all spans declared by this project.
+
+
