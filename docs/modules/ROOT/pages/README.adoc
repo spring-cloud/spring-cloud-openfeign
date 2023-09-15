@@ -9,21 +9,21 @@ include::_attributes.adoc[]
 include::intro.adoc[]
 
 [[features]]
-== Features
+= Features
 
 * Declarative REST Client: Feign creates a dynamic implementation of an interface decorated with JAX-RS or Spring MVC annotations
 
 [[building]]
-== Building
+= Building
 
 include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/main/docs/src/main/asciidoc/building-jdk8.adoc[]
 
 [[contributing]]
-== Contributing
+= Contributing
 
 include::https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/main/docs/src/main/asciidoc/contributing.adoc[]
 
 [[license]]
-== License
+= License
 
 The project license file is available https://raw.githubusercontent.com/spring-cloud/spring-cloud-openfeign/main/LICENSE.txt[here].
