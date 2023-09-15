@@ -1,0 +1,5 @@
+* xref:index.adoc[]
+** xref:intro.adoc[]
+** xref:spring-cloud-openfeign.adoc[]
+* xref:appendix.adoc[]
+** xref:configprops.adoc[]
