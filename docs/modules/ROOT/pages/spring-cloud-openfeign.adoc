@@ -1,10 +1,8 @@
 [[spring-cloud-openfeign]]
 = Spring Cloud OpenFeign
-include::_attributes.adoc[]
 
 *{spring-cloud-version}*
 
-include::intro.adoc[]
 
 
 [[spring-cloud-feign]]
