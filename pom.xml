@@ -1,238 +1,70 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xmlns="http://maven.apache.org/POM/4.0.0"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>spring-cloud-openfeign</artifactId>
-	<version>4.1.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<name>Spring Cloud OpenFeign</name>
-	<description>Spring Cloud OpenFeign</description>
-	<parent>
-		<groupId>org.springframework.cloud</groupId>
-		<artifactId>spring-cloud-build</artifactId>
-		<version>4.1.0-SNAPSHOT</version>
-		<relativePath/>
-	</parent>
+
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-openfeign-docs-build</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<name>Spring Cloud Openfeign Docs Build</name>
+	<description>Builds Spring Cloud Openfeign Docs.</description>
+	<url>https://spring.io/projects/spring-cloud-openfeign</url>
 	<scm>
-		<url>https://github.com/spring-cloud/spring-cloud-openfeign</url>
-		<connection>scm:git:git://github.com/spring-cloud/spring-cloud-openfeign.git
+		<connection>scm:git:https://github.com/spring-cloud/spring-cloud-openfeign.git
 		</connection>
 		<developerConnection>
-			scm:git:ssh://git@github.com/spring-cloud/spring-cloud-openfeign.git
+			scm:git:git@github.com:spring-cloud/spring-cloud-openfeign.git
 		</developerConnection>
-		<tag>HEAD</tag>
+		<url>https://github.com/spring-cloud/spring-cloud-openfeign</url>
 	</scm>
-	<properties>
-		<main.basedir>${basedir}</main.basedir>
-		<jackson.version>2.11.3</jackson.version>
-		<spring-cloud-commons.version>4.1.0-SNAPSHOT</spring-cloud-commons.version>
+	<issueManagement>
+		<url>https://github.com/spring-cloud/spring-cloud-openfeign/issues</url>
+	</issueManagement>
 
-		<!-- Plugin versions -->
-		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
-		<!-- Sonar -->
-		<surefire.plugin.version>2.19.1</surefire.plugin.version>
-		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec
-		</sonar.jacoco.reportPath>
-		<sonar.language>java</sonar.language>
+	<properties>
+		<io.spring.maven.antora-version>0.0.3</io.spring.maven.antora-version>
 	</properties>
+
+
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>flatten-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>${maven-eclipse-plugin.version}</version>
+				<groupId>io.spring.maven.antora</groupId>
+				<artifactId>antora-maven-plugin</artifactId>
+				<version>${io.spring.maven.antora-version}</version>
+				<extensions>true</extensions>
 				<configuration>
-					<useProjectReferences>false</useProjectReferences>
-					<additionalConfig>
-						<file>
-							<name>.settings/org.eclipse.jdt.ui.prefs</name>
-							<location>${main.basedir}/eclipse/org.eclipse.jdt.ui.prefs
-							</location>
-						</file>
-						<file>
-							<name>.settings/org.eclipse.jdt.core.prefs</name>
-							<location>${main.basedir}/eclipse/org.eclipse.jdt.core.prefs
-							</location>
-						</file>
-					</additionalConfig>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>io.spring.javaformat</groupId>
-				<artifactId>spring-javaformat-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.basepom.maven</groupId>
-				<artifactId>duplicate-finder-maven-plugin</artifactId>
-				<configuration>
-					<ignoredResourcePatterns>
-						<ignoredResourcePattern>mozilla/public-suffix-list.txt</ignoredResourcePattern>
-					</ignoredResourcePatterns>
+					<options>
+						<option>--to-dir=target/antora/site</option>
+						<option>--stacktrace</option>
+						<option>--fetch</option>
+					</options>
+					<environment>
+						<ALGOLIA_API_KEY>9d489079e5ec46dbb238909fee5c9c29</ALGOLIA_API_KEY>
+						<ALGOLIA_APP_ID>WB1FQYI187</ALGOLIA_APP_ID>
+						<ALGOLIA_INDEX_NAME>springcloudopenfeign</ALGOLIA_INDEX_NAME>
+					</environment>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</reporting>
+	<repositories>
+		<repository>
+			<id>spring-snapshot</id>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>spring-milestone</id>
+			<url>https://repo.spring.io/milestone</url>
+		</repository>
+	</repositories>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-commons-dependencies</artifactId>
-				<version>${spring-cloud-commons.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-openfeign-dependencies</artifactId>
-				<version>${project.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-test-support</artifactId>
-				<scope>test</scope>
-				<version>${spring-cloud-commons.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.dataformat</groupId>
-				<artifactId>jackson-dataformat-smile</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-	<modules>
-		<module>spring-cloud-openfeign-dependencies</module>
-		<module>spring-cloud-openfeign-core</module>
-		<module>spring-cloud-starter-openfeign</module>
-		<module>docs</module>
-	</modules>
-	<profiles>
-		<profile>
-			<id>spring</id>
-			<repositories>
-				<repository>
-					<id>spring-snapshots</id>
-					<name>Spring Snapshots</name>
-					<url>https://repo.spring.io/snapshot</url>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-					<releases>
-						<enabled>false</enabled>
-					</releases>
-				</repository>
-				<repository>
-					<id>spring-milestones</id>
-					<name>Spring Milestones</name>
-					<url>https://repo.spring.io/milestone</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
-				<repository>
-					<id>spring-releases</id>
-					<name>Spring Releases</name>
-					<url>https://repo.spring.io/release</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
-			</repositories>
-			<pluginRepositories>
-				<pluginRepository>
-					<id>spring-snapshots</id>
-					<name>Spring Snapshots</name>
-					<url>https://repo.spring.io/snapshot</url>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-					<releases>
-						<enabled>false</enabled>
-					</releases>
-				</pluginRepository>
-				<pluginRepository>
-					<id>spring-milestones</id>
-					<name>Spring Milestones</name>
-					<url>https://repo.spring.io/milestone</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</pluginRepository>
-				<pluginRepository>
-					<id>spring-releases</id>
-					<name>Spring Releases</name>
-					<url>https://repo.spring.io/release</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</pluginRepository>
-			</pluginRepositories>
-		</profile>
-		<profile>
-			<id>sonar</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>pre-unit-test</id>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-								<configuration>
-									<propertyName>surefireArgLine</propertyName>
-									<destFile>${project.build.directory}/jacoco.exec
-									</destFile>
-								</configuration>
-							</execution>
-							<execution>
-								<id>post-unit-test</id>
-								<phase>test</phase>
-								<goals>
-									<goal>report</goal>
-								</goals>
-								<configuration>
-									<!-- Sets the path to the file which contains the execution data. -->
-									<dataFile>${project.build.directory}/jacoco.exec
-									</dataFile>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<!-- Sets the VM argument line used when unit tests are run. -->
-							<argLine>${surefireArgLine} --add-opens=java.base/java.net=ALL-UNNAMED</argLine>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>
