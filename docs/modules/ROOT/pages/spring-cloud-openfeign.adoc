@@ -624,7 +624,7 @@ public class FooConfiguration {
 === Feign Capability support
 
 The Feign capabilities expose core Feign components so that these components can be modified. For example, the capabilities can take the `Client`, _decorate_ it, and give the decorated instance back to Feign.
-The support for Micrometer is a good real-life example for this. See <<micrometer-support>>.
+The support for Micrometer is a good real-life example for this. See xref:spring-cloud-openfeign.adoc#micrometer-support[Micrometer Support].
 
 Creating one or more `Capability` beans and placing them in a `@FeignClient` configuration lets you register them and modify the behavior of the involved client.
 
@@ -941,7 +941,7 @@ The URL provided in the configuration properties remains unused.
 [[aot-and-native-image-support]]
 === AOT and Native Image Support
 
-Spring Cloud OpenFeign supports Spring AOT transformations and native images, however, only with refresh mode disabled, Feign clients refresh disabled (default setting) and <<attribute-resolution-mode,lazy `@FeignClient` attribute resolution>> disabled (default setting).
+Spring Cloud OpenFeign supports Spring AOT transformations and native images, however, only with refresh mode disabled, Feign clients refresh disabled (default setting) and xref:spring-cloud-openfeign.adoc#attribute-resolution-mode[lazy `@FeignClient` attribute resolution] disabled (default setting).
 
 WARNING: If you want to run Spring Cloud OpenFeign clients in AOT or native image modes, make sure to set `spring.cloud.refresh.enabled` to `false`.
 
