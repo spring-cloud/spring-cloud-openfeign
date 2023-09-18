@@ -30,6 +30,10 @@ import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
  */
 final class Invoices {
 
+	private Invoices() {
+		throw new IllegalStateException("Should not instantiate utility class");
+	}
+
 	public static List<Invoice> createInvoiceList(int count) {
 		final List<Invoice> invoices = new ArrayList<>();
 		for (int ind = 0; ind < count; ind++) {
