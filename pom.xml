@@ -25,7 +25,7 @@
 	</scm>
 	<properties>
 		<main.basedir>${basedir}</main.basedir>
-		<jackson.version>2.11.3</jackson.version>
+		<jackson.version>2.11.4</jackson.version>
 		<spring-cloud-commons.version>4.0.5-SNAPSHOT</spring-cloud-commons.version>
 
 		<!-- Plugin versions -->
