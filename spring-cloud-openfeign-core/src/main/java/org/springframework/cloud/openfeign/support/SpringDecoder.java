@@ -49,11 +49,6 @@ public class SpringDecoder implements Decoder {
 
 	private final ObjectProvider<HttpMessageConverterCustomizer> customizers;
 
-	/**
-	 * @deprecated in favour of
-	 * {@link SpringDecoder#SpringDecoder(ObjectFactory, ObjectProvider)}
-	 */
-	@Deprecated
 	public SpringDecoder(ObjectFactory<HttpMessageConverters> messageConverters) {
 		this(messageConverters, new EmptyObjectProvider<>());
 	}
