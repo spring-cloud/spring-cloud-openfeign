@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,29 @@ package org.springframework.cloud.openfeign;
 import feign.Client;
 import feign.hc5.ApacheHttp5Client;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.HttpClientBuilderCustomizer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Nguyen Ky Thanh
  * @author Olga Maciaszek-Sharma
+ * @author Kwangyong Kim
  */
 class FeignHttpClient5ConfigurationTests {
 
@@ -72,4 +80,28 @@ class FeignHttpClient5ConfigurationTests {
 		}
 	}
 
+	@Test
+	void shouldInstantiateHttpClient5ByUsingHttpClientBuilderCustomizer() {
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
+			.web(WebApplicationType.NONE)
+			.sources(FeignAutoConfiguration.class, Config.class)
+			.run();
+
+		CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
+		assertThat(httpClient).isNotNull();
+		HttpClientBuilderCustomizer customizer = context.getBean(HttpClientBuilderCustomizer.class);
+		verify(customizer).customize(any(HttpClientBuilder.class));
+
+		if (context != null) {
+			context.close();
+		}
+	}
+
+	@Configuration
+	static class Config {
+		@Bean
+		HttpClientBuilderCustomizer customizer() {
+			return Mockito.mock(HttpClientBuilderCustomizer.class);
+		}
+	}
 }
