@@ -82,10 +82,8 @@ class FeignHttpClient5ConfigurationTests {
 
 	@Test
 	void shouldInstantiateHttpClient5ByUsingHttpClientBuilderCustomizer() {
-		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-			.web(WebApplicationType.NONE)
-			.sources(FeignAutoConfiguration.class, Config.class)
-			.run();
+		ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
+				.sources(FeignAutoConfiguration.class, Config.class).run();
 
 		CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
 		assertThat(httpClient).isNotNull();
@@ -99,9 +97,12 @@ class FeignHttpClient5ConfigurationTests {
 
 	@Configuration
 	static class Config {
+
 		@Bean
 		HttpClientBuilderCustomizer customizer() {
 			return Mockito.mock(HttpClientBuilderCustomizer.class);
 		}
+
 	}
+
 }

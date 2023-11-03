@@ -92,18 +92,17 @@ public class HttpClient5FeignConfiguration {
 			FeignHttpClientProperties httpClientProperties,
 			ObjectProvider<List<HttpClientBuilderCustomizer>> customizerProvider) {
 		HttpClientBuilder httpClientBuilder = HttpClients.custom().disableCookieManagement().useSystemProperties()
-			.setConnectionManager(connectionManager).evictExpiredConnections()
-			.setDefaultRequestConfig(RequestConfig.custom()
-				.setConnectTimeout(
-					Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
-				.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
-				.setConnectionRequestTimeout(
-					Timeout.of(httpClientProperties.getHc5().getConnectionRequestTimeout(),
-						httpClientProperties.getHc5().getConnectionRequestTimeoutUnit()))
-				.build());
+				.setConnectionManager(connectionManager).evictExpiredConnections()
+				.setDefaultRequestConfig(RequestConfig.custom()
+						.setConnectTimeout(
+								Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
+						.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
+						.setConnectionRequestTimeout(
+								Timeout.of(httpClientProperties.getHc5().getConnectionRequestTimeout(),
+										httpClientProperties.getHc5().getConnectionRequestTimeoutUnit()))
+						.build());
 
-		customizerProvider.getIfAvailable(List::of)
-			.forEach(c -> c.customize(httpClientBuilder));
+		customizerProvider.getIfAvailable(List::of).forEach(c -> c.customize(httpClientBuilder));
 
 		httpClient5 = httpClientBuilder.build();
 		return httpClient5;
@@ -156,7 +155,8 @@ public class HttpClient5FeignConfiguration {
 	}
 
 	/**
-	 * Callback interface that customize {@link HttpClientBuilder} objects before HttpClient created.
+	 * Callback interface that customize {@link HttpClientBuilder} objects before
+	 * HttpClient created.
 	 *
 	 * @author Kwangyong Kim
 	 * @since 4.1.0
@@ -170,4 +170,5 @@ public class HttpClient5FeignConfiguration {
 		void customize(HttpClientBuilder builder);
 
 	}
+
 }
