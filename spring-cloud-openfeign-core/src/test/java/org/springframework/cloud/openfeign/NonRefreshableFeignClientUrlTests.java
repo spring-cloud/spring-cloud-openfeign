@@ -76,11 +76,36 @@ class NonRefreshableFeignClientUrlTests {
 		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
 	}
 
+	@Test
+	void shouldInstantiateFeignClientWhenUrlAndPathAreInTheFeignClientAnnotation(
+		@Autowired Application.WithPathAndFixUrlClient withPathAndFixUrlClient
+	) {
+		UrlTestClient.UrlResponseForTests response = withPathAndFixUrlClient.test();
+		assertThat(response.getUrl()).isEqualTo("http://localhost:7777/common/test");
+		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
+	}
+
+	@Test
+	void shouldInstantiateFeignClientWhenUrlFromPropertiesAndPathInTheFeignClientAnnotation(
+		@Autowired Application.WithPathAndUrlFromConfigClient withPathAndUrlFromConfigClient
+	) {
+		UrlTestClient.UrlResponseForTests response = withPathAndUrlFromConfigClient.test();
+		assertThat(response.getUrl()).isEqualTo("http://localhost:7777/common/test");
+		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	@EnableConfigurationProperties(FeignClientProperties.class)
-	@EnableFeignClients(clients = { Application.FeignClientWithFixUrl.class, Application.ConfigBasedClient.class,
-			Application.NameBasedUrlClient.class })
+	@EnableFeignClients(
+		clients = {
+			Application.FeignClientWithFixUrl.class,
+			Application.ConfigBasedClient.class,
+			Application.NameBasedUrlClient.class,
+			Application.WithPathAndUrlFromConfigClient.class,
+			Application.WithPathAndFixUrlClient.class
+		}
+	)
 	protected static class Application {
 
 		@Bean
@@ -106,6 +131,22 @@ class NonRefreshableFeignClientUrlTests {
 
 		@FeignClient(name = "nameBasedClient")
 		protected interface NameBasedUrlClient {
+
+			@GetMapping("/test")
+			UrlTestClient.UrlResponseForTests test();
+
+		}
+
+		@FeignClient(name = "withPathAndFixUrlClient", path = "/common", url = "http://localhost:7777")
+		protected interface WithPathAndFixUrlClient {
+
+			@GetMapping("/test")
+			UrlTestClient.UrlResponseForTests test();
+
+		}
+
+		@FeignClient(name = "withPathAndUrlFromConfigClient", path = "/common")
+		protected interface WithPathAndUrlFromConfigClient {
 
 			@GetMapping("/test")
 			UrlTestClient.UrlResponseForTests test();
