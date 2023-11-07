@@ -44,7 +44,7 @@ class FeignCircuitBreakerTargeter implements Targeter {
 
 	@Override
 	public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign, FeignClientFactory context,
-			Target.HardCodedTarget<T> target) {
+			Target<T> target) {
 		if (!(feign instanceof FeignCircuitBreaker.Builder builder)) {
 			return feign.target(target);
 		}
@@ -61,14 +61,14 @@ class FeignCircuitBreakerTargeter implements Targeter {
 	}
 
 	private <T> T targetWithFallbackFactory(String feignClientName, FeignClientFactory context,
-			Target.HardCodedTarget<T> target, FeignCircuitBreaker.Builder builder, Class<?> fallbackFactoryClass) {
+			Target<T> target, FeignCircuitBreaker.Builder builder, Class<?> fallbackFactoryClass) {
 		FallbackFactory<? extends T> fallbackFactory = (FallbackFactory<? extends T>) getFromContext("fallbackFactory",
 				feignClientName, context, fallbackFactoryClass, FallbackFactory.class);
 		return builder(feignClientName, builder).target(target, fallbackFactory);
 	}
 
 	private <T> T targetWithFallback(String feignClientName, FeignClientFactory context,
-			Target.HardCodedTarget<T> target, FeignCircuitBreaker.Builder builder, Class<?> fallback) {
+			Target<T> target, FeignCircuitBreaker.Builder builder, Class<?> fallback) {
 		T fallbackInstance = getFromContext("fallback", feignClientName, context, fallback, target.type());
 		return builder(feignClientName, builder).target(target, fallbackInstance);
 	}

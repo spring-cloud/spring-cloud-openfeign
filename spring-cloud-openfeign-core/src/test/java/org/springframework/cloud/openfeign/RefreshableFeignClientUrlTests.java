@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.openfeign;
 
-import feign.Target;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +65,6 @@ class RefreshableFeignClientUrlTests {
 	void shouldInstantiateFeignClientWhenUrlFromFeignClientUrl() {
 		UrlTestClient.UrlResponseForTests response = refreshableClientWithFixUrl.fixPath();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:8081/fixPath");
-		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
 	}
 
 	@Test
@@ -79,7 +77,6 @@ class RefreshableFeignClientUrlTests {
 	public void shouldInstantiateFeignClientWhenUrlFromProperties() {
 		UrlTestClient.UrlResponseForTests response = refreshableUrlClient.refreshable();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:8082/refreshable");
-		assertThat(response.getTargetType()).isEqualTo(RefreshableHardCodedTarget.class);
 	}
 
 	@Test
@@ -97,7 +94,6 @@ class RefreshableFeignClientUrlTests {
 	void shouldInstantiateFeignClientWhenUrlFromFeignClientName() {
 		UrlTestClient.UrlResponseForTests response = nameBasedUrlClient.nonRefreshable();
 		assertThat(response.getUrl()).isEqualTo("http://nameBasedClient/nonRefreshable");
-		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
 	}
 
 	@Configuration

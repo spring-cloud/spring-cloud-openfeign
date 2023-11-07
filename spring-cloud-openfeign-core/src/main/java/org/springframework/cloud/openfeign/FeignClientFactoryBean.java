@@ -34,6 +34,7 @@ import feign.Request;
 import feign.RequestInterceptor;
 import feign.ResponseInterceptor;
 import feign.Retryer;
+import feign.Target;
 import feign.Target.HardCodedTarget;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
@@ -389,7 +390,7 @@ public class FeignClientFactoryBean
 		}
 	}
 
-	protected <T> T loadBalance(Feign.Builder builder, FeignClientFactory context, HardCodedTarget<T> target) {
+	protected <T> T loadBalance(Feign.Builder builder, FeignClientFactory context, Target<T> target) {
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
 			builder.client(client);
@@ -442,13 +443,12 @@ public class FeignClientFactoryBean
 			else {
 				url = name;
 			}
-			url += cleanPath();
-			return (T) loadBalance(builder, feignClientFactory, new HardCodedTarget<>(type, name, url));
+			Target<?> target = new PathPrefixedTarget<>(this.cleanPath(), new HardCodedTarget<>(type, name, url));
+			return (T) loadBalance(builder, feignClientFactory, target);
 		}
 		if (StringUtils.hasText(url) && !url.startsWith("http")) {
 			url = "http://" + url;
 		}
-		String url = this.url + cleanPath();
 		Client client = getOptional(feignClientFactory, Client.class);
 		if (client != null) {
 			if (client instanceof FeignBlockingLoadBalancerClient) {
@@ -467,7 +467,8 @@ public class FeignClientFactoryBean
 		applyBuildCustomizers(feignClientFactory, builder);
 
 		Targeter targeter = get(feignClientFactory, Targeter.class);
-		return targeter.target(this, builder, feignClientFactory, resolveTarget(feignClientFactory, contextId, url));
+		Target<T> target = new PathPrefixedTarget<>(this.cleanPath(), resolveTarget(feignClientFactory, contextId, this.url));
+		return targeter.target(this, builder, feignClientFactory, target);
 	}
 
 	private String cleanPath() {

@@ -155,7 +155,7 @@ class FeignHttpClientUrlWithRetryableLoadBalancerTests {
 			return new Targeter() {
 				@Override
 				public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign, FeignClientFactory context,
-						Target.HardCodedTarget<T> target) {
+						Target<T> target) {
 					Field field = ReflectionUtils.findField(Feign.Builder.class, "client");
 					ReflectionUtils.makeAccessible(field);
 					Client client = (Client) ReflectionUtils.getField(field, feign);

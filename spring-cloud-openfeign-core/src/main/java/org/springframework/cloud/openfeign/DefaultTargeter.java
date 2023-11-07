@@ -26,7 +26,7 @@ class DefaultTargeter implements Targeter {
 
 	@Override
 	public <T> T target(FeignClientFactoryBean factory, Feign.Builder feign, FeignClientFactory context,
-			Target.HardCodedTarget<T> target) {
+			Target<T> target) {
 		return feign.target(target);
 	}
 
