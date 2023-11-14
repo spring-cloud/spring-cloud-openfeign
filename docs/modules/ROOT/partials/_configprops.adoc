@@ -60,6 +60,8 @@
 |spring.cloud.loadbalancer.retry.retryable-status-codes | `+++{}+++` | A `Set` of status codes that should trigger a retry.
 |spring.cloud.loadbalancer.sticky-session.add-service-instance-cookie | `+++false+++` | Indicates whether a cookie with the newly selected instance should be added by LoadBalancer.
 |spring.cloud.loadbalancer.sticky-session.instance-id-cookie-name | `+++sc-lb-instance-id+++` | The name of the cookie holding the preferred instance id.
+|spring.cloud.loadbalancer.subset.instance-id |  | Instance id of deterministic subsetting. If not set, {@link IdUtils#getDefaultInstanceId(PropertyResolver)} will be used.
+|spring.cloud.loadbalancer.subset.size | `+++100+++` | Max subset size of deterministic subsetting.
 |spring.cloud.loadbalancer.x-forwarded.enabled | `+++false+++` | To Enable X-Forwarded Headers.
 |spring.cloud.openfeign.autoconfiguration.jackson.enabled | `+++true+++` | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
 |spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled | `+++false+++` | If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.
