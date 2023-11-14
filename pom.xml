@@ -25,13 +25,13 @@
 	</scm>
 	<properties>
 		<main.basedir>${basedir}</main.basedir>
-		<jackson.version>2.11.4</jackson.version>
+		<jackson.version>2.15.3</jackson.version>
 		<spring-cloud-commons.version>3.1.8-SNAPSHOT</spring-cloud-commons.version>
 
 		<!-- Plugin versions -->
 		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
 		<!-- Sonar -->
-		<surefire.plugin.version>2.19.1</surefire.plugin.version>
+		<surefire.plugin.version>2.22.2</surefire.plugin.version>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec
