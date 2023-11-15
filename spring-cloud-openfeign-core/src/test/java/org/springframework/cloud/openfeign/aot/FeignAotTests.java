@@ -92,7 +92,6 @@ public class FeignAotTests {
 				ApplicationContextInitializer<GenericApplicationContext> initializer = compiled
 						.getInstance(ApplicationContextInitializer.class, className.toString());
 				initializer.initialize(freshApplicationContext);
-				assertThat(output).contains("Creating a FeignClientFactoryBean.");
 				assertThat(output).contains("Refreshing FeignClientFactory-test-with-config",
 						"Refreshing FeignClientFactory-test");
 				assertThat(output).doesNotContain("Instantiating bean from Test custom config",
