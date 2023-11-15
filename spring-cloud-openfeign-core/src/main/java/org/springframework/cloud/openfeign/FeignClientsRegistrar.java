@@ -32,6 +32,7 @@ import java.util.Set;
 import feign.Request;
 
 import org.springframework.aop.scope.ScopedProxyUtils;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
