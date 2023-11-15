@@ -31,7 +31,7 @@
 		<!-- Plugin versions -->
 		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
 		<!-- Sonar -->
-		<surefire.plugin.version>2.22.2</surefire.plugin.version>
+		<surefire.plugin.version>3.2.2</surefire.plugin.version>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec

@@ -429,7 +429,7 @@ public class FeignClientUsingPropertiesTests {
 	public static class BazResponseInterceptor implements ResponseInterceptor {
 
 		@Override
-		public Object aroundDecode(InvocationContext invocationContext) {
+		public Object intercept(InvocationContext invocationContext, Chain chain) throws Exception {
 			return "baz";
 		}
 
