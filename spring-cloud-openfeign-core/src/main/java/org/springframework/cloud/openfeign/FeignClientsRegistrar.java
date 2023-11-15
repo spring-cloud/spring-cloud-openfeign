@@ -247,6 +247,8 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		// code
 		definition.addPropertyValue("qualifiers", qualifiers);
 		AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
+		Class<?> type = ClassUtils.resolveClassName(className, null);
+		beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, type);
 		// has a default, won't be null
 		boolean primary = (Boolean) attributes.get("primary");
 		beanDefinition.setPrimary(primary);
