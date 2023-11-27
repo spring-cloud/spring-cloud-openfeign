@@ -33,15 +33,19 @@ public class PropertyBasedTarget<T> extends Target.HardCodedTarget<T> {
 
 	private final FeignClientProperties.FeignClientConfiguration config;
 
-	public PropertyBasedTarget(Class<T> type, String name, FeignClientProperties.FeignClientConfiguration config) {
+	private final String path;
+
+	public PropertyBasedTarget(Class<T> type, String name, FeignClientProperties.FeignClientConfiguration config,
+			String path) {
 		super(type, name, config.getUrl());
 		this.config = config;
+		this.path = path;
 	}
 
 	@Override
 	public String url() {
 		if (url == null) {
-			url = config.getUrl();
+			url = config.getUrl() + path;
 		}
 		return url;
 	}
