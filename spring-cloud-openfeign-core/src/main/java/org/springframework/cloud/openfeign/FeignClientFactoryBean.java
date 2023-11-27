@@ -448,7 +448,6 @@ public class FeignClientFactoryBean
 		if (StringUtils.hasText(url) && !url.startsWith("http")) {
 			url = "http://" + url;
 		}
-		String url = this.url + cleanPath();
 		Client client = getOptional(feignClientFactory, Client.class);
 		if (client != null) {
 			if (client instanceof FeignBlockingLoadBalancerClient) {
@@ -489,7 +488,7 @@ public class FeignClientFactoryBean
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> HardCodedTarget<T> resolveTarget(FeignClientFactory context, String contextId, String url) {
 		if (StringUtils.hasText(url)) {
-			return new HardCodedTarget(type, name, url);
+			return new HardCodedTarget(type, name, url + cleanPath());
 		}
 
 		if (refreshableClient) {
@@ -505,7 +504,7 @@ public class FeignClientFactoryBean
 					"Provide Feign client URL either in @FeignClient() or in config properties.");
 		}
 
-		return new PropertyBasedTarget(type, name, config);
+		return new PropertyBasedTarget(type, name, config, cleanPath());
 	}
 
 	private boolean isUrlAvailableInConfig(String contextId) {
