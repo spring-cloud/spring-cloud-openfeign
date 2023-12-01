@@ -272,19 +272,16 @@ bean to return `false`:
 [source,java,indent=0]
 ----
 @Configuration
-public class CustomConfiguration{
-
-@Bean
-public FeignClientConfigurer feignClientConfigurer() {
-			return new FeignClientConfigurer() {
-
-				@Override
-				public boolean inheritParentConfiguration() {
-					return false;
-				}
-			};
-
-		}
+public class CustomConfiguration {
+	@Bean
+	public FeignClientConfigurer feignClientConfigurer() {
+		return new FeignClientConfigurer() {
+			@Override
+			public boolean inheritParentConfiguration() {
+				 return false;
+			}
+		};
+	}
 }
 ----
 
@@ -444,30 +441,30 @@ Spring Cloud CircuitBreaker supports the notion of a fallback: a default code pa
 [source,java,indent=0]
 ----
 @FeignClient(name = "test", url = "http://localhost:${server.port}/", fallback = Fallback.class)
-	protected interface TestClient {
+protected interface TestClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		Hello getHello();
+	@RequestMapping(method = RequestMethod.GET, value = "/hello")
+	Hello getHello();
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hellonotfound")
-		String getException();
+	@RequestMapping(method = RequestMethod.GET, value = "/hellonotfound")
+	String getException();
 
+}
+
+@Component
+static class Fallback implements TestClient {
+
+	@Override
+	public Hello getHello() {
+		throw new NoFallbackAvailableException("Boom!", new RuntimeException());
 	}
 
-	@Component
-	static class Fallback implements TestClient {
-
-		@Override
-		public Hello getHello() {
-			throw new NoFallbackAvailableException("Boom!", new RuntimeException());
-		}
-
-		@Override
-		public String getException() {
-			return "Fixed response";
-		}
-
+	@Override
+	public String getException() {
+		return "Fixed response";
 	}
+
+}
 ----
 
 If one needs access to the cause that made the fallback trigger, one can use the `fallbackFactory` attribute inside `@FeignClient`.
@@ -476,39 +473,39 @@ If one needs access to the cause that made the fallback trigger, one can use the
 ----
 @FeignClient(name = "testClientWithFactory", url = "http://localhost:${server.port}/",
 			fallbackFactory = TestFallbackFactory.class)
-	protected interface TestClientWithFactory {
+protected interface TestClientWithFactory {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		Hello getHello();
+	@RequestMapping(method = RequestMethod.GET, value = "/hello")
+	Hello getHello();
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hellonotfound")
-		String getException();
+	@RequestMapping(method = RequestMethod.GET, value = "/hellonotfound")
+	String getException();
 
+}
+
+@Component
+static class TestFallbackFactory implements FallbackFactory<FallbackWithFactory> {
+
+	@Override
+	public FallbackWithFactory create(Throwable cause) {
+		return new FallbackWithFactory();
 	}
 
-	@Component
-	static class TestFallbackFactory implements FallbackFactory<FallbackWithFactory> {
+}
 
-		@Override
-		public FallbackWithFactory create(Throwable cause) {
-			return new FallbackWithFactory();
-		}
+static class FallbackWithFactory implements TestClientWithFactory {
 
+	@Override
+	public Hello getHello() {
+		throw new NoFallbackAvailableException("Boom!", new RuntimeException());
 	}
 
-	static class FallbackWithFactory implements TestClientWithFactory {
-
-		@Override
-		public Hello getHello() {
-			throw new NoFallbackAvailableException("Boom!", new RuntimeException());
-		}
-
-		@Override
-		public String getException() {
-			return "Fixed response";
-		}
-
+	@Override
+	public String getException() {
+		return "Fixed response";
 	}
+
+}
 ----
 
 === Feign and `@Primary`
