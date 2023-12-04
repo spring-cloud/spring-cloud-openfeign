@@ -25,6 +25,7 @@ import feign.Target;
  * `spring.cloud.openfeign.client.config.[clientId].url`.
  *
  * @author Olga Maciaszek-Sharma
+ * @author Can Bezmen
  * @see FeignClientProperties.FeignClientConfiguration#getUrl()
  */
 public class PropertyBasedTarget<T> extends Target.HardCodedTarget<T> {
@@ -33,15 +34,25 @@ public class PropertyBasedTarget<T> extends Target.HardCodedTarget<T> {
 
 	private final FeignClientProperties.FeignClientConfiguration config;
 
+	private final String path;
+
+	public PropertyBasedTarget(Class<T> type, String name, FeignClientProperties.FeignClientConfiguration config,
+			String path) {
+		super(type, name, config.getUrl());
+		this.config = config;
+		this.path = path;
+	}
+
 	public PropertyBasedTarget(Class<T> type, String name, FeignClientProperties.FeignClientConfiguration config) {
 		super(type, name, config.getUrl());
 		this.config = config;
+		path = "";
 	}
 
 	@Override
 	public String url() {
 		if (url == null) {
-			url = config.getUrl();
+			url = config.getUrl() + path;
 		}
 		return url;
 	}

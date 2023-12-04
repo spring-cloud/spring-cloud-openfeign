@@ -72,6 +72,7 @@ import org.springframework.util.StringUtils;
  * @author Hyeonmin Park
  * @author Felix Dittrich
  * @author Dominique Villard
+ * @athor Can Bezmen
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -448,7 +449,6 @@ public class FeignClientFactoryBean
 		if (StringUtils.hasText(url) && !url.startsWith("http")) {
 			url = "http://" + url;
 		}
-		String url = this.url + cleanPath();
 		Client client = getOptional(feignClientFactory, Client.class);
 		if (client != null) {
 			if (client instanceof FeignBlockingLoadBalancerClient) {
@@ -489,14 +489,14 @@ public class FeignClientFactoryBean
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> HardCodedTarget<T> resolveTarget(FeignClientFactory context, String contextId, String url) {
 		if (StringUtils.hasText(url)) {
-			return new HardCodedTarget(type, name, url);
+			return new HardCodedTarget(type, name, url + cleanPath());
 		}
 
 		if (refreshableClient) {
 			RefreshableUrl refreshableUrl = context.getInstance(contextId,
 					RefreshableUrl.class.getCanonicalName() + "-" + contextId, RefreshableUrl.class);
 			if (Objects.nonNull(refreshableUrl) && StringUtils.hasText(refreshableUrl.getUrl())) {
-				return new RefreshableHardCodedTarget<>(type, name, refreshableUrl);
+				return new RefreshableHardCodedTarget<>(type, name, refreshableUrl, cleanPath());
 			}
 		}
 		FeignClientProperties.FeignClientConfiguration config = findConfigByKey(contextId);
@@ -505,7 +505,7 @@ public class FeignClientFactoryBean
 					"Provide Feign client URL either in @FeignClient() or in config properties.");
 		}
 
-		return new PropertyBasedTarget(type, name, config);
+		return new PropertyBasedTarget(type, name, config, cleanPath());
 	}
 
 	private boolean isUrlAvailableInConfig(String contextId) {

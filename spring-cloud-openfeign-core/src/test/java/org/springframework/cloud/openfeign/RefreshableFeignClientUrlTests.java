@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.context.scope.refresh.RefreshScope;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
@@ -35,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Jasbir Singh
+ * @author Olga Maciaszek-Sharma
  */
 @SpringBootTest
 @TestPropertySource("classpath:feign-refreshable-properties.properties")
@@ -42,19 +42,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RefreshableFeignClientUrlTests {
 
 	@Autowired
-	private ApplicationContext applicationContext;
-
-	@Autowired
 	private RefreshScope refreshScope;
 
 	@Autowired
-	private RefreshableFeignClientUrlTests.Application.RefreshableClientWithFixUrl refreshableClientWithFixUrl;
+	private RefreshableFeignClientUrlTests.Application.RefreshableClientWithFixedUrl refreshableClientWithFixedUrl;
 
 	@Autowired
 	private RefreshableFeignClientUrlTests.Application.RefreshableUrlClient refreshableUrlClient;
 
 	@Autowired
-	private Application.RefreshableUrlClientForContextRefreshCase refreshableUrlClientForContextRefreshCase;
+	private Application.RefreshableUrlClientForContextRefreshCase refreshableClientForContextRefreshCase;
 
 	@Autowired
 	private Application.NameBasedUrlClient nameBasedUrlClient;
@@ -63,16 +60,18 @@ class RefreshableFeignClientUrlTests {
 	private FeignClientProperties clientProperties;
 
 	@Test
-	void shouldInstantiateFeignClientWhenUrlFromFeignClientUrl() {
-		UrlTestClient.UrlResponseForTests response = refreshableClientWithFixUrl.fixPath();
-		assertThat(response.getUrl()).isEqualTo("http://localhost:8081/fixPath");
+	void shouldInstantiateFeignClientWhenUrlFromAnnotation() {
+		UrlTestClient.UrlResponseForTests response = refreshableClientWithFixedUrl.fixedPath();
+		assertThat(response.getUrl()).isEqualTo("http://localhost:8081/fixedPath");
 		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
 	}
 
 	@Test
-	void shouldInstantiateFeignClientWhenUrlFromFeignClientUrlGivenPreferenceOverProperties() {
-		UrlTestClient.UrlResponseForTests response = refreshableClientWithFixUrl.fixPath();
-		assertThat(response.getUrl()).isEqualTo("http://localhost:8081/fixPath");
+	void shouldInstantiateFeignClientWhenUrlAndPathFromAnnotation(
+			@Autowired Application.WithPathAndFixedUrlClient client) {
+		UrlTestClient.UrlResponseForTests response = client.test();
+		assertThat(response.getUrl()).isEqualTo("http://localhost:7777/common/test");
+		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
 	}
 
 	@Test
@@ -84,13 +83,26 @@ class RefreshableFeignClientUrlTests {
 
 	@Test
 	void shouldInstantiateFeignClientWhenUrlFromPropertiesAndThenUpdateUrlWhenContextRefresh() {
-		UrlTestClient.UrlResponseForTests response = refreshableUrlClientForContextRefreshCase.refreshable();
+		UrlTestClient.UrlResponseForTests response = refreshableClientForContextRefreshCase.refreshable();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:8080/refreshable");
 
-		clientProperties.getConfig().get("refreshableClient").setUrl("http://localhost:8888/");
+		clientProperties.getConfig().get("refreshableClientForContextRefreshCase").setUrl("http://localhost:8888");
 		refreshScope.refreshAll();
-		response = refreshableUrlClient.refreshable();
+		response = refreshableClientForContextRefreshCase.refreshable();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:8888/refreshable");
+	}
+
+	@Test
+	void shouldInstantiateFeignClientWhenUrlFromPropertiesAndPathFromAnnotationThenUpdateUrlWhenContextRefresh(
+			@Autowired Application.RefreshableUrlClientForContextRefreshCaseWithPath client) {
+		UrlTestClient.UrlResponseForTests response = client.refreshable();
+		assertThat(response.getUrl()).isEqualTo("http://localhost:8080/common/refreshable");
+
+		clientProperties.getConfig().get("refreshableClientForContextRefreshCaseWithPath")
+				.setUrl("http://localhost:8888");
+		refreshScope.refreshAll();
+		response = client.refreshable();
+		assertThat(response.getUrl()).isEqualTo("http://localhost:8888/common/refreshable");
 	}
 
 	@Test
@@ -104,8 +116,9 @@ class RefreshableFeignClientUrlTests {
 	@EnableAutoConfiguration
 	@EnableConfigurationProperties(FeignClientProperties.class)
 	@EnableFeignClients(clients = { Application.RefreshableUrlClient.class, Application.NameBasedUrlClient.class,
-			Application.RefreshableClientWithFixUrl.class,
-			Application.RefreshableUrlClientForContextRefreshCase.class })
+			Application.RefreshableClientWithFixedUrl.class,
+			Application.RefreshableUrlClientForContextRefreshCase.class, Application.WithPathAndFixedUrlClient.class,
+			Application.RefreshableUrlClientForContextRefreshCaseWithPath.class })
 	protected static class Application {
 
 		@Bean
@@ -113,11 +126,11 @@ class RefreshableFeignClientUrlTests {
 			return new UrlTestClient();
 		}
 
-		@FeignClient(name = "refreshableClientWithFixUrl", url = "http://localhost:8081")
-		protected interface RefreshableClientWithFixUrl {
+		@FeignClient(name = "refreshableClientWithFixedUrl", url = "http://localhost:8081")
+		protected interface RefreshableClientWithFixedUrl {
 
-			@GetMapping("/fixPath")
-			UrlTestClient.UrlResponseForTests fixPath();
+			@GetMapping("/fixedPath")
+			UrlTestClient.UrlResponseForTests fixedPath();
 
 		}
 
@@ -137,11 +150,27 @@ class RefreshableFeignClientUrlTests {
 
 		}
 
+		@FeignClient(name = "refreshableClientForContextRefreshCaseWithPath", path = "/common")
+		protected interface RefreshableUrlClientForContextRefreshCaseWithPath {
+
+			@GetMapping("/refreshable")
+			UrlTestClient.UrlResponseForTests refreshable();
+
+		}
+
 		@FeignClient(name = "nameBasedClient")
 		protected interface NameBasedUrlClient {
 
 			@GetMapping("/nonRefreshable")
 			UrlTestClient.UrlResponseForTests nonRefreshable();
+
+		}
+
+		@FeignClient(name = "withPathAndFixUrlClient", path = "/common", url = "http://localhost:7777")
+		protected interface WithPathAndFixedUrlClient {
+
+			@GetMapping("/test")
+			UrlTestClient.UrlResponseForTests test();
 
 		}
 
