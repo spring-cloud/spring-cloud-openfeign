@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Jasbir Singh
  * @author Olga Maciaszek-Sharma
+ * @author Alex Elin
  */
 @SpringBootTest
 @TestPropertySource("classpath:feign-properties.properties")
