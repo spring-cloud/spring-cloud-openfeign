@@ -437,7 +437,7 @@ public class FeignClientFactoryBean
 			if (LOG.isInfoEnabled()) {
 				LOG.info("For '" + name + "' URL not provided. Will try picking an instance via load-balancing.");
 			}
-			if (!name.startsWith("http")) {
+			if (!name.startsWith("http://") && !name.startsWith("https://")) {
 				url = "http://" + name;
 			}
 			else {
@@ -446,7 +446,7 @@ public class FeignClientFactoryBean
 			url += cleanPath();
 			return (T) loadBalance(builder, feignClientFactory, new HardCodedTarget<>(type, name, url));
 		}
-		if (StringUtils.hasText(url) && !url.startsWith("http")) {
+		if (StringUtils.hasText(url) && !url.startsWith("http://") && !url.startsWith("https://")) {
 			url = "http://" + url;
 		}
 		Client client = getOptional(feignClientFactory, Client.class);
