@@ -72,6 +72,7 @@ import org.springframework.util.StringUtils;
  * @author Hyeonmin Park
  * @author Felix Dittrich
  * @author Dominique Villard
+ * @athor Can Bezmen
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -495,7 +496,7 @@ public class FeignClientFactoryBean
 			RefreshableUrl refreshableUrl = context.getInstance(contextId,
 					RefreshableUrl.class.getCanonicalName() + "-" + contextId, RefreshableUrl.class);
 			if (Objects.nonNull(refreshableUrl) && StringUtils.hasText(refreshableUrl.getUrl())) {
-				return new RefreshableHardCodedTarget<>(type, name, refreshableUrl);
+				return new RefreshableHardCodedTarget<>(type, name, refreshableUrl, cleanPath());
 			}
 		}
 		FeignClientProperties.FeignClientConfiguration config = findConfigByKey(contextId);

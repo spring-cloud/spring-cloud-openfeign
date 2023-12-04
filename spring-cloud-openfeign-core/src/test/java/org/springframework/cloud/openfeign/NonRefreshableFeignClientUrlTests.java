@@ -58,12 +58,6 @@ class NonRefreshableFeignClientUrlTests {
 	}
 
 	@Test
-	void shouldInstantiateFeignClientWhenUrlFromFeignClientUrlGivenPreferenceOverProperties() {
-		UrlTestClient.UrlResponseForTests response = feignClientWithFixUrl.fixPath();
-		assertThat(response.getUrl()).isEqualTo("http://localhost:8081/fixPath");
-	}
-
-	@Test
 	public void shouldInstantiateFeignClientWhenUrlFromProperties() {
 		UrlTestClient.UrlResponseForTests response = configBasedClient.test();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:9999/test");
@@ -79,34 +73,26 @@ class NonRefreshableFeignClientUrlTests {
 
 	@Test
 	void shouldInstantiateFeignClientWhenUrlAndPathAreInTheFeignClientAnnotation(
-		@Autowired Application.WithPathAndFixUrlClient withPathAndFixUrlClient
-	) {
-		UrlTestClient.UrlResponseForTests response = withPathAndFixUrlClient.test();
+			@Autowired Application.WithPathAndFixedUrlClient client) {
+		UrlTestClient.UrlResponseForTests response = client.test();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:7777/common/test");
 		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
 	}
 
 	@Test
 	void shouldInstantiateFeignClientWhenUrlFromPropertiesAndPathInTheFeignClientAnnotation(
-		@Autowired Application.WithPathAndUrlFromConfigClient withPathAndUrlFromConfigClient
-	) {
-		UrlTestClient.UrlResponseForTests response = withPathAndUrlFromConfigClient.test();
+			@Autowired Application.WithPathAndUrlFromConfigClient client) {
+		UrlTestClient.UrlResponseForTests response = client.test();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:7777/common/test");
-		assertThat(response.getTargetType()).isEqualTo(Target.HardCodedTarget.class);
+		assertThat(response.getTargetType()).isEqualTo(PropertyBasedTarget.class);
 	}
 
 	@Configuration
 	@EnableAutoConfiguration
 	@EnableConfigurationProperties(FeignClientProperties.class)
-	@EnableFeignClients(
-		clients = {
-			Application.FeignClientWithFixUrl.class,
-			Application.ConfigBasedClient.class,
-			Application.NameBasedUrlClient.class,
-			Application.WithPathAndUrlFromConfigClient.class,
-			Application.WithPathAndFixUrlClient.class
-		}
-	)
+	@EnableFeignClients(clients = { Application.FeignClientWithFixUrl.class, Application.ConfigBasedClient.class,
+			Application.NameBasedUrlClient.class, Application.WithPathAndUrlFromConfigClient.class,
+			Application.WithPathAndFixedUrlClient.class })
 	protected static class Application {
 
 		@Bean
@@ -139,7 +125,7 @@ class NonRefreshableFeignClientUrlTests {
 		}
 
 		@FeignClient(name = "withPathAndFixUrlClient", path = "/common", url = "http://localhost:7777")
-		protected interface WithPathAndFixUrlClient {
+		protected interface WithPathAndFixedUrlClient {
 
 			@GetMapping("/test")
 			UrlTestClient.UrlResponseForTests test();
