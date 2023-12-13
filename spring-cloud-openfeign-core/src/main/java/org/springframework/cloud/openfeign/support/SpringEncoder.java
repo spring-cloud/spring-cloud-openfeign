@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,8 @@ public class SpringEncoder implements Encoder {
 
 	private final ObjectProvider<HttpMessageConverterCustomizer> customizers;
 
+	private List<HttpMessageConverter<?>> converters;
+
 	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
 		this(new SpringFormEncoder(), messageConverters, new FeignEncoderProperties(), new EmptyObjectProvider<>());
 	}
@@ -118,8 +120,7 @@ public class SpringEncoder implements Encoder {
 
 	private void encodeWithMessageConverter(Object requestBody, Type bodyType, RequestTemplate request,
 			MediaType requestContentType) {
-		List<HttpMessageConverter<?>> converters = messageConverters.getObject().getConverters();
-		customizers.forEach(customizer -> customizer.accept(converters));
+		initConvertersIfRequired();
 		for (HttpMessageConverter messageConverter : converters) {
 			FeignOutputMessage outputMessage;
 			try {
@@ -167,6 +168,13 @@ public class SpringEncoder implements Encoder {
 			message += " and content type [" + requestContentType + "]";
 		}
 		throw new EncodeException(message);
+	}
+
+	private void initConvertersIfRequired() {
+		if (converters == null) {
+			converters = messageConverters.getObject().getConverters();
+			customizers.forEach(customizer -> customizer.accept(converters));
+		}
 	}
 
 	private boolean shouldHaveNullCharset(HttpMessageConverter messageConverter, FeignOutputMessage outputMessage) {
