@@ -85,7 +85,7 @@
 |spring.cloud.openfeign.httpclient.follow-redirects | `+++true+++` | 
 |spring.cloud.openfeign.httpclient.hc5.connection-request-timeout | `+++3+++` | Default value for connection request timeout.
 |spring.cloud.openfeign.httpclient.hc5.connection-request-timeout-unit |  | Default value for connection request timeout unit.
-|spring.cloud.openfeign.httpclient.hc5.enabled | `+++false+++` | Enables the use of the Apache HTTP Client 5 by Feign.
+|spring.cloud.openfeign.httpclient.hc5.enabled | `+++true+++` | Enables the use of the Apache HTTP Client 5 by Feign.
 |spring.cloud.openfeign.httpclient.hc5.pool-concurrency-policy |  | Pool concurrency policies.
 |spring.cloud.openfeign.httpclient.hc5.pool-reuse-policy |  | Pool connection re-use policies.
 |spring.cloud.openfeign.httpclient.hc5.socket-timeout | `+++5+++` | Default value for socket timeout.
