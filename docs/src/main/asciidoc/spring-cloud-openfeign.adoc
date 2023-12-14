@@ -840,7 +840,8 @@ spring.cloud.openfeign.client.refresh-enabled=true
 TIP: DO NOT annotate the `@FeignClient` interface with the `@RefreshScope` annotation.
 
 === OAuth2 Support
-OAuth2 support can be enabled by setting following flag:
+
+OAuth2 support can be enabled by adding the `spring-boot-starter-oauth2-client` dependency to your project and setting following flag:
 ----
 spring.cloud.openfeign.oauth2.enabled=true
 ----
