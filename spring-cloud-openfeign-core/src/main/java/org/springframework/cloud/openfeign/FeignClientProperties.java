@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,9 +130,9 @@ public class FeignClientProperties {
 
 		private Class<ResponseInterceptor> responseInterceptor;
 
-		private Map<String, Collection<String>> defaultRequestHeaders;
+		private Map<String, Collection<String>> defaultRequestHeaders = new HashMap<>();
 
-		private Map<String, Collection<String>> defaultQueryParameters;
+		private Map<String, Collection<String>> defaultQueryParameters = new HashMap<>();
 
 		private Boolean dismiss404;
 

@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -72,7 +73,7 @@ import org.springframework.util.StringUtils;
  * @author Hyeonmin Park
  * @author Felix Dittrich
  * @author Dominique Villard
- * @athor Can Bezmen
+ * @author Can Bezmen
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -178,6 +179,8 @@ public class FeignClientFactoryBean
 				configureUsingProperties(properties.getConfig().get(contextId), builder);
 				configureUsingConfiguration(context, builder);
 			}
+			configureDefaultRequestElements(properties.getConfig().get(properties.getDefaultConfig()),
+					properties.getConfig().get(contextId), builder);
 		}
 		else {
 			configureUsingConfiguration(context, builder);
@@ -298,9 +301,6 @@ public class FeignClientFactoryBean
 			builder.encoder(getOrInstantiate(config.getEncoder()));
 		}
 
-		addDefaultRequestHeaders(config, builder);
-		addDefaultQueryParams(config, builder);
-
 		if (Objects.nonNull(config.getDecoder())) {
 			builder.decoder(getOrInstantiate(config.getDecoder()));
 		}
@@ -322,33 +322,49 @@ public class FeignClientFactoryBean
 		}
 	}
 
-	private void addDefaultQueryParams(FeignClientProperties.FeignClientConfiguration config, Feign.Builder builder) {
-		Map<String, Collection<String>> defaultQueryParameters = config.getDefaultQueryParameters();
-		if (Objects.nonNull(defaultQueryParameters)) {
-			builder.requestInterceptor(requestTemplate -> {
-				Map<String, Collection<String>> queries = requestTemplate.queries();
-				defaultQueryParameters.keySet().forEach(key -> {
-					if (!queries.containsKey(key)) {
-						requestTemplate.query(key, defaultQueryParameters.get(key));
-					}
-				});
-			});
+	protected void configureDefaultRequestElements(FeignClientProperties.FeignClientConfiguration defaultConfig,
+			FeignClientProperties.FeignClientConfiguration clientConfig, Feign.Builder builder) {
+		Map<String, Collection<String>> defaultRequestHeaders = defaultConfig != null
+				? defaultConfig.getDefaultRequestHeaders() : new HashMap<>();
+		if (clientConfig != null) {
+			defaultRequestHeaders.putAll(clientConfig.getDefaultRequestHeaders());
 		}
+		if (!defaultRequestHeaders.isEmpty()) {
+			addDefaultRequestHeaders(defaultRequestHeaders, builder);
+		}
+
+		Map<String, Collection<String>> defaultQueryParameters = defaultConfig != null
+				? defaultConfig.getDefaultQueryParameters() : new HashMap<>();
+		if (clientConfig != null) {
+			defaultQueryParameters.putAll(clientConfig.getDefaultQueryParameters());
+		}
+		if (!defaultQueryParameters.isEmpty()) {
+			addDefaultQueryParams(defaultQueryParameters, builder);
+		}
+
 	}
 
-	private void addDefaultRequestHeaders(FeignClientProperties.FeignClientConfiguration config,
-			Feign.Builder builder) {
-		Map<String, Collection<String>> defaultRequestHeaders = config.getDefaultRequestHeaders();
-		if (Objects.nonNull(defaultRequestHeaders)) {
-			builder.requestInterceptor(requestTemplate -> {
-				Map<String, Collection<String>> headers = requestTemplate.headers();
-				defaultRequestHeaders.keySet().forEach(key -> {
-					if (!headers.containsKey(key)) {
-						requestTemplate.header(key, defaultRequestHeaders.get(key));
-					}
-				});
+	private void addDefaultQueryParams(Map<String, Collection<String>> defaultQueryParameters, Feign.Builder builder) {
+		builder.requestInterceptor(requestTemplate -> {
+			Map<String, Collection<String>> queries = requestTemplate.queries();
+			defaultQueryParameters.keySet().forEach(key -> {
+				if (!queries.containsKey(key)) {
+					requestTemplate.query(key, defaultQueryParameters.get(key));
+				}
 			});
-		}
+		});
+	}
+
+	private void addDefaultRequestHeaders(Map<String, Collection<String>> defaultRequestHeaders,
+			Feign.Builder builder) {
+		builder.requestInterceptor(requestTemplate -> {
+			Map<String, Collection<String>> headers = requestTemplate.headers();
+			defaultRequestHeaders.keySet().forEach(key -> {
+				if (!headers.containsKey(key)) {
+					requestTemplate.header(key, defaultRequestHeaders.get(key));
+				}
+			});
+		});
 	}
 
 	private <T> T getOrInstantiate(Class<T> tClass) {
