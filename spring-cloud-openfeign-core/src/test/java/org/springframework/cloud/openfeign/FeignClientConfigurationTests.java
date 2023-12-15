@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 the original author or authors.
+ * Copyright 2021-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,8 +62,8 @@ class FeignClientConfigurationTests {
 		assertThat(config.getErrorDecoder()).isNull();
 		assertThat(config.getRequestInterceptors()).isNull();
 		assertThat(config.getResponseInterceptor()).isNull();
-		assertThat(config.getDefaultRequestHeaders()).isNull();
-		assertThat(config.getDefaultQueryParameters()).isNull();
+		assertThat(config.getDefaultRequestHeaders()).isEmpty();
+		assertThat(config.getDefaultQueryParameters()).isEmpty();
 		assertThat(config.getDismiss404()).isNull();
 		assertThat(config.getDecoder()).isNull();
 		assertThat(config.getEncoder()).isNull();
