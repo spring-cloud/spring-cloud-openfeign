@@ -814,8 +814,9 @@ Until that is done, we recommend using https://github.com/Playtika/feign-reactiv
 [[early-initialization-errors]]
 ==== Early Initialization Errors
 
-Depending on how you are using your Feign clients you may see initialization errors when starting your application.
-To work around this problem you can use an `ObjectProvider` when autowiring your client.
+We discourage using Feign clients in the early stages of application lifecycle, while processing configurations and initialising beans. Using the clients during bean initialisation is not supported.
+
+Similarly, depending on how you are using your Feign clients, you may see initialization errors when starting your application. To work around this problem you can use an `ObjectProvider` when autowiring your client.
 
 [source,java,indent=0]
 ----
