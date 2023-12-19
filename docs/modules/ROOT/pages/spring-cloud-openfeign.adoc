@@ -42,13 +42,13 @@ public interface StoreClient {
 	@RequestMapping(method = RequestMethod.GET, value = "/stores")
 	List<Store> getStores();
 
-	@RequestMapping(method = RequestMethod.GET, value = "/stores")
+	@GetMapping("/stores")
 	Page<Store> getStores(Pageable pageable);
 
-	@RequestMapping(method = RequestMethod.POST, value = "/stores/{storeId}", consumes = "application/json")
+	@PostMapping(value = "/stores/{storeId}", consumes = "application/json")
 	Store update(@PathVariable("storeId") Long storeId, Store store);
 
-	@RequestMapping(method = RequestMethod.DELETE, value = "/stores/{storeId:\\d+}")
+	@DeleteMapping("/stores/{storeId:\\d+}")
 	void delete(@PathVariable Long storeId);
 }
 ----
@@ -443,10 +443,10 @@ Spring Cloud CircuitBreaker supports the notion of a fallback: a default code pa
 @FeignClient(name = "test", url = "http://localhost:${server.port}/", fallback = Fallback.class)
 protected interface TestClient {
 
-	@RequestMapping(method = RequestMethod.GET, value = "/hello")
+	@GetMapping("/hello")
 	Hello getHello();
 
-	@RequestMapping(method = RequestMethod.GET, value = "/hellonotfound")
+	@GetMapping("/hellonotfound")
 	String getException();
 
 }
@@ -475,10 +475,10 @@ If one needs access to the cause that made the fallback trigger, one can use the
 			fallbackFactory = TestFallbackFactory.class)
 protected interface TestClientWithFactory {
 
-	@RequestMapping(method = RequestMethod.GET, value = "/hello")
+	@GetMapping("/hello")
 	Hello getHello();
 
-	@RequestMapping(method = RequestMethod.GET, value = "/hellonotfound")
+	@GetMapping("/hellonotfound")
 	String getException();
 
 }
@@ -532,7 +532,7 @@ This allows grouping common operations into convenient base interfaces.
 ----
 public interface UserService {
 
-	@RequestMapping(method = RequestMethod.GET, value ="/users/{id}")
+	@GetMapping("/users/{id}")
 	User getUser(@PathVariable("id") long id);
 }
 ----
