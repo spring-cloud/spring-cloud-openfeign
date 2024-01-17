@@ -24,6 +24,7 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,7 @@ import com.fasterxml.jackson.databind.Module;
 import feign.Capability;
 import feign.Client;
 import feign.Feign;
+import feign.ResponseInterceptor;
 import feign.Target;
 import feign.hc5.ApacheHttp5Client;
 import feign.http2client.Http2Client;
@@ -413,7 +415,9 @@ class FeignHints implements RuntimeHintsRegistrar {
 		if (!ClassUtils.isPresent("feign.Feign", classLoader)) {
 			return;
 		}
-		hints.reflection().registerType(TypeReference.of(FeignClientFactoryBean.class),
+		hints.reflection().registerTypes(
+				Set.of(TypeReference.of(FeignClientFactoryBean.class),
+						TypeReference.of(ResponseInterceptor.Chain.class), TypeReference.of(Capability.class)),
 				hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
 						MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
 	}
