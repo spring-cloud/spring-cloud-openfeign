@@ -26,7 +26,7 @@
 	<properties>
 		<main.basedir>${basedir}</main.basedir>
 		<jackson.version>2.16.1</jackson.version>
-		<spring-cloud-commons.version>4.1.1-SNAPSHOT</spring-cloud-commons.version>
+		<spring-cloud-commons.version>4.1.2-SNAPSHOT</spring-cloud-commons.version>
 
 		<!-- Plugin versions -->
 		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
