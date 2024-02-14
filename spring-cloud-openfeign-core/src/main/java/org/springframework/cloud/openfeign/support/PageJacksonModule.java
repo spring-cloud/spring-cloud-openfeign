@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,18 @@ public class PageJacksonModule extends Module {
 	@Override
 	public void setupModule(SetupContext context) {
 		context.setMixInAnnotations(Page.class, PageMixIn.class);
+		context.setMixInAnnotations(Pageable.class, PageableMixIn.class);
+	}
+
+	private static PageRequest buildPageRequest(int number, int size, Sort sort) {
+		PageRequest pageRequest;
+		if (sort != null) {
+			pageRequest = PageRequest.of(number, size, sort);
+		}
+		else {
+			pageRequest = PageRequest.of(number, size);
+		}
+		return pageRequest;
 	}
 
 	@JsonDeserialize(as = SimplePageImpl.class)
@@ -65,23 +77,28 @@ public class PageJacksonModule extends Module {
 
 	}
 
+	@JsonDeserialize(as = SimplePageable.class)
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	private interface PageableMixIn {
+
+	}
+
 	static class SimplePageImpl<T> implements Page<T> {
 
 		private final Page<T> delegate;
 
-		SimplePageImpl(@JsonProperty("content") List<T> content, @JsonProperty("number") int number,
-				@JsonProperty("size") int size, @JsonProperty("totalElements") @JsonAlias({ "total-elements",
-						"total_elements", "totalelements", "TotalElements" }) long totalElements,
+		SimplePageImpl(@JsonProperty("content") List<T> content, @JsonProperty("pageable") Pageable pageable,
+				@JsonProperty("number") @JsonAlias("pageNumber") int number,
+				@JsonProperty("size") @JsonAlias("pageSize") int size,
+				@JsonProperty("totalElements") @JsonAlias({ "total-elements", "total_elements", "totalelements",
+						"TotalElements", "total" }) long totalElements,
 				@JsonProperty("sort") Sort sort) {
 			if (size > 0) {
-				PageRequest pageRequest;
-				if (sort != null) {
-					pageRequest = PageRequest.of(number, size, sort);
-				}
-				else {
-					pageRequest = PageRequest.of(number, size);
-				}
+				PageRequest pageRequest = buildPageRequest(number, size, sort);
 				delegate = new PageImpl<>(content, pageRequest, totalElements);
+			}
+			else if (pageable != null && pageable.getPageSize() > 0) {
+				delegate = new PageImpl<>(content, pageable, totalElements);
 			}
 			else {
 				delegate = new PageImpl<>(content);
@@ -209,6 +226,62 @@ public class PageJacksonModule extends Module {
 		@Override
 		public String toString() {
 			return delegate.toString();
+		}
+
+	}
+
+	static class SimplePageable implements Pageable {
+
+		private final PageRequest delegate;
+
+		SimplePageable(@JsonProperty("pageNumber") int number, @JsonProperty("pageSize") int size,
+				@JsonProperty("sort") Sort sort) {
+			delegate = buildPageRequest(number, size, sort);
+		}
+
+		@Override
+		public int getPageNumber() {
+			return delegate.getPageNumber();
+		}
+
+		@Override
+		public int getPageSize() {
+			return delegate.getPageSize();
+		}
+
+		@Override
+		public long getOffset() {
+			return delegate.getOffset();
+		}
+
+		@Override
+		public Sort getSort() {
+			return delegate.getSort();
+		}
+
+		@Override
+		public Pageable next() {
+			return delegate.next();
+		}
+
+		@Override
+		public Pageable previousOrFirst() {
+			return delegate.previousOrFirst();
+		}
+
+		@Override
+		public Pageable first() {
+			return delegate.first();
+		}
+
+		@Override
+		public Pageable withPage(int pageNumber) {
+			return delegate.withPage(pageNumber);
+		}
+
+		@Override
+		public boolean hasPrevious() {
+			return delegate.hasPrevious();
 		}
 
 	}

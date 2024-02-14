@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -29,6 +31,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,12 +43,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Pedro Mendes
  * @author Nikita Konev
  */
-public class PageJacksonModuleTests {
+class PageJacksonModuleTests {
 
 	private static ObjectMapper objectMapper;
 
 	@BeforeAll
-	public static void initialize() {
+	static void initialize() {
 		objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new PageJacksonModule());
 		objectMapper.registerModule(new SortJacksonModule());
@@ -53,7 +56,7 @@ public class PageJacksonModuleTests {
 
 	@ParameterizedTest
 	@ValueSource(strings = { "totalElements", "total-elements", "total_elements", "totalelements", "TotalElements" })
-	public void deserializePage(String totalElements) throws JsonProcessingException {
+	void deserializePage(String totalElements) throws JsonProcessingException {
 		// Given
 		String pageJson = "{\"content\":[\"A name\"], \"number\":1, \"size\":2, \"" + totalElements + "\": 3}";
 		// When
@@ -67,8 +70,24 @@ public class PageJacksonModuleTests {
 		assertThat(result.getPageable().getPageNumber()).isEqualTo(1);
 	}
 
+	@SuppressWarnings("DataFlowIssue")
+	@ParameterizedTest
+	@ValueSource(strings = {"./src/test/resources/withPageable.json", "./src/test/resources/withoutPageable.json"})
+	void deserializePageFromFileWithPageable(String filePath) throws IOException {
+		File file = new File(filePath);
+
+		Page<?> result = objectMapper.readValue(file, Page.class);
+
+		assertThat(result.getTotalElements()).isEqualTo(11);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+		assertThat(result.getPageable().getSort().getOrderFor("lastName")
+			.getDirection()).isEqualTo(Sort.Direction.DESC);
+	}
+
+
 	@Test
-	public void serializeAndDeserializeEmpty() throws JsonProcessingException {
+	void serializeAndDeserializeEmpty() throws JsonProcessingException {
 		// Given
 		PageImpl<Object> objects = new PageImpl<>(new ArrayList<>(), Pageable.ofSize(1), 0);
 		String pageJson = objectMapper.writeValueAsString(objects);
@@ -81,7 +100,7 @@ public class PageJacksonModuleTests {
 	}
 
 	@Test
-	public void serializeAndDeserializeFilledMultiple() throws JsonProcessingException {
+	void serializeAndDeserializeFilledMultiple() throws JsonProcessingException {
 		// Given
 		ArrayList<Object> pageElements = new ArrayList<>();
 		pageElements.add("first element");
@@ -104,7 +123,7 @@ public class PageJacksonModuleTests {
 	}
 
 	@Test
-	public void serializeAndDeserializeEmptyCascade() throws JsonProcessingException {
+	void serializeAndDeserializeEmptyCascade() throws JsonProcessingException {
 		// Given
 		PageImpl<Object> objects = new PageImpl<>(new ArrayList<>(), Pageable.ofSize(1), 0);
 		String pageJson = objectMapper.writeValueAsString(objects);
@@ -123,7 +142,7 @@ public class PageJacksonModuleTests {
 	}
 
 	@Test
-	public void serializeAndDeserializeFilledMultipleCascade() throws JsonProcessingException {
+	void serializeAndDeserializeFilledMultipleCascade() throws JsonProcessingException {
 		// Given
 		ArrayList<Object> pageElements = new ArrayList<>();
 		pageElements.add("first element in cascaded serialization");
