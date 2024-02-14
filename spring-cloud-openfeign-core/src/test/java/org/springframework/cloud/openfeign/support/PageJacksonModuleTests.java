@@ -72,7 +72,7 @@ class PageJacksonModuleTests {
 
 	@SuppressWarnings("DataFlowIssue")
 	@ParameterizedTest
-	@ValueSource(strings = {"./src/test/resources/withPageable.json", "./src/test/resources/withoutPageable.json"})
+	@ValueSource(strings = { "./src/test/resources/withPageable.json", "./src/test/resources/withoutPageable.json" })
 	void deserializePageFromFileWithPageable(String filePath) throws IOException {
 		File file = new File(filePath);
 
@@ -81,10 +81,9 @@ class PageJacksonModuleTests {
 		assertThat(result.getTotalElements()).isEqualTo(11);
 		assertThat(result.getContent()).hasSize(10);
 		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
-		assertThat(result.getPageable().getSort().getOrderFor("lastName")
-			.getDirection()).isEqualTo(Sort.Direction.DESC);
+		assertThat(result.getPageable().getSort().getOrderFor("lastName").getDirection())
+				.isEqualTo(Sort.Direction.DESC);
 	}
-
 
 	@Test
 	void serializeAndDeserializeEmpty() throws JsonProcessingException {
