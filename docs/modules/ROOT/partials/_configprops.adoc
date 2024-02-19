@@ -58,6 +58,7 @@
 |spring.cloud.loadbalancer.retry.retry-on-all-operations | `+++false+++` | Indicates retries should be attempted on operations other than `HttpMethod.GET`.
 |spring.cloud.loadbalancer.retry.retryable-exceptions | `+++{}+++` | A `Set` of `Throwable` classes that should trigger a retry.
 |spring.cloud.loadbalancer.retry.retryable-status-codes | `+++{}+++` | A `Set` of status codes that should trigger a retry.
+|spring.cloud.loadbalancer.stats.micrometer.enabled | `+++false+++` | Enables micrometer metrics for load-balanced requests.
 |spring.cloud.loadbalancer.sticky-session.add-service-instance-cookie | `+++false+++` | Indicates whether a cookie with the newly selected instance should be added by LoadBalancer.
 |spring.cloud.loadbalancer.sticky-session.instance-id-cookie-name | `+++sc-lb-instance-id+++` | The name of the cookie holding the preferred instance id.
 |spring.cloud.loadbalancer.subset.instance-id |  | Instance id of deterministic subsetting. If not set, {@link IdUtils#getDefaultInstanceId(PropertyResolver)} will be used.
