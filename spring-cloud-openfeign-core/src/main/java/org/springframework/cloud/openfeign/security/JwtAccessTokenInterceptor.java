@@ -1,5 +1,4 @@
 package org.springframework.cloud.openfeign.security;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
