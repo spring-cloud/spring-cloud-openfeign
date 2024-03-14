@@ -18,8 +18,11 @@ package org.springframework.cloud.openfeign.clientconfig;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.openfeign.clientconfig.http2client.Http2ClientCustomizer;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,12 +37,19 @@ import org.springframework.context.annotation.Configuration;
 public class Http2ClientFeignConfiguration {
 
 	@Bean
-	public HttpClient httpClient(FeignHttpClientProperties httpClientProperties) {
+	@ConditionalOnMissingBean
+	public HttpClient.Builder httpClientBuilder(FeignHttpClientProperties httpClientProperties) {
 		return HttpClient.newBuilder()
-				.followRedirects(httpClientProperties.isFollowRedirects() ? HttpClient.Redirect.ALWAYS
-						: HttpClient.Redirect.NEVER)
-				.version(HttpClient.Version.valueOf(httpClientProperties.getHttp2().getVersion()))
-				.connectTimeout(Duration.ofMillis(httpClientProperties.getConnectionTimeout())).build();
+			.followRedirects(httpClientProperties.isFollowRedirects() ? HttpClient.Redirect.ALWAYS
+				: HttpClient.Redirect.NEVER)
+			.version(HttpClient.Version.valueOf(httpClientProperties.getHttp2().getVersion()))
+			.connectTimeout(Duration.ofMillis(httpClientProperties.getConnectionTimeout()));
+	}
+	@Bean
+	public HttpClient httpClient(HttpClient.Builder httpClientBuilder,
+								 List<Http2ClientCustomizer> customizers) {
+		customizers.forEach(customizer -> customizer.customize(httpClientBuilder));
+		return httpClientBuilder.build();
 	}
 
 }
