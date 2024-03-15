@@ -225,10 +225,14 @@ public class FeignClientFactoryBean
 			AnnotationAwareOrderComparator.sort(interceptors);
 			builder.requestInterceptors(interceptors);
 		}
-		ResponseInterceptor responseInterceptor = getInheritedAwareOptional(context, ResponseInterceptor.class);
-		if (responseInterceptor != null) {
-			builder.responseInterceptor(responseInterceptor);
+		Map<String, ResponseInterceptor> responseInterceptors = getInheritedAwareInstances(context,
+				ResponseInterceptor.class);
+		if (responseInterceptors != null) {
+			List<ResponseInterceptor> interceptors = new ArrayList<>(responseInterceptors.values());
+			AnnotationAwareOrderComparator.sort(interceptors);
+			builder.responseInterceptors(interceptors);
 		}
+
 		QueryMapEncoder queryMapEncoder = getInheritedAwareOptional(context, QueryMapEncoder.class);
 		if (queryMapEncoder != null) {
 			builder.queryMapEncoder(queryMapEncoder);
@@ -287,8 +291,12 @@ public class FeignClientFactoryBean
 			}
 		}
 
-		if (config.getResponseInterceptor() != null) {
-			builder.responseInterceptor(getOrInstantiate(config.getResponseInterceptor()));
+		if (config.getResponseInterceptors() != null && !config.getResponseInterceptors().isEmpty()) {
+			// this will add response interceptor to builder, not replace existing
+			for (Class<ResponseInterceptor> bean : config.getResponseInterceptors()) {
+				ResponseInterceptor interceptor = getOrInstantiate(bean);
+				builder.responseInterceptor(interceptor);
+			}
 		}
 
 		if (config.getDismiss404() != null) {
