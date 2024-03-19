@@ -66,7 +66,7 @@
 |spring.cloud.openfeign.autoconfiguration.jackson.enabled | `+++true+++` | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
 |spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled | `+++false+++` | If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.
 |spring.cloud.openfeign.circuitbreaker.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
-|spring.cloud.openfeign.circuitbreaker.group.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with with group.
+|spring.cloud.openfeign.circuitbreaker.group.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with group.
 |spring.cloud.openfeign.client.config |  | 
 |spring.cloud.openfeign.client.decode-slash | `+++true+++` | Feign clients do not encode slash `/` characters by default. To change this behavior, set the `decodeSlash` to `false`.
 |spring.cloud.openfeign.client.default-config | `+++default+++` | 
