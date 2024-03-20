@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.openfeign.clientconfig.http2client;
 
 import java.net.http.HttpClient;
@@ -33,4 +34,5 @@ public interface Http2ClientCustomizer {
 	 * @param builder the HttpClient.Builder to customize
 	 */
 	void customize(HttpClient.Builder builder);
+
 }
