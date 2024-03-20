@@ -1,0 +1,31 @@
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            logger-level: FULL
+            default-request-headers:
+              x-custom-header:
+                - "default"
+              x-custom-header-2:
+                - "2 from default"
+            default-query-parameters:
+              customParam1:
+                - "default"
+              customParam2:
+                - "2 from default"
+          testClientA:
+            default-request-headers:
+              x-custom-header:
+                - "from client A"
+            default-query-parameters:
+              customParam1:
+                - "from client A"
+          testClientB:
+            default-request-headers:
+              x-custom-header:
+                - "from client B"
+            default-query-parameters:
+              customParam1:
+                - "from client B"

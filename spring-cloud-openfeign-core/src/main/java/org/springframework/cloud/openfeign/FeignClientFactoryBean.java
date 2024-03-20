@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -324,19 +324,26 @@ public class FeignClientFactoryBean
 
 	protected void configureDefaultRequestElements(FeignClientProperties.FeignClientConfiguration defaultConfig,
 			FeignClientProperties.FeignClientConfiguration clientConfig, Feign.Builder builder) {
-		Map<String, Collection<String>> defaultRequestHeaders = defaultConfig != null
-				? defaultConfig.getDefaultRequestHeaders() : new HashMap<>();
+		Map<String, Collection<String>> defaultRequestHeaders = new HashMap<>();
+		if (defaultConfig != null) {
+			defaultConfig.getDefaultRequestHeaders()
+					.forEach((k, v) -> defaultRequestHeaders.put(k, new ArrayList<>(v)));
+		}
 		if (clientConfig != null) {
-			defaultRequestHeaders.putAll(clientConfig.getDefaultRequestHeaders());
+			clientConfig.getDefaultRequestHeaders().forEach((k, v) -> defaultRequestHeaders.put(k, new ArrayList<>(v)));
 		}
 		if (!defaultRequestHeaders.isEmpty()) {
 			addDefaultRequestHeaders(defaultRequestHeaders, builder);
 		}
 
-		Map<String, Collection<String>> defaultQueryParameters = defaultConfig != null
-				? defaultConfig.getDefaultQueryParameters() : new HashMap<>();
+		Map<String, Collection<String>> defaultQueryParameters = new HashMap<>();
+		if (defaultConfig != null) {
+			defaultConfig.getDefaultQueryParameters()
+					.forEach((k, v) -> defaultQueryParameters.put(k, new ArrayList<>(v)));
+		}
 		if (clientConfig != null) {
-			defaultQueryParameters.putAll(clientConfig.getDefaultQueryParameters());
+			clientConfig.getDefaultQueryParameters()
+					.forEach((k, v) -> defaultQueryParameters.put(k, new ArrayList<>(v)));
 		}
 		if (!defaultQueryParameters.isEmpty()) {
 			addDefaultQueryParams(defaultQueryParameters, builder);
