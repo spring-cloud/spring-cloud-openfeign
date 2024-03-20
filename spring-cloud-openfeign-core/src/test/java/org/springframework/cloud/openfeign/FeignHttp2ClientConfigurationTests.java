@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author changjin wei(魏昌进)
+ * @author Luis Duarte
  */
 class FeignHttp2ClientConfigurationTests {
 
