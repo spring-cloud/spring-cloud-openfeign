@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.openfeign.test;
 
+import java.net.InetSocketAddress;
+import java.net.ProxySelector;
 import java.net.http.HttpClient;
 
 import feign.Client;
@@ -27,6 +29,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.clientconfig.http2client.Http2ClientCustomizer;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.annotation.DirtiesContext;
@@ -45,7 +48,8 @@ class Http2ClientConfigurationTests {
 	@Autowired
 	FeignBlockingLoadBalancerClient feignClient;
 
-	private static final HttpClient defaultHttpClient = HttpClient.newHttpClient();
+	@Autowired
+	HttpClient underlyingHttpClient;
 
 	@Test
 	void shouldInstantiateFeignHttp2Client() {
@@ -53,7 +57,12 @@ class Http2ClientConfigurationTests {
 		assertThat(delegate instanceof Http2Client).isTrue();
 		Http2Client http2Client = (Http2Client) delegate;
 		HttpClient httpClient = getField(http2Client, "client");
-		assertThat(httpClient).isEqualTo(defaultHttpClient);
+		assertThat(httpClient).isEqualTo(underlyingHttpClient);
+	}
+
+	@Test
+	void customizesHttpClient() {
+		assertThat(underlyingHttpClient.proxy()).isNotEmpty();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -72,8 +81,8 @@ class Http2ClientConfigurationTests {
 	static class TestConfig {
 
 		@Bean
-		public HttpClient client() {
-			return defaultHttpClient;
+		public Http2ClientCustomizer customizer() {
+			return builder -> builder.proxy(ProxySelector.of(new InetSocketAddress("localhost", 1234)));
 		}
 
 	}
