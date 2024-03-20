@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Configuration;
  * Default configuration for {@link HttpClient}.
  *
  * @author changjin wei(魏昌进)
+ * @author Luis Duarte
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(HttpClient.class)

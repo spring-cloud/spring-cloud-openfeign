@@ -23,6 +23,7 @@ import java.net.http.HttpClient;
  * auto-configuration.
  *
  * @author Luís Duarte
+ * @since 4.1.1
  */
 @FunctionalInterface
 public interface Http2ClientCustomizer {
