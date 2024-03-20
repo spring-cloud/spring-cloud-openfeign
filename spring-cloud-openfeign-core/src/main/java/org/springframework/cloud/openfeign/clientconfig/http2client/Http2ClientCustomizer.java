@@ -17,7 +17,19 @@ package org.springframework.cloud.openfeign.clientconfig.http2client;
 
 import java.net.http.HttpClient;
 
+/**
+ * Callback interface that can be implemented by beans wishing to further customize the
+ * {@link HttpClient} through {@link HttpClient.Builder} retaining its default
+ * auto-configuration.
+ *
+ * @author Luís Duarte
+ */
 @FunctionalInterface
 public interface Http2ClientCustomizer {
+
+	/**
+	 * Customize JDK's HttpClient.
+	 * @param builder the HttpClient.Builder to customize
+	 */
 	void customize(HttpClient.Builder builder);
 }

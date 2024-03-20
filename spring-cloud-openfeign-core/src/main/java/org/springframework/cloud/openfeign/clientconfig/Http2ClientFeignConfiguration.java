@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.springframework.cloud.openfeign.clientconfig;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.openfeign.clientconfig.http2client.Http2ClientCustomizer;
@@ -45,6 +44,7 @@ public class Http2ClientFeignConfiguration {
 			.version(HttpClient.Version.valueOf(httpClientProperties.getHttp2().getVersion()))
 			.connectTimeout(Duration.ofMillis(httpClientProperties.getConnectionTimeout()));
 	}
+
 	@Bean
 	public HttpClient httpClient(HttpClient.Builder httpClientBuilder,
 								 List<Http2ClientCustomizer> customizers) {
