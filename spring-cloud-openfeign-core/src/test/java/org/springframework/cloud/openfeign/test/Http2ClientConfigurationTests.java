@@ -82,8 +82,7 @@ class Http2ClientConfigurationTests {
 
 		@Bean
 		public Http2ClientCustomizer customizer() {
-			return builder -> builder
-				.proxy(ProxySelector.of(new InetSocketAddress("localhost", 1234)));
+			return builder -> builder.proxy(ProxySelector.of(new InetSocketAddress("localhost", 1234)));
 		}
 
 	}
