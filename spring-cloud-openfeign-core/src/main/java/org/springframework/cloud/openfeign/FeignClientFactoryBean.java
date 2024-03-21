@@ -171,12 +171,12 @@ public class FeignClientFactoryBean
 		if (properties != null && inheritParentContext) {
 			if (properties.isDefaultToProperties()) {
 				configureUsingConfiguration(context, builder);
-				configureUsingProperties(properties.getConfig().get(properties.getDefaultConfig()), builder);
-				configureUsingProperties(properties.getConfig().get(contextId), builder);
+				configureUsingProperties(properties.getConfig().get(properties.getDefaultConfig()),
+						properties.getConfig().get(contextId), builder);
 			}
 			else {
-				configureUsingProperties(properties.getConfig().get(properties.getDefaultConfig()), builder);
-				configureUsingProperties(properties.getConfig().get(contextId), builder);
+				configureUsingProperties(properties.getConfig().get(properties.getDefaultConfig()),
+						properties.getConfig().get(contextId), builder);
 				configureUsingConfiguration(context, builder);
 			}
 			configureDefaultRequestElements(properties.getConfig().get(properties.getDefaultConfig()),
@@ -249,6 +249,19 @@ public class FeignClientFactoryBean
 		}
 	}
 
+	protected void configureUsingProperties(FeignClientProperties.FeignClientConfiguration baseConfig,
+			FeignClientProperties.FeignClientConfiguration finalConfig, Feign.Builder builder) {
+		configureUsingProperties(baseConfig, builder);
+		configureUsingProperties(finalConfig, builder);
+		Boolean dismiss404 = finalConfig != null && finalConfig.getDismiss404() != null ? finalConfig.getDismiss404()
+				: (baseConfig != null && baseConfig.getDismiss404() != null ? baseConfig.getDismiss404() : null);
+		if (dismiss404 != null) {
+			if (dismiss404) {
+				builder.dismiss404();
+			}
+		}
+	}
+
 	protected void configureUsingProperties(FeignClientProperties.FeignClientConfiguration config,
 			Feign.Builder builder) {
 		if (config == null) {
@@ -289,12 +302,6 @@ public class FeignClientFactoryBean
 
 		if (config.getResponseInterceptor() != null) {
 			builder.responseInterceptor(getOrInstantiate(config.getResponseInterceptor()));
-		}
-
-		if (config.getDismiss404() != null) {
-			if (config.getDismiss404()) {
-				builder.dismiss404();
-			}
 		}
 
 		if (Objects.nonNull(config.getEncoder())) {

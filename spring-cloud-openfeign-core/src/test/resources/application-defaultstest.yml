@@ -5,6 +5,7 @@ spring:
         config:
           default:
             logger-level: FULL
+            dismiss404: true
             default-request-headers:
               x-custom-header:
                 - "default"
@@ -16,6 +17,7 @@ spring:
               customParam2:
                 - "2 from default"
           testClientA:
+            dismiss404: false
             default-request-headers:
               x-custom-header:
                 - "from client A"
