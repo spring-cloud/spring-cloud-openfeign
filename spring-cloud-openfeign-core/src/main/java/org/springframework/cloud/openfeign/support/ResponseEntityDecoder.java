@@ -27,7 +27,7 @@ import feign.codec.Decoder;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -84,7 +84,7 @@ public class ResponseEntityDecoder implements Decoder {
 			headers.put(key, new LinkedList<>(response.headers().get(key)));
 		}
 
-		return new ResponseEntity<>((T) instance, headers, HttpStatus.valueOf(response.status()));
+		return new ResponseEntity<>((T) instance, headers, HttpStatusCode.valueOf(response.status()));
 	}
 
 }

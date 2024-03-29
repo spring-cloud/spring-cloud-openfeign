@@ -32,7 +32,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.client.HttpMessageConverterExtractor;
@@ -82,8 +82,8 @@ public class SpringDecoder implements Decoder {
 		}
 
 		@Override
-		public HttpStatus getStatusCode() {
-			return HttpStatus.valueOf(response.status());
+		public HttpStatusCode getStatusCode() {
+			return HttpStatusCode.valueOf(response.status());
 		}
 
 		@Override
