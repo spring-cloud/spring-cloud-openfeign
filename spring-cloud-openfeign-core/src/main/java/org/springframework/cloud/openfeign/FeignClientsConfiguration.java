@@ -55,6 +55,7 @@ import org.springframework.cloud.openfeign.support.PageableSpringQueryMapEncoder
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
+import org.springframework.cloud.openfeign.support.SpringMapEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -74,6 +75,7 @@ import static feign.form.ContentType.MULTIPART;
  * @author Olga Maciaszek-Sharma
  * @author Hyeonmin Park
  * @author Yanming Zhou
+ * @author changjin wei(魏昌进)
  */
 @Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
@@ -144,9 +146,9 @@ public class FeignClientsConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Contract feignContract(ConversionService feignConversionService) {
+	public Contract feignContract(ConversionService feignConversionService, List<SpringMapEncoder> springMapEncoders) {
 		boolean decodeSlash = feignClientProperties == null || feignClientProperties.isDecodeSlash();
-		return new SpringMvcContract(parameterProcessors, feignConversionService, decodeSlash);
+		return new SpringMvcContract(parameterProcessors, feignConversionService, decodeSlash, springMapEncoders);
 	}
 
 	@Bean

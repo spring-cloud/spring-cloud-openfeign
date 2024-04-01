@@ -87,6 +87,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Darren Foong
  * @author Ram Anaswara
  * @author Sam Kruglov
+ * @author changjin wei(魏昌进)
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
 
@@ -129,10 +130,16 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
 			ConversionService conversionService, boolean decodeSlash) {
+		this(annotatedParameterProcessors, conversionService, decodeSlash, List.of());
+	}
+
+	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
+			ConversionService conversionService, boolean decodeSlash, List<SpringMapEncoder> springMapEncoders) {
 		Assert.notNull(annotatedParameterProcessors, "Parameter processors can not be null.");
 		Assert.notNull(conversionService, "ConversionService can not be null.");
 
-		List<AnnotatedParameterProcessor> processors = getDefaultAnnotatedArgumentsProcessors();
+		Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> encoders = toSpringMapEncodersMap(springMapEncoders);
+		List<AnnotatedParameterProcessor> processors = getDefaultAnnotatedArgumentsProcessors(encoders);
 		processors.addAll(annotatedParameterProcessors);
 
 		annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
@@ -363,7 +370,8 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		return result;
 	}
 
-	private List<AnnotatedParameterProcessor> getDefaultAnnotatedArgumentsProcessors() {
+	private List<AnnotatedParameterProcessor> getDefaultAnnotatedArgumentsProcessors(
+			Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> encoders) {
 
 		List<AnnotatedParameterProcessor> annotatedArgumentResolvers = new ArrayList<>();
 
@@ -371,7 +379,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		annotatedArgumentResolvers.add(new PathVariableParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestParamParameterProcessor());
 		annotatedArgumentResolvers.add(new RequestHeaderParameterProcessor());
-		annotatedArgumentResolvers.add(new QueryMapParameterProcessor());
+		annotatedArgumentResolvers.add(new QueryMapParameterProcessor(encoders));
 		annotatedArgumentResolvers.add(new RequestPartParameterProcessor());
 		annotatedArgumentResolvers.add(new CookieValueParameterProcessor());
 
@@ -413,6 +421,15 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		}
 
 		return false;
+	}
+
+	public Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> toSpringMapEncodersMap(
+			List<SpringMapEncoder> springMapEncoders) {
+		Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> result = new HashMap<>();
+		for (SpringMapEncoder encoder : springMapEncoders) {
+			result.put(encoder.getClass(), encoder);
+		}
+		return result;
 	}
 
 	private static class ConvertingExpanderFactory {
