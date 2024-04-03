@@ -42,6 +42,7 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
 /**
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
+ * @author Maksym Pasichenko
  */
 public class SpringDecoder implements Decoder {
 
