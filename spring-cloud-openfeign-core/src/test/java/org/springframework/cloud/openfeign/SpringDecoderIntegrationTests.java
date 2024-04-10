@@ -156,7 +156,7 @@ class SpringDecoderIntegrationTests extends FeignClientFactoryBean {
 
 	@Test
 	// Issue: https://github.com/spring-cloud/spring-cloud-openfeign/issues/1010
-	void testResponseEntityWithCustomHttpStatusCode(){
+	void testResponseEntityWithCustomHttpStatusCode() {
 		ResponseEntity<Hello> response = testClient().getCustomHttpStatusCodeResponse();
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(245));
 	}
@@ -165,7 +165,7 @@ class SpringDecoderIntegrationTests extends FeignClientFactoryBean {
 
 		@GetMapping("/helloresponse")
 		ResponseEntity<Hello> getHelloResponse();
-		
+
 		@GetMapping("/hellocustomhttpstatuscode")
 		ResponseEntity<Hello> getCustomHttpStatusCodeResponse();
 
