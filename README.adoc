@@ -7,8 +7,6 @@ Edit the files in the src/main/asciidoc/ directory instead.
 
 image::https://github.com/spring-cloud/spring-cloud-openfeign/workflows/Build/badge.svg?branch=main&style=svg["Build",link="https://github.com/spring-cloud/spring-cloud-openfeign/actions"]
 
-image:https://codecov.io/gh/spring-cloud/spring-cloud-openfeign/branch/main/graph/badge.svg["Codecov", link="https://app.codecov.io/gh/spring-cloud/spring-cloud-openfeign/tree/main"]
-
 
 [[features]]
 == Features
