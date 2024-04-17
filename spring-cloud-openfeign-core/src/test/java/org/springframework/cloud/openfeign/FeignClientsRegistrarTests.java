@@ -42,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
  * @author Michal Domagala
  * @author Szymon Linowski
  * @author Olga Maciaszek-Sharma
+ * @author Elkhan Eminov
  */
 class FeignClientsRegistrarTests {
 

@@ -47,6 +47,7 @@ import static org.springframework.cloud.openfeign.FeignHttpClientUrlTests.URL_PR
 /**
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
+ * @author Elkhan Eminov
  */
 @SpringBootTest(classes = FeignHttpClientUrlTests.TestConfig.class, webEnvironment = DEFINED_PORT,
 		value = {"spring.application.name=feignclienturltest", "spring.cloud.openfeign.circuitbreaker.enabled=false",

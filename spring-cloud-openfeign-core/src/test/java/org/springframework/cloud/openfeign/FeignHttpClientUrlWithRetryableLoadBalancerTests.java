@@ -48,6 +48,7 @@ import static org.springframework.cloud.openfeign.FeignHttpClientUrlWithRetryabl
 /**
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
+ * @author Elkhan Eminov
  */
 @SpringBootTest(classes = FeignHttpClientUrlWithRetryableLoadBalancerTests.TestConfig.class,
 		webEnvironment = DEFINED_PORT,
