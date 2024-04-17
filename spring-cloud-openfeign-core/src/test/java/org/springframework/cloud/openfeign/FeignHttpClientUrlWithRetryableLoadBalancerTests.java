@@ -42,6 +42,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
+import static org.springframework.cloud.openfeign.FeignHttpClientUrlWithRetryableLoadBalancerTests.NO_PROTOCOL_URL_PROPERTY_KEY;
+import static org.springframework.cloud.openfeign.FeignHttpClientUrlWithRetryableLoadBalancerTests.URL_PROPERTY_KEY;
 
 /**
  * @author Spencer Gibb
@@ -50,9 +52,14 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(classes = FeignHttpClientUrlWithRetryableLoadBalancerTests.TestConfig.class,
 		webEnvironment = DEFINED_PORT,
 		value = { "spring.application.name=feignclienturlwithretryableloadbalancertest",
-				"spring.cloud.openfeign.hystrix.enabled=false", "spring.cloud.openfeign.okhttp.enabled=false" })
+				  "spring.cloud.openfeign.hystrix.enabled=false", "spring.cloud.openfeign.okhttp.enabled=false",
+				  URL_PROPERTY_KEY + "=http://localhost:${server.port}/",
+				  NO_PROTOCOL_URL_PROPERTY_KEY + "=localhost:${server.port}/"})
 @DirtiesContext
 class FeignHttpClientUrlWithRetryableLoadBalancerTests {
+
+	static final String URL_PROPERTY_KEY = "url.property";
+	static final String NO_PROTOCOL_URL_PROPERTY_KEY = "noprotocol.url.property";
 
 	static int port;
 
@@ -64,6 +71,12 @@ class FeignHttpClientUrlWithRetryableLoadBalancerTests {
 
 	@Autowired
 	private BeanUrlClient beanClient;
+
+	@Autowired
+	private PropertyUrlClient propertyUrlClient;
+
+	@Autowired
+	private NoProtocolPropertyUrlClient noProtocolPropertyUrlClient;
 
 	@BeforeAll
 	static void beforeClass() {
@@ -98,6 +111,20 @@ class FeignHttpClientUrlWithRetryableLoadBalancerTests {
 		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
 	}
 
+	@Test
+	void testPropertyUrl() {
+		Hello hello = propertyUrlClient.getHello();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
+	}
+
+	@Test
+	void testNoProtocolPropertyUrl() {
+		Hello hello = noProtocolPropertyUrlClient.getHello();
+		assertThat(hello).as("hello was null").isNotNull();
+		assertThat(hello).as("first hello didn't match").isEqualTo(new Hello("hello world 1"));
+	}
+
 	// this tests that
 	@FeignClient(name = "localappurl", url = "http://localhost:${server.port}/")
 	protected interface UrlClient {
@@ -123,10 +150,30 @@ class FeignHttpClientUrlWithRetryableLoadBalancerTests {
 
 	}
 
+	@FeignClient(name = "propertyurl", url = "${" + URL_PROPERTY_KEY + "}")
+	protected interface PropertyUrlClient {
+
+		@GetMapping("/hello")
+		Hello getHello();
+	}
+
+	@FeignClient(name = "propertyurlnoprotocol", url = "${" + NO_PROTOCOL_URL_PROPERTY_KEY + "}")
+	protected interface NoProtocolPropertyUrlClient {
+
+		@GetMapping("/hello")
+		Hello getHello();
+	}
+
 	@Configuration(proxyBeanMethods = false)
 	@EnableAutoConfiguration
 	@RestController
-	@EnableFeignClients(clients = { UrlClient.class, BeanUrlClient.class, BeanUrlClientNoProtocol.class })
+	@EnableFeignClients(clients = {
+		UrlClient.class,
+		BeanUrlClient.class,
+		BeanUrlClientNoProtocol.class,
+		PropertyUrlClient.class,
+		NoProtocolPropertyUrlClient.class
+	})
 	@Import(NoSecurityConfiguration.class)
 	protected static class TestConfig {
 

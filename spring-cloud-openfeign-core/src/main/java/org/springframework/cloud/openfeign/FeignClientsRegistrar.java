@@ -80,6 +80,14 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	FeignClientsRegistrar() {
 	}
 
+	private static boolean isSpEL(String value) {
+		return value.startsWith("#{") && value.contains("}");
+	}
+
+	private static boolean isPlaceholder(String value) {
+		return value.startsWith("${") && value.endsWith("}");
+	}
+
 	static void validateFallback(final Class clazz) {
 		Assert.isTrue(!clazz.isInterface(), "Fallback class must implement the interface annotated by @FeignClient");
 	}
@@ -113,7 +121,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	}
 
 	static String getUrl(String url) {
-		if (StringUtils.hasText(url) && !(url.startsWith("#{") && url.contains("}"))) {
+		if (StringUtils.hasText(url) && !isSpEL(url) && !isPlaceholder(url)) {
 			if (!url.contains("://")) {
 				url = "http://" + url;
 			}

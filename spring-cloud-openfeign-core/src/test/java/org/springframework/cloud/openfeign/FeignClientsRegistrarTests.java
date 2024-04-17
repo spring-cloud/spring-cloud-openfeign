@@ -83,6 +83,13 @@ class FeignClientsRegistrarTests {
 		assertThat(name).as("name was wrong").isEqualTo("https://goodname");
 	}
 
+	@Test
+	void goodUrlPlaceholder() {
+		String urlPlaceholder = "${url.property}";
+		String url = FeignClientsRegistrar.getUrl(urlPlaceholder);
+		assertThat(url).as("url was wrong").isEqualTo(urlPlaceholder);
+	}
+
 	private String testGetName(String name) {
 		FeignClientsRegistrar registrar = new FeignClientsRegistrar();
 		registrar.setEnvironment(new MockEnvironment());
