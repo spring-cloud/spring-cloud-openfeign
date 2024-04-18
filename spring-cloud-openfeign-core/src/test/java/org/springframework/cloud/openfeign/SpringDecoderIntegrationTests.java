@@ -35,6 +35,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -49,6 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
  * @author Szymon Linowski
+ * @author Maksym Pasichenko
  */
 @SpringBootTest(classes = SpringDecoderIntegrationTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=springdecodertest", "spring.jmx.enabled=false" })
@@ -152,10 +154,20 @@ class SpringDecoderIntegrationTests extends FeignClientFactoryBean {
 		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
 	}
 
+	@Test
+	// Issue: https://github.com/spring-cloud/spring-cloud-openfeign/issues/1010
+	void testResponseEntityWithCustomHttpStatusCode() {
+		ResponseEntity<Hello> response = testClient().getCustomHttpStatusCodeResponse();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(245));
+	}
+
 	protected interface TestClient {
 
 		@GetMapping("/helloresponse")
 		ResponseEntity<Hello> getHelloResponse();
+
+		@GetMapping("/hellocustomhttpstatuscode")
+		ResponseEntity<Hello> getCustomHttpStatusCodeResponse();
 
 		@GetMapping("/hellovoid")
 		ResponseEntity<Void> getHelloVoid();
@@ -227,6 +239,11 @@ class SpringDecoderIntegrationTests extends FeignClientFactoryBean {
 		@Override
 		public ResponseEntity<Hello> getHelloResponse() {
 			return ResponseEntity.ok(new Hello("hello world via response"));
+		}
+
+		@Override
+		public ResponseEntity<Hello> getCustomHttpStatusCodeResponse() {
+			return ResponseEntity.status(245).body(new Hello("hello world via response with custom HTTP status code"));
 		}
 
 		@Override
