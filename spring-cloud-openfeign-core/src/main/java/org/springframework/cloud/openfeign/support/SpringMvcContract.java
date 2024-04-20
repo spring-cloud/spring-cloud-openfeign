@@ -368,6 +368,9 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 			if (!nameValueResolver.isNegated()) {
 				data.template().query(resolve(nameValueResolver.getName()), resolve(nameValueResolver.getValue()));
 			}
+			else {
+				throw new IllegalArgumentException("Negated params are not supported: " + param);
+			}
 		}
 	}
 
@@ -493,15 +496,14 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		NameValueResolver(String expression) {
 			int separator = expression.indexOf('=');
 			if (separator == -1) {
-				this.isNegated = expression.startsWith("!");
-				this.name = (this.isNegated ? expression.substring(1) : expression);
-				this.value = null;
+				isNegated = expression.startsWith("!");
+				name = (isNegated ? expression.substring(1) : expression);
+				value = null;
 			}
 			else {
-				this.isNegated = (separator > 0) && (expression.charAt(separator - 1) == '!');
-				this.name = (this.isNegated ? expression.substring(0, separator - 1)
-						: expression.substring(0, separator));
-				this.value = expression.substring(separator + 1);
+				isNegated = (separator > 0) && (expression.charAt(separator - 1) == '!');
+				name = (isNegated ? expression.substring(0, separator - 1) : expression.substring(0, separator));
+				value = expression.substring(separator + 1);
 			}
 		}
 

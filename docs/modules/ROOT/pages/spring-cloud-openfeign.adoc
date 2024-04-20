@@ -45,7 +45,7 @@ public interface StoreClient {
 	@GetMapping("/stores")
 	Page<Store> getStores(Pageable pageable);
 
-	@PostMapping(value = "/stores/{storeId}", consumes = "application/json")
+	@PostMapping(value = "/stores/{storeId}", consumes = "application/json", params = "mode=upsert")
 	Store update(@PathVariable("storeId") Long storeId, Store store);
 
 	@DeleteMapping("/stores/{storeId:\\d+}")

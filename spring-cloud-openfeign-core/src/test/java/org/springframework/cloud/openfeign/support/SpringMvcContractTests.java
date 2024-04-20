@@ -510,10 +510,18 @@ class SpringMvcContractTests {
 
 	@Test
 	void testProcessAnnotations_ParseParams_NotEqualParams() throws Exception {
-		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("notEqualParams");
+		assertThatIllegalArgumentException().isThrownBy(() -> {
+			Method method = TestTemplate_ParseParams.class.getDeclaredMethod("notEqualParams");
+			contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		});
+	}
+
+	@Test
+	void testProcessAnnotations_ParseParams_ParamsAndRequestParam() throws Exception {
+		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("paramsAndRequestParam", String.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().url()).isEqualTo("/test");
+		assertThat(data.template().url()).isEqualTo("/test?p1=1&p2={p2}");
 		assertThat(data.template().method()).isEqualTo("GET");
 	}
 
@@ -824,6 +832,9 @@ class SpringMvcContractTests {
 
 		@GetMapping(value = "test", params = { "p1!=1" })
 		ResponseEntity<TestObject> notEqualParams();
+
+		@GetMapping(value = "test", params = { "p1=1" })
+		ResponseEntity<TestObject> paramsAndRequestParam(@RequestParam("p2") String p2);
 
 	}
 
