@@ -701,6 +701,36 @@ public interface DemoClient {
 
 You can also disable the feature via property `spring.cloud.openfeign.cache.enabled=false`.
 
+
+[[spring-requestmapping-support]]
+=== Spring @RequestMapping Support
+
+Spring Cloud OpenFeign provides support for the Spring `@RequestMapping` annotation and its derived annotations (such as `@GetMapping`, `@PostMapping`, etc.) support.
+The attributes on the `@RequestMapping` annotation (including `value`, `method`, `params`, `headers`, `consumes`, and `produces`) will be parsed by `SpringMvcContract` as the content of the request.
+
+
+For example:
+
+Define an interface using the `params` attribute.
+
+[source,java,indent=0]
+----
+@FeignClient("demo")
+public interface DemoTemplate {
+
+        @PostMapping(value = "/stores/{storeId}", params = "mode=upsert")
+        Store update(@PathVariable("storeId") Long storeId, Store store);
+}
+----
+
+In the above example, the request url will be resolved to `/stores/{storeId}?mode=upsert`. +
+The params attribute also supports the use of multiple `key=value` or only one `key`. For example: +
+
+- When `params = { "key1=v1", "key2=v2" }`, the request url will be parsed as `/stores/{storeId}?key1=v1&key2=v2`.
+- When `params = "key"`, the request url will be parsed as `/stores/{storeId}?key`.
+
+
+
 [[feign-querymap-support]]
 === Feign @QueryMap support
 
