@@ -25,7 +25,6 @@ import feign.QueryMapEncoder;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.SpringQueryMap;
-import org.springframework.cloud.openfeign.support.SpringMapEncoder;
 
 /**
  * {@link SpringQueryMap} parameter processor.
@@ -39,13 +38,13 @@ public class QueryMapParameterProcessor implements AnnotatedParameterProcessor {
 
 	private static final Class<SpringQueryMap> ANNOTATION = SpringQueryMap.class;
 
-	private final Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> encoders;
+	private final Map<Class<? extends QueryMapEncoder>, QueryMapEncoder> encoders;
 
 	public QueryMapParameterProcessor() {
 		this.encoders = Map.of();
 	}
 
-	public QueryMapParameterProcessor(Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> encoders) {
+	public QueryMapParameterProcessor(Map<Class<? extends QueryMapEncoder>, QueryMapEncoder> encoders) {
 		this.encoders = encoders;
 	}
 
@@ -67,11 +66,7 @@ public class QueryMapParameterProcessor implements AnnotatedParameterProcessor {
 
 	protected QueryMapEncoder getQueryMapEncoder(Annotation annotation) {
 		SpringQueryMap springQueryMap = (SpringQueryMap) annotation;
-		SpringMapEncoder encoder = encoders.get(springQueryMap.mapEncoder());
-		if (encoder != null) {
-			return encoder.getQueryMapEncoder();
-		}
-		return null;
+		return encoders.get(springQueryMap.mapEncoder());
 	}
 
 }

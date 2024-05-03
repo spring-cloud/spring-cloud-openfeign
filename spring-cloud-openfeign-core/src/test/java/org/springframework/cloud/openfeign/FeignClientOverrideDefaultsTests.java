@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.openfeign.support.BaseQueryMapEncoder;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
@@ -57,6 +58,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  * @author Spencer Gibb
  * @author Jonatan Ivanov
  * @author Olga Maciaszek-Sharma
+ * @author changjin wei(魏昌进)
  */
 @SpringBootTest(classes = FeignClientOverrideDefaultsTests.TestConfiguration.class)
 @DirtiesContext
@@ -133,6 +135,7 @@ class FeignClientOverrideDefaultsTests {
 		assertThatCode(() -> {
 			FieldQueryMapEncoder.class.cast(context.getInstance("foo", QueryMapEncoder.class));
 			BeanQueryMapEncoder.class.cast(context.getInstance("bar", QueryMapEncoder.class));
+			GlobalQueryMapEncoder.class.cast(context.getInstance("queryMapEncoder", QueryMapEncoder.class));
 		}).doesNotThrowAnyException();
 	}
 
@@ -208,8 +211,16 @@ class FeignClientOverrideDefaultsTests {
 
 	}
 
+	@FeignClient(name = "queryMapEncoder", url = "https://queryMapEncoder", configuration = QueryMapEncoderConfiguration.class)
+	interface QueryMapEncoderClient {
+
+		@GetMapping("/baz")
+		String get();
+
+	}
+
 	@Configuration(proxyBeanMethods = false)
-	@EnableFeignClients(clients = { FooClient.class, BarClient.class, BazClient.class })
+	@EnableFeignClients(clients = { FooClient.class, BarClient.class, BazClient.class , QueryMapEncoderClient.class})
 	@EnableAutoConfiguration
 	protected static class TestConfiguration {
 
@@ -318,6 +329,21 @@ class FeignClientOverrideDefaultsTests {
 
 	}
 
+	static class QueryMapEncoderConfiguration {
+
+		@Bean
+		@BaseQueryMapEncoder
+		QueryMapEncoder globalQueryMapEncoder() {
+			return new GlobalQueryMapEncoder();
+		}
+
+		@Bean
+		@BaseQueryMapEncoder
+		QueryMapEncoder partQueryMapEncoder() {
+			return new PartQueryMapEncoder();
+		}
+	}
+
 	private static class TestMicrometerObservationCapability extends feign.micrometer.MicrometerObservationCapability {
 
 		TestMicrometerObservationCapability() {
@@ -331,6 +357,14 @@ class FeignClientOverrideDefaultsTests {
 	}
 
 	private static class NoOpCapability implements Capability {
+
+	}
+
+	private static class GlobalQueryMapEncoder extends BeanQueryMapEncoder {
+
+	}
+
+	private static class PartQueryMapEncoder extends BeanQueryMapEncoder {
 
 	}
 

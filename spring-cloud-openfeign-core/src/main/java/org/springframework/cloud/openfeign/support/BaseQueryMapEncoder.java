@@ -16,21 +16,20 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import feign.QueryMapEncoder;
 
 /**
- * Specifies the {@link QueryMapEncoder} implementation to use to transform DTO into query
- * map.
- *
+ * Globally specifies the {@link QueryMapEncoder} implementation to use to transform DTO
+ * into query map.
  * @author changjin wei(魏昌进)
- * @see org.springframework.cloud.openfeign.SpringQueryMap
  */
-public interface SpringMapEncoder {
-
-	/**
-	 * Returns the {@link QueryMapEncoder} implementation.
-	 * @return a {@link QueryMapEncoder} instance.
-	 */
-	QueryMapEncoder getQueryMapEncoder();
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.METHOD })
+public @interface BaseQueryMapEncoder {
 
 }

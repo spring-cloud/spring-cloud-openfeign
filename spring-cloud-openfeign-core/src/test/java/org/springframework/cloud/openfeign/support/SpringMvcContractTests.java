@@ -553,7 +553,7 @@ class SpringMvcContractTests {
 	@Test
 	void testProcessQueryMapEncoder() throws Exception {
 		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), true,
-				List.of(new TestSpringMapEncoder()));
+				List.of(new TestQueryMapEncoder()));
 		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapEncoder", TestObject.class,
 				String.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
@@ -794,7 +794,7 @@ class SpringMvcContractTests {
 		String queryMapObject(@SpringQueryMap TestObject queryMap, @RequestParam(name = "aParam") String aParam);
 
 		@GetMapping("/queryMapEncoder")
-		String queryMapEncoder(@SpringQueryMap(mapEncoder = TestSpringMapEncoder.class) TestObject queryMap,
+		String queryMapEncoder(@SpringQueryMap(mapEncoder = TestQueryMapEncoder.class) TestObject queryMap,
 				@RequestParam(name = "aParam") String aParam);
 
 	}
@@ -938,15 +938,6 @@ class SpringMvcContractTests {
 		public String toString() {
 			return new StringBuilder("TestObject{").append("something='").append(something).append("', ")
 					.append("number=").append(number).append("}").toString();
-		}
-
-	}
-
-	public static class TestSpringMapEncoder implements SpringMapEncoder {
-
-		@Override
-		public QueryMapEncoder getQueryMapEncoder() {
-			return new TestQueryMapEncoder();
 		}
 
 	}

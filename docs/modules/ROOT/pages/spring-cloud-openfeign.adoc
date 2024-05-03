@@ -729,10 +729,32 @@ public interface DemoTemplate {
 
 	@GetMapping(path = "/demo")
 	String demoEndpoint(@SpringQueryMap Params params);
+
+    @GetMapping(path = "/custom")
+	String customEndpoint(@SpringQueryMap(mapEncoder = CustomQueryMapEncoder.class) Params params);
 }
 ----
 
-If you need more control over the generated query parameter map, you can implement a custom `QueryMapEncoder` bean.
+If you need more control over the generated global query parameter map, you can implement a custom `QueryMapEncoder` bean and mark it with `@BaseQueryMapEncoder`.
+
+
+[source,java,indent=0]
+----
+@Configuration
+public class CustomConfig {
+
+    @Bean
+    @BaseQueryMapEncoder
+    public QueryMapEncoder globalQueryMapEncoder() {
+        return new BeanQueryMapEncoder();
+    }
+
+    @Bean
+    public QueryMapEncoder customQueryMapEncoder() {
+        return new CustomQueryMapEncoder();
+    }
+}
+----
 
 [[hateoas-support]]
 === HATEOAS support

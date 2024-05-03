@@ -35,6 +35,7 @@ import feign.Feign;
 import feign.MethodMetadata;
 import feign.Param;
 import feign.QueryMap;
+import feign.QueryMapEncoder;
 import feign.Request;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -134,11 +135,11 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	}
 
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
-			ConversionService conversionService, boolean decodeSlash, List<SpringMapEncoder> springMapEncoders) {
+			ConversionService conversionService, boolean decodeSlash, List<QueryMapEncoder> springMapEncoders) {
 		Assert.notNull(annotatedParameterProcessors, "Parameter processors can not be null.");
 		Assert.notNull(conversionService, "ConversionService can not be null.");
 
-		Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> encoders = toSpringMapEncodersMap(springMapEncoders);
+		Map<Class<? extends QueryMapEncoder>, QueryMapEncoder> encoders = toSpringMapEncodersMap(springMapEncoders);
 		List<AnnotatedParameterProcessor> processors = getDefaultAnnotatedArgumentsProcessors(encoders);
 		processors.addAll(annotatedParameterProcessors);
 
@@ -371,7 +372,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	}
 
 	private List<AnnotatedParameterProcessor> getDefaultAnnotatedArgumentsProcessors(
-			Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> encoders) {
+			Map<Class<? extends QueryMapEncoder>, QueryMapEncoder> encoders) {
 
 		List<AnnotatedParameterProcessor> annotatedArgumentResolvers = new ArrayList<>();
 
@@ -423,10 +424,10 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		return false;
 	}
 
-	public Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> toSpringMapEncodersMap(
-			List<SpringMapEncoder> springMapEncoders) {
-		Map<Class<? extends SpringMapEncoder>, SpringMapEncoder> result = new HashMap<>();
-		for (SpringMapEncoder encoder : springMapEncoders) {
+	public Map<Class<? extends QueryMapEncoder>, QueryMapEncoder> toSpringMapEncodersMap(
+			List<QueryMapEncoder> springMapEncoders) {
+		Map<Class<? extends QueryMapEncoder>, QueryMapEncoder> result = new HashMap<>();
+		for (QueryMapEncoder encoder : springMapEncoders) {
 			result.put(encoder.getClass(), encoder);
 		}
 		return result;
