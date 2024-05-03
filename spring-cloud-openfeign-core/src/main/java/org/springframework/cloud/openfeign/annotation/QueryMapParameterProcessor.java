@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package org.springframework.cloud.openfeign.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import feign.MethodMetadata;
+import feign.QueryMapEncoder;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.SpringQueryMap;
@@ -29,11 +31,22 @@ import org.springframework.cloud.openfeign.SpringQueryMap;
  *
  * @author Aram Peres
  * @author Olga Maciaszek-Sharma
+ * @author changjin wei(魏昌进)
  * @see AnnotatedParameterProcessor
  */
 public class QueryMapParameterProcessor implements AnnotatedParameterProcessor {
 
 	private static final Class<SpringQueryMap> ANNOTATION = SpringQueryMap.class;
+
+	private final Map<Class<? extends QueryMapEncoder>, QueryMapEncoder> encoders;
+
+	public QueryMapParameterProcessor() {
+		this.encoders = Map.of();
+	}
+
+	public QueryMapParameterProcessor(Map<Class<? extends QueryMapEncoder>, QueryMapEncoder> encoders) {
+		this.encoders = encoders;
+	}
 
 	@Override
 	public Class<? extends Annotation> getAnnotationType() {
@@ -46,8 +59,14 @@ public class QueryMapParameterProcessor implements AnnotatedParameterProcessor {
 		MethodMetadata metadata = context.getMethodMetadata();
 		if (metadata.queryMapIndex() == null) {
 			metadata.queryMapIndex(paramIndex);
+			metadata.queryMapEncoder(getQueryMapEncoder(annotation));
 		}
 		return true;
+	}
+
+	protected QueryMapEncoder getQueryMapEncoder(Annotation annotation) {
+		SpringQueryMap springQueryMap = (SpringQueryMap) annotation;
+		return encoders.get(springQueryMap.mapEncoder());
 	}
 
 }

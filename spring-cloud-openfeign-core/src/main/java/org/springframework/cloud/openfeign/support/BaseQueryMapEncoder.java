@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2024 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.openfeign;
+package org.springframework.cloud.openfeign.support;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,22 +24,12 @@ import java.lang.annotation.Target;
 import feign.QueryMapEncoder;
 
 /**
- * Spring MVC equivalent of OpenFeign's {@link feign.QueryMap} parameter annotation.
- *
- * @author Aram Peres
+ * Globally specifies the {@link QueryMapEncoder} implementation to use to transform DTO
+ * into query map.
  * @author changjin wei(魏昌进)
- * @see feign.QueryMap
- * @see org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.PARAMETER })
-public @interface SpringQueryMap {
-
-	/**
-	 * Specifies the {@link feign.QueryMapEncoder} implementation to use to transform DTO
-	 * into query map. The {@link feign.QueryMapEncoder} must be a valid spring bean.
-	 * @return the {@link feign.QueryMapEncoder} instance.
-	 */
-	Class<? extends QueryMapEncoder> mapEncoder() default QueryMapEncoder.class;
+@Target({ ElementType.METHOD })
+public @interface BaseQueryMapEncoder {
 
 }

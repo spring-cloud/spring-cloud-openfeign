@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,8 +53,10 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.loadbalancer.RetryableFeignBlockingLoadBalancerClient;
+import org.springframework.cloud.openfeign.support.BaseQueryMapEncoder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -74,6 +77,7 @@ import org.springframework.util.StringUtils;
  * @author Felix Dittrich
  * @author Dominique Villard
  * @author Can Bezmen
+ * @author changjin wei(魏昌进)
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -229,7 +233,11 @@ public class FeignClientFactoryBean
 		if (responseInterceptor != null) {
 			builder.responseInterceptor(responseInterceptor);
 		}
-		QueryMapEncoder queryMapEncoder = getInheritedAwareOptional(context, QueryMapEncoder.class);
+		QueryMapEncoder queryMapEncoder = getInheritedAwareAnnotated(context, QueryMapEncoder.class,
+				BaseQueryMapEncoder.class);
+		if (queryMapEncoder == null) {
+			queryMapEncoder = getInheritedAwareOptional(context, QueryMapEncoder.class);
+		}
 		if (queryMapEncoder != null) {
 			builder.queryMapEncoder(queryMapEncoder);
 		}
@@ -417,6 +425,16 @@ public class FeignClientFactoryBean
 		}
 		else {
 			return context.getInstancesWithoutAncestors(contextId, type);
+		}
+	}
+
+	protected <T> T getInheritedAwareAnnotated(FeignClientFactory context, Class<T> type,
+			Class<? extends Annotation> annotationType) {
+		if (inheritParentContext) {
+			return context.getAnnotatedInstance(contextId, ResolvableType.forType(type), annotationType);
+		}
+		else {
+			return context.getInstanceWithoutAncestorsForAnnotation(contextId, type, annotationType);
 		}
 	}
 

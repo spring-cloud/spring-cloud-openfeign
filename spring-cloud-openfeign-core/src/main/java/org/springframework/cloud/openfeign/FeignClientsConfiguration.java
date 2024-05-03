@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ import static feign.form.ContentType.MULTIPART;
  * @author Olga Maciaszek-Sharma
  * @author Hyeonmin Park
  * @author Yanming Zhou
+ * @author changjin wei(魏昌进)
  */
 @Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
@@ -144,9 +145,9 @@ public class FeignClientsConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Contract feignContract(ConversionService feignConversionService) {
+	public Contract feignContract(ConversionService feignConversionService, List<QueryMapEncoder> springMapEncoders) {
 		boolean decodeSlash = feignClientProperties == null || feignClientProperties.isDecodeSlash();
-		return new SpringMvcContract(parameterProcessors, feignConversionService, decodeSlash);
+		return new SpringMvcContract(parameterProcessors, feignConversionService, decodeSlash, springMapEncoders);
 	}
 
 	@Bean

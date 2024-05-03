@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import feign.MethodMetadata;
 import feign.Param;
+import feign.QueryMapEncoder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -82,6 +83,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Szymon Linowski
  * @author Sam Kruglov
  * @author Bhavya Agrawal
+ * @author changjin wei(魏昌进)
  **/
 
 class SpringMvcContractTests {
@@ -549,6 +551,22 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testProcessQueryMapEncoder() throws Exception {
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), true,
+				List.of(new TestQueryMapEncoder()));
+		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapEncoder", TestObject.class,
+				String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/queryMapEncoder?aParam=" + "{aParam}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.queryMapIndex().intValue()).isEqualTo(0);
+		assertThat(data.queryMapEncoder().getClass()).isEqualTo(TestQueryMapEncoder.class);
+		Map<String, Collection<String>> params = data.template().queries();
+		assertThat(params.get("aParam").iterator().next()).isEqualTo("{aParam}");
+	}
+
+	@Test
 	void testProcessQueryMapMoreThanOnce() throws Exception {
 		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapMoreThanOnce", MultiValueMap.class,
 				MultiValueMap.class);
@@ -775,6 +793,10 @@ class SpringMvcContractTests {
 		@GetMapping("/queryMapObject")
 		String queryMapObject(@SpringQueryMap TestObject queryMap, @RequestParam(name = "aParam") String aParam);
 
+		@GetMapping("/queryMapEncoder")
+		String queryMapEncoder(@SpringQueryMap(mapEncoder = TestQueryMapEncoder.class) TestObject queryMap,
+				@RequestParam(name = "aParam") String aParam);
+
 	}
 
 	public interface TestTemplate_RequestPart {
@@ -916,6 +938,15 @@ class SpringMvcContractTests {
 		public String toString() {
 			return new StringBuilder("TestObject{").append("something='").append(something).append("', ")
 					.append("number=").append(number).append("}").toString();
+		}
+
+	}
+
+	public static class TestQueryMapEncoder implements QueryMapEncoder {
+
+		@Override
+		public Map<String, Object> encode(Object object) {
+			return Map.of("foo", "foo");
 		}
 
 	}

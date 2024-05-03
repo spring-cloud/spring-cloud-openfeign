@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
  * Tests for {@link SpringDecoder}.
  *
  * @author Olga Maciaszek-Sharma
+ * @author changjin wei(魏昌进)
  */
 class SpringDecoderTests {
 
@@ -40,7 +41,7 @@ class SpringDecoderTests {
 
 	@BeforeEach
 	void setUp() {
-		ObjectFactory<HttpMessageConverters> factory = mock();
+		ObjectFactory<HttpMessageConverters> factory = mock(ObjectFactory.class);
 		when(factory.getObject()).thenReturn(new HttpMessageConverters());
 		decoder = new SpringDecoder(factory);
 	}

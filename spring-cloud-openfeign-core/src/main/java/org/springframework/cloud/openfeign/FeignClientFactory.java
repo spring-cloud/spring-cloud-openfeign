@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
@@ -35,6 +38,7 @@ import org.springframework.lang.Nullable;
  * @author Matt King
  * @author Jasbir Singh
  * @author Olga Maciaszek-Sharma
+ * @author changjin wei(魏昌进)
  */
 public class FeignClientFactory extends NamedContextFactory<FeignClientSpecification> {
 
@@ -56,6 +60,24 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 		catch (BeansException ex) {
 			return null;
 		}
+	}
+
+	@Nullable
+	public <T> T getInstanceWithoutAncestorsForAnnotation(String name, Class<T> type,
+			Class<? extends Annotation> annotationType) {
+		GenericApplicationContext context = getContext(name);
+		String[] beanNames = context.getBeanNamesForAnnotation(annotationType);
+		List<T> beans = new ArrayList<>();
+		for (String beanName : beanNames) {
+			if (context.isTypeMatch(beanName, type)) {
+				beans.add((T) context.getBean(beanName));
+			}
+		}
+		if (beans.size() > 1) {
+			throw new IllegalStateException("Only one annotated bean for type expected.");
+		}
+		return beans.isEmpty() ? null : beans.get(0);
+
 	}
 
 	@Nullable
