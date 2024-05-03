@@ -211,7 +211,8 @@ class FeignClientOverrideDefaultsTests {
 
 	}
 
-	@FeignClient(name = "queryMapEncoder", url = "https://queryMapEncoder", configuration = QueryMapEncoderConfiguration.class)
+	@FeignClient(name = "queryMapEncoder", url = "https://queryMapEncoder",
+			configuration = QueryMapEncoderConfiguration.class)
 	interface QueryMapEncoderClient {
 
 		@GetMapping("/baz")
@@ -220,7 +221,7 @@ class FeignClientOverrideDefaultsTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@EnableFeignClients(clients = { FooClient.class, BarClient.class, BazClient.class , QueryMapEncoderClient.class})
+	@EnableFeignClients(clients = { FooClient.class, BarClient.class, BazClient.class, QueryMapEncoderClient.class })
 	@EnableAutoConfiguration
 	protected static class TestConfiguration {
 
@@ -342,6 +343,7 @@ class FeignClientOverrideDefaultsTests {
 		QueryMapEncoder partQueryMapEncoder() {
 			return new PartQueryMapEncoder();
 		}
+
 	}
 
 	private static class TestMicrometerObservationCapability extends feign.micrometer.MicrometerObservationCapability {
