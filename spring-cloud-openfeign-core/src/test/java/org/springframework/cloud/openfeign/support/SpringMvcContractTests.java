@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Szymon Linowski
  * @author Sam Kruglov
  * @author Bhavya Agrawal
+ * @author Tang Xiong
  **/
 
 class SpringMvcContractTests {
@@ -463,6 +464,68 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testProcessAnnotations_ParseParams_SingleParam() throws Exception {
+		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("singleParam");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test?p1=1");
+		assertThat(data.template().method()).isEqualTo("GET");
+	}
+
+	@Test
+	void testProcessAnnotations_ParseParams_MultipleParams() throws Exception {
+		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("multipleParams");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test?p1=1&p2=2");
+		assertThat(data.template().method()).isEqualTo("GET");
+	}
+
+	@Test
+	void testProcessAnnotations_ParseParams_MixParams() throws Exception {
+		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("mixParams");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test?p1=1&p2");
+		assertThat(data.template().method()).isEqualTo("GET");
+	}
+
+	@Test
+	void testProcessAnnotations_ParseParams_SingleParamWithoutValue() throws Exception {
+		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("singleParamWithoutValue");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test?p1");
+		assertThat(data.template().method()).isEqualTo("GET");
+	}
+
+	@Test
+	void testProcessAnnotations_ParseParams_MultipleParamsWithoutValue() throws Exception {
+		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("multipleParamsWithoutValue");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test?p1&p2");
+		assertThat(data.template().method()).isEqualTo("GET");
+	}
+
+	@Test
+	void testProcessAnnotations_ParseParams_NotEqualParams() throws Exception {
+		assertThatIllegalArgumentException().isThrownBy(() -> {
+			Method method = TestTemplate_ParseParams.class.getDeclaredMethod("notEqualParams");
+			contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		});
+	}
+
+	@Test
+	void testProcessAnnotations_ParseParams_ParamsAndRequestParam() throws Exception {
+		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("paramsAndRequestParam", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test?p1=1&p2={p2}");
+		assertThat(data.template().method()).isEqualTo("GET");
+	}
+
+	@Test
 	void testProcessHeaders() throws Exception {
 		Method method = TestTemplate_Headers.class.getDeclaredMethod("getTest", String.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
@@ -747,6 +810,31 @@ class SpringMvcContractTests {
 
 		@GetMapping("/test")
 		ResponseEntity<TestObject> getTest(@RequestParam Map<String, String> params);
+
+	}
+
+	public interface TestTemplate_ParseParams {
+
+		@GetMapping(value = "test", params = "p1=1")
+		ResponseEntity<TestObject> singleParam();
+
+		@GetMapping(value = "test", params = { "p1=1", "p2=2" })
+		ResponseEntity<TestObject> multipleParams();
+
+		@GetMapping(value = "test", params = { "p1" })
+		ResponseEntity<TestObject> singleParamWithoutValue();
+
+		@GetMapping(value = "test", params = { "p1", "p2" })
+		ResponseEntity<TestObject> multipleParamsWithoutValue();
+
+		@GetMapping(value = "test", params = { "p1=1", "p2" })
+		ResponseEntity<TestObject> mixParams();
+
+		@GetMapping(value = "test", params = { "p1!=1" })
+		ResponseEntity<TestObject> notEqualParams();
+
+		@GetMapping(value = "test", params = { "p1=1" })
+		ResponseEntity<TestObject> paramsAndRequestParam(@RequestParam("p2") String p2);
 
 	}
 

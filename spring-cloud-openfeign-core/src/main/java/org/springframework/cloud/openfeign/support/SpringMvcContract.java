@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Darren Foong
  * @author Ram Anaswara
  * @author Sam Kruglov
+ * @author Tang Xiong
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
 
@@ -244,6 +245,9 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		// headers
 		parseHeaders(data, method, methodMapping);
 
+		// params
+		parseParams(data, method, methodMapping);
+
 		data.indexToExpander(new LinkedHashMap<>());
 	}
 
@@ -350,6 +354,22 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 					md.template().header(resolve(header.substring(0, index)),
 							resolve(header.substring(index + 1).trim()));
 				}
+			}
+		}
+	}
+
+	private void parseParams(MethodMetadata data, Method method, RequestMapping methodMapping) {
+		String[] params = methodMapping.params();
+		if (params == null || params.length == 0) {
+			return;
+		}
+		for (String param : params) {
+			NameValueResolver nameValueResolver = new NameValueResolver(param);
+			if (!nameValueResolver.isNegated()) {
+				data.template().query(resolve(nameValueResolver.getName()), resolve(nameValueResolver.getValue()));
+			}
+			else {
+				throw new IllegalArgumentException("Negated params are not supported: " + param);
 			}
 		}
 	}
@@ -461,6 +481,42 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		@Override
 		public Collection<String> setTemplateParameter(String name, Collection<String> rest) {
 			return addTemplateParameter(rest, name);
+		}
+
+	}
+
+	private static class NameValueResolver {
+
+		private final String name;
+
+		private final String value;
+
+		private final boolean isNegated;
+
+		NameValueResolver(String expression) {
+			int separator = expression.indexOf('=');
+			if (separator == -1) {
+				isNegated = expression.startsWith("!");
+				name = (isNegated ? expression.substring(1) : expression);
+				value = null;
+			}
+			else {
+				isNegated = (separator > 0) && (expression.charAt(separator - 1) == '!');
+				name = (isNegated ? expression.substring(0, separator - 1) : expression.substring(0, separator));
+				value = expression.substring(separator + 1);
+			}
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public boolean isNegated() {
+			return isNegated;
 		}
 
 	}
