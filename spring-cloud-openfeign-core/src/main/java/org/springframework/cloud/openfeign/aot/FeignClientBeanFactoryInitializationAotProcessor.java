@@ -28,6 +28,7 @@ import javax.lang.model.element.Modifier;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.generate.MethodReference;
 import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
+import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.ReflectionHints;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.beans.MutablePropertyValues;
@@ -106,6 +107,21 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 	private void registerMethodHints(ReflectionHints hints, Class<?> clazz) {
 		for (Method method : clazz.getMethods()) {
 			registerMethodHints(hints, method);
+		}
+		introspectPublicMethodsOnAllInterfaces(hints, clazz);
+	}
+
+	// from Spring Framework BeanRegistrationsAotContribution
+	private void introspectPublicMethodsOnAllInterfaces(ReflectionHints hints, Class<?> clazz) {
+		Class<?> currentClass = clazz;
+		while (currentClass != null && currentClass != Object.class) {
+			for (Class<?> interfaceType : currentClass.getInterfaces()) {
+				if (!ClassUtils.isJavaLanguageInterface(interfaceType)) {
+					hints.registerType(interfaceType, MemberCategory.INTROSPECT_PUBLIC_METHODS);
+					introspectPublicMethodsOnAllInterfaces(hints, interfaceType);
+				}
+			}
+			currentClass = currentClass.getSuperclass();
 		}
 	}
 
