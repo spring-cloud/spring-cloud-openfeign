@@ -839,7 +839,7 @@ protected interface DemoFeignClient {
 === Reactive Support
 As the https://github.com/OpenFeign/feign[OpenFeign project] does not currently support reactive clients, such as https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html[Spring WebClient], neither does Spring Cloud OpenFeign.
 
-SinceSpring Cloud OpenFeign project is now considered feature-complete, we're not planning on adding support even if it becomes available in the upstream project. We suggest migrating over to https://docs.spring.io/spring-framework/reference/integration/rest-clients.html#rest-http-interface[Spring Interface Clients] instead. Both blocking and reactive stacks are supported there.
+Since Spring Cloud OpenFeign project is now considered feature-complete, we're not planning on adding support even if it becomes available in the upstream project. We suggest migrating over to https://docs.spring.io/spring-framework/reference/integration/rest-clients.html#rest-http-interface[Spring Interface Clients] instead. Both blocking and reactive stacks are supported there.
 
 
 Until that is done, we recommend using https://github.com/Playtika/feign-reactive[feign-reactive] for Spring WebClient support.
