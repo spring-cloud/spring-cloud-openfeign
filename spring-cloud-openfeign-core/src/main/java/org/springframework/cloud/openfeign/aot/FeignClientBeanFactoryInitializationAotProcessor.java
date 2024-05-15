@@ -111,6 +111,7 @@ public class FeignClientBeanFactoryInitializationAotProcessor
 		introspectPublicMethodsOnAllInterfaces(hints, clazz);
 	}
 
+	// TODO: switch to reflectionHints.registerForInterfaces(...) after upgrading to Framework 6.2.0
 	// from Spring Framework BeanRegistrationsAotContribution
 	private void introspectPublicMethodsOnAllInterfaces(ReflectionHints hints, Class<?> clazz) {
 		Class<?> currentClass = clazz;
