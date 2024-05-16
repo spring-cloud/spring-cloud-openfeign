@@ -45,7 +45,8 @@ public interface StoreClient {
 	@GetMapping("/stores")
 	Page<Store> getStores(Pageable pageable);
 
-	@PostMapping(value = "/stores/{storeId}", consumes = "application/json", params = "mode=upsert")
+	@PostMapping(value = "/stores/{storeId}", consumes = "application/json",
+				params = "mode=upsert")
 	Store update(@PathVariable("storeId") Long storeId, Store store);
 
 	@DeleteMapping("/stores/{storeId:\\d+}")
@@ -723,11 +724,11 @@ public interface DemoTemplate {
 }
 ----
 
-In the above example, the request url is resolved to `/stores/{storeId}?mode=upsert`. +
+In the above example, the request url is resolved to `/stores/storeId?mode=upsert`. +
 The params attribute also supports the use of multiple `key=value` or only one `key`: +
 
-- When `params = { "key1=v1", "key2=v2" }`, the request url is parsed as `/stores/{storeId}?key1=v1&key2=v2`.
-- When `params = "key"`, the request url is parsed as `/stores/{storeId}?key`.
+- When `params = { "key1=v1", "key2=v2" }`, the request url is parsed as `/stores/storeId?key1=v1&key2=v2`.
+- When `params = "key"`, the request url is parsed as `/stores/storeId?key`.
 
 
 
