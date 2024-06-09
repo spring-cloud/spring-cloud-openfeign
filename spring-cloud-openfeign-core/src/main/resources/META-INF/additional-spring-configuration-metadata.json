@@ -27,12 +27,6 @@
 			"defaultValue": "false"
 		},
 		{
-			"name": "spring.cloud.openfeign.httpclient.enabled",
-			"type": "java.lang.Boolean",
-			"description": "Enables the use of the Apache HTTP Client by Feign.",
-			"defaultValue": "true"
-		},
-		{
 			"name": "spring.cloud.openfeign.httpclient.hc5.enabled",
 			"type": "java.lang.Boolean",
 			"description": "Enables the use of the Apache HTTP Client 5 by Feign.",
