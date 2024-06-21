@@ -320,11 +320,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		validateFallbackFactory(annotation.getClass("fallbackFactory"));
 	}
 
-	/* for testing */ String getName(Map<String, Object> attributes) {
-		return getName(null, attributes);
-	}
-
-	String getName(ConfigurableBeanFactory beanFactory, Map<String, Object> attributes) {
+	String getName(Map<String, Object> attributes) {
 		String name = (String) attributes.get("serviceId");
 		if (!StringUtils.hasText(name)) {
 			name = (String) attributes.get("name");
@@ -332,7 +328,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		if (!StringUtils.hasText(name)) {
 			name = (String) attributes.get("value");
 		}
-		name = resolve(beanFactory, name);
+		name = resolve(null, name);
 		return getName(name);
 	}
 
