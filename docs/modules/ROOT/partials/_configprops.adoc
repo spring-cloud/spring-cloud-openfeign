@@ -82,7 +82,6 @@
 |spring.cloud.openfeign.httpclient.connection-timeout | `+++2000+++` | 
 |spring.cloud.openfeign.httpclient.connection-timer-repeat | `+++3000+++` | 
 |spring.cloud.openfeign.httpclient.disable-ssl-validation | `+++false+++` | 
-|spring.cloud.openfeign.httpclient.enabled | `+++true+++` | Enables the use of the Apache HTTP Client by Feign.
 |spring.cloud.openfeign.httpclient.follow-redirects | `+++true+++` | 
 |spring.cloud.openfeign.httpclient.hc5.connection-request-timeout | `+++3+++` | Default value for connection request timeout.
 |spring.cloud.openfeign.httpclient.hc5.connection-request-timeout-unit |  | Default value for connection request timeout unit.
