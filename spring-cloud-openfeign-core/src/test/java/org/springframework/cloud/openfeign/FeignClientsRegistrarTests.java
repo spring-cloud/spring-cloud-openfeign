@@ -90,6 +90,12 @@ class FeignClientsRegistrarTests {
 	}
 
 	@Test
+	void removeLastSlashOfUrl() {
+		String url = FeignClientsRegistrar.getUrl("http://localhost/");
+		assertThat(url).isEqualTo("http://localhost");
+	}
+
+	@Test
 	void testFallback() {
 		assertThatExceptionOfType(IllegalArgumentException.class)
 				.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackTestConfig.class));

@@ -128,7 +128,7 @@ class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "contextId", "TestContext");
 
 		// and:
-		assertFactoryBeanField(builder, "url", "http://Url/");
+		assertFactoryBeanField(builder, "url", "http://Url");
 		assertFactoryBeanField(builder, "path", "/Path");
 		assertFactoryBeanField(builder, "dismiss404", true);
 
@@ -148,7 +148,7 @@ class FeignClientBuilderTests {
 		assertFactoryBeanField(builder, "contextId", "TestContext");
 
 		// and:
-		assertFactoryBeanField(builder, "url", "http://Url/");
+		assertFactoryBeanField(builder, "url", "http://Url");
 		assertFactoryBeanField(builder, "path", "/Path");
 		assertFactoryBeanField(builder, "dismiss404", true);
 		List<FeignBuilderCustomizer> additionalCustomizers = getFactoryBeanField(builder, "additionalCustomizers");
