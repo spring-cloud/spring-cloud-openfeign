@@ -72,7 +72,9 @@ Spring Cloud OpenFeign supports all the features available for the blocking mode
 TIP: To use `@EnableFeignClients` annotation on `@Configuration`-annotated-classes, make sure to specify where the clients are located, for example:
 `@EnableFeignClients(basePackages = "com.example.clients")`
 or list them explicitly:
-`@EnableFeignClients(clients = InventoryServiceFeignClient.class)`
+`@EnableFeignClients(clients = InventoryServiceFeignClient.class)`.
+
+WARNING: Since `FactoryBean` objects may be instantiated before the initial context refresh should take place, and the instantiation of Spring Cloud OpenFeign Clients triggers a context refresh, they should not be declared within `FactoryBean` classes.
 
 [[attribute-resolution-mode]]
 ==== Attribute resolution mode
