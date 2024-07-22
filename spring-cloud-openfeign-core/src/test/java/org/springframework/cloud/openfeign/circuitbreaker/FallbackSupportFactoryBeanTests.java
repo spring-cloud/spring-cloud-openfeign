@@ -46,41 +46,43 @@ class FallbackSupportFactoryBeanTests {
 	private static final String ORIGINAL_FALLBACK_MESSAGE = "OriginalFeign fallback message";
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
-			.withBean(FactoryBeanFallbackFeignFallback.class).withBean(OriginalFeignFallback.class)
-			.withConfiguration(AutoConfigurations.of(TestConfiguration.class, FeignAutoConfiguration.class))
-			.withBean(CircuitBreakerFactory.class, () -> new CircuitBreakerFactory() {
-				@Override
-				public CircuitBreaker create(String id) {
-					return new CircuitBreaker() {
-						@Override
-						public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
-							try {
-								return toRun.get();
-							}
-							catch (Throwable t) {
-								return fallback.apply(t);
-							}
+		.withBean(FactoryBeanFallbackFeignFallback.class)
+		.withBean(OriginalFeignFallback.class)
+		.withConfiguration(AutoConfigurations.of(TestConfiguration.class, FeignAutoConfiguration.class))
+		.withBean(CircuitBreakerFactory.class, () -> new CircuitBreakerFactory() {
+			@Override
+			public CircuitBreaker create(String id) {
+				return new CircuitBreaker() {
+					@Override
+					public <T> T run(Supplier<T> toRun, Function<Throwable, T> fallback) {
+						try {
+							return toRun.get();
 						}
-					};
-				}
+						catch (Throwable t) {
+							return fallback.apply(t);
+						}
+					}
+				};
+			}
 
-				@Override
-				protected ConfigBuilder configBuilder(String id) {
-					return null;
-				}
+			@Override
+			protected ConfigBuilder configBuilder(String id) {
+				return null;
+			}
 
-				@Override
-				public void configureDefault(Function defaultConfiguration) {
+			@Override
+			public void configureDefault(Function defaultConfiguration) {
 
-				}
-			}).withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true");
+			}
+		})
+		.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true");
 
 	@Test
 	void shouldRunFallbackFromBeanOrFactoryBean() {
 		runner.run(ctx -> {
 			assertThat(ctx.getBean(OriginalFeign.class).get().equals(ORIGINAL_FALLBACK_MESSAGE)).isTrue();
 			assertThat(ctx.getBean(FactoryBeanFallbackFeign.class).get().equals(FACTORY_BEAN_FALLBACK_MESSAGE))
-					.isTrue();
+				.isTrue();
 		});
 	}
 

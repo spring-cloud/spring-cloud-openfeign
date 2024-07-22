@@ -117,7 +117,7 @@ class CircuitBreakerTests {
 	@Test
 	void testRuntimeExceptionUnwrapped() {
 		assertThatExceptionOfType(UnsupportedOperationException.class)
-				.isThrownBy(() -> exceptionClient.getRuntimeException());
+			.isThrownBy(() -> exceptionClient.getRuntimeException());
 	}
 
 	@Test

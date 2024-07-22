@@ -555,7 +555,8 @@ class ValidFeignClientTests {
 
 		public static void main(String[] args) {
 			new SpringApplicationBuilder(Application.class)
-					.properties("spring.application.name=feignclienttest", "management.contextPath=/admin").run(args);
+				.properties("spring.application.name=feignclienttest", "management.contextPath=/admin")
+				.run(args);
 		}
 
 		@Bean

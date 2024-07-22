@@ -47,8 +47,9 @@ class EnableFeignClientsTests {
 	@BeforeEach
 	void setUp() {
 		context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
-				.properties("debug=true", "spring.cloud.openfeign.httpclient.hc5.enabled=false")
-				.sources(EnableFeignClientsTests.PlainConfiguration.class).run();
+			.properties("debug=true", "spring.cloud.openfeign.httpclient.hc5.enabled=false")
+			.sources(EnableFeignClientsTests.PlainConfiguration.class)
+			.run();
 	}
 
 	@AfterEach

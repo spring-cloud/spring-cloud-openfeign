@@ -44,8 +44,12 @@ public class OptionsTestClient implements Client {
 
 	@Override
 	public Response execute(Request request, Request.Options options) {
-		return Response.builder().status(200).request(request).headers(headers()).body(prepareResponse(options))
-				.build();
+		return Response.builder()
+			.status(200)
+			.request(request)
+			.headers(headers())
+			.body(prepareResponse(options))
+			.build();
 	}
 
 	private Map<String, Collection<String>> headers() {

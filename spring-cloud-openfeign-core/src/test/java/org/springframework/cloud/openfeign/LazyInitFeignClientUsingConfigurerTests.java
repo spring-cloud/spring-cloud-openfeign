@@ -63,8 +63,8 @@ class LazyInitFeignClientUsingConfigurerTests {
 	@Test
 	void testFeignClient() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
-				.getBeanDefinition(BEAN_NAME_PREFIX + "TestFeignClient")
-				.getAttribute("feignClientsRegistrarFactoryBean");
+			.getBeanDefinition(BEAN_NAME_PREFIX + "TestFeignClient")
+			.getAttribute("feignClientsRegistrarFactoryBean");
 		Feign.Builder builder = factoryBean.feign(context);
 
 		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder, "requestInterceptors");
@@ -72,8 +72,9 @@ class LazyInitFeignClientUsingConfigurerTests {
 		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set").isEqualTo(Logger.Level.FULL);
 
 		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
-		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
-				.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
+		assertThat(capabilities).hasSize(2)
+			.hasAtLeastOneElementOfType(NoOpCapability.class)
+			.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
 	}
 
 	private Object getBuilderValue(Feign.Builder builder, String member) {
@@ -87,8 +88,8 @@ class LazyInitFeignClientUsingConfigurerTests {
 	@Test
 	void testNoInheritFeignClient() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
-				.getBeanDefinition(BEAN_NAME_PREFIX + "NoInheritFeignClient")
-				.getAttribute("feignClientsRegistrarFactoryBean");
+			.getBeanDefinition(BEAN_NAME_PREFIX + "NoInheritFeignClient")
+			.getAttribute("feignClientsRegistrarFactoryBean");
 		Feign.Builder builder = factoryBean.feign(context);
 
 		List<RequestInterceptor> interceptors = (List) getBuilderValue(builder, "requestInterceptors");
@@ -96,23 +97,25 @@ class LazyInitFeignClientUsingConfigurerTests {
 		assertThat(factoryBean.isInheritParentContext()).as("is inheriting from parent configuration").isFalse();
 
 		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
-		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
-				.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
+		assertThat(capabilities).hasSize(2)
+			.hasAtLeastOneElementOfType(NoOpCapability.class)
+			.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	void testNoInheritFeignClient_ignoreProperties() {
 		FeignClientFactoryBean factoryBean = (FeignClientFactoryBean) beanFactory
-				.getBeanDefinition(BEAN_NAME_PREFIX + "NoInheritFeignClient")
-				.getAttribute("feignClientsRegistrarFactoryBean");
+			.getBeanDefinition(BEAN_NAME_PREFIX + "NoInheritFeignClient")
+			.getAttribute("feignClientsRegistrarFactoryBean");
 		Feign.Builder builder = factoryBean.feign(context);
 
 		assertThat(getBuilderValue(builder, "logLevel")).as("log level not set").isEqualTo(Logger.Level.HEADERS);
 
 		List<Capability> capabilities = (List) getBuilderValue(builder, "capabilities");
-		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
-				.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
+		assertThat(capabilities).hasSize(2)
+			.hasAtLeastOneElementOfType(NoOpCapability.class)
+			.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
 	}
 
 	@EnableAutoConfiguration

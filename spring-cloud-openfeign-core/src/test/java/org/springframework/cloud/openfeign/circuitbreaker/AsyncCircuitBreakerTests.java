@@ -79,28 +79,35 @@ class AsyncCircuitBreakerTests {
 
 	@Test
 	void shouldWorkNormally() throws Exception {
-		mvc.perform(get("/hello/proxy")).andDo(print()).andExpect(status().isOk())
-				.andExpect(content().string("openfeign"));
+		mvc.perform(get("/hello/proxy"))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(content().string("openfeign"));
 	}
 
 	@Test
 	void shouldNotProxyAnyHeadersWithoutHeaderSet() throws Exception {
-		mvc.perform(get("/headers/" + HttpHeaders.AUTHORIZATION + "/proxy")).andDo(print()).andExpect(status().isOk())
-				.andExpect(content().string(""));
+		mvc.perform(get("/headers/" + HttpHeaders.AUTHORIZATION + "/proxy"))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(content().string(""));
 	}
 
 	@Test
 	void shouldProxyHeaderWhenHeaderSet() throws Exception {
 		String authorization = UUID.randomUUID().toString();
 		mvc.perform(get("/headers/" + HttpHeaders.AUTHORIZATION + "/proxy").header(HttpHeaders.AUTHORIZATION,
-				authorization)).andDo(print()).andExpect(status().isOk()).andExpect(content().string(authorization));
+				authorization))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(content().string(authorization));
 	}
 
 	@Test
 	void shouldProxyHeaderWhenHeaderSetAndCleanRequestAttributesAfterReturn() throws Exception {
 		shouldNotProxyAnyHeadersWithoutHeaderSet();
 		Future<ServletRequestAttributes> future = asyncCircuitBreakerExecutor
-				.submit(() -> (ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
+			.submit(() -> (ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
 		assertThat(future.get()).as("the RequestAttributes has been cleared").isNull();
 	}
 
@@ -144,9 +151,10 @@ class AsyncCircuitBreakerTests {
 		RequestInterceptor proxyHeaderRequestInterceptor() {
 			return template -> {
 				ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
-						.getRequestAttributes();
-				String authorization = Objects.requireNonNull(requestAttributes).getRequest()
-						.getHeader(HttpHeaders.AUTHORIZATION);
+					.getRequestAttributes();
+				String authorization = Objects.requireNonNull(requestAttributes)
+					.getRequest()
+					.getHeader(HttpHeaders.AUTHORIZATION);
 				if (authorization != null) {
 					// proxy authorization header
 					template.header(HttpHeaders.AUTHORIZATION, authorization);

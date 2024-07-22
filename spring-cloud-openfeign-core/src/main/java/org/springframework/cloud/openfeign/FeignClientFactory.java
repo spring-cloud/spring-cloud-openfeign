@@ -71,9 +71,9 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 	public FeignClientFactory withApplicationContextInitializers(Map<String, Object> applicationContextInitializers) {
 		Map<String, ApplicationContextInitializer<GenericApplicationContext>> convertedInitializers = new HashMap<>();
 		applicationContextInitializers.keySet()
-				.forEach(contextId -> convertedInitializers.put(contextId,
-						(ApplicationContextInitializer<GenericApplicationContext>) applicationContextInitializers
-								.get(contextId)));
+			.forEach(contextId -> convertedInitializers.put(contextId,
+					(ApplicationContextInitializer<GenericApplicationContext>) applicationContextInitializers
+						.get(contextId)));
 		return new FeignClientFactory(convertedInitializers);
 	}
 

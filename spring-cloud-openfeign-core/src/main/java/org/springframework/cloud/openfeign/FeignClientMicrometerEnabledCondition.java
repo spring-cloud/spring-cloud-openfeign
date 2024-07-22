@@ -30,13 +30,14 @@ class FeignClientMicrometerEnabledCondition implements Condition {
 	@Override
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		FeignClientProperties feignClientProperties = context.getBeanFactory()
-				.getBeanProvider(FeignClientProperties.class).getIfAvailable();
+			.getBeanProvider(FeignClientProperties.class)
+			.getIfAvailable();
 		if (feignClientProperties != null) {
 			Map<String, FeignClientProperties.FeignClientConfiguration> feignClientConfigMap = feignClientProperties
-					.getConfig();
+				.getConfig();
 			if (feignClientConfigMap != null) {
 				FeignClientProperties.FeignClientConfiguration feignClientConfig = feignClientConfigMap
-						.get(context.getEnvironment().getProperty("spring.cloud.openfeign.client.name"));
+					.get(context.getEnvironment().getProperty("spring.cloud.openfeign.client.name"));
 				if (feignClientConfig != null) {
 					FeignClientProperties.MicrometerProperties micrometer = feignClientConfig.getMicrometer();
 					if (micrometer != null && micrometer.getEnabled() != null) {

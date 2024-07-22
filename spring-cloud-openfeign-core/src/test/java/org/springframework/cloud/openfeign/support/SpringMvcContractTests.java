@@ -138,7 +138,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 		assertThat(data.template().decodeSlash()).isTrue();
 	}
 
@@ -172,7 +172,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("id");
 	}
@@ -185,7 +185,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
@@ -196,7 +196,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/?id=" + "{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
@@ -207,7 +207,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/test?name=" + "{name}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
@@ -218,7 +218,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/test/{id}");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("id");
 	}
@@ -268,7 +268,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("POST");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
 	}
 
@@ -280,7 +280,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("POST");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
 	}
 
@@ -293,7 +293,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
@@ -332,7 +332,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/test/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("Authorization");
 		assertThat(data.indexToName().get(1).iterator().next()).isEqualTo("id");
@@ -351,7 +351,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/test2?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("Authorization");
 		assertThat(data.indexToName().get(1).iterator().next()).isEqualTo("amount");
@@ -403,7 +403,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
@@ -414,7 +414,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/");
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 		assertThat(data.template().decodeSlash()).isTrue();
 	}
 
@@ -557,7 +557,7 @@ class SpringMvcContractTests {
 		assertThat(data.template().url()).isEqualTo("/testfallback/{id}?amount=" + "{amount}");
 		assertThat(data.template().method()).isEqualTo("PUT");
 		assertThat(data.template().headers().get("Accept").iterator().next())
-				.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
 		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo("Authorization");
 		assertThat(data.indexToName().get(1).iterator().next()).isEqualTo("id");
@@ -584,7 +584,7 @@ class SpringMvcContractTests {
 		Method method = TestTemplate_HeaderMap.class.getDeclaredMethod("headerMapMoreThanOnce", MultiValueMap.class,
 				MultiValueMap.class);
 		assertThatExceptionOfType(IllegalStateException.class)
-				.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
+			.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
 	}
 
 	@Test
@@ -616,7 +616,7 @@ class SpringMvcContractTests {
 		Method method = TestTemplate_QueryMap.class.getDeclaredMethod("queryMapMoreThanOnce", MultiValueMap.class,
 				MultiValueMap.class);
 		assertThatExceptionOfType(IllegalStateException.class)
-				.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
+			.isThrownBy(() -> contract.parseAndValidateMetadata(method.getDeclaringClass(), method));
 	}
 
 	@Test
@@ -688,7 +688,7 @@ class SpringMvcContractTests {
 
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 		assertThat(data.template().headers().get("cookie").iterator().next())
-				.isEqualTo("cookie1={cookie1}; cookie2={cookie2}");
+			.isEqualTo("cookie1={cookie1}; cookie2={cookie2}");
 	}
 
 	@Test
@@ -1002,8 +1002,13 @@ class SpringMvcContractTests {
 
 		@Override
 		public String toString() {
-			return new StringBuilder("TestObject{").append("something='").append(something).append("', ")
-					.append("number=").append(number).append("}").toString();
+			return new StringBuilder("TestObject{").append("something='")
+				.append(something)
+				.append("', ")
+				.append("number=")
+				.append(number)
+				.append("}")
+				.toString();
 		}
 
 	}

@@ -98,8 +98,9 @@ class RefreshableFeignClientUrlTests {
 		UrlTestClient.UrlResponseForTests response = client.refreshable();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:8080/common/refreshable");
 
-		clientProperties.getConfig().get("refreshableClientForContextRefreshCaseWithPath")
-				.setUrl("http://localhost:8888");
+		clientProperties.getConfig()
+			.get("refreshableClientForContextRefreshCaseWithPath")
+			.setUrl("http://localhost:8888");
 		refreshScope.refreshAll();
 		response = client.refreshable();
 		assertThat(response.getUrl()).isEqualTo("http://localhost:8888/common/refreshable");

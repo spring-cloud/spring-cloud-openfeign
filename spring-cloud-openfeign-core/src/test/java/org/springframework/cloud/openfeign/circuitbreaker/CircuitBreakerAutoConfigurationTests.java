@@ -51,7 +51,7 @@ public class CircuitBreakerAutoConfigurationTests {
 			when(target.type()).thenReturn(CircuitBreakerTests.TestClientWithFactory.class);
 			assertThat(nameResolver.resolveCircuitBreakerName("foo", target,
 					CircuitBreakerTests.TestClientWithFactory.class.getMethod("getHello")))
-							.isEqualTo("TestClientWithFactory#getHello()");
+				.isEqualTo("TestClientWithFactory#getHello()");
 		}
 
 	}
@@ -73,7 +73,7 @@ public class CircuitBreakerAutoConfigurationTests {
 			when(target.type()).thenReturn(CircuitBreakerTests.TestClientWithFactory.class);
 			assertThat(nameResolver.resolveCircuitBreakerName("foo", target,
 					CircuitBreakerTests.TestClientWithFactory.class.getMethod("getHello")))
-							.isEqualTo("TestClientWithFactorygetHello");
+				.isEqualTo("TestClientWithFactorygetHello");
 		}
 
 	}

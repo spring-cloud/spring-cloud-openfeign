@@ -266,14 +266,20 @@ public class FeignAutoConfiguration {
 			int connectTimeout = httpClientProperties.getConnectionTimeout();
 			boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
 			Duration readTimeout = httpClientProperties.getOkHttp().getReadTimeout();
-			List<Protocol> protocols = httpClientProperties.getOkHttp().getProtocols().stream().map(Protocol::valueOf)
-					.collect(Collectors.toList());
+			List<Protocol> protocols = httpClientProperties.getOkHttp()
+				.getProtocols()
+				.stream()
+				.map(Protocol::valueOf)
+				.collect(Collectors.toList());
 			if (disableSslValidation) {
 				disableSsl(builder);
 			}
 			this.okHttpClient = builder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-					.followRedirects(followRedirects).readTimeout(readTimeout).connectionPool(connectionPool)
-					.protocols(protocols).build();
+				.followRedirects(followRedirects)
+				.readTimeout(readTimeout)
+				.connectionPool(connectionPool)
+				.protocols(protocols)
+				.build();
 			return this.okHttpClient;
 		}
 
@@ -415,11 +421,12 @@ class FeignHints implements RuntimeHintsRegistrar {
 		if (!ClassUtils.isPresent("feign.Feign", classLoader)) {
 			return;
 		}
-		hints.reflection().registerTypes(
-				Set.of(TypeReference.of(FeignClientFactoryBean.class),
-						TypeReference.of(ResponseInterceptor.Chain.class), TypeReference.of(Capability.class)),
-				hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-						MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
+		hints.reflection()
+			.registerTypes(
+					Set.of(TypeReference.of(FeignClientFactoryBean.class),
+							TypeReference.of(ResponseInterceptor.Chain.class), TypeReference.of(Capability.class)),
+					hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+							MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
 	}
 
 }

@@ -111,9 +111,9 @@ public class FeignBlockingLoadBalancerClient implements Client {
 		DefaultRequest<RequestDataContext> lbRequest = new DefaultRequest<>(
 				new RequestDataContext(buildRequestData(request), hint));
 		Set<LoadBalancerLifecycle> supportedLifecycleProcessors = LoadBalancerLifecycleValidator
-				.getSupportedLifecycleProcessors(
-						loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle.class),
-						RequestDataContext.class, ResponseData.class, ServiceInstance.class);
+			.getSupportedLifecycleProcessors(
+					loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle.class),
+					RequestDataContext.class, ResponseData.class, ServiceInstance.class);
 		supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
 		ServiceInstance instance = loadBalancerClient.choose(serviceId, lbRequest);
 		org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
@@ -124,10 +124,13 @@ public class FeignBlockingLoadBalancerClient implements Client {
 				LOG.warn(message);
 			}
 			supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
-					.onComplete(new CompletionContext<ResponseData, ServiceInstance, RequestDataContext>(
-							CompletionContext.Status.DISCARD, lbRequest, lbResponse)));
-			return Response.builder().request(request).status(HttpStatus.SERVICE_UNAVAILABLE.value())
-					.body(message, StandardCharsets.UTF_8).build();
+				.onComplete(new CompletionContext<ResponseData, ServiceInstance, RequestDataContext>(
+						CompletionContext.Status.DISCARD, lbRequest, lbResponse)));
+			return Response.builder()
+				.request(request)
+				.status(HttpStatus.SERVICE_UNAVAILABLE.value())
+				.body(message, StandardCharsets.UTF_8)
+				.build();
 		}
 		String reconstructedUrl = loadBalancerClient.reconstructURI(instance, originalUri).toString();
 		Request newRequest = buildRequest(request, reconstructedUrl, instance);

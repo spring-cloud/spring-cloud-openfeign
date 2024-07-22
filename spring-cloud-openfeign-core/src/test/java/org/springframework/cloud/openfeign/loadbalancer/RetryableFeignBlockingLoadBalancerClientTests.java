@@ -104,7 +104,7 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 	void setUp() {
 		when(loadBalancerClientFactory.getProperties(any(String.class))).thenReturn(properties);
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(serviceInstance);
 	}
 
@@ -114,17 +114,17 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		Response response = testResponse(200);
 		when(delegate.execute(any(), any())).thenReturn(response);
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
-				.thenReturn(URI.create("http://testhost:80/path"));
+			.thenReturn(URI.create("http://testhost:80/path"));
 
 		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
 		verify(loadBalancerClient).choose(eq("test"), any());
 		verify(loadBalancerClient).reconstructURI(serviceInstance, URI.create("http://test/path"));
 
-		verify(delegate).execute(
-				argThat((Request actualRequest) -> actualRequest.url().equals("http://testhost:80/path")), any());
+		verify(delegate)
+			.execute(argThat((Request actualRequest) -> actualRequest.url().equals("http://testhost:80/path")), any());
 	}
 
 	private Response testResponse(int status) {
@@ -145,7 +145,7 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(null);
 		when(delegate.execute(any(), any())).thenReturn(response);
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 
 		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
@@ -159,9 +159,9 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		Response response = testResponse(503);
 		when(delegate.execute(any(), any())).thenReturn(response);
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
-				.thenReturn(URI.create("http://testhost:80/path"));
+			.thenReturn(URI.create("http://testhost:80/path"));
 
 		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
@@ -179,9 +179,9 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		Response response = testResponse(503);
 		when(delegate.execute(any(), any())).thenReturn(response);
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
-				.thenReturn(URI.create("http://testhost:80/path"));
+			.thenReturn(URI.create("http://testhost:80/path"));
 
 		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
@@ -199,9 +199,9 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		Response response = testResponse(503);
 		when(delegate.execute(any(), any())).thenReturn(response);
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
-				.thenReturn(URI.create("http://testhost:80/path"));
+			.thenReturn(URI.create("http://testhost:80/path"));
 
 		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
@@ -216,10 +216,10 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		Request request = testRequest();
 		when(delegate.execute(any(), any())).thenThrow(new IOException());
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 
 		assertThatThrownBy(() -> feignBlockingLoadBalancerClient.execute(request, new Request.Options()))
-				.isInstanceOf(IOException.class);
+			.isInstanceOf(IOException.class);
 
 		verify(delegate, times(1)).execute(any(), any());
 	}
@@ -230,9 +230,9 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		Request request = testRequest();
 		when(delegate.execute(any(), any())).thenReturn(testResponse(503, "foo"), testResponse(503, "foo"));
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
-				.thenReturn(URI.create("http://testhost:80/path"));
+			.thenReturn(URI.create("http://testhost:80/path"));
 
 		Response response = feignBlockingLoadBalancerClient.execute(request, new Request.Options());
 
@@ -248,11 +248,11 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test", "test-host", 8888, false);
 		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(serviceInstance);
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
-				.thenReturn(URI.create(url));
+			.thenReturn(URI.create(url));
 		Response response = testResponse(200);
 		when(delegate.execute(any(), any())).thenReturn(response);
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
-				.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
 
 		feignBlockingLoadBalancerClient.execute(request, options);
 
@@ -277,7 +277,7 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test", "test-host", 8888, false);
 		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(serviceInstance);
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
-				.thenReturn(URI.create(url));
+			.thenReturn(URI.create(url));
 		Response response = testResponse(200);
 		when(delegate.execute(any(), any())).thenReturn(response);
 		String callbackTestHint = "callbackTestHint";
@@ -286,23 +286,23 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		loadBalancerLifecycleBeans.put("loadBalancerLifecycle", new TestLoadBalancerLifecycle());
 		loadBalancerLifecycleBeans.put("anotherLoadBalancerLifecycle", new AnotherLoadBalancerLifecycle());
 		when(loadBalancerClientFactory.getInstances("test", LoadBalancerLifecycle.class))
-				.thenReturn(loadBalancerLifecycleBeans);
+			.thenReturn(loadBalancerLifecycleBeans);
 
 		feignBlockingLoadBalancerClient.execute(request, options);
 
 		Collection<org.springframework.cloud.client.loadbalancer.Request<RetryableRequestContext>> lifecycleLogRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
-				.get("loadBalancerLifecycle")).getStartLog().values();
+			.get("loadBalancerLifecycle")).getStartLog().values();
 		Collection<org.springframework.cloud.client.loadbalancer.Request<RetryableRequestContext>> lifecycleLogStartedRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
-				.get("loadBalancerLifecycle")).getStartRequestLog().values();
+			.get("loadBalancerLifecycle")).getStartRequestLog().values();
 		Collection<CompletionContext<ResponseData, ServiceInstance, RetryableRequestContext>> anotherLifecycleLogRequests = ((AnotherLoadBalancerLifecycle) loadBalancerLifecycleBeans
-				.get("anotherLoadBalancerLifecycle")).getCompleteLog().values();
+			.get("anotherLoadBalancerLifecycle")).getCompleteLog().values();
 		assertThat(lifecycleLogRequests).extracting(lbRequest -> lbRequest.getContext().getHint())
-				.contains(callbackTestHint);
+			.contains(callbackTestHint);
 		assertThat(lifecycleLogStartedRequests).extracting(lbRequest -> lbRequest.getContext().getHint())
-				.contains(callbackTestHint);
+			.contains(callbackTestHint);
 		assertThat(anotherLifecycleLogRequests)
-				.extracting(completionContext -> completionContext.getClientResponse().getHttpStatus())
-				.contains(HttpStatus.OK);
+			.extracting(completionContext -> completionContext.getClientResponse().getHttpStatus())
+			.contains(HttpStatus.OK);
 	}
 
 	private Request testRequest() {

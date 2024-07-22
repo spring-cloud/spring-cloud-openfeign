@@ -65,8 +65,10 @@ class ProtobufSpringEncoderTests {
 
 	// a protobuf object with some content
 	private final org.springframework.cloud.openfeign.encoding.proto.Request request = org.springframework.cloud.openfeign.encoding.proto.Request
-			.newBuilder().setId(1000000)
-			.setMsg("Erlang/OTP 最初是爱立信为开发电信设备系统设计的编程语言平台，" + "电信设备(路由器、接入网关、…)典型设计是通过背板连接主控板卡与多块业务板卡的分布式系统。").build();
+		.newBuilder()
+		.setId(1000000)
+		.setMsg("Erlang/OTP 最初是爱立信为开发电信设备系统设计的编程语言平台，" + "电信设备(路由器、接入网关、…)典型设计是通过背板连接主控板卡与多块业务板卡的分布式系统。")
+		.build();
 
 	@Test
 	void testProtobuf() throws IOException {
@@ -79,7 +81,7 @@ class ProtobufSpringEncoderTests {
 
 		assertThat(request.toByteArray()).isEqualTo(bytes);
 		org.springframework.cloud.openfeign.encoding.proto.Request copy = org.springframework.cloud.openfeign.encoding.proto.Request
-				.parseFrom(bytes);
+			.parseFrom(bytes);
 		assertThat(copy).isEqualTo(request);
 	}
 
@@ -98,7 +100,7 @@ class ProtobufSpringEncoderTests {
 		assertThat(request.toByteArray().length).isNotEqualTo(bytes.length);
 		try {
 			org.springframework.cloud.openfeign.encoding.proto.Request copy = org.springframework.cloud.openfeign.encoding.proto.Request
-					.parseFrom(bytes);
+				.parseFrom(bytes);
 			fail("Expected an InvalidProtocolBufferException to be thrown");
 		}
 		catch (InvalidProtocolBufferException e) {
@@ -120,14 +122,16 @@ class ProtobufSpringEncoderTests {
 
 	private HttpEntity toApacheHttpEntity(RequestTemplate requestTemplate) throws IOException {
 		final List<ClassicHttpRequest> request = new ArrayList<>(1);
-		BDDMockito.given(httpClient.execute(ArgumentMatchers.any(), ArgumentMatchers.any(),
-				ArgumentMatchers.any(HttpContext.class))).will((Answer<HttpResponse>) invocationOnMock -> {
-					request.add((ClassicHttpRequest) invocationOnMock.getArguments()[1]);
-					try (ClassicHttpResponse response = new BasicClassicHttpResponse(200)) {
-						response.setVersion(new ProtocolVersion("http", 1, 1));
-						return response;
-					}
-				});
+		BDDMockito
+			.given(httpClient.execute(ArgumentMatchers.any(), ArgumentMatchers.any(),
+					ArgumentMatchers.any(HttpContext.class)))
+			.will((Answer<HttpResponse>) invocationOnMock -> {
+				request.add((ClassicHttpRequest) invocationOnMock.getArguments()[1]);
+				try (ClassicHttpResponse response = new BasicClassicHttpResponse(200)) {
+					response.setVersion(new ProtocolVersion("http", 1, 1));
+					return response;
+				}
+			});
 		new ApacheHttp5Client(httpClient).execute(requestTemplate.resolve(new HashMap<>()).request(),
 				new feign.Request.Options());
 		ClassicHttpRequest httpUriRequest = request.get(0);

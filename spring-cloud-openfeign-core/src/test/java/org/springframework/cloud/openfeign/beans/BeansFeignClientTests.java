@@ -100,7 +100,7 @@ public class BeansFeignClientTests {
 	void buildByBuilder() {
 		assertThat(this.buildByBuilder).as("buildByBuilder was null").isNotNull();
 		assertThat(Proxy.isProxyClass(this.buildByBuilder.getClass())).as("buildByBuilder is not a java Proxy")
-				.isTrue();
+			.isTrue();
 		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.buildByBuilder);
 		assertThat(invocationHandler).as("invocationHandler was null").isNotNull();
 	}

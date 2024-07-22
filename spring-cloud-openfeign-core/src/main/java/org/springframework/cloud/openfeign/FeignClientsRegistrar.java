@@ -192,7 +192,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 				Assert.isTrue(annotationMetadata.isInterface(), "@FeignClient can only be specified on an interface");
 
 				Map<String, Object> attributes = annotationMetadata
-						.getAnnotationAttributes(FeignClient.class.getCanonicalName());
+					.getAnnotationAttributes(FeignClient.class.getCanonicalName());
 
 				String name = getClientName(attributes);
 				String className = annotationMetadata.getClassName();
@@ -206,8 +206,9 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 	private void registerFeignClient(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata,
 			Map<String, Object> attributes) {
 		String className = annotationMetadata.getClassName();
-		if (String.valueOf(false).equals(
-				environment.getProperty("spring.cloud.openfeign.lazy-attributes-resolution", String.valueOf(false)))) {
+		if (String.valueOf(false)
+			.equals(environment.getProperty("spring.cloud.openfeign.lazy-attributes-resolution",
+					String.valueOf(false)))) {
 			eagerlyRegisterFeignClientBeanDefinition(className, attributes, registry);
 		}
 		else {
@@ -392,7 +393,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 
 	protected Set<String> getBasePackages(AnnotationMetadata importingClassMetadata) {
 		Map<String, Object> attributes = importingClassMetadata
-				.getAnnotationAttributes(EnableFeignClients.class.getCanonicalName());
+			.getAnnotationAttributes(EnableFeignClients.class.getCanonicalName());
 
 		Set<String> basePackages = new HashSet<>();
 		for (String pkg : (String[]) attributes.get("value")) {

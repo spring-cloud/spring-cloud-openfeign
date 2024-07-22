@@ -58,42 +58,42 @@ class FeignHttpClientPropertiesTests {
 	void testDefaults() {
 		setupContext();
 		assertThat(getProperties().getConnectionTimeout())
-				.isEqualTo(FeignHttpClientProperties.DEFAULT_CONNECTION_TIMEOUT);
+			.isEqualTo(FeignHttpClientProperties.DEFAULT_CONNECTION_TIMEOUT);
 		assertThat(getProperties().getMaxConnections()).isEqualTo(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS);
 		assertThat(getProperties().getMaxConnectionsPerRoute())
-				.isEqualTo(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+			.isEqualTo(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
 		assertThat(getProperties().getTimeToLive()).isEqualTo(FeignHttpClientProperties.DEFAULT_TIME_TO_LIVE);
 		assertThat(getProperties().isDisableSslValidation())
-				.isEqualTo(FeignHttpClientProperties.DEFAULT_DISABLE_SSL_VALIDATION);
+			.isEqualTo(FeignHttpClientProperties.DEFAULT_DISABLE_SSL_VALIDATION);
 		assertThat(getProperties().isFollowRedirects()).isEqualTo(FeignHttpClientProperties.DEFAULT_FOLLOW_REDIRECTS);
 		assertThat(getProperties().getHc5().getPoolConcurrencyPolicy()).isEqualTo(PoolConcurrencyPolicy.STRICT);
 		assertThat(getProperties().getHc5().getPoolReusePolicy()).isEqualTo(PoolReusePolicy.FIFO);
 		assertThat(getProperties().getHc5().getSocketTimeout()).isEqualTo(DEFAULT_SOCKET_TIMEOUT);
 		assertThat(getProperties().getHc5().getSocketTimeoutUnit()).isEqualTo(DEFAULT_SOCKET_TIMEOUT_UNIT);
 		assertThat(getProperties().getHc5().getConnectionRequestTimeout())
-				.isEqualTo(DEFAULT_CONNECTION_REQUEST_TIMEOUT);
+			.isEqualTo(DEFAULT_CONNECTION_REQUEST_TIMEOUT);
 		assertThat(getProperties().getHc5().getConnectionRequestTimeoutUnit())
-				.isEqualTo(DEFAULT_CONNECTION_REQUEST_TIMEOUT_UNIT);
+			.isEqualTo(DEFAULT_CONNECTION_REQUEST_TIMEOUT_UNIT);
 	}
 
 	@Test
 	void testCustomization() {
 		TestPropertyValues
-				.of("spring.cloud.openfeign.httpclient.maxConnections=2",
-						"spring.cloud.openfeign.httpclient.connectionTimeout=2",
-						"spring.cloud.openfeign.httpclient.maxConnectionsPerRoute=2",
-						"spring.cloud.openfeign.httpclient.timeToLive=2",
-						"spring.cloud.openfeign.httpclient.disableSslValidation=true",
-						"spring.cloud.openfeign.httpclient.followRedirects=false",
-						"spring.cloud.openfeign.httpclient.disableSslValidation=true",
-						"spring.cloud.openfeign.httpclient.followRedirects=false",
-						"spring.cloud.openfeign.httpclient.hc5.poolConcurrencyPolicy=lax",
-						"spring.cloud.openfeign.httpclient.hc5.poolReusePolicy=lifo",
-						"spring.cloud.openfeign.httpclient.hc5.socketTimeout=200",
-						"spring.cloud.openfeign.httpclient.hc5.socketTimeoutUnit=milliseconds",
-						"spring.cloud.openfeign.httpclient.hc5.connectionRequestTimeout=200",
-						"spring.cloud.openfeign.httpclient.hc5.connectionRequestTimeoutUnit=milliseconds")
-				.applyTo(this.context);
+			.of("spring.cloud.openfeign.httpclient.maxConnections=2",
+					"spring.cloud.openfeign.httpclient.connectionTimeout=2",
+					"spring.cloud.openfeign.httpclient.maxConnectionsPerRoute=2",
+					"spring.cloud.openfeign.httpclient.timeToLive=2",
+					"spring.cloud.openfeign.httpclient.disableSslValidation=true",
+					"spring.cloud.openfeign.httpclient.followRedirects=false",
+					"spring.cloud.openfeign.httpclient.disableSslValidation=true",
+					"spring.cloud.openfeign.httpclient.followRedirects=false",
+					"spring.cloud.openfeign.httpclient.hc5.poolConcurrencyPolicy=lax",
+					"spring.cloud.openfeign.httpclient.hc5.poolReusePolicy=lifo",
+					"spring.cloud.openfeign.httpclient.hc5.socketTimeout=200",
+					"spring.cloud.openfeign.httpclient.hc5.socketTimeoutUnit=milliseconds",
+					"spring.cloud.openfeign.httpclient.hc5.connectionRequestTimeout=200",
+					"spring.cloud.openfeign.httpclient.hc5.connectionRequestTimeoutUnit=milliseconds")
+			.applyTo(this.context);
 		setupContext();
 		assertThat(getProperties().getMaxConnections()).isEqualTo(2);
 		assertThat(getProperties().getConnectionTimeout()).isEqualTo(2);

@@ -92,13 +92,13 @@ class FeignClientsRegistrarTests {
 	@Test
 	void testFallback() {
 		assertThatExceptionOfType(IllegalArgumentException.class)
-				.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackTestConfig.class));
+			.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackTestConfig.class));
 	}
 
 	@Test
 	void testFallbackFactory() {
 		assertThatExceptionOfType(IllegalArgumentException.class)
-				.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class));
+			.isThrownBy(() -> new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class));
 	}
 
 	@Test
@@ -107,8 +107,8 @@ class FeignClientsRegistrarTests {
 		((DefaultListableBeanFactory) context.getBeanFactory()).setAllowBeanDefinitionOverriding(false);
 		context.register(TopLevelSubLevelTestConfig.class);
 		assertThatCode(context::refresh)
-				.as("Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
-				.doesNotThrowAnyException();
+			.as("Case https://github.com/spring-cloud/spring-cloud-openfeign/issues/331 should be solved")
+			.doesNotThrowAnyException();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -123,7 +123,7 @@ class FeignClientsRegistrarTests {
 
 		Object invocationHandlerLambda = ReflectionTestUtils.getField(feignClientBean, "h");
 		Target.HardCodedTarget<NullUrlFeignClient> target = (Target.HardCodedTarget<NullUrlFeignClient>) ReflectionTestUtils
-				.getField(invocationHandlerLambda, "arg$3");
+			.getField(invocationHandlerLambda, "arg$3");
 		assertThat(target.name()).isEqualTo("nullUrlFeignClient");
 		assertThat(target.url()).isEqualTo("http://nullUrlFeignClient");
 	}

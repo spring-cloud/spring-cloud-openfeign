@@ -99,7 +99,7 @@ class FeignClientBeanFactoryInitializationAotProcessorTests {
 	private static void verifyContribution(
 			FeignClientBeanFactoryInitializationAotProcessor.AotContribution contribution) {
 		BeanDefinition contributionBeanDefinition = contribution.getFeignClientBeanDefinitions()
-				.get(TestClient.class.getCanonicalName());
+			.get(TestClient.class.getCanonicalName());
 		assertThat(contributionBeanDefinition.getBeanClassName()).isEqualTo(BEAN_DEFINITION_CLASS_NAME);
 		PropertyValues propertyValues = contributionBeanDefinition.getPropertyValues();
 		assertThat(propertyValues).isNotEmpty();

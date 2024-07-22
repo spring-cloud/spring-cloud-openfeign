@@ -50,7 +50,7 @@ class SpringDecoderTests {
 	void shouldNotThrownNPEWhenNoContent() {
 		assertThatCode(
 				() -> decoder.decode(Response.builder().request(mock(Request.class)).status(200).build(), String.class))
-						.doesNotThrowAnyException();
+			.doesNotThrowAnyException();
 	}
 
 }

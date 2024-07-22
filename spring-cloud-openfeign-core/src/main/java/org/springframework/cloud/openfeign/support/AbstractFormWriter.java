@@ -46,10 +46,18 @@ public abstract class AbstractFormWriter extends AbstractWriter {
 	@Override
 	public void write(Output output, String key, Object object) throws EncodeException {
 		try {
-			String string = new StringBuilder().append("Content-Disposition: form-data; name=\"").append(key)
-					.append('"').append(CRLF).append("Content-Type: ").append(getContentType()).append("; charset=")
-					.append(output.getCharset().name()).append(CRLF).append(CRLF).append(writeAsString(object))
-					.toString();
+			String string = new StringBuilder().append("Content-Disposition: form-data; name=\"")
+				.append(key)
+				.append('"')
+				.append(CRLF)
+				.append("Content-Type: ")
+				.append(getContentType())
+				.append("; charset=")
+				.append(output.getCharset().name())
+				.append(CRLF)
+				.append(CRLF)
+				.append(writeAsString(object))
+				.toString();
 
 			output.write(string);
 		}

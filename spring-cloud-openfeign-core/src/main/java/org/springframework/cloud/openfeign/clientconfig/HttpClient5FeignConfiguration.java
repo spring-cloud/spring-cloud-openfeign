@@ -73,34 +73,36 @@ public class HttpClient5FeignConfiguration {
 	@ConditionalOnMissingBean(HttpClientConnectionManager.class)
 	public HttpClientConnectionManager hc5ConnectionManager(FeignHttpClientProperties httpClientProperties) {
 		return PoolingHttpClientConnectionManagerBuilder.create()
-				.setSSLSocketFactory(httpsSSLConnectionSocketFactory(httpClientProperties.isDisableSslValidation()))
-				.setMaxConnTotal(httpClientProperties.getMaxConnections())
-				.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
-				.setConnPoolPolicy(PoolReusePolicy.valueOf(httpClientProperties.getHc5().getPoolReusePolicy().name()))
-				.setPoolConcurrencyPolicy(
-						PoolConcurrencyPolicy.valueOf(httpClientProperties.getHc5().getPoolConcurrencyPolicy().name()))
-				.setConnectionTimeToLive(
-						TimeValue.of(httpClientProperties.getTimeToLive(), httpClientProperties.getTimeToLiveUnit()))
-				.setDefaultSocketConfig(
-						SocketConfig.custom().setSoTimeout(Timeout.of(httpClientProperties.getHc5().getSocketTimeout(),
-								httpClientProperties.getHc5().getSocketTimeoutUnit())).build())
-				.build();
+			.setSSLSocketFactory(httpsSSLConnectionSocketFactory(httpClientProperties.isDisableSslValidation()))
+			.setMaxConnTotal(httpClientProperties.getMaxConnections())
+			.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
+			.setConnPoolPolicy(PoolReusePolicy.valueOf(httpClientProperties.getHc5().getPoolReusePolicy().name()))
+			.setPoolConcurrencyPolicy(
+					PoolConcurrencyPolicy.valueOf(httpClientProperties.getHc5().getPoolConcurrencyPolicy().name()))
+			.setConnectionTimeToLive(
+					TimeValue.of(httpClientProperties.getTimeToLive(), httpClientProperties.getTimeToLiveUnit()))
+			.setDefaultSocketConfig(SocketConfig.custom()
+				.setSoTimeout(Timeout.of(httpClientProperties.getHc5().getSocketTimeout(),
+						httpClientProperties.getHc5().getSocketTimeoutUnit()))
+				.build())
+			.build();
 	}
 
 	@Bean
 	public CloseableHttpClient httpClient5(HttpClientConnectionManager connectionManager,
 			FeignHttpClientProperties httpClientProperties,
 			ObjectProvider<List<HttpClientBuilderCustomizer>> customizerProvider) {
-		HttpClientBuilder httpClientBuilder = HttpClients.custom().disableCookieManagement().useSystemProperties()
-				.setConnectionManager(connectionManager).evictExpiredConnections()
-				.setDefaultRequestConfig(RequestConfig.custom()
-						.setConnectTimeout(
-								Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
-						.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
-						.setConnectionRequestTimeout(
-								Timeout.of(httpClientProperties.getHc5().getConnectionRequestTimeout(),
-										httpClientProperties.getHc5().getConnectionRequestTimeoutUnit()))
-						.build());
+		HttpClientBuilder httpClientBuilder = HttpClients.custom()
+			.disableCookieManagement()
+			.useSystemProperties()
+			.setConnectionManager(connectionManager)
+			.evictExpiredConnections()
+			.setDefaultRequestConfig(RequestConfig.custom()
+				.setConnectTimeout(Timeout.of(httpClientProperties.getConnectionTimeout(), TimeUnit.MILLISECONDS))
+				.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
+				.setConnectionRequestTimeout(Timeout.of(httpClientProperties.getHc5().getConnectionRequestTimeout(),
+						httpClientProperties.getHc5().getConnectionRequestTimeoutUnit()))
+				.build());
 
 		customizerProvider.getIfAvailable(List::of).forEach(c -> c.customize(httpClientBuilder));
 
@@ -117,7 +119,8 @@ public class HttpClient5FeignConfiguration {
 
 	private LayeredConnectionSocketFactory httpsSSLConnectionSocketFactory(boolean isDisableSslValidation) {
 		final SSLConnectionSocketFactoryBuilder sslConnectionSocketFactoryBuilder = SSLConnectionSocketFactoryBuilder
-				.create().setTlsVersions(TLS.V_1_3, TLS.V_1_2);
+			.create()
+			.setTlsVersions(TLS.V_1_3, TLS.V_1_2);
 
 		if (isDisableSslValidation) {
 			try {

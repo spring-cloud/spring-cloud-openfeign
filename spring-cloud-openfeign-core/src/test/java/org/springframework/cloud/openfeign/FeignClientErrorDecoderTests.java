@@ -89,7 +89,7 @@ public class FeignClientErrorDecoderTests {
 		Object invocationHandlerLambda = ReflectionTestUtils.getField(client, "h");
 		Object invocationHandler = ReflectionTestUtils.getField(invocationHandlerLambda, "arg$2");
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
-				.getField(invocationHandler, "dispatch");
+			.getField(invocationHandler, "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
 		return ReflectionTestUtils.getField(ReflectionTestUtils.getField(dispatch.get(key), "asyncResponseHandler"),
 				"errorDecoder");

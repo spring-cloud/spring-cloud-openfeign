@@ -78,7 +78,7 @@ public class FeignClientFactoryTests {
 		Proxy target = context.getBean(FeignClientFactoryBean.class).getTarget();
 		Object invocationHandler = ReflectionTestUtils.getField(target, "h");
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
-				.getField(invocationHandler, "dispatch");
+			.getField(invocationHandler, "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
 		Object client = ReflectionTestUtils.getField(dispatch.get(key), "client");
 		assertThat(client).isInstanceOf(Client.Default.class);

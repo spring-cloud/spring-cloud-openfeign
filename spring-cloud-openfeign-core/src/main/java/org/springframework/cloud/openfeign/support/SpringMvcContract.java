@@ -292,7 +292,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		Method method = processedMethods.get(data.configKey());
 		for (Annotation parameterAnnotation : annotations) {
 			AnnotatedParameterProcessor processor = annotatedArgumentProcessors
-					.get(parameterAnnotation.annotationType());
+				.get(parameterAnnotation.annotationType());
 			if (processor != null) {
 				Annotation processParameterAnnotation;
 				// synthesize, handling @AliasFor, while falling back to parameter name on
@@ -320,9 +320,9 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		for (int i = 0; i < paramsAnnotations.length; i++) {
 			Annotation[] paramAnnotations = paramsAnnotations[i];
 			Class<?> parameterType = data.method().getParameterTypes()[i];
-			if (Arrays.stream(paramAnnotations).anyMatch(
-					annotation -> Map.class.isAssignableFrom(parameterType) && annotation instanceof RequestParam
-							|| annotation instanceof SpringQueryMap || annotation instanceof QueryMap)) {
+			if (Arrays.stream(paramAnnotations)
+				.anyMatch(annotation -> Map.class.isAssignableFrom(parameterType) && annotation instanceof RequestParam
+						|| annotation instanceof SpringQueryMap || annotation instanceof QueryMap)) {
 				return true;
 			}
 		}
@@ -351,8 +351,8 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 			for (String header : annotation.headers()) {
 				int index = header.indexOf('=');
 				if (!header.contains("!=") && index >= 0) {
-					md.template().header(resolve(header.substring(0, index)),
-							resolve(header.substring(index + 1).trim()));
+					md.template()
+						.header(resolve(header.substring(0, index)), resolve(header.substring(index + 1).trim()));
 				}
 			}
 		}

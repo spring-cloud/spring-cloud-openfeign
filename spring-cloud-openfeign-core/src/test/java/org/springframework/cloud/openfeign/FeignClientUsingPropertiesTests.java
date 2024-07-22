@@ -211,13 +211,13 @@ public class FeignClientUsingPropertiesTests {
 	public SingleValueClient singleValueClient() {
 		this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean.setApplicationContext(this.applicationContext);
 		return this.defaultHeadersAndQuerySingleParamsFeignClientFactoryBean.feign(this.context)
-				.target(SingleValueClient.class, "http://localhost:" + this.port);
+			.target(SingleValueClient.class, "http://localhost:" + this.port);
 	}
 
 	public MultipleValueClient multipleValueClient() {
 		this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean.setApplicationContext(this.applicationContext);
 		return this.defaultHeadersAndQueryMultipleParamsFeignClientFactoryBean.feign(this.context)
-				.target(MultipleValueClient.class, "http://localhost:" + this.port);
+			.target(MultipleValueClient.class, "http://localhost:" + this.port);
 	}
 
 	@Test
@@ -228,8 +228,8 @@ public class FeignClientUsingPropertiesTests {
 		readTimeoutFactoryBean.setType(FeignClientFactoryBean.class);
 		readTimeoutFactoryBean.setApplicationContext(applicationContext);
 
-		TimeoutClient client = readTimeoutFactoryBean.feign(context).target(TimeoutClient.class,
-				"http://localhost:" + port);
+		TimeoutClient client = readTimeoutFactoryBean.feign(context)
+			.target(TimeoutClient.class, "http://localhost:" + port);
 
 		Request.Options options = getRequestOptions((Proxy) client);
 
@@ -245,8 +245,8 @@ public class FeignClientUsingPropertiesTests {
 		readTimeoutFactoryBean.setType(FeignClientFactoryBean.class);
 		readTimeoutFactoryBean.setApplicationContext(applicationContext);
 
-		TimeoutClient client = readTimeoutFactoryBean.feign(context).target(TimeoutClient.class,
-				"http://localhost:" + port);
+		TimeoutClient client = readTimeoutFactoryBean.feign(context)
+			.target(TimeoutClient.class, "http://localhost:" + port);
 
 		Request.Options options = getRequestOptions((Proxy) client);
 
@@ -263,8 +263,9 @@ public class FeignClientUsingPropertiesTests {
 		String response = fooClient.foo();
 		assertThat(response).isEqualTo("OK");
 		List<Capability> capabilities = (List) ReflectionTestUtils.getField(feignBuilder, "capabilities");
-		assertThat(capabilities).hasSize(2).hasAtLeastOneElementOfType(NoOpCapability.class)
-				.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
+		assertThat(capabilities).hasSize(2)
+			.hasAtLeastOneElementOfType(NoOpCapability.class)
+			.hasAtLeastOneElementOfType(MicrometerObservationCapability.class);
 	}
 
 	@Test
@@ -299,7 +300,7 @@ public class FeignClientUsingPropertiesTests {
 		Object invocationHandlerLambda = ReflectionTestUtils.getField(client, "h");
 		Object invocationHandler = ReflectionTestUtils.getField(invocationHandlerLambda, "arg$2");
 		Map<Method, InvocationHandlerFactory.MethodHandler> dispatch = (Map<Method, InvocationHandlerFactory.MethodHandler>) ReflectionTestUtils
-				.getField(Objects.requireNonNull(invocationHandler), "dispatch");
+			.getField(Objects.requireNonNull(invocationHandler), "dispatch");
 		Method key = new ArrayList<>(dispatch.keySet()).get(0);
 		return (Request.Options) ReflectionTestUtils.getField(dispatch.get(key), "options");
 	}
@@ -395,15 +396,17 @@ public class FeignClientUsingPropertiesTests {
 		@GetMapping(path = "/singleValue")
 		public List<String> singleValue(@RequestHeader List<String> singleValueHeaders,
 				@RequestParam List<String> singleValueParameters) {
-			return Stream.of(singleValueHeaders, singleValueParameters).flatMap(Collection::stream)
-					.collect(Collectors.toList());
+			return Stream.of(singleValueHeaders, singleValueParameters)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toList());
 		}
 
 		@GetMapping(path = "/multipleValue")
 		public List<String> multipleValue(@RequestHeader List<String> multipleValueHeaders,
 				@RequestParam List<String> multipleValueParameters) {
-			return Stream.of(multipleValueHeaders, multipleValueParameters).flatMap(Collection::stream)
-					.collect(Collectors.toList());
+			return Stream.of(multipleValueHeaders, multipleValueParameters)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toList());
 		}
 
 	}

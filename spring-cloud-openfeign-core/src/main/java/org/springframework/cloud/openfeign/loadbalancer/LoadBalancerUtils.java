@@ -55,9 +55,9 @@ final class LoadBalancerUtils {
 		try {
 			Response response = feignClient.execute(feignRequest, options);
 			if (loadBalanced) {
-				supportedLifecycleProcessors.forEach(
-						lifecycle -> lifecycle.onComplete(new CompletionContext<>(CompletionContext.Status.SUCCESS,
-								lbRequest, lbResponse, buildResponseData(response))));
+				supportedLifecycleProcessors
+					.forEach(lifecycle -> lifecycle.onComplete(new CompletionContext<>(CompletionContext.Status.SUCCESS,
+							lbRequest, lbResponse, buildResponseData(response))));
 			}
 			return response;
 		}

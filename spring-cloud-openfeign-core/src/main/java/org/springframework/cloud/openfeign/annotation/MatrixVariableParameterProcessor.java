@@ -73,8 +73,11 @@ public class MatrixVariableParameterProcessor implements AnnotatedParameterProce
 	private String expandMap(Object object) {
 		Map<String, Object> paramMap = (Map) object;
 
-		return paramMap.keySet().stream().filter(key -> paramMap.get(key) != null)
-				.map(key -> ";" + key + "=" + paramMap.get(key).toString()).collect(Collectors.joining());
+		return paramMap.keySet()
+			.stream()
+			.filter(key -> paramMap.get(key) != null)
+			.map(key -> ";" + key + "=" + paramMap.get(key).toString())
+			.collect(Collectors.joining());
 	}
 
 }

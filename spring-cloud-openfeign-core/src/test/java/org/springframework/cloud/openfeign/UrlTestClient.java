@@ -43,8 +43,12 @@ public class UrlTestClient implements Client {
 
 	@Override
 	public Response execute(Request request, Request.Options options) {
-		return Response.builder().status(200).request(request).headers(headers()).body(prepareResponse(request))
-				.build();
+		return Response.builder()
+			.status(200)
+			.request(request)
+			.headers(headers())
+			.body(prepareResponse(request))
+			.build();
 	}
 
 	private Map<String, Collection<String>> headers() {

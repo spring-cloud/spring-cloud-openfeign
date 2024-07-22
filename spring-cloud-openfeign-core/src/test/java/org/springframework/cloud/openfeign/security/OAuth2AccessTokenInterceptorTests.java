@@ -70,16 +70,16 @@ class OAuth2AccessTokenInterceptorTests {
 		when(mockOAuth2AuthorizedClientManager.authorize(any())).thenReturn(null);
 
 		assertThatExceptionOfType(IllegalStateException.class)
-				.isThrownBy(() -> oAuth2AccessTokenInterceptor.apply(requestTemplate))
-				.withMessage("OAuth2 token has not been successfully acquired.");
+			.isThrownBy(() -> oAuth2AccessTokenInterceptor.apply(requestTemplate))
+			.withMessage("OAuth2 token has not been successfully acquired.");
 	}
 
 	@Test
 	void shouldAcquireValidToken() {
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientManager);
-		when(mockOAuth2AuthorizedClientManager.authorize(
-				argThat((OAuth2AuthorizeRequest request) -> ("test").equals(request.getClientRegistrationId()))))
-						.thenReturn(validTokenOAuth2AuthorizedClient());
+		when(mockOAuth2AuthorizedClientManager
+			.authorize(argThat((OAuth2AuthorizeRequest request) -> ("test").equals(request.getClientRegistrationId()))))
+			.thenReturn(validTokenOAuth2AuthorizedClient());
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
@@ -88,9 +88,9 @@ class OAuth2AccessTokenInterceptorTests {
 
 	@Test
 	void shouldAcquireValidTokenFromServiceId() {
-		when(mockOAuth2AuthorizedClientManager.authorize(
-				argThat((OAuth2AuthorizeRequest request) -> ("test").equals(request.getClientRegistrationId()))))
-						.thenReturn(validTokenOAuth2AuthorizedClient());
+		when(mockOAuth2AuthorizedClientManager
+			.authorize(argThat((OAuth2AuthorizeRequest request) -> ("test").equals(request.getClientRegistrationId()))))
+			.thenReturn(validTokenOAuth2AuthorizedClient());
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientManager);
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
@@ -103,8 +103,9 @@ class OAuth2AccessTokenInterceptorTests {
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(DEFAULT_CLIENT_REGISTRATION_ID,
 				mockOAuth2AuthorizedClientManager);
 		when(mockOAuth2AuthorizedClientManager
-				.authorize(argThat((OAuth2AuthorizeRequest request) -> (DEFAULT_CLIENT_REGISTRATION_ID)
-						.equals(request.getClientRegistrationId())))).thenReturn(validTokenOAuth2AuthorizedClient());
+			.authorize(argThat((OAuth2AuthorizeRequest request) -> (DEFAULT_CLIENT_REGISTRATION_ID)
+				.equals(request.getClientRegistrationId()))))
+			.thenReturn(validTokenOAuth2AuthorizedClient());
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
@@ -121,8 +122,11 @@ class OAuth2AccessTokenInterceptorTests {
 	}
 
 	private ClientRegistration defaultClientRegistration() {
-		return ClientRegistration.withRegistrationId(DEFAULT_CLIENT_REGISTRATION_ID).clientId("clientId")
-				.tokenUri("mock token uri").authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS).build();
+		return ClientRegistration.withRegistrationId(DEFAULT_CLIENT_REGISTRATION_ID)
+			.clientId("clientId")
+			.tokenUri("mock token uri")
+			.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+			.build();
 	}
 
 }

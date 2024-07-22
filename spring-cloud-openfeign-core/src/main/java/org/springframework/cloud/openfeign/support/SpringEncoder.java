@@ -180,7 +180,7 @@ public class SpringEncoder implements Encoder {
 	private boolean shouldHaveNullCharset(HttpMessageConverter messageConverter, FeignOutputMessage outputMessage) {
 		return binaryContentType(outputMessage) || messageConverter instanceof ByteArrayHttpMessageConverter
 				|| messageConverter instanceof ProtobufHttpMessageConverter && ProtobufHttpMessageConverter.PROTOBUF
-						.isCompatibleWith(outputMessage.getHeaders().getContentType());
+					.isCompatibleWith(outputMessage.getHeaders().getContentType());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -239,9 +239,9 @@ public class SpringEncoder implements Encoder {
 	protected boolean binaryContentType(FeignOutputMessage outputMessage) {
 		MediaType contentType = outputMessage.getHeaders().getContentType();
 		return contentType == null || Stream
-				.of(MediaType.APPLICATION_CBOR, MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_PDF,
-						MediaType.IMAGE_GIF, MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
-				.anyMatch(mediaType -> mediaType.includes(contentType));
+			.of(MediaType.APPLICATION_CBOR, MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_PDF,
+					MediaType.IMAGE_GIF, MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG)
+			.anyMatch(mediaType -> mediaType.includes(contentType));
 	}
 
 	protected final class FeignOutputMessage implements HttpOutputMessage {

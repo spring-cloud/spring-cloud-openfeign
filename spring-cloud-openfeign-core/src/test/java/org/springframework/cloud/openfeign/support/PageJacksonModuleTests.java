@@ -82,7 +82,7 @@ class PageJacksonModuleTests {
 		assertThat(result.getContent()).hasSize(10);
 		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
 		assertThat(result.getPageable().getSort().getOrderFor("lastName").getDirection())
-				.isEqualTo(Sort.Direction.DESC);
+			.isEqualTo(Sort.Direction.DESC);
 	}
 
 	@Test

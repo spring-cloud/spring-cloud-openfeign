@@ -75,7 +75,7 @@ public class FeignClientWithRefreshableOptionsTest {
 	@Test
 	public void refreshScopeBeanDefinitionShouldBePresent() {
 		BeanDefinition beanDefinition = ((GenericWebApplicationContext) applicationContext)
-				.getBeanDefinition(Request.Options.class.getCanonicalName() + "-" + "refreshableClient");
+			.getBeanDefinition(Request.Options.class.getCanonicalName() + "-" + "refreshableClient");
 		BeanDefinition originBeanDefinition = beanDefinition.getOriginatingBeanDefinition();
 		assertThat(originBeanDefinition.getBeanClassName()).isEqualTo(OptionsFactoryBean.class.getCanonicalName());
 		assertThat(originBeanDefinition.getScope()).isEqualTo("refresh");

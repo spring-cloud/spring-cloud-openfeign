@@ -40,10 +40,10 @@ public class Http2ClientFeignConfiguration {
 	@ConditionalOnMissingBean
 	public HttpClient.Builder httpClientBuilder(FeignHttpClientProperties httpClientProperties) {
 		return HttpClient.newBuilder()
-				.followRedirects(httpClientProperties.isFollowRedirects() ? HttpClient.Redirect.ALWAYS
-						: HttpClient.Redirect.NEVER)
-				.version(HttpClient.Version.valueOf(httpClientProperties.getHttp2().getVersion()))
-				.connectTimeout(Duration.ofMillis(httpClientProperties.getConnectionTimeout()));
+			.followRedirects(
+					httpClientProperties.isFollowRedirects() ? HttpClient.Redirect.ALWAYS : HttpClient.Redirect.NEVER)
+			.version(HttpClient.Version.valueOf(httpClientProperties.getHttp2().getVersion()))
+			.connectTimeout(Duration.ofMillis(httpClientProperties.getConnectionTimeout()));
 	}
 
 	@Bean

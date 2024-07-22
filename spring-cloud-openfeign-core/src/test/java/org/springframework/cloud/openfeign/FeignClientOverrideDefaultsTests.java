@@ -146,41 +146,41 @@ class FeignClientOverrideDefaultsTests {
 	void exceptionPropagationPolicy() {
 		assertThat(context.getInstances("foo", ExceptionPropagationPolicy.class)).isEmpty();
 		assertThat(context.getInstances("bar", ExceptionPropagationPolicy.class))
-				.containsValues(ExceptionPropagationPolicy.UNWRAP);
+			.containsValues(ExceptionPropagationPolicy.UNWRAP);
 	}
 
 	@Test
 	void shouldOverrideMicrometerCapabilities() {
 		// override micrometerCapability
 		assertThat(context.getInstance("foo", MicrometerCapability.class))
-				.isExactlyInstanceOf(TestMicrometerCapability.class);
+			.isExactlyInstanceOf(TestMicrometerCapability.class);
 		assertThat(context.getInstance("foo", MicrometerObservationCapability.class))
-				.isExactlyInstanceOf(MicrometerObservationCapability.class);
+			.isExactlyInstanceOf(MicrometerObservationCapability.class);
 		Map<String, Capability> fooCapabilities = context.getInstances("foo", Capability.class);
 		assertThat(fooCapabilities).hasSize(2);
 		assertThat(fooCapabilities.get("micrometerCapability")).isExactlyInstanceOf(TestMicrometerCapability.class);
 		assertThat(fooCapabilities.get("micrometerObservationCapability"))
-				.isExactlyInstanceOf(MicrometerObservationCapability.class);
+			.isExactlyInstanceOf(MicrometerObservationCapability.class);
 
 		// override micrometerObservationCapability
 		assertThat(context.getInstance("bar", MicrometerObservationCapability.class))
-				.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
+			.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
 		Map<String, Capability> barCapabilities = context.getInstances("bar", Capability.class);
 		assertThat(barCapabilities).hasSize(1);
 		assertThat(barCapabilities.get("micrometerCapability")).isNull();
 		assertThat(barCapabilities.get("micrometerObservationCapability"))
-				.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
+			.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
 
 		// override both + an extra capability
 		assertThat(context.getInstance("baz", MicrometerCapability.class))
-				.isExactlyInstanceOf(TestMicrometerCapability.class);
+			.isExactlyInstanceOf(TestMicrometerCapability.class);
 		assertThat(context.getInstance("baz", MicrometerObservationCapability.class))
-				.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
+			.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
 		Map<String, Capability> bazCapabilities = context.getInstances("baz", Capability.class);
 		assertThat(bazCapabilities).hasSize(3);
 		assertThat(bazCapabilities.get("micrometerCapability")).isExactlyInstanceOf(TestMicrometerCapability.class);
 		assertThat(bazCapabilities.get("micrometerObservationCapability"))
-				.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
+			.isExactlyInstanceOf(TestMicrometerObservationCapability.class);
 		assertThat(bazCapabilities.get("noOpCapability")).isExactlyInstanceOf(NoOpCapability.class);
 	}
 

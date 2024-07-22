@@ -41,39 +41,37 @@ class FeignCompressionTests {
 	@Test
 	void shouldAddCompressionInterceptors() {
 		new ApplicationContextRunner()
-				.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true",
-						"spring.cloud.openfeign.compression.request.enabled=true",
-						"spring.cloud.openfeign.okhttp.enabled=false")
-				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
-						FeignContentGzipEncodingAutoConfiguration.class,
-						FeignAcceptGzipEncodingAutoConfiguration.class))
-				.run(context -> {
-					FeignClientFactory feignClientFactory = context.getBean(FeignClientFactory.class);
-					Map<String, RequestInterceptor> interceptors = feignClientFactory.getInstances("foo",
-							RequestInterceptor.class);
-					assertThat(interceptors.size()).isEqualTo(2);
-					assertThat(interceptors.get("feignAcceptGzipEncodingInterceptor"))
-							.isInstanceOf(FeignAcceptGzipEncodingInterceptor.class);
-					assertThat(interceptors.get("feignContentGzipEncodingInterceptor"))
-							.isInstanceOf(FeignContentGzipEncodingInterceptor.class);
-				});
+			.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true",
+					"spring.cloud.openfeign.compression.request.enabled=true",
+					"spring.cloud.openfeign.okhttp.enabled=false")
+			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
+					FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class))
+			.run(context -> {
+				FeignClientFactory feignClientFactory = context.getBean(FeignClientFactory.class);
+				Map<String, RequestInterceptor> interceptors = feignClientFactory.getInstances("foo",
+						RequestInterceptor.class);
+				assertThat(interceptors.size()).isEqualTo(2);
+				assertThat(interceptors.get("feignAcceptGzipEncodingInterceptor"))
+					.isInstanceOf(FeignAcceptGzipEncodingInterceptor.class);
+				assertThat(interceptors.get("feignContentGzipEncodingInterceptor"))
+					.isInstanceOf(FeignContentGzipEncodingInterceptor.class);
+			});
 	}
 
 	@Test
 	void shouldNotAddInterceptorsIfFeignOkHttpClientPresent() {
 		new ApplicationContextRunner()
-				.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true",
-						"spring.cloud.openfeign.compression.request.enabled=true",
-						"spring.cloud.openfeign.okhttp.enabled=true", "spring.cloud.openfeign.httpclient.hc5.enabled")
-				.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
-						FeignContentGzipEncodingAutoConfiguration.class,
-						FeignAcceptGzipEncodingAutoConfiguration.class))
-				.run(context -> {
-					FeignClientFactory feignClientFactory = context.getBean(FeignClientFactory.class);
-					Map<String, RequestInterceptor> interceptors = feignClientFactory.getInstances("foo",
-							RequestInterceptor.class);
-					assertThat(interceptors).isEmpty();
-				});
+			.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true",
+					"spring.cloud.openfeign.compression.request.enabled=true",
+					"spring.cloud.openfeign.okhttp.enabled=true", "spring.cloud.openfeign.httpclient.hc5.enabled")
+			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
+					FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class))
+			.run(context -> {
+				FeignClientFactory feignClientFactory = context.getBean(FeignClientFactory.class);
+				Map<String, RequestInterceptor> interceptors = feignClientFactory.getInstances("foo",
+						RequestInterceptor.class);
+				assertThat(interceptors).isEmpty();
+			});
 	}
 
 	@Configuration

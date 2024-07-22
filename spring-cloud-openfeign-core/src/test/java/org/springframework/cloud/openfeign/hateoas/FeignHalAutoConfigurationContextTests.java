@@ -42,10 +42,10 @@ class FeignHalAutoConfigurationContextTests {
 	@BeforeEach
 	void setUp() {
 		contextRunner = new WebApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(JacksonAutoConfiguration.class,
-						HttpMessageConvertersAutoConfiguration.class, HypermediaAutoConfiguration.class,
-						RepositoryRestMvcAutoConfiguration.class, FeignHalAutoConfiguration.class))
-				.withPropertyValues("debug=true");
+			.withConfiguration(AutoConfigurations.of(JacksonAutoConfiguration.class,
+					HttpMessageConvertersAutoConfiguration.class, HypermediaAutoConfiguration.class,
+					RepositoryRestMvcAutoConfiguration.class, FeignHalAutoConfiguration.class))
+			.withPropertyValues("debug=true");
 	}
 
 	@Test
@@ -53,14 +53,14 @@ class FeignHalAutoConfigurationContextTests {
 		FilteredClassLoader filteredClassLoader = new FilteredClassLoader(RepositoryRestMvcConfiguration.class,
 				WebConverters.class);
 		contextRunner.withClassLoader(filteredClassLoader)
-				.run(context -> assertThat(context).doesNotHaveBean("webConvertersCustomizer"));
+			.run(context -> assertThat(context).doesNotHaveBean("webConvertersCustomizer"));
 	}
 
 	@Test
 	void shouldLoadWebConvertersCustomizer() {
 		FilteredClassLoader filteredClassLoader = new FilteredClassLoader(RepositoryRestMvcConfiguration.class);
 		contextRunner.withClassLoader(filteredClassLoader)
-				.run(context -> assertThat(context).hasBean("webConvertersCustomizer"));
+			.run(context -> assertThat(context).hasBean("webConvertersCustomizer"));
 	}
 
 }

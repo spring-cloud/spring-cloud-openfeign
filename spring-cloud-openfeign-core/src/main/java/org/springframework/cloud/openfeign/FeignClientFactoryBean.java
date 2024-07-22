@@ -155,8 +155,10 @@ public class FeignClientFactoryBean
 				FeignBuilderCustomizer.class);
 
 		if (customizerMap != null) {
-			customizerMap.values().stream().sorted(AnnotationAwareOrderComparator.INSTANCE)
-					.forEach(feignBuilderCustomizer -> feignBuilderCustomizer.customize(builder));
+			customizerMap.values()
+				.stream()
+				.sorted(AnnotationAwareOrderComparator.INSTANCE)
+				.forEach(feignBuilderCustomizer -> feignBuilderCustomizer.customize(builder));
 		}
 		additionalCustomizers.forEach(customizer -> customizer.customize(builder));
 	}
@@ -244,8 +246,10 @@ public class FeignClientFactoryBean
 
 		Map<String, Capability> capabilities = getInheritedAwareInstances(context, Capability.class);
 		if (capabilities != null) {
-			capabilities.values().stream().sorted(AnnotationAwareOrderComparator.INSTANCE)
-					.forEach(builder::addCapability);
+			capabilities.values()
+				.stream()
+				.sorted(AnnotationAwareOrderComparator.INSTANCE)
+				.forEach(builder::addCapability);
 		}
 	}
 
@@ -334,7 +338,7 @@ public class FeignClientFactoryBean
 		Map<String, Collection<String>> defaultRequestHeaders = new HashMap<>();
 		if (defaultConfig != null) {
 			defaultConfig.getDefaultRequestHeaders()
-					.forEach((k, v) -> defaultRequestHeaders.put(k, new ArrayList<>(v)));
+				.forEach((k, v) -> defaultRequestHeaders.put(k, new ArrayList<>(v)));
 		}
 		if (clientConfig != null) {
 			clientConfig.getDefaultRequestHeaders().forEach((k, v) -> defaultRequestHeaders.put(k, new ArrayList<>(v)));
@@ -346,11 +350,11 @@ public class FeignClientFactoryBean
 		Map<String, Collection<String>> defaultQueryParameters = new HashMap<>();
 		if (defaultConfig != null) {
 			defaultConfig.getDefaultQueryParameters()
-					.forEach((k, v) -> defaultQueryParameters.put(k, new ArrayList<>(v)));
+				.forEach((k, v) -> defaultQueryParameters.put(k, new ArrayList<>(v)));
 		}
 		if (clientConfig != null) {
 			clientConfig.getDefaultQueryParameters()
-					.forEach((k, v) -> defaultQueryParameters.put(k, new ArrayList<>(v)));
+				.forEach((k, v) -> defaultQueryParameters.put(k, new ArrayList<>(v)));
 		}
 		if (!defaultQueryParameters.isEmpty()) {
 			addDefaultQueryParams(defaultQueryParameters, builder);
@@ -686,15 +690,48 @@ public class FeignClientFactoryBean
 
 	@Override
 	public String toString() {
-		return new StringBuilder("FeignClientFactoryBean{").append("type=").append(type).append(", ").append("name='")
-				.append(name).append("', ").append("url='").append(url).append("', ").append("path='").append(path)
-				.append("', ").append("dismiss404=").append(dismiss404).append(", ").append("inheritParentContext=")
-				.append(inheritParentContext).append(", ").append("applicationContext=").append(applicationContext)
-				.append(", ").append("beanFactory=").append(beanFactory).append(", ").append("fallback=")
-				.append(fallback).append(", ").append("fallbackFactory=").append(fallbackFactory).append("}")
-				.append("connectTimeoutMillis=").append(connectTimeoutMillis).append("}").append("readTimeoutMillis=")
-				.append(readTimeoutMillis).append("}").append("followRedirects=").append(followRedirects)
-				.append("refreshableClient=").append(refreshableClient).append("}").toString();
+		return new StringBuilder("FeignClientFactoryBean{").append("type=")
+			.append(type)
+			.append(", ")
+			.append("name='")
+			.append(name)
+			.append("', ")
+			.append("url='")
+			.append(url)
+			.append("', ")
+			.append("path='")
+			.append(path)
+			.append("', ")
+			.append("dismiss404=")
+			.append(dismiss404)
+			.append(", ")
+			.append("inheritParentContext=")
+			.append(inheritParentContext)
+			.append(", ")
+			.append("applicationContext=")
+			.append(applicationContext)
+			.append(", ")
+			.append("beanFactory=")
+			.append(beanFactory)
+			.append(", ")
+			.append("fallback=")
+			.append(fallback)
+			.append(", ")
+			.append("fallbackFactory=")
+			.append(fallbackFactory)
+			.append("}")
+			.append("connectTimeoutMillis=")
+			.append(connectTimeoutMillis)
+			.append("}")
+			.append("readTimeoutMillis=")
+			.append(readTimeoutMillis)
+			.append("}")
+			.append("followRedirects=")
+			.append(followRedirects)
+			.append("refreshableClient=")
+			.append(refreshableClient)
+			.append("}")
+			.toString();
 	}
 
 	@Override

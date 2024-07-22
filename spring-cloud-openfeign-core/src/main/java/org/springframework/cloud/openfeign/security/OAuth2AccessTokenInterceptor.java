@@ -127,7 +127,8 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 		}
 
 		OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId(clientRegistrationId)
-				.principal(principal).build();
+			.principal(principal)
+			.build();
 		OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
 		return Optional.ofNullable(authorizedClient).map(OAuth2AuthorizedClient::getAccessToken).orElse(null);
 	}

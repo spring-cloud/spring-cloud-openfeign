@@ -60,7 +60,8 @@ class FeignClientFactoryTest {
 		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("empty", null, EmptyConfiguration.class)));
 
 		Collection<RequestInterceptor> interceptors = feignClientFactory
-				.getInstancesWithoutAncestors("empty", RequestInterceptor.class).values();
+			.getInstancesWithoutAncestors("empty", RequestInterceptor.class)
+			.values();
 
 		assertThat(interceptors).as("Interceptors is not empty").isEmpty();
 	}
@@ -89,7 +90,8 @@ class FeignClientFactoryTest {
 		feignClientFactory.setConfigurations(Lists.newArrayList(getSpec("demo", null, DemoConfiguration.class)));
 
 		Collection<RequestInterceptor> interceptors = feignClientFactory
-				.getInstancesWithoutAncestors("demo", RequestInterceptor.class).values();
+			.getInstancesWithoutAncestors("demo", RequestInterceptor.class)
+			.values();
 
 		assertThat(interceptors.size()).isEqualTo(1);
 	}

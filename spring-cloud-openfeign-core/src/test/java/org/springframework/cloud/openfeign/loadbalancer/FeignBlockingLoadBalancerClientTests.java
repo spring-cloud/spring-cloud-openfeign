@@ -108,8 +108,8 @@ class FeignBlockingLoadBalancerClientTests {
 		Request request = testRequest("");
 
 		assertThatIllegalStateException()
-				.isThrownBy(() -> feignBlockingLoadBalancerClient.execute(request, new Request.Options()))
-				.withMessage("Request URI does not contain a valid hostname: http:///path");
+			.isThrownBy(() -> feignBlockingLoadBalancerClient.execute(request, new Request.Options()))
+			.withMessage("Request URI does not contain a valid hostname: http:///path");
 	}
 
 	@Test
@@ -130,7 +130,7 @@ class FeignBlockingLoadBalancerClientTests {
 		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test", "test-host", 8888, false);
 		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(serviceInstance);
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
-				.thenReturn(URI.create(url));
+			.thenReturn(URI.create(url));
 
 		feignBlockingLoadBalancerClient.execute(request, options);
 
@@ -156,30 +156,30 @@ class FeignBlockingLoadBalancerClientTests {
 		ServiceInstance serviceInstance = new DefaultServiceInstance("test-1", "test", "test-host", 8888, false);
 		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(serviceInstance);
 		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
-				.thenReturn(URI.create(url));
+			.thenReturn(URI.create(url));
 		String callbackTestHint = "callbackTestHint";
 		loadBalancerProperties.getHint().put("test", callbackTestHint);
 		Map<String, LoadBalancerLifecycle> loadBalancerLifecycleBeans = new HashMap<>();
 		loadBalancerLifecycleBeans.put("loadBalancerLifecycle", new TestLoadBalancerLifecycle());
 		loadBalancerLifecycleBeans.put("anotherLoadBalancerLifecycle", new AnotherLoadBalancerLifecycle());
 		when(loadBalancerClientFactory.getInstances("test", LoadBalancerLifecycle.class))
-				.thenReturn(loadBalancerLifecycleBeans);
+			.thenReturn(loadBalancerLifecycleBeans);
 
 		feignBlockingLoadBalancerClient.execute(request, options);
 
 		Collection<org.springframework.cloud.client.loadbalancer.Request<RequestDataContext>> lifecycleLogRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
-				.get("loadBalancerLifecycle")).getStartLog().values();
+			.get("loadBalancerLifecycle")).getStartLog().values();
 		Collection<org.springframework.cloud.client.loadbalancer.Request<RequestDataContext>> lifecycleLogStartedRequests = ((TestLoadBalancerLifecycle) loadBalancerLifecycleBeans
-				.get("loadBalancerLifecycle")).getStartRequestLog().values();
+			.get("loadBalancerLifecycle")).getStartRequestLog().values();
 		Collection<CompletionContext<ResponseData, ServiceInstance, RequestDataContext>> anotherLifecycleLogRequests = ((AnotherLoadBalancerLifecycle) loadBalancerLifecycleBeans
-				.get("anotherLoadBalancerLifecycle")).getCompleteLog().values();
+			.get("anotherLoadBalancerLifecycle")).getCompleteLog().values();
 		assertThat(lifecycleLogRequests).extracting(lbRequest -> lbRequest.getContext().getHint())
-				.contains(callbackTestHint);
+			.contains(callbackTestHint);
 		assertThat(lifecycleLogStartedRequests).extracting(lbRequest -> lbRequest.getContext().getHint())
-				.contains(callbackTestHint);
+			.contains(callbackTestHint);
 		assertThat(anotherLifecycleLogRequests)
-				.extracting(completionContext -> completionContext.getClientResponse().getHttpStatus())
-				.contains(HttpStatus.OK);
+			.extracting(completionContext -> completionContext.getClientResponse().getHttpStatus())
+			.contains(HttpStatus.OK);
 	}
 
 	private String read(Response response) throws IOException {

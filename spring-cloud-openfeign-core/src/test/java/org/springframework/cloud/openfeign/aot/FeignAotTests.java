@@ -77,10 +77,10 @@ public class FeignAotTests {
 	void shouldStartFeignChildContextsFromAotContributions(CapturedOutput output) {
 		WebApplicationContextRunner contextRunner = new WebApplicationContextRunner(
 				AnnotationConfigServletWebApplicationContext::new)
-						.withConfiguration(AutoConfigurations.of(ServletWebServerFactoryAutoConfiguration.class,
-								FeignAutoConfiguration.class))
-						.withConfiguration(UserConfigurations.of(TestFeignConfiguration.class))
-						.withPropertyValues("logging.level.org.springframework.cloud=DEBUG");
+			.withConfiguration(
+					AutoConfigurations.of(ServletWebServerFactoryAutoConfiguration.class, FeignAutoConfiguration.class))
+			.withConfiguration(UserConfigurations.of(TestFeignConfiguration.class))
+			.withPropertyValues("logging.level.org.springframework.cloud=DEBUG");
 		contextRunner.prepare(context -> {
 			TestGenerationContext generationContext = new TestGenerationContext(TestTarget.class);
 			ClassName className = new ApplicationContextAotGenerator().processAheadOfTime(
@@ -90,14 +90,14 @@ public class FeignAotTests {
 			compiler.with(generationContext).compile(compiled -> {
 				ServletWebServerApplicationContext freshApplicationContext = new ServletWebServerApplicationContext();
 				ApplicationContextInitializer<GenericApplicationContext> initializer = compiled
-						.getInstance(ApplicationContextInitializer.class, className.toString());
+					.getInstance(ApplicationContextInitializer.class, className.toString());
 				initializer.initialize(freshApplicationContext);
 				assertThat(output).contains("Refreshing FeignClientFactory-test-with-config",
 						"Refreshing FeignClientFactory-test");
 				assertThat(output).doesNotContain("Instantiating bean from Test custom config",
 						"Instantiating bean from default custom config");
 				TestPropertyValues.of(AotDetector.AOT_ENABLED + "=true")
-						.applyToSystemProperties(freshApplicationContext::refresh);
+					.applyToSystemProperties(freshApplicationContext::refresh);
 				assertThat(output).contains("Instantiating bean from Test custom config",
 						"Instantiating bean from default custom config");
 				assertThat(freshApplicationContext.getBean(TestFeignClient.class)).isNotNull();

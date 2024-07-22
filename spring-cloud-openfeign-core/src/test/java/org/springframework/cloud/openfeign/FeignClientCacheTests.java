@@ -60,13 +60,13 @@ public class FeignClientCacheTests {
 	@Test
 	void interceptedCallsReal() {
 		assertThatExceptionOfType(RetryableException.class).isThrownBy(foo::getWithCache)
-				.withRootCauseInstanceOf(UnknownHostException.class);
+			.withRootCauseInstanceOf(UnknownHostException.class);
 	}
 
 	@Test
 	void nonInterceptedCallsReal() {
 		assertThatExceptionOfType(RetryableException.class).isThrownBy(foo::getWithoutCache)
-				.withRootCauseInstanceOf(UnknownHostException.class);
+			.withRootCauseInstanceOf(UnknownHostException.class);
 	}
 
 	@Nested
@@ -87,7 +87,7 @@ public class FeignClientCacheTests {
 		@Test
 		void nonInterceptedCallsReal() {
 			assertThatExceptionOfType(RetryableException.class).isThrownBy(foo::getWithoutCache)
-					.withRootCauseInstanceOf(UnknownHostException.class);
+				.withRootCauseInstanceOf(UnknownHostException.class);
 		}
 
 	}

@@ -58,7 +58,7 @@ class FeignLoadBalancerAutoConfigurationTests {
 				"spring.cloud.openfeign.httpclient.okhttp.read-timeout=9s");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		Map<String, FeignBlockingLoadBalancerClient> beans = context
-				.getBeansOfType(FeignBlockingLoadBalancerClient.class);
+			.getBeansOfType(FeignBlockingLoadBalancerClient.class);
 		assertThat(beans).as("Missing bean of type %s", OkHttpClient.class).hasSize(1);
 		Client client = beans.get("feignClient").getDelegate();
 		assertThat(client).isInstanceOf(OkHttpClient.class);
@@ -74,7 +74,7 @@ class FeignLoadBalancerAutoConfigurationTests {
 				"spring.cloud.openfeign.http2client.enabled=true", "spring.cloud.loadbalancer.retry.enabled=false");
 		assertThatOneBeanPresent(context, BlockingLoadBalancerClient.class);
 		Map<String, FeignBlockingLoadBalancerClient> beans = context
-				.getBeansOfType(FeignBlockingLoadBalancerClient.class);
+			.getBeansOfType(FeignBlockingLoadBalancerClient.class);
 		assertThat(beans).as("Missing bean of type %s", Http2Client.class).hasSize(1);
 		Client client = beans.get("feignClient").getDelegate();
 		assertThat(client).isInstanceOf(Http2Client.class);
@@ -130,10 +130,11 @@ class FeignLoadBalancerAutoConfigurationTests {
 	}
 
 	private ConfigurableApplicationContext initContext(String... properties) {
-		return new SpringApplicationBuilder().web(WebApplicationType.NONE).properties(properties)
-				.sources(LoadBalancerAutoConfiguration.class, BlockingLoadBalancerClientAutoConfiguration.class,
-						FeignLoadBalancerAutoConfiguration.class, FeignAutoConfiguration.class)
-				.run();
+		return new SpringApplicationBuilder().web(WebApplicationType.NONE)
+			.properties(properties)
+			.sources(LoadBalancerAutoConfiguration.class, BlockingLoadBalancerClientAutoConfiguration.class,
+					FeignLoadBalancerAutoConfiguration.class, FeignAutoConfiguration.class)
+			.run();
 	}
 
 	private void assertThatOneBeanPresent(ConfigurableApplicationContext context, Class<?> beanClass) {
@@ -143,17 +144,17 @@ class FeignLoadBalancerAutoConfigurationTests {
 
 	private void assertLoadBalanced(ConfigurableApplicationContext context, Class delegateClass) {
 		Map<String, FeignBlockingLoadBalancerClient> beans = context
-				.getBeansOfType(FeignBlockingLoadBalancerClient.class);
+			.getBeansOfType(FeignBlockingLoadBalancerClient.class);
 		assertThat(beans).as("Missing bean of type %s", delegateClass).hasSize(1);
 		assertThat(beans.get("feignClient").getDelegate()).isInstanceOf(delegateClass);
 	}
 
 	private void assertLoadBalancedWithRetries(ConfigurableApplicationContext context, Class delegateClass) {
 		Map<String, RetryableFeignBlockingLoadBalancerClient> retryableBeans = context
-				.getBeansOfType(RetryableFeignBlockingLoadBalancerClient.class);
+			.getBeansOfType(RetryableFeignBlockingLoadBalancerClient.class);
 		assertThat(retryableBeans).hasSize(1);
 		Map<String, FeignBlockingLoadBalancerClient> beans = context
-				.getBeansOfType(FeignBlockingLoadBalancerClient.class);
+			.getBeansOfType(FeignBlockingLoadBalancerClient.class);
 		assertThat(beans).isEmpty();
 		assertThat(retryableBeans.get("feignRetryClient").getDelegate()).isInstanceOf(delegateClass);
 	}

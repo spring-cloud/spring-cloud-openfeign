@@ -58,8 +58,8 @@ class FeignClientValidationTests {
 	@Test
 	void testNotLegalHostname() {
 		assertThatExceptionOfType(IllegalStateException.class)
-				.isThrownBy(() -> new AnnotationConfigApplicationContext(BadHostnameConfiguration.class))
-				.withMessage("Service id not legal hostname (foo_bar)");
+			.isThrownBy(() -> new AnnotationConfigApplicationContext(BadHostnameConfiguration.class))
+			.withMessage("Service id not legal hostname (foo_bar)");
 	}
 
 	@Configuration(proxyBeanMethods = false)

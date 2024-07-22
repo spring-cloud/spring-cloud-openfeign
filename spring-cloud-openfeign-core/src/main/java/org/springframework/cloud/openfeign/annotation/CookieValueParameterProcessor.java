@@ -53,8 +53,12 @@ public class CookieValueParameterProcessor implements AnnotatedParameterProcesso
 		String name = cookie.value().trim();
 		checkState(emptyToNull(name) != null, "Cookie.name() was empty on parameter %s", parameterIndex);
 		context.setParameterName(name);
-		String cookieExpression = data.template().headers()
-				.getOrDefault(HttpHeaders.COOKIE, Collections.singletonList("")).stream().findFirst().orElse("");
+		String cookieExpression = data.template()
+			.headers()
+			.getOrDefault(HttpHeaders.COOKIE, Collections.singletonList(""))
+			.stream()
+			.findFirst()
+			.orElse("");
 		if (cookieExpression.length() == 0) {
 			cookieExpression = String.format("%s={%s}", name, name);
 		}

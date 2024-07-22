@@ -189,7 +189,7 @@ public final class Request extends com.google.protobuf.GeneratedMessageV3 implem
 
 	protected FieldAccessorTable internalGetFieldAccessorTable() {
 		return org.springframework.cloud.openfeign.encoding.proto.ProtobufTest.internal_static_Request_fieldAccessorTable
-				.ensureFieldAccessorsInitialized(Request.class, Request.Builder.class);
+			.ensureFieldAccessorsInitialized(Request.class, Request.Builder.class);
 	}
 
 	/**
@@ -352,7 +352,7 @@ public final class Request extends com.google.protobuf.GeneratedMessageV3 implem
 
 		protected FieldAccessorTable internalGetFieldAccessorTable() {
 			return org.springframework.cloud.openfeign.encoding.proto.ProtobufTest.internal_static_Request_fieldAccessorTable
-					.ensureFieldAccessorsInitialized(Request.class, Request.Builder.class);
+				.ensureFieldAccessorsInitialized(Request.class, Request.Builder.class);
 		}
 
 		private void maybeForceBuilderInitialization() {

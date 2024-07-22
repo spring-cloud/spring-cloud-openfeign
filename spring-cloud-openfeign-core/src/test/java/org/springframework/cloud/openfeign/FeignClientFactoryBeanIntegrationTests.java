@@ -69,18 +69,20 @@ class FeignClientFactoryBeanIntegrationTests {
 
 	@Test
 	void shouldProcessDefaultRequestHeadersPerClient() {
-		assertThat(testClientA.headers()).isNotNull().contains(entry("x-custom-header-2", List.of("2 from default")),
-				entry("x-custom-header", List.of("from client A")));
-		assertThat(testClientB.headers()).isNotNull().contains(entry("x-custom-header-2", List.of("2 from default")),
-				entry("x-custom-header", List.of("from client B")));
+		assertThat(testClientA.headers()).isNotNull()
+			.contains(entry("x-custom-header-2", List.of("2 from default")),
+					entry("x-custom-header", List.of("from client A")));
+		assertThat(testClientB.headers()).isNotNull()
+			.contains(entry("x-custom-header-2", List.of("2 from default")),
+					entry("x-custom-header", List.of("from client B")));
 	}
 
 	@Test
 	void shouldProcessDefaultQueryParamsPerClient() {
-		assertThat(testClientA.params()).isNotNull().contains(entry("customParam2", "2 from default"),
-				entry("customParam1", "from client A"));
-		assertThat(testClientB.params()).isNotNull().contains(entry("customParam2", "2 from default"),
-				entry("customParam1", "from client B"));
+		assertThat(testClientA.params()).isNotNull()
+			.contains(entry("customParam2", "2 from default"), entry("customParam1", "from client A"));
+		assertThat(testClientB.params()).isNotNull()
+			.contains(entry("customParam2", "2 from default"), entry("customParam1", "from client B"));
 	}
 
 	@Test

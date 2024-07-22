@@ -43,42 +43,44 @@ class FeignClientsMicrometerAutoConfigurationTests {
 	@Test
 	void shouldProvideMicrometerObservationCapability() {
 		contextRunner.run(context -> assertThat(context).hasSingleBean(MicrometerObservationCapability.class)
-				.doesNotHaveBean(MicrometerCapability.class));
+			.doesNotHaveBean(MicrometerCapability.class));
 	}
 
 	@Test
 	void shouldNotProvideMicrometerObservationCapabilityIfFeatureIsDisabled() {
 		contextRunner.withPropertyValues("spring.cloud.openfeign.micrometer.enabled=false")
-				.run(context -> assertThat(context).doesNotHaveBean(MicrometerObservationCapability.class)
-						.doesNotHaveBean(MicrometerCapability.class));
+			.run(context -> assertThat(context).doesNotHaveBean(MicrometerObservationCapability.class)
+				.doesNotHaveBean(MicrometerCapability.class));
 	}
 
 	@Test
 	void shouldProvideMicrometerCapabilityIfObservationRegistryIsMissing() {
 		new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(SimpleMetricsExportAutoConfiguration.class,
-						MetricsAutoConfiguration.class, FeignClientsConfiguration.class))
-				.run(context -> assertThat(context).doesNotHaveBean(MicrometerObservationCapability.class)
-						.hasSingleBean(MicrometerCapability.class));
+			.withConfiguration(AutoConfigurations.of(SimpleMetricsExportAutoConfiguration.class,
+					MetricsAutoConfiguration.class, FeignClientsConfiguration.class))
+			.run(context -> assertThat(context).doesNotHaveBean(MicrometerObservationCapability.class)
+				.hasSingleBean(MicrometerCapability.class));
 	}
 
 	@Test
 	void shouldNotProvideMicrometerCapabilitiesIfFeignMicrometerSupportIsMissing() {
-		contextRunner.withClassLoader(new FilteredClassLoader("feign.micrometer")).run(context -> assertThat(context)
-				.doesNotHaveBean(MicrometerObservationCapability.class).doesNotHaveBean(MicrometerCapability.class));
+		contextRunner.withClassLoader(new FilteredClassLoader("feign.micrometer"))
+			.run(context -> assertThat(context).doesNotHaveBean(MicrometerObservationCapability.class)
+				.doesNotHaveBean(MicrometerCapability.class));
 	}
 
 	@Test
 	void shouldNotProvideMicrometerCapabilitiesIfMicrometerSupportIsMissing() {
-		contextRunner.withClassLoader(new FilteredClassLoader("io.micrometer")).run(context -> assertThat(context)
-				.doesNotHaveBean(MicrometerObservationCapability.class).doesNotHaveBean(MicrometerCapability.class));
+		contextRunner.withClassLoader(new FilteredClassLoader("io.micrometer"))
+			.run(context -> assertThat(context).doesNotHaveBean(MicrometerObservationCapability.class)
+				.doesNotHaveBean(MicrometerCapability.class));
 	}
 
 	@Test
 	void shouldNotProvideMicrometerCapabilitiesIfBeansAreMissing() {
 		new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(FeignClientsConfiguration.class))
-				.run(context -> assertThat(context).doesNotHaveBean(MicrometerObservationCapability.class)
-						.doesNotHaveBean(MicrometerCapability.class));
+			.run(context -> assertThat(context).doesNotHaveBean(MicrometerObservationCapability.class)
+				.doesNotHaveBean(MicrometerCapability.class));
 	}
 
 }

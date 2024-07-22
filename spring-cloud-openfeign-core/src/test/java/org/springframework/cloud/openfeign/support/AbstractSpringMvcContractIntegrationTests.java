@@ -58,8 +58,13 @@ public class AbstractSpringMvcContractIntegrationTests {
 	}
 
 	protected String getUrlQueryParam(Response response) {
-		return response.request().requestTemplate().queries().get("url").stream().findFirst()
-				.orElseThrow(IllegalStateException::new);
+		return response.request()
+			.requestTemplate()
+			.queries()
+			.get("url")
+			.stream()
+			.findFirst()
+			.orElseThrow(IllegalStateException::new);
 	}
 
 	@FeignClient(name = "test", url = "http://localhost:${server.port}/",

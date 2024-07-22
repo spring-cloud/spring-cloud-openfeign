@@ -44,12 +44,13 @@ class FeignOkHttpConfigurationTests {
 	@BeforeEach
 	void setUp() {
 		this.context = new SpringApplicationBuilder()
-				.properties("debug=true", "spring.cloud.openfeign.httpclient.disableSslValidation=true",
-						"spring.cloud.openfeign.okhttp.enabled=true",
-						"spring.cloud.openfeign.httpclient.hc5.enabled=false",
-						"spring.cloud.openfeign.httpclient.okhttp.read-timeout=9s",
-						"spring.cloud.openfeign.httpclient.okhttp.protocols=H2_PRIOR_KNOWLEDGE")
-				.web(WebApplicationType.NONE).sources(FeignAutoConfiguration.class).run();
+			.properties("debug=true", "spring.cloud.openfeign.httpclient.disableSslValidation=true",
+					"spring.cloud.openfeign.okhttp.enabled=true", "spring.cloud.openfeign.httpclient.hc5.enabled=false",
+					"spring.cloud.openfeign.httpclient.okhttp.read-timeout=9s",
+					"spring.cloud.openfeign.httpclient.okhttp.protocols=H2_PRIOR_KNOWLEDGE")
+			.web(WebApplicationType.NONE)
+			.sources(FeignAutoConfiguration.class)
+			.run();
 	}
 
 	@AfterEach
@@ -64,7 +65,7 @@ class FeignOkHttpConfigurationTests {
 		OkHttpClient httpClient = context.getBean(OkHttpClient.class);
 		HostnameVerifier hostnameVerifier = (HostnameVerifier) this.getField(httpClient, "hostnameVerifier");
 		assertThat(hostnameVerifier instanceof FeignAutoConfiguration.OkHttpFeignConfiguration.TrustAllHostnames)
-				.isTrue();
+			.isTrue();
 	}
 
 	@Test

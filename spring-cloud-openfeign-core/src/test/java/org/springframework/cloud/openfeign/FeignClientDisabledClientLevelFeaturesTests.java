@@ -71,7 +71,7 @@ class FeignClientDisabledClientLevelFeaturesTests {
 		Map<String, Capability> barCapabilities = context.getInstances("bar", Capability.class);
 		assertThat(barCapabilities).hasSize(2);
 		assertThat(barCapabilities.get("micrometerObservationCapability"))
-				.isExactlyInstanceOf(MicrometerObservationCapability.class);
+			.isExactlyInstanceOf(MicrometerObservationCapability.class);
 		assertThat(barCapabilities.get("noOpCapability")).isExactlyInstanceOf(NoOpCapability.class);
 	}
 
