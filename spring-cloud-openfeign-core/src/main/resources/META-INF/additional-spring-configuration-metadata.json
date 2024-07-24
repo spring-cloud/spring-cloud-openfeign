@@ -24,7 +24,7 @@
 			"name": "spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled",
 			"type": "java.lang.Boolean",
 			"description": "If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.",
-			"defaultValue": "false"
+			"defaultValue": "true"
 		},
 		{
 			"name": "spring.cloud.openfeign.httpclient.hc5.enabled",
