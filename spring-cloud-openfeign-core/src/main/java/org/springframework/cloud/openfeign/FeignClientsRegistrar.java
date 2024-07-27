@@ -117,6 +117,9 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 			if (!url.contains("://")) {
 				url = "http://" + url;
 			}
+			if (url.endsWith("/")) {
+				url = url.substring(0, url.length() - 1);
+			}
 			try {
 				new URL(url);
 			}
