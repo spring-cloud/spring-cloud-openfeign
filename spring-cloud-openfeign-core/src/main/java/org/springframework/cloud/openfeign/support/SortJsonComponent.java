@@ -39,6 +39,7 @@ import org.springframework.data.domain.Sort;
  *
  * @author Can Bezmen
  * @author Olga Maciaszek-Sharma
+ * @author Gokalp Kuscu
  */
 public class SortJsonComponent {
 
@@ -90,8 +91,23 @@ public class SortJsonComponent {
 		private static Sort toSort(ArrayNode arrayNode) {
 			List<Sort.Order> orders = new ArrayList<>();
 			for (JsonNode jsonNode : arrayNode) {
-				Sort.Order order = new Sort.Order(Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
-						jsonNode.get("property").textValue());
+				Sort.Order order;
+				// there is no way to construct without null handling
+				if ((jsonNode.has("ignoreCase") && jsonNode.get("ignoreCase").isBoolean())
+						&& jsonNode.has("nullHandling") && jsonNode.get("nullHandling").isTextual()) {
+
+					boolean ignoreCase = jsonNode.get("ignoreCase").asBoolean();
+					String nullHandlingValue = jsonNode.get("nullHandling").textValue();
+
+					order = new Sort.Order(Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
+							jsonNode.get("property").textValue(), ignoreCase,
+							Sort.NullHandling.valueOf(nullHandlingValue));
+				}
+				else {
+					// backward compatibility
+					order = new Sort.Order(Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
+							jsonNode.get("property").textValue());
+				}
 				orders.add(order);
 			}
 			return Sort.by(orders);
