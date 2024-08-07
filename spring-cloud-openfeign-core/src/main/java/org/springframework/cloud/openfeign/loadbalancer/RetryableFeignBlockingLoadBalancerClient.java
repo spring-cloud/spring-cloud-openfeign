@@ -258,6 +258,12 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			}
 
 			@Override
+			public Map<String, Object> getAttributes() {
+				Map<String, Object> attributes = new HashMap<>(request.requestTemplate().queries());
+				return attributes;
+			}
+
+			@Override
 			public HttpHeaders getHeaders() {
 				Map<String, List<String>> headers = new HashMap<>();
 				Map<String, Collection<String>> feignHeaders = request.headers();
