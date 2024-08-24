@@ -84,19 +84,19 @@
 |spring.cloud.openfeign.httpclient.disable-ssl-validation | `+++false+++` | 
 |spring.cloud.openfeign.httpclient.follow-redirects | `+++true+++` | 
 |spring.cloud.openfeign.httpclient.hc5.connection-request-timeout | `+++3+++` | Default value for connection request timeout.
-|spring.cloud.openfeign.httpclient.hc5.connection-request-timeout-unit |  | Default value for connection request timeout unit.
+|spring.cloud.openfeign.httpclient.hc5.connection-request-timeout-unit | `+++minutes+++` | Default value for connection request timeout unit.
 |spring.cloud.openfeign.httpclient.hc5.enabled | `+++true+++` | Enables the use of the Apache HTTP Client 5 by Feign.
-|spring.cloud.openfeign.httpclient.hc5.pool-concurrency-policy |  | Pool concurrency policies.
-|spring.cloud.openfeign.httpclient.hc5.pool-reuse-policy |  | Pool connection re-use policies.
+|spring.cloud.openfeign.httpclient.hc5.pool-concurrency-policy | `+++strict+++` | Pool concurrency policies.
+|spring.cloud.openfeign.httpclient.hc5.pool-reuse-policy | `+++fifo+++` | Pool connection re-use policies.
 |spring.cloud.openfeign.httpclient.hc5.socket-timeout | `+++5+++` | Default value for socket timeout.
-|spring.cloud.openfeign.httpclient.hc5.socket-timeout-unit |  | Default value for socket timeout unit.
+|spring.cloud.openfeign.httpclient.hc5.socket-timeout-unit | `+++seconds+++` | Default value for socket timeout unit.
 |spring.cloud.openfeign.httpclient.http2.version | `+++HTTP_2+++` | Configure the protocols used by this client to communicate with remote servers. Uses {@link String} value of {@link HttpClient.Version}.
 |spring.cloud.openfeign.httpclient.max-connections | `+++200+++` | 
 |spring.cloud.openfeign.httpclient.max-connections-per-route | `+++50+++` | 
 |spring.cloud.openfeign.httpclient.ok-http.protocols |  | Configure the protocols used by this client to communicate with remote servers. Uses {@link String} values of {@link Protocol}.
 |spring.cloud.openfeign.httpclient.ok-http.read-timeout | `+++60s+++` | {@link OkHttpClient} read timeout; defaults to 60 seconds.
 |spring.cloud.openfeign.httpclient.time-to-live | `+++900+++` | 
-|spring.cloud.openfeign.httpclient.time-to-live-unit |  | 
+|spring.cloud.openfeign.httpclient.time-to-live-unit | `+++seconds+++` | 
 |spring.cloud.openfeign.lazy-attributes-resolution | `+++false+++` | Switches @FeignClient attributes resolution mode to lazy.
 |spring.cloud.openfeign.micrometer.enabled | `+++true+++` | Enables Micrometer capabilities for Feign.
 |spring.cloud.openfeign.oauth2.clientRegistrationId |  | Provides a clientId to be used with OAuth2.
