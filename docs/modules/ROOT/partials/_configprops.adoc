@@ -65,7 +65,7 @@
 |spring.cloud.loadbalancer.subset.size | `+++100+++` | Max subset size of deterministic subsetting.
 |spring.cloud.loadbalancer.x-forwarded.enabled | `+++false+++` | To Enable X-Forwarded Headers.
 |spring.cloud.openfeign.autoconfiguration.jackson.enabled | `+++true+++` | If true, PageJacksonModule and SortJacksonModule bean will be provided for Jackson page decoding.
-|spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled | `+++false+++` | If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.
+|spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled | `+++true+++` | If true, Circuit Breaker ids will only contain alphanumeric characters to allow for configuration via configuration properties.
 |spring.cloud.openfeign.circuitbreaker.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker.
 |spring.cloud.openfeign.circuitbreaker.group.enabled | `+++false+++` | If true, an OpenFeign client will be wrapped with a Spring Cloud CircuitBreaker circuit breaker with group.
 |spring.cloud.openfeign.client.config |  | 
