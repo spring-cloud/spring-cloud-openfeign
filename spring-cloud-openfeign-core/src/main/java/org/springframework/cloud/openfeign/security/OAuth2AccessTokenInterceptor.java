@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 the original author or authors.
+ * Copyright 2015-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Dangzhicairang(小水牛)
  * @author Olga Maciaszek-Sharma
+ * @author Philipp Meier
  * @since 4.0.0
  */
 public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
@@ -122,7 +123,7 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 		}
 
 		Authentication principal = SecurityContextHolder.getContext().getAuthentication();
-		if (principal == null) {
+		if (principal == null || principal.getName() == null) {
 			principal = ANONYMOUS_AUTHENTICATION;
 		}
 
