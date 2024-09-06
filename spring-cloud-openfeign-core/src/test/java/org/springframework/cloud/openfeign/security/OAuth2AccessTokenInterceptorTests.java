@@ -81,8 +81,7 @@ class OAuth2AccessTokenInterceptorTests {
 	@Test
 	void shouldAcquireValidToken() {
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientManager);
-		when(mockOAuth2AuthorizedClientManager
-			.authorize(argThat(matchAuthorizeRequest("test"))))
+		when(mockOAuth2AuthorizedClientManager.authorize(argThat(matchAuthorizeRequest("test"))))
 			.thenReturn(validTokenOAuth2AuthorizedClient());
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
@@ -92,8 +91,7 @@ class OAuth2AccessTokenInterceptorTests {
 
 	@Test
 	void shouldAcquireValidTokenFromServiceId() {
-		when(mockOAuth2AuthorizedClientManager
-			.authorize(argThat(matchAuthorizeRequest("test"))))
+		when(mockOAuth2AuthorizedClientManager.authorize(argThat(matchAuthorizeRequest("test"))))
 			.thenReturn(validTokenOAuth2AuthorizedClient());
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientManager);
 
@@ -149,7 +147,8 @@ class OAuth2AccessTokenInterceptorTests {
 		return matchAuthorizeRequestWithPrincipalName(clientRegistrationId, "anonymousUser");
 	}
 
-	private ArgumentMatcher<OAuth2AuthorizeRequest> matchAuthorizeRequestWithPrincipalName(String clientRegistrationId, String principalName) {
+	private ArgumentMatcher<OAuth2AuthorizeRequest> matchAuthorizeRequestWithPrincipalName(String clientRegistrationId,
+			String principalName) {
 		return (OAuth2AuthorizeRequest request) -> clientRegistrationId.equals(request.getClientRegistrationId())
 				&& principalName.equals(request.getPrincipal().getName());
 	}
