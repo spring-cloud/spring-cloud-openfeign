@@ -44,9 +44,16 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 	public void apply(RequestTemplate template) {
 
 		if (requiresCompression(template)) {
-			addHeader(template, HttpEncoding.CONTENT_ENCODING_HEADER, HttpEncoding.GZIP_ENCODING,
-					HttpEncoding.DEFLATE_ENCODING);
+			addHeader(template, HttpEncoding.CONTENT_ENCODING_HEADER, getContentEncodings());
 		}
+	}
+
+	private String[] getContentEncodings() {
+		if (getProperties().getContentEncodings() != null && getProperties().getContentEncodings().length > 0) {
+			return getProperties().getContentEncodings();
+		}
+
+		return new String[] { HttpEncoding.GZIP_ENCODING, HttpEncoding.DEFLATE_ENCODING };
 	}
 
 	/**

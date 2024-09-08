@@ -25,6 +25,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * The Feign encoding properties.
  *
  * @author Jakub Narloch
+ * @author André Teigler
  */
 @ConfigurationProperties("spring.cloud.openfeign.compression.request")
 public class FeignClientEncodingProperties {
@@ -38,6 +39,11 @@ public class FeignClientEncodingProperties {
 	 * The minimum threshold content size.
 	 */
 	private int minRequestSize = 2048;
+
+	/**
+	 * The list of content encodings (applicable encodings depend on the used client).
+	 */
+	private String[] contentEncodings = new String[] { HttpEncoding.GZIP_ENCODING, HttpEncoding.DEFLATE_ENCODING };
 
 	public String[] getMimeTypes() {
 		return mimeTypes;
@@ -55,6 +61,14 @@ public class FeignClientEncodingProperties {
 		this.minRequestSize = minRequestSize;
 	}
 
+	public String[] getContentEncodings() {
+		return contentEncodings;
+	}
+
+	public void setContentEncodings(String[] contentEncodings) {
+		this.contentEncodings = contentEncodings;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -64,7 +78,8 @@ public class FeignClientEncodingProperties {
 			return false;
 		}
 		FeignClientEncodingProperties that = (FeignClientEncodingProperties) o;
-		return Arrays.equals(mimeTypes, that.mimeTypes) && Objects.equals(minRequestSize, that.minRequestSize);
+		return Arrays.equals(mimeTypes, that.mimeTypes) && Objects.equals(minRequestSize, that.minRequestSize)
+				&& Arrays.equals(contentEncodings, that.contentEncodings);
 	}
 
 	@Override
@@ -79,6 +94,9 @@ public class FeignClientEncodingProperties {
 			.append(", ")
 			.append("minRequestSize=")
 			.append(minRequestSize)
+			.append(", ")
+			.append("contentEncodings=")
+			.append(Arrays.toString(contentEncodings))
 			.append("}")
 			.toString();
 	}
