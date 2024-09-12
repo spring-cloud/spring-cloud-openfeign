@@ -22,9 +22,10 @@ import feign.RequestTemplate;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Unit tests for {@link FeignContentGzipEncodingInterceptor}
+ * Unit tests for {@link FeignContentGzipEncodingInterceptor}.
  *
  * @author André Teigler
  */
@@ -33,11 +34,9 @@ class FeignContentGzipEncodingInterceptorTests {
 	@Test
 	void shouldNotAddCompressionHeaderWhenSizeBelowThreshold() {
 		final FeignClientEncodingProperties properties = new FeignClientEncodingProperties();
-
 		final RequestTemplate template = new RequestTemplate();
 		template.header(HttpEncoding.CONTENT_LENGTH, "2047");
 		template.header(HttpEncoding.CONTENT_TYPE, "application/json");
-
 		final FeignContentGzipEncodingInterceptor interceptor = new FeignContentGzipEncodingInterceptor(properties);
 
 		interceptor.apply(template);
@@ -48,11 +47,9 @@ class FeignContentGzipEncodingInterceptorTests {
 	@Test
 	void shouldNotAddCompressionHeaderWhenSizeEqualsThreshold() {
 		final FeignClientEncodingProperties properties = new FeignClientEncodingProperties();
-
 		final RequestTemplate template = new RequestTemplate();
 		template.header(HttpEncoding.CONTENT_LENGTH, "2048");
 		template.header(HttpEncoding.CONTENT_TYPE, "application/json");
-
 		final FeignContentGzipEncodingInterceptor interceptor = new FeignContentGzipEncodingInterceptor(properties);
 
 		interceptor.apply(template);
@@ -63,11 +60,9 @@ class FeignContentGzipEncodingInterceptorTests {
 	@Test
 	void shouldAddCompressionHeaderWhenSizeAboveThreshold() {
 		final FeignClientEncodingProperties properties = new FeignClientEncodingProperties();
-
 		final RequestTemplate template = new RequestTemplate();
 		template.header(HttpEncoding.CONTENT_LENGTH, "2049");
 		template.header(HttpEncoding.CONTENT_TYPE, "application/json");
-
 		final FeignContentGzipEncodingInterceptor interceptor = new FeignContentGzipEncodingInterceptor(properties);
 
 		interceptor.apply(template);
@@ -80,11 +75,9 @@ class FeignContentGzipEncodingInterceptorTests {
 	void shouldNotAddCompressionHeaderWhenTypeMismatch() {
 		final FeignClientEncodingProperties properties = new FeignClientEncodingProperties();
 		properties.setMimeTypes(new String[] { "application/xml" });
-
 		final RequestTemplate template = new RequestTemplate();
 		template.header(HttpEncoding.CONTENT_LENGTH, "2049");
 		template.header(HttpEncoding.CONTENT_TYPE, "application/json");
-
 		final FeignContentGzipEncodingInterceptor interceptor = new FeignContentGzipEncodingInterceptor(properties);
 
 		interceptor.apply(template);
@@ -96,11 +89,9 @@ class FeignContentGzipEncodingInterceptorTests {
 	void shouldAddDefaultCompressionHeaderWhenMimeTypeNotSet() {
 		final FeignClientEncodingProperties properties = new FeignClientEncodingProperties();
 		properties.setMimeTypes(new String[] {});
-
 		final RequestTemplate template = new RequestTemplate();
 		template.header(HttpEncoding.CONTENT_LENGTH, "2049");
 		template.header(HttpEncoding.CONTENT_TYPE, "application/json");
-
 		final FeignContentGzipEncodingInterceptor interceptor = new FeignContentGzipEncodingInterceptor(properties);
 
 		interceptor.apply(template);
@@ -113,11 +104,9 @@ class FeignContentGzipEncodingInterceptorTests {
 	void shouldAddDefaultCompressionHeaderWhenNullMimeTypeSet() {
 		final FeignClientEncodingProperties properties = new FeignClientEncodingProperties();
 		properties.setMimeTypes(null);
-
 		final RequestTemplate template = new RequestTemplate();
 		template.header(HttpEncoding.CONTENT_LENGTH, "2049");
 		template.header(HttpEncoding.CONTENT_TYPE, "application/json");
-
 		final FeignContentGzipEncodingInterceptor interceptor = new FeignContentGzipEncodingInterceptor(properties);
 
 		interceptor.apply(template);
@@ -130,12 +119,9 @@ class FeignContentGzipEncodingInterceptorTests {
 	void shouldAddCustomCompressionHeader() {
 		final FeignClientEncodingProperties properties = new FeignClientEncodingProperties();
 		properties.setContentEncodingTypes(new String[] { "gzip" });
-
 		final RequestTemplate template = new RequestTemplate();
-
 		template.header(HttpEncoding.CONTENT_LENGTH, "2049");
 		template.header(HttpEncoding.CONTENT_TYPE, "application/json");
-
 		final FeignContentGzipEncodingInterceptor interceptor = new FeignContentGzipEncodingInterceptor(properties);
 
 		interceptor.apply(template);
@@ -145,37 +131,29 @@ class FeignContentGzipEncodingInterceptorTests {
 	}
 
 	@Test
-	void shouldAddDefaultCompressionHeaderWhenContentEncodingTypesAreEmpty() {
+	void shouldThrowExceptionWhenContentEncodingTypesAreEmpty() {
 		final FeignClientEncodingProperties properties = new FeignClientEncodingProperties();
 		properties.setContentEncodingTypes(new String[] {});
-
 		final RequestTemplate template = new RequestTemplate();
 		template.header(HttpEncoding.CONTENT_LENGTH, "2049");
 		template.header(HttpEncoding.CONTENT_TYPE, "application/json");
-
 		final FeignContentGzipEncodingInterceptor interceptor = new FeignContentGzipEncodingInterceptor(properties);
 
-		interceptor.apply(template);
-
-		assertThat(template.headers()).containsKey(HttpEncoding.CONTENT_ENCODING_HEADER);
-		assertThat(template.headers().get(HttpEncoding.CONTENT_ENCODING_HEADER)).isEqualTo(List.of("gzip", "deflate"));
+		assertThatThrownBy(() -> interceptor.apply(template)).isInstanceOf(IllegalStateException.class)
+			.hasMessage("Invalid ContentEncodingTypes configuration");
 	}
 
 	@Test
-	void shouldAddDefaultCompressionHeaderWhenNullContentEncodingTypes() {
+	void shouldThrowExceptionWhenNullContentEncodingTypes() {
 		final FeignClientEncodingProperties properties = new FeignClientEncodingProperties();
 		properties.setContentEncodingTypes(null);
-
 		final RequestTemplate template = new RequestTemplate();
 		template.header(HttpEncoding.CONTENT_LENGTH, "2049");
 		template.header(HttpEncoding.CONTENT_TYPE, "application/json");
-
 		final FeignContentGzipEncodingInterceptor interceptor = new FeignContentGzipEncodingInterceptor(properties);
 
-		interceptor.apply(template);
-
-		assertThat(template.headers()).containsKey(HttpEncoding.CONTENT_ENCODING_HEADER);
-		assertThat(template.headers().get(HttpEncoding.CONTENT_ENCODING_HEADER)).isEqualTo(List.of("gzip", "deflate"));
+		assertThatThrownBy(() -> interceptor.apply(template)).isInstanceOf(IllegalStateException.class)
+			.hasMessage("Invalid ContentEncodingTypes configuration");
 	}
 
 }
