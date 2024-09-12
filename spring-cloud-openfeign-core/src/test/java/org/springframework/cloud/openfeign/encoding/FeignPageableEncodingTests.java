@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -286,7 +286,7 @@ class FeignPageableEncodingTests {
 			Sort.Order order = optionalOrder.get();
 			assertThat(order.getDirection()).isEqualTo(Sort.Direction.ASC);
 			assertThat(order.getProperty()).isEqualTo("anySorting");
-			assertThat(order.isIgnoreCase()).as("isIgnoreCase has not expected value.").isEqualTo(true);
+			assertThat(order.isIgnoreCase()).as("isIgnoreCase does not have expected value").isEqualTo(true);
 			assertThat(order.getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
 		}
 	}
@@ -359,13 +359,13 @@ class FeignPageableEncodingTests {
 		Sort.Order firstOrder = orderList.get(0);
 		assertThat(firstOrder.getDirection()).isEqualTo(Sort.Direction.DESC);
 		assertThat(firstOrder.getProperty()).isEqualTo("anySorting1");
-		assertThat(firstOrder.isIgnoreCase()).as("isIgnoreCase has not expected value.").isEqualTo(true);
+		assertThat(firstOrder.isIgnoreCase()).as("isIgnoreCase does not have expected value").isEqualTo(true);
 		assertThat(firstOrder.getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
 
 		Sort.Order secondOrder = orderList.get(1);
 		assertThat(secondOrder.getDirection()).isEqualTo(Sort.Direction.ASC);
 		assertThat(secondOrder.getProperty()).isEqualTo("anySorting2");
-		assertThat(secondOrder.isIgnoreCase()).as("isIgnoreCase has not expected value.").isEqualTo(false);
+		assertThat(secondOrder.isIgnoreCase()).as("isIgnoreCase does not have expected value").isEqualTo(false);
 		assertThat(secondOrder.getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
 	}
 
