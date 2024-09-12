@@ -311,7 +311,7 @@ class FeignPageableEncodingTests {
 		assertThat(optionalOrder.isPresent()).isEqualTo(true);
 		if (optionalOrder.isPresent()) {
 			Sort.Order order = optionalOrder.get();
-			assertThat(order.isIgnoreCase()).as("isIgnoreCase has not expected value.").isEqualTo(true);
+			assertThat(order.isIgnoreCase()).as("isIgnoreCase does not have expected value").isEqualTo(true);
 			assertThat(order.getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
 		}
 
