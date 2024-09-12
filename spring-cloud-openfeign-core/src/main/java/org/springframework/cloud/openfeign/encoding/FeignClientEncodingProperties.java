@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class FeignClientEncodingProperties {
 	/**
 	 * The list of content encodings (applicable encodings depend on the used client).
 	 */
-	private String[] contentEncodings = new String[] { HttpEncoding.GZIP_ENCODING, HttpEncoding.DEFLATE_ENCODING };
+	private String[] contentEncodingTypes = new String[] { HttpEncoding.GZIP_ENCODING, HttpEncoding.DEFLATE_ENCODING };
 
 	public String[] getMimeTypes() {
 		return mimeTypes;
@@ -61,12 +61,12 @@ public class FeignClientEncodingProperties {
 		this.minRequestSize = minRequestSize;
 	}
 
-	public String[] getContentEncodings() {
-		return contentEncodings;
+	public String[] getContentEncodingTypes() {
+		return contentEncodingTypes;
 	}
 
-	public void setContentEncodings(String[] contentEncodings) {
-		this.contentEncodings = contentEncodings;
+	public void setContentEncodingTypes(String[] contentEncodingTypes) {
+		this.contentEncodingTypes = contentEncodingTypes;
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class FeignClientEncodingProperties {
 		}
 		FeignClientEncodingProperties that = (FeignClientEncodingProperties) o;
 		return Arrays.equals(mimeTypes, that.mimeTypes) && Objects.equals(minRequestSize, that.minRequestSize)
-				&& Arrays.equals(contentEncodings, that.contentEncodings);
+				&& Arrays.equals(contentEncodingTypes, that.contentEncodingTypes);
 	}
 
 	@Override
@@ -95,8 +95,8 @@ public class FeignClientEncodingProperties {
 			.append("minRequestSize=")
 			.append(minRequestSize)
 			.append(", ")
-			.append("contentEncodings=")
-			.append(Arrays.toString(contentEncodings))
+			.append("contentEncodingTypes=")
+			.append(Arrays.toString(contentEncodingTypes))
 			.append("}")
 			.toString();
 	}

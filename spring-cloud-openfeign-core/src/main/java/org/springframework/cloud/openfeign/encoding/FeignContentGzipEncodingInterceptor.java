@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import feign.RequestTemplate;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Enables the HTTP request payload compression by specifying the {@code Content-Encoding}
@@ -28,6 +30,8 @@ import feign.RequestTemplate;
  * @author Jakub Narloch
  */
 public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor {
+
+	private static final Log log = LogFactory.getLog(FeignContentGzipEncodingInterceptor.class);
 
 	/**
 	 * Creates new instance of {@link FeignContentGzipEncodingInterceptor}.
@@ -49,10 +53,11 @@ public class FeignContentGzipEncodingInterceptor extends BaseRequestInterceptor 
 	}
 
 	private String[] getContentEncodings() {
-		if (getProperties().getContentEncodings() != null && getProperties().getContentEncodings().length > 0) {
-			return getProperties().getContentEncodings();
+		if (getProperties().getContentEncodingTypes() != null && getProperties().getContentEncodingTypes().length > 0) {
+			return getProperties().getContentEncodingTypes();
 		}
 
+		log.warn("Invalid content encoding configuration, falling back to default.");
 		return new String[] { HttpEncoding.GZIP_ENCODING, HttpEncoding.DEFLATE_ENCODING };
 	}
 
