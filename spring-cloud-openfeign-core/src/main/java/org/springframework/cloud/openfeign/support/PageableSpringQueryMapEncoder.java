@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.springframework.data.domain.Sort;
  *
  * @author Hyeonmin Park
  * @author Yanming Zhou
+ * @author Gokalp Kuscu
  * @since 2.2.8
  */
 public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
@@ -50,6 +51,11 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 	 * Sort parameter name.
 	 */
 	private String sortParameter = "sort";
+
+	/**
+	 * Sort ignoreCase parameter name.
+	 */
+	private final String ignoreCase = "ignorecase";
 
 	public void setPageParameter(String pageParameter) {
 		this.pageParameter = pageParameter;
@@ -92,7 +98,11 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 	private void applySort(Map<String, Object> queryMap, Sort sort) {
 		List<String> sortQueries = new ArrayList<>();
 		for (Sort.Order order : sort) {
-			sortQueries.add(order.getProperty() + "%2C" + order.getDirection());
+			String sortQuery = order.getProperty() + "%2C" + order.getDirection();
+			if (order.isIgnoreCase()) {
+				sortQuery += "%2C" + ignoreCase;
+			}
+			sortQueries.add(sortQuery);
 		}
 		if (!sortQueries.isEmpty()) {
 			queryMap.put(sortParameter, sortQueries);

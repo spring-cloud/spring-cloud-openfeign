@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * @author Can Bezmen
+ * @author Gokalp Kuscu
  */
 @ExtendWith(MockitoExtension.class)
 class SortJacksonModuleTests {
@@ -53,9 +54,34 @@ class SortJacksonModuleTests {
 	}
 
 	@Test
-	public void deserializePage() throws JsonProcessingException {
+	public void testDeserializePage() throws JsonProcessingException {
 		// Given
 		String pageJson = "{\"content\":[\"A name\"],\"number\":1,\"size\":2,\"totalElements\":3,\"sort\":[{\"direction\":\"ASC\",\"property\":\"field\",\"ignoreCase\":false,\"nullHandling\":\"NATIVE\",\"descending\":false,\"ascending\":true}]}";
+		// When
+		Page<?> result = objectMapper.readValue(pageJson, Page.class);
+		// Then
+		assertThat(result, notNullValue());
+		assertThat(result, hasProperty("totalElements", is(3L)));
+		assertThat(result.getContent(), hasSize(1));
+		assertThat(result.getPageable(), notNullValue());
+		assertThat(result.getPageable().getPageNumber(), is(1));
+		assertThat(result.getPageable().getPageSize(), is(2));
+		assertThat(result.getPageable().getSort(), notNullValue());
+		result.getPageable().getSort();
+		Optional<Sort.Order> optionalOrder = result.getPageable().getSort().get().findFirst();
+		if (optionalOrder.isPresent()) {
+			Sort.Order order = optionalOrder.get();
+			assertThat(order, hasProperty("property", is("field")));
+			assertThat(order, hasProperty("direction", is(Sort.Direction.ASC)));
+			assertThat(order, hasProperty("ignoreCase", is(false)));
+			assertThat(order, hasProperty("nullHandling", is(Sort.NullHandling.NATIVE)));
+		}
+	}
+
+	@Test
+	public void testDeserializePageWithoutIgnoreCaseAndNullHandling() throws JsonProcessingException {
+		// Given
+		String pageJson = "{\"content\":[\"A name\"],\"number\":1,\"size\":2,\"totalElements\":3,\"sort\":[{\"direction\":\"ASC\",\"property\":\"field\",\"descending\":false,\"ascending\":true}]}";
 		// When
 		Page<?> result = objectMapper.readValue(pageJson, Page.class);
 		// Then
@@ -76,7 +102,56 @@ class SortJacksonModuleTests {
 	}
 
 	@Test
-	public void serializePage() throws IOException {
+	public void testDeserializePageWithoutNullHandling() throws JsonProcessingException {
+		// Given
+		String pageJson = "{\"content\":[\"A name\"],\"number\":1,\"size\":2,\"totalElements\":3,\"sort\":[{\"direction\":\"ASC\",\"property\":\"field\",\"ignoreCase\":true,\"descending\":false,\"ascending\":true}]}";
+		// When
+		Page<?> result = objectMapper.readValue(pageJson, Page.class);
+		// Then
+		assertThat(result, notNullValue());
+		assertThat(result, hasProperty("totalElements", is(3L)));
+		assertThat(result.getContent(), hasSize(1));
+		assertThat(result.getPageable(), notNullValue());
+		assertThat(result.getPageable().getPageNumber(), is(1));
+		assertThat(result.getPageable().getPageSize(), is(2));
+		assertThat(result.getPageable().getSort(), notNullValue());
+		result.getPageable().getSort();
+		Optional<Sort.Order> optionalOrder = result.getPageable().getSort().get().findFirst();
+		if (optionalOrder.isPresent()) {
+			Sort.Order order = optionalOrder.get();
+			assertThat(order, hasProperty("property", is("field")));
+			assertThat(order, hasProperty("direction", is(Sort.Direction.ASC)));
+			assertThat(order, hasProperty("ignoreCase", is(false)));
+		}
+	}
+
+	@Test
+	public void testDeserializePageWithTrueMarkedIgnoreCaseAndNullHandling() throws JsonProcessingException {
+		// Given
+		String pageJson = "{\"content\":[\"A name\"],\"number\":1,\"size\":2,\"totalElements\":3,\"sort\":[{\"direction\":\"ASC\",\"property\":\"field\",\"ignoreCase\":true,\"nullHandling\":\"NATIVE\",\"descending\":false,\"ascending\":true}]}";
+		// When
+		Page<?> result = objectMapper.readValue(pageJson, Page.class);
+		// Then
+		assertThat(result, notNullValue());
+		assertThat(result, hasProperty("totalElements", is(3L)));
+		assertThat(result.getContent(), hasSize(1));
+		assertThat(result.getPageable(), notNullValue());
+		assertThat(result.getPageable().getPageNumber(), is(1));
+		assertThat(result.getPageable().getPageSize(), is(2));
+		assertThat(result.getPageable().getSort(), notNullValue());
+		result.getPageable().getSort();
+		Optional<Sort.Order> optionalOrder = result.getPageable().getSort().get().findFirst();
+		if (optionalOrder.isPresent()) {
+			Sort.Order order = optionalOrder.get();
+			assertThat(order, hasProperty("property", is("field")));
+			assertThat(order, hasProperty("direction", is(Sort.Direction.ASC)));
+			assertThat(order, hasProperty("ignoreCase", is(true)));
+			assertThat(order, hasProperty("nullHandling", is(Sort.NullHandling.NATIVE)));
+		}
+	}
+
+	@Test
+	public void testSerializePage() throws IOException {
 		// Given
 		Sort sort = Sort.by(Sort.Order.by("fieldName"));
 		// When
@@ -84,6 +159,18 @@ class SortJacksonModuleTests {
 		// Then
 		assertThat(result, containsString("\"direction\":\"ASC\""));
 		assertThat(result, containsString("\"property\":\"fieldName\""));
+	}
+
+	@Test
+	public void testSerializePageWithGivenIgnoreCase() throws IOException {
+		// Given
+		Sort sort = Sort.by(Sort.Order.by("fieldName"), Sort.Order.by("fieldName2").ignoreCase());
+		// When
+		String result = objectMapper.writeValueAsString(sort);
+		// Then
+		assertThat(result, containsString("\"direction\":\"ASC\""));
+		assertThat(result, containsString("\"property\":\"fieldName\""));
+		assertThat(result, containsString("\"property\":\"fieldName2\",\"ignoreCase\":true"));
 	}
 
 }
