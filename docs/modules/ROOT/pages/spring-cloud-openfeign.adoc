@@ -74,6 +74,8 @@ TIP: To use `@EnableFeignClients` annotation on `@Configuration`-annotated-class
 or list them explicitly:
 `@EnableFeignClients(clients = InventoryServiceFeignClient.class)`.
 
+In order to load Spring Feign client beans in a multi-module setup, you need to specify the packages directly.
+
 WARNING: Since `FactoryBean` objects may be instantiated before the initial context refresh should take place, and the instantiation of Spring Cloud OpenFeign Clients triggers a context refresh, they should not be declared within `FactoryBean` classes.
 
 [[attribute-resolution-mode]]

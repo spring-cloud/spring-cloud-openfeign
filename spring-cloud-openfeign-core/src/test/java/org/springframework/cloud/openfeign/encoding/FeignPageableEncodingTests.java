@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  *
  * @author Charlie Mordant.
  * @author Hyeonmin Park
+ * @author Gokalp Kuscu
  */
 @SpringBootTest(classes = FeignPageableEncodingTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.cloud.openfeign.compression.request.enabled=true" })
@@ -262,6 +263,110 @@ class FeignPageableEncodingTests {
 		for (int ind = 0; ind < invoiceList.size() - 1; ind++) {
 			assertThat(invoiceList.get(ind).getAmount()).isGreaterThanOrEqualTo(invoiceList.get(ind + 1).getAmount());
 		}
+	}
+
+	@Test
+	void testPageableWithIgnoreCase() {
+		// given
+		Sort.Order anySorting = Sort.Order.asc("anySorting").ignoreCase();
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(anySorting));
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient.getInvoicesPaged(pageable);
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
+		assertThat(response.getBody().getPageable().getSort()).hasSize(1);
+		Optional<Sort.Order> optionalOrder = response.getBody().getPageable().getSort().get().findFirst();
+		assertThat(optionalOrder.isPresent()).isEqualTo(true);
+		if (optionalOrder.isPresent()) {
+			Sort.Order order = optionalOrder.get();
+			assertThat(order.getDirection()).isEqualTo(Sort.Direction.ASC);
+			assertThat(order.getProperty()).isEqualTo("anySorting");
+			assertThat(order.isIgnoreCase()).as("isIgnoreCase does not have expected value").isEqualTo(true);
+			assertThat(order.getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
+		}
+	}
+
+	@Test
+	void testSortWithIgnoreCaseAndBody() {
+		// given
+		Sort.Order anySorting = Sort.Order.desc("amount").ignoreCase();
+		Sort sort = Sort.by(anySorting);
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient.getInvoicesSortedWithBody(sort,
+				"InvoiceTitleFromBody");
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(sort).isEqualTo(response.getBody().getSort());
+
+		Optional<Sort.Order> optionalOrder = response.getBody().getPageable().getSort().get().findFirst();
+		assertThat(optionalOrder.isPresent()).isEqualTo(true);
+		if (optionalOrder.isPresent()) {
+			Sort.Order order = optionalOrder.get();
+			assertThat(order.isIgnoreCase()).as("isIgnoreCase does not have expected value").isEqualTo(true);
+			assertThat(order.getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
+		}
+
+		List<Invoice> invoiceList = response.getBody().getContent();
+		assertThat(invoiceList).hasSizeGreaterThanOrEqualTo(1);
+
+		Invoice firstInvoice = invoiceList.get(0);
+		assertThat(firstInvoice.getTitle()).startsWith("InvoiceTitleFromBody");
+
+		for (int ind = 0; ind < invoiceList.size() - 1; ind++) {
+			assertThat(invoiceList.get(ind).getAmount()).isGreaterThanOrEqualTo(invoiceList.get(ind + 1).getAmount());
+		}
+
+	}
+
+	@Test
+	void testPageableMultipleSortPropertiesWithBodyAndIgnoreCase() {
+		// given
+		Sort.Order anySorting1 = Sort.Order.desc("anySorting1").ignoreCase();
+		Sort.Order anySorting2 = Sort.Order.asc("anySorting2");
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(anySorting1, anySorting2));
+
+		// when
+		final ResponseEntity<Page<Invoice>> response = this.invoiceClient.getInvoicesPagedWithBody(pageable,
+				"InvoiceTitleFromBody");
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(pageable.getPageSize()).isEqualTo(response.getBody().getSize());
+
+		List<Invoice> invoiceList = response.getBody().getContent();
+		assertThat(invoiceList).hasSizeGreaterThanOrEqualTo(1);
+
+		Invoice firstInvoice = invoiceList.get(0);
+		assertThat(firstInvoice.getTitle()).startsWith("InvoiceTitleFromBody");
+
+		Sort sort = response.getBody().getPageable().getSort();
+		assertThat(sort).hasSize(2);
+
+		List<Sort.Order> orderList = sort.toList();
+		assertThat(orderList).hasSize(2);
+
+		Sort.Order firstOrder = orderList.get(0);
+		assertThat(firstOrder.getDirection()).isEqualTo(Sort.Direction.DESC);
+		assertThat(firstOrder.getProperty()).isEqualTo("anySorting1");
+		assertThat(firstOrder.isIgnoreCase()).as("isIgnoreCase does not have expected value").isEqualTo(true);
+		assertThat(firstOrder.getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
+
+		Sort.Order secondOrder = orderList.get(1);
+		assertThat(secondOrder.getDirection()).isEqualTo(Sort.Direction.ASC);
+		assertThat(secondOrder.getProperty()).isEqualTo("anySorting2");
+		assertThat(secondOrder.isIgnoreCase()).as("isIgnoreCase does not have expected value").isEqualTo(false);
+		assertThat(secondOrder.getNullHandling()).isEqualTo(Sort.NullHandling.NATIVE);
 	}
 
 	@EnableFeignClients(clients = InvoiceClient.class)
