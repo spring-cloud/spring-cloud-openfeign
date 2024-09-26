@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ import org.springframework.util.StringUtils;
  * @author Marcin Grzejszczak
  * @author Olga Maciaszek-Sharma
  * @author Jasbir Singh
+ * @author Jinho Lee
  */
 class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
@@ -321,11 +322,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		validateFallbackFactory(annotation.getClass("fallbackFactory"));
 	}
 
-	/* for testing */ String getName(Map<String, Object> attributes) {
-		return getName(null, attributes);
-	}
-
-	String getName(ConfigurableBeanFactory beanFactory, Map<String, Object> attributes) {
+	String getName(Map<String, Object> attributes) {
 		String name = (String) attributes.get("serviceId");
 		if (!StringUtils.hasText(name)) {
 			name = (String) attributes.get("name");
@@ -333,7 +330,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		if (!StringUtils.hasText(name)) {
 			name = (String) attributes.get("value");
 		}
-		name = resolve(beanFactory, name);
+		name = resolve(null, name);
 		return getName(name);
 	}
 
