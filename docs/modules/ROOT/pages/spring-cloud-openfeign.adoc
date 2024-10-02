@@ -587,6 +587,9 @@ spring.cloud.openfeign.compression.request.min-request-size=2048
 
 These properties allow you to be selective about the compressed media types and minimum request threshold length.
 
+When the request matches the mime type set in `spring.cloud.openfeign.compression.request.mime-types` and the size set in `spring.cloud.openfeign.compression.request.min-request-size`, `spring.cloud.openfeign.compression.request.enabled=true` results in compression headers being added to the request.
+The functionality of the headers is to signal to the server that a compressed body is expected by the client. It is the responsibility of the server-side app to provide the compressed body based on the headers provided by the client.
+
 TIP: Since the OkHttpClient uses "transparent" compression, that is disabled if the `content-encoding` or `accept-encoding` header is present, we do not enable compression when `feign.okhttp.OkHttpClient` is present on the classpath and `spring.cloud.openfeign.okhttp.enabled` is set to `true`.
 
 [[feign-logging]]
