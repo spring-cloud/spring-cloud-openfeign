@@ -41,6 +41,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.CollectionFormat;
+import org.springframework.cloud.openfeign.FeignClientProperties;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.cloud.openfeign.annotation.CookieValueParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.MatrixVariableParameterProcessor;
@@ -115,6 +116,8 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 	private final boolean decodeSlash;
 
+	private final boolean removeTrailingSlash;
+
 	public SpringMvcContract() {
 		this(Collections.emptyList());
 	}
@@ -128,8 +131,32 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		this(annotatedParameterProcessors, conversionService, true);
 	}
 
+	/**
+	 * Creates a {@link SpringMvcContract} based on annotatedParameterProcessors,
+	 * conversionService and decodeSlash value.
+	 * @param annotatedParameterProcessors list of {@link AnnotatedParameterProcessor} objects used to resolve parameters
+	 * @param conversionService {@link ConversionService} used for type conversion
+	 * @param decodeSlash indicates whether slashes should be decoded
+	 * @deprecated in favour of {@link SpringMvcContract#SpringMvcContract(List, ConversionService, FeignClientProperties)}
+	 */
+	@Deprecated
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
 			ConversionService conversionService, boolean decodeSlash) {
+		this(annotatedParameterProcessors, conversionService, decodeSlash, false);
+	}
+
+	/**
+	 * Creates a {@link SpringMvcContract} based on annotatedParameterProcessors,
+	 * conversionService and decodeSlash value.
+	 * @param annotatedParameterProcessors list of {@link AnnotatedParameterProcessor} objects used to resolve parameters
+	 * @param conversionService {@link ConversionService} used for type conversion
+	 * @param decodeSlash indicates whether slashes should be decoded
+	 * @param removeTrailingSlash indicates whether trailing slashes should be removed
+	 * @deprecated in favour of {@link SpringMvcContract#SpringMvcContract(List, ConversionService, FeignClientProperties)}
+	 */
+	@Deprecated
+	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
+		ConversionService conversionService, boolean decodeSlash, boolean removeTrailingSlash) {
 		Assert.notNull(annotatedParameterProcessors, "Parameter processors can not be null.");
 		Assert.notNull(conversionService, "ConversionService can not be null.");
 
@@ -140,6 +167,14 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		this.conversionService = conversionService;
 		convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
 		this.decodeSlash = decodeSlash;
+		this.removeTrailingSlash = removeTrailingSlash;
+	}
+
+	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
+		ConversionService conversionService, FeignClientProperties feignClientProperties) {
+		this(annotatedParameterProcessors, conversionService,
+			feignClientProperties == null || feignClientProperties.isDecodeSlash(),
+			feignClientProperties != null && feignClientProperties.isRemoveTrailingSlash());
 	}
 
 	private static TypeDescriptor createTypeDescriptor(Method method, int paramIndex) {
@@ -228,6 +263,9 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 				// Append path from @RequestMapping if value is present on method
 				if (!pathValue.startsWith("/") && !data.template().path().endsWith("/")) {
 					pathValue = "/" + pathValue;
+				}
+				if (removeTrailingSlash && pathValue.endsWith("/")) {
+					pathValue = pathValue.substring(0, pathValue.length() - 1);
 				}
 				data.template().uri(pathValue, true);
 				if (data.template().decodeSlash() != decodeSlash) {
