@@ -134,10 +134,12 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	/**
 	 * Creates a {@link SpringMvcContract} based on annotatedParameterProcessors,
 	 * conversionService and decodeSlash value.
-	 * @param annotatedParameterProcessors list of {@link AnnotatedParameterProcessor} objects used to resolve parameters
+	 * @param annotatedParameterProcessors list of {@link AnnotatedParameterProcessor}
+	 * objects used to resolve parameters
 	 * @param conversionService {@link ConversionService} used for type conversion
 	 * @param decodeSlash indicates whether slashes should be decoded
-	 * @deprecated in favour of {@link SpringMvcContract#SpringMvcContract(List, ConversionService, FeignClientProperties)}
+	 * @deprecated in favour of
+	 * {@link SpringMvcContract#SpringMvcContract(List, ConversionService, FeignClientProperties)}
 	 */
 	@Deprecated
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
@@ -148,15 +150,17 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	/**
 	 * Creates a {@link SpringMvcContract} based on annotatedParameterProcessors,
 	 * conversionService and decodeSlash value.
-	 * @param annotatedParameterProcessors list of {@link AnnotatedParameterProcessor} objects used to resolve parameters
+	 * @param annotatedParameterProcessors list of {@link AnnotatedParameterProcessor}
+	 * objects used to resolve parameters
 	 * @param conversionService {@link ConversionService} used for type conversion
 	 * @param decodeSlash indicates whether slashes should be decoded
 	 * @param removeTrailingSlash indicates whether trailing slashes should be removed
-	 * @deprecated in favour of {@link SpringMvcContract#SpringMvcContract(List, ConversionService, FeignClientProperties)}
+	 * @deprecated in favour of
+	 * {@link SpringMvcContract#SpringMvcContract(List, ConversionService, FeignClientProperties)}
 	 */
 	@Deprecated
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
-		ConversionService conversionService, boolean decodeSlash, boolean removeTrailingSlash) {
+			ConversionService conversionService, boolean decodeSlash, boolean removeTrailingSlash) {
 		Assert.notNull(annotatedParameterProcessors, "Parameter processors can not be null.");
 		Assert.notNull(conversionService, "ConversionService can not be null.");
 
@@ -171,10 +175,10 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	}
 
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
-		ConversionService conversionService, FeignClientProperties feignClientProperties) {
+			ConversionService conversionService, FeignClientProperties feignClientProperties) {
 		this(annotatedParameterProcessors, conversionService,
-			feignClientProperties == null || feignClientProperties.isDecodeSlash(),
-			feignClientProperties != null && feignClientProperties.isRemoveTrailingSlash());
+				feignClientProperties == null || feignClientProperties.isDecodeSlash(),
+				feignClientProperties != null && feignClientProperties.isRemoveTrailingSlash());
 	}
 
 	private static TypeDescriptor createTypeDescriptor(Method method, int paramIndex) {

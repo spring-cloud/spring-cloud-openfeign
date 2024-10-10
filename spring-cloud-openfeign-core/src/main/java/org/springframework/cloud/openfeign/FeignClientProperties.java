@@ -62,8 +62,7 @@ public class FeignClientProperties {
 	private boolean decodeSlash = true;
 
 	/**
-	 * If {@code true}, trailing slashes at the end
-	 * of request urls will be removed.
+	 * If {@code true}, trailing slashes at the end of request urls will be removed.
 	 */
 	private boolean removeTrailingSlash;
 
@@ -117,8 +116,8 @@ public class FeignClientProperties {
 		}
 		FeignClientProperties that = (FeignClientProperties) o;
 		return defaultToProperties == that.defaultToProperties && Objects.equals(defaultConfig, that.defaultConfig)
-			&& Objects.equals(config, that.config) && Objects.equals(decodeSlash, that.decodeSlash)
-			&& Objects.equals(removeTrailingSlash, that.removeTrailingSlash);
+				&& Objects.equals(config, that.config) && Objects.equals(decodeSlash, that.decodeSlash)
+				&& Objects.equals(removeTrailingSlash, that.removeTrailingSlash);
 	}
 
 	@Override

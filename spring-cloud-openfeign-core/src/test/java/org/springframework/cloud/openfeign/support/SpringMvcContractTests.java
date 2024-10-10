@@ -36,6 +36,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.openfeign.CollectionFormat;
+import org.springframework.cloud.openfeign.FeignClientProperties;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -189,8 +190,23 @@ class SpringMvcContractTests {
 	}
 
 	@Test
-	void testProcessAnnotations_SimplePathIsOnlyASlash() throws Exception {
-		Method method = TestTemplate_Simple.class.getDeclaredMethod("getSlashPath", String.class);
+	void testProcessAnnotations_SimplePathIsOnlyASlashWithParam() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getSlashPathWithParam", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/?id=" + "{id}");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+	}
+
+	@Test
+	void testProcessAnnotations_SimplePathIsOnlyASlashWithParamWithTrailingSlashRemoval() throws Exception {
+		FeignClientProperties properties = new FeignClientProperties();
+		properties.setRemoveTrailingSlash(true);
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), properties);
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getSlashPathWithParam", String.class);
+
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().url()).isEqualTo("/?id=" + "{id}");
@@ -282,6 +298,48 @@ class SpringMvcContractTests {
 		assertThat(data.template().headers().get("Accept").iterator().next())
 			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 
+	}
+
+	@Test
+	void testProcessAnnotations_SimplePathIsOnlyASlashWithTrailingSlashRemoval() throws Exception {
+		FeignClientProperties properties = new FeignClientProperties();
+		properties.setRemoveTrailingSlash(true);
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), properties);
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getSlashPath");
+
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+	}
+
+	@Test
+	void testProcessAnnotations_SimplePathHasTrailingSlash() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTrailingSlash");
+
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test1/test2/");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+	}
+
+	@Test
+	void testProcessAnnotations_SimplePathHasTrailingSlashWithTrailingSlashRemoval() throws Exception {
+		FeignClientProperties properties = new FeignClientProperties();
+		properties.setRemoveTrailingSlash(true);
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), properties);
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTrailingSlash");
+
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test1/test2");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.template().headers().get("Accept").iterator().next())
+			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 	}
 
 	@Test
@@ -738,7 +796,13 @@ class SpringMvcContractTests {
 		TestObject postMappingTest(@RequestBody TestObject object);
 
 		@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-		ResponseEntity<TestObject> getSlashPath(@RequestParam("id") String id);
+		ResponseEntity<TestObject> getSlashPathWithParam(@RequestParam("id") String id);
+
+		@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getSlashPath();
+
+		@GetMapping(value = "test1/test2/", produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> getTrailingSlash();
 
 		@GetMapping(path = "test", produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTestNoLeadingSlash(@RequestParam("name") String name);
