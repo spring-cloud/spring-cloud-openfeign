@@ -288,7 +288,12 @@ public class CustomConfiguration {
 }
 ----
 
-TIP: By default, Feign clients do not encode slash `/` characters. You can change this behaviour, by setting the value of `spring.cloud.openfeign.client.decodeSlash` to `false`.
+TIP: By default, Feign clients do not encode slash `/` characters. You can change this behaviour, by setting the value of `spring.cloud.openfeign.client.decode-slash` to `false`.
+
+
+TIP: By default, Feign clients do not remove trailing slash `/` characters from the request path.
+You can change this behaviour, by setting the value of `spring.cloud.openfeign.client.remove-trailing-slash` to `true`.
+Trailing slash removal from the request path is going to be made the default behaviour in the next major release.
 
 [[springencoder-configuration]]
 ==== `SpringEncoder` configuration

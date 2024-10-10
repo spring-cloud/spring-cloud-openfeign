@@ -73,6 +73,7 @@
 |spring.cloud.openfeign.client.default-config | `+++default+++` | 
 |spring.cloud.openfeign.client.default-to-properties | `+++true+++` | 
 |spring.cloud.openfeign.client.refresh-enabled | `+++false+++` | Enables options value refresh capability for Feign.
+|spring.cloud.openfeign.client.remove-trailing-slash | `+++false+++` | If {@code true}, trailing slashes at the end of request urls will be removed.
 |spring.cloud.openfeign.compression.request.content-encoding-types |  | The list of content encodings (applicable encodings depend on the used client).
 |spring.cloud.openfeign.compression.request.enabled | `+++false+++` | Enables the request sent by Feign to be compressed.
 |spring.cloud.openfeign.compression.request.mime-types | `+++[text/xml, application/xml, application/json]+++` | The list of supported mime types.
