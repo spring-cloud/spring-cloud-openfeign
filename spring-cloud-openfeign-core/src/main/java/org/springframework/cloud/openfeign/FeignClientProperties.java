@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,11 @@ public class FeignClientProperties {
 	 */
 	private boolean decodeSlash = true;
 
+	/**
+	 * If {@code true}, trailing slashes at the end of request urls will be removed.
+	 */
+	private boolean removeTrailingSlash;
+
 	public boolean isDefaultToProperties() {
 		return defaultToProperties;
 	}
@@ -93,6 +98,14 @@ public class FeignClientProperties {
 		this.decodeSlash = decodeSlash;
 	}
 
+	public boolean isRemoveTrailingSlash() {
+		return removeTrailingSlash;
+	}
+
+	public void setRemoveTrailingSlash(boolean removeTrailingSlash) {
+		this.removeTrailingSlash = removeTrailingSlash;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -103,12 +116,13 @@ public class FeignClientProperties {
 		}
 		FeignClientProperties that = (FeignClientProperties) o;
 		return defaultToProperties == that.defaultToProperties && Objects.equals(defaultConfig, that.defaultConfig)
-				&& Objects.equals(config, that.config) && Objects.equals(decodeSlash, that.decodeSlash);
+				&& Objects.equals(config, that.config) && Objects.equals(decodeSlash, that.decodeSlash)
+				&& Objects.equals(removeTrailingSlash, that.removeTrailingSlash);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(defaultToProperties, defaultConfig, config, decodeSlash);
+		return Objects.hash(defaultToProperties, defaultConfig, config, decodeSlash, removeTrailingSlash);
 	}
 
 	/**
