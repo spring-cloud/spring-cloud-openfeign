@@ -141,7 +141,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	 * @deprecated in favour of
 	 * {@link SpringMvcContract#SpringMvcContract(List, ConversionService, FeignClientProperties)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
 			ConversionService conversionService, boolean decodeSlash) {
 		this(annotatedParameterProcessors, conversionService, decodeSlash, false);
@@ -158,7 +158,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	 * @deprecated in favour of
 	 * {@link SpringMvcContract#SpringMvcContract(List, ConversionService, FeignClientProperties)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
 			ConversionService conversionService, boolean decodeSlash, boolean removeTrailingSlash) {
 		Assert.notNull(annotatedParameterProcessors, "Parameter processors can not be null.");

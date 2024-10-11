@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 	 * @deprecated in favour of
 	 * {@link FeignBlockingLoadBalancerClient#FeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancerClientFactory, List)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancerProperties properties, LoadBalancerClientFactory loadBalancerClientFactory) {
 		this.delegate = delegate;
@@ -84,7 +84,7 @@ public class FeignBlockingLoadBalancerClient implements Client {
 	 * @deprecated in favour of
 	 * {@link FeignBlockingLoadBalancerClient#FeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancerClientFactory, List)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancerClientFactory loadBalancerClientFactory) {
 		this.delegate = delegate;

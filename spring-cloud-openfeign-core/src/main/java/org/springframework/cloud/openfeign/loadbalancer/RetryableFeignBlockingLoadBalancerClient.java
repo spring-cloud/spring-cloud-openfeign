@@ -90,7 +90,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 	 * @deprecated in favour of
 	 * {@link RetryableFeignBlockingLoadBalancerClient#RetryableFeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancedRetryFactory, LoadBalancerClientFactory, List)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties,
 			LoadBalancerClientFactory loadBalancerClientFactory) {
@@ -105,7 +105,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 	 * @deprecated in favour of
 	 * {@link RetryableFeignBlockingLoadBalancerClient#RetryableFeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancedRetryFactory, LoadBalancerClientFactory, List)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory) {
 		this.delegate = delegate;
