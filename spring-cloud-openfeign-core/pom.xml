@@ -93,13 +93,6 @@
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-form-spring</artifactId>
-			<exclusions>
-<!--				Still vulnerable in 13.5-->
-				<exclusion>
-					<groupId>commons-io</groupId>
-					<artifactId>commons-io</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
