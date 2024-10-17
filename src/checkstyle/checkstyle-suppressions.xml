@@ -14,6 +14,8 @@
 	<suppress files=".*Hello.*" checks="RedundantModifier"/>
 	<suppress files=".*test.*" checks="JavadocStyle"/>
 	<suppress files=".*test.*" checks="JavadocVariable"/>
+	<suppress files="[\\/]src[\\/](test|testFixtures)[\\/](java|java21)[\\/]" checks="RegexpSinglelineJava" id="toLowerCaseWithoutLocale"/>
+	<suppress files="[\\/]src[\\/](test|testFixtures)[\\/](java|java21)[\\/]" checks="RegexpSinglelineJava" id="toUpperCaseWithoutLocale"/>
 	<!-- Important -->
 	<suppress files=".*HttpEncoding.*" checks="InterfaceIsTypeCheck" />
 </suppressions>
