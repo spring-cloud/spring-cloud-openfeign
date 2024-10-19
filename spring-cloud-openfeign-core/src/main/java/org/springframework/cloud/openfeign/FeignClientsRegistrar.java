@@ -411,6 +411,65 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 		}
 
 		if (basePackages.isEmpty()) {
+			// org.springframework.boot.autoconfigure.SpringBootApplication
+			String bootAppClassName = "org.springframework.boot.autoconfigure.SpringBootApplication";
+			if (importingClassMetadata.hasAnnotation(bootAppClassName)){
+				Map<String, Object> bootAttributes = importingClassMetadata
+					.getAnnotationAttributes(bootAppClassName);
+				for (String pkg : (String[]) bootAttributes.get("scanBasePackages")) {
+					if (StringUtils.hasText(pkg)) {
+						basePackages.add(pkg);
+					}
+				}
+				for (Class<?> clazz : (Class[]) bootAttributes.get("scanBasePackageClasses")) {
+					basePackages.add(ClassUtils.getPackageName(clazz));
+				}
+			}
+
+			String componentScanClassName = "org.springframework.context.annotation.ComponentScan";
+			if (importingClassMetadata.hasAnnotation(componentScanClassName)) {
+				Map<String, Object> scanAttributes = importingClassMetadata
+					.getAnnotationAttributes(componentScanClassName);
+				for (String pkg : (String[]) scanAttributes.get("value")) {
+					if (StringUtils.hasText(pkg)) {
+						basePackages.add(pkg);
+					}
+				}
+				for (String pkg : (String[]) scanAttributes.get("basePackages")) {
+					if (StringUtils.hasText(pkg)) {
+						basePackages.add(pkg);
+					}
+				}
+				for (Class<?> clazz : (Class[]) scanAttributes.get("basePackageClasses")) {
+					basePackages.add(ClassUtils.getPackageName(clazz));
+				}
+			}
+
+			String componentScansClassName = "org.springframework.context.annotation.ComponentScans";
+			if (importingClassMetadata.hasAnnotation(componentScansClassName)) {
+				Map<String, Object> componentScansAttrs =
+					importingClassMetadata.getAnnotationAttributes(componentScansClassName);
+				AnnotationAttributes[] componentScanAttributes =
+					(AnnotationAttributes[]) componentScansAttrs.get("value");
+				for (AnnotationAttributes scanAttributes : componentScanAttributes) {
+					for (String pkg : (String[]) scanAttributes.get("value")) {
+						if (StringUtils.hasText(pkg)) {
+							basePackages.add(pkg);
+						}
+					}
+					for (String pkg : (String[]) scanAttributes.get("basePackages")) {
+						if (StringUtils.hasText(pkg)) {
+							basePackages.add(pkg);
+						}
+					}
+					for (Class<?> clazz : (Class[]) scanAttributes.get("basePackageClasses")) {
+						basePackages.add(ClassUtils.getPackageName(clazz));
+					}
+				}
+			}
+		}
+
+		if (basePackages.isEmpty()) {
 			basePackages.add(ClassUtils.getPackageName(importingClassMetadata.getClassName()));
 		}
 		return basePackages;
