@@ -90,7 +90,8 @@ public class SpringDecoder implements Decoder {
 		/**
 		 * This method used to override a method from ClientHttpResponse interface but was
 		 * removed in Spring Framework 6.2, so we should remove it as well.
-		 * @deprecated in favour of {@link SpringDecoder.FeignResponseAdapter#getStatusCode()}
+		 * @deprecated in favour of
+		 * {@link SpringDecoder.FeignResponseAdapter#getStatusCode()}
 		 */
 		@Deprecated(forRemoval = true)
 		public int getRawStatusCode() {
