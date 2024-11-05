@@ -93,7 +93,6 @@
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-form-spring</artifactId>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
