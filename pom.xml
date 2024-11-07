@@ -78,6 +78,7 @@
 				<configuration>
 					<ignoredResourcePatterns>
 						<ignoredResourcePattern>mozilla/public-suffix-list.txt</ignoredResourcePattern>
+						<ignoredResourcePattern>mockito-extensions/org.mockito.plugins.MockResolver</ignoredResourcePattern>
 					</ignoredResourcePatterns>
 				</configuration>
 			</plugin>
