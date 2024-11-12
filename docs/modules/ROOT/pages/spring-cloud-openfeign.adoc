@@ -353,7 +353,7 @@ NOTE: `PROD-SVC` is the name of the service the Clients will be making requests 
 
 NOTE: The Feign `Contract` object defines what annotations and values are valid on interfaces. The
 autowired `Contract` bean provides supports for SpringMVC annotations, instead of
-the default Feign native annotations.
+the default Feign native annotations. It is not recommended to mix the Spring MVC annotations and the native Feign annotations together.
 
 You can also use the `Builder`to configure FeignClient not to inherit beans from the parent context.
 You can do this by overriding calling `inheritParentContext(false)` on the `Builder`.
