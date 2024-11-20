@@ -40,12 +40,15 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.support.StandardServletEnvironment;
 
 /**
  * @author Spencer Gibb
@@ -63,6 +66,10 @@ class FeignClientsRegistrar
 	private ResourceLoader resourceLoader;
 
 	private Environment environment;
+
+	private static final String PREFIX = "appoint.";
+
+	private static final String SUFFIX = ".url";
 
 	FeignClientsRegistrar() {
 	}
@@ -209,9 +216,9 @@ class FeignClientsRegistrar
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder
 				.genericBeanDefinition(FeignClientFactoryBean.class);
 		validate(attributes);
-		definition.addPropertyValue("url", getUrl(attributes));
-		definition.addPropertyValue("path", getPath(attributes));
 		String name = getName(attributes);
+		definition.addPropertyValue("url", getUrl(attributes, name));
+		definition.addPropertyValue("path", getPath(attributes));
 		definition.addPropertyValue("name", name);
 		String contextId = getContextId(attributes);
 		definition.addPropertyValue("contextId", contextId);
@@ -279,6 +286,28 @@ class FeignClientsRegistrar
 
 	private String getUrl(Map<String, Object> attributes) {
 		String url = resolve((String) attributes.get("url"));
+		return getUrl(url);
+	}
+
+	private String getUrl(Map<String, Object> attributes, String name) {
+		String realName = PREFIX + name + SUFFIX;
+		String url = resolve((String) attributes.get("url"));
+		Map<String, Object> propertyMap;
+		if (!StringUtils.hasText(url)) {
+			String[] activeProfiles = this.environment.getActiveProfiles();
+			String config = "applicationConfig: [classpath:/bootstrap-"
+					+ activeProfiles[0] + ".yml]";
+			MutablePropertySources propertySources = ((StandardServletEnvironment) this.environment)
+					.getPropertySources();
+			PropertySource<?> propertySource = propertySources.stream()
+					.filter(p -> p.getName().equals(config)).findFirst().orElse(null);
+			if (propertySource != null) {
+				propertyMap = (Map<String, Object>) propertySource.getSource();
+				if (propertyMap.containsKey(realName)) {
+					url = propertyMap.get(realName).toString();
+				}
+			}
+		}
 		return getUrl(url);
 	}
 
