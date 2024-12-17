@@ -90,12 +90,12 @@ TIP: For Spring Cloud Contract test integration, lazy attribute resolution shoul
 [[spring-cloud-feign-overriding-defaults]]
 === Overriding Feign Defaults
 
-A central concept in Spring Cloud's Feign support is that of the named client. Each feign client is part of an ensemble of components that work together to contact a remote server on demand, and the ensemble has a name that you give it as an application developer using the `@FeignClient` annotation. Spring Cloud creates a new ensemble as an
+A central concept in Spring Cloud's Feign support is that of the named client. Each Feign client is part of an ensemble of components that work together to contact a remote server on demand, and the ensemble has a name that you give it as an application developer using the `@FeignClient` annotation. Spring Cloud creates a new ensemble as an
 `ApplicationContext` on demand for each named client using `FeignClientsConfiguration`. This contains (amongst other things) an `feign.Decoder`, a `feign.Encoder`, and a `feign.Contract`.
 It is possible to override the name of that ensemble by using the `contextId`
 attribute of the `@FeignClient` annotation.
 
-Spring Cloud lets you take full control of the feign client by declaring additional configuration (on top of the `FeignClientsConfiguration`) using `@FeignClient`. Example:
+Spring Cloud lets you take full control of the Feign client by declaring additional configuration (on top of the `FeignClientsConfiguration`) using `@FeignClient`. Example:
 
 [source,java,indent=0]
 ----
@@ -136,7 +136,7 @@ Spring Cloud OpenFeign provides the following beans by default for feign (`BeanT
 * `Contract` feignContract: `SpringMvcContract`
 * `Feign.Builder` feignBuilder: `FeignCircuitBreaker.Builder`
 * `Client` feignClient: If Spring Cloud LoadBalancer is on the classpath, `FeignBlockingLoadBalancerClient` is used.
-If none of them is on the classpath, the default feign client is used.
+If none of them is on the classpath, the default Feign client is used.
 
 NOTE: `spring-cloud-starter-openfeign` supports `spring-cloud-starter-loadbalancer`. However, as is an optional dependency, you need to make sure it has been added to your project if you want to use it.
 
@@ -150,7 +150,7 @@ If you can not configure Apache HttpClient 5 by using properties, there is an `H
 
 TIP: Starting with Spring Cloud OpenFeign 4, the Feign Apache HttpClient 4 is no longer supported. We suggest using Apache HttpClient 5 instead.
 
-Spring Cloud OpenFeign _does not_ provide the following beans by default for feign, but still looks up beans of these types from the application context to create the feign client:
+Spring Cloud OpenFeign _does not_ provide the following beans by default for feign, but still looks up beans of these types from the application context to create the Feign client:
 
 * `Logger.Level`
 * `Retryer`
@@ -223,7 +223,7 @@ spring:
 `feignName` in this example refers to `@FeignClient` `value`, that is also aliased with `@FeignClient` `name` and `@FeignClient` `contextId`. In a load-balanced scenario, it also corresponds to the `serviceId` of the server app that will be used to retrieve the instances. The specified classes for decoders, retryer and other ones must have a bean in the Spring context or have a default constructor.
 
 
-Default configurations can be specified in the `@EnableFeignClients` attribute `defaultConfiguration` in a similar manner as described above. The difference is that this configuration will apply to _all_ feign clients.
+Default configurations can be specified in the `@EnableFeignClients` attribute `defaultConfiguration` in a similar manner as described above. The difference is that this configuration will apply to _all_ Feign clients.
 
 If you prefer using configuration properties to configure all `@FeignClient`, you can create configuration properties with `default` feign name.
 
@@ -247,7 +247,7 @@ If we create both `@Configuration` bean and configuration properties, configurat
 It will override `@Configuration` values. But if you want to change the priority to `@Configuration`,
 you can change `spring.cloud.openfeign.client.default-to-properties` to `false`.
 
-If we want to create multiple feign clients with the same name or url
+If we want to create multiple Feign clients with the same name or url
 so that they would point to the same server but each with a different custom configuration then
 we have to use `contextId` attribute of the `@FeignClient` in order to avoid name
 collision of these configuration beans.
@@ -763,7 +763,7 @@ public class Params {
 }
 ----
 
-The following feign client uses the `Params` class by using the `@SpringQueryMap` annotation:
+The following Feign client uses the `Params` class by using the `@SpringQueryMap` annotation:
 
 [source,java,indent=0]
 ----
