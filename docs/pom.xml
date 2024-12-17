@@ -41,6 +41,20 @@
 	</build>
 	<profiles>
 		<profile>
+			<id>enable-configuration-properties</id>
+			<activation>
+				<property>
+					<name>!disableConfigurationProperties</name>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>${project.groupId}</groupId>
+					<artifactId>spring-cloud-starter-openfeign</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
 			<id>docs</id>
 			<build>
 				<resources>
