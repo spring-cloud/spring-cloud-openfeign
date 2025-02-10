@@ -93,6 +93,12 @@
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-form-spring</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-io</groupId>
+					<artifactId>commons-io</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
