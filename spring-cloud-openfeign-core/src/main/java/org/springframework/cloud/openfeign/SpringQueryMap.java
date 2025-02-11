@@ -26,6 +26,8 @@ import java.lang.annotation.Target;
  *
  * @author Aram Peres
  * @see feign.QueryMap
+ * @see feign.QueryMapEncoder
+ * @see org.springframework.cloud.openfeign.FeignClientsConfiguration
  * @see org.springframework.cloud.openfeign.annotation.QueryMapParameterProcessor
  */
 @Retention(RetentionPolicy.RUNTIME)
