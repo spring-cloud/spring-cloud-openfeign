@@ -45,6 +45,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Hyeonmin Park
  * @author Jasbir Singh
  * @author Dominique Villard
+ * @author kssumin
  */
 @ConfigurationProperties("spring.cloud.openfeign.client")
 public class FeignClientProperties {
@@ -65,6 +66,11 @@ public class FeignClientProperties {
 	 * If {@code true}, trailing slashes at the end of request urls will be removed.
 	 */
 	private boolean removeTrailingSlash;
+
+	/**
+	 * If {@code true}, negated parameters (those starting with '!') will be allowed.
+	 */
+	private boolean allowNegatedParams = false;
 
 	public boolean isDefaultToProperties() {
 		return defaultToProperties;
@@ -104,6 +110,14 @@ public class FeignClientProperties {
 
 	public void setRemoveTrailingSlash(boolean removeTrailingSlash) {
 		this.removeTrailingSlash = removeTrailingSlash;
+	}
+
+	public void setAllowNegatedParams(Boolean allowNegatedParams) {
+		this.allowNegatedParams = allowNegatedParams;
+	}
+
+	public boolean getAllowNegatedParams() {
+		return allowNegatedParams;
 	}
 
 	@Override

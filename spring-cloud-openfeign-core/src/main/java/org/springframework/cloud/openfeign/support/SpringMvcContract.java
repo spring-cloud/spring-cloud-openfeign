@@ -89,6 +89,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Ram Anaswara
  * @author Sam Kruglov
  * @author Tang Xiong
+ * @author kssumin
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
 
@@ -117,6 +118,8 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	private final boolean decodeSlash;
 
 	private final boolean removeTrailingSlash;
+
+	private final boolean allowNegatedParams;
 
 	public SpringMvcContract() {
 		this(Collections.emptyList());
@@ -172,6 +175,25 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
 		this.decodeSlash = decodeSlash;
 		this.removeTrailingSlash = removeTrailingSlash;
+		this.allowNegatedParams = false;
+	}
+
+	@Deprecated(forRemoval = true)
+	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
+							 ConversionService conversionService, boolean decodeSlash, boolean removeTrailingSlash,
+							 boolean allowNegatedParams) {
+		Assert.notNull(annotatedParameterProcessors, "Parameter processors can not be null.");
+		Assert.notNull(conversionService, "ConversionService can not be null.");
+
+		List<AnnotatedParameterProcessor> processors = getDefaultAnnotatedArgumentsProcessors();
+		processors.addAll(annotatedParameterProcessors);
+
+		annotatedArgumentProcessors = toAnnotatedArgumentProcessorMap(processors);
+		this.conversionService = conversionService;
+		convertingExpanderFactory = new ConvertingExpanderFactory(conversionService);
+		this.decodeSlash = decodeSlash;
+		this.removeTrailingSlash = removeTrailingSlash;
+		this.allowNegatedParams = allowNegatedParams;
 	}
 
 	public SpringMvcContract(List<AnnotatedParameterProcessor> annotatedParameterProcessors,
@@ -411,7 +433,11 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 				data.template().query(resolve(nameValueResolver.getName()), resolve(nameValueResolver.getValue()));
 			}
 			else {
-				throw new IllegalArgumentException("Negated params are not supported: " + param);
+				// Negated parameter case
+				if (!this.allowNegatedParams) {
+					throw new IllegalArgumentException("Negated params are not supported: " + param);
+				}
+				// When allowed, negated params are skipped
 			}
 		}
 	}

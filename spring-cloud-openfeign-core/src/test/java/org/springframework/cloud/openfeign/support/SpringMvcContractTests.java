@@ -84,6 +84,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Sam Kruglov
  * @author Bhavya Agrawal
  * @author Tang Xiong
+ * @author kssumin
  **/
 
 class SpringMvcContractTests {
@@ -767,6 +768,28 @@ class SpringMvcContractTests {
 		assertThat(data.get(0).bodyIndex()).isEqualTo(1);
 		assertThat(data.get(1).queryMapIndex()).isEqualTo(1);
 		assertThat(data.get(1).bodyIndex()).isEqualTo(0);
+	}
+
+	@Test
+	void testAllowNegatedParams() throws Exception {
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), true, false, true);
+
+		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("notEqualParams");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/test");
+		assertThat(data.template().method()).isEqualTo("GET");
+	}
+
+	@Test
+	void testDisallowNegatedParams() throws Exception {
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), true, false, false);
+
+		Method method = TestTemplate_ParseParams.class.getDeclaredMethod("notEqualParams");
+
+		assertThatIllegalArgumentException().isThrownBy(() -> {
+			contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		}).withMessageContaining("Negated params are not supported");
 	}
 
 	private ConversionService getConversionService() {

@@ -760,7 +760,38 @@ The params attribute also supports the use of multiple `key=value` or only one `
 - When `params = { "key1=v1", "key2=v2" }`, the request url is parsed as `/stores/storeId?key1=v1&key2=v2`.
 - When `params = "key"`, the request url is parsed as `/stores/storeId?key`.
 
+[[negated-params-support]]
+=== Negated Parameters Support
 
+Spring Cloud OpenFeign provides optional support for negated parameters in `@RequestMapping` annotations. By default, negated parameters (such as `params = {"!expiration"}` or `params = {"param!=value"}`) are not supported in Feign clients, resulting in an `IllegalArgumentException`.
+
+When sharing interfaces between server and client, negated parameters can be useful for disambiguation of request mappings on the server side. To allow the use of negated parameters in your Feign clients, set the following property:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          feignName:
+            allowNegatedParams: true
+----
+
+When enabled, negated parameters will be silently ignored when creating the client request. This is the expected behavior since negated parameters are constraints used only on the server side to avoid ambiguous mappings.
+
+Global configuration is also supported:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            allowNegatedParams: true
+----
 
 [[feign-querymap-support]]
 === Feign @QueryMap support
