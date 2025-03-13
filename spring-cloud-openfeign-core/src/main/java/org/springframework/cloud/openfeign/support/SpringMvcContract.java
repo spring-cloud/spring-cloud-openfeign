@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2025 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -369,10 +369,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 				data.template().query(resolve(nameValueResolver.getName()), resolve(nameValueResolver.getValue()));
 			}
 			else {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Negated params are not supported by Feign and ignored during parameter processing: "
-							+ param);
-				}
+				throw new IllegalArgumentException("Negated params are not supported: " + param);
 			}
 		}
 	}
