@@ -1003,13 +1003,7 @@ class SpringMvcContractTests {
 
 		@Override
 		public String toString() {
-			return new StringBuilder("TestObject{").append("something='")
-				.append(something)
-				.append("', ")
-				.append("number=")
-				.append(number)
-				.append("}")
-				.toString();
+			return "TestObject{" + "something='" + something + "', " + "number=" + number + "}";
 		}
 
 	}

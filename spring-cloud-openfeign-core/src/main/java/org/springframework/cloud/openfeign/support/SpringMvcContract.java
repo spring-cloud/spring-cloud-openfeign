@@ -237,16 +237,16 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		}
 
 		// produces
-		parseProduces(data, method, methodMapping);
+		parseProduces(data, methodMapping);
 
 		// consumes
-		parseConsumes(data, method, methodMapping);
+		parseConsumes(data, methodMapping);
 
 		// headers
-		parseHeaders(data, method, methodMapping);
+		parseHeaders(data, methodMapping);
 
 		// params
-		parseParams(data, method, methodMapping);
+		parseParams(data, methodMapping);
 
 		data.indexToExpander(new LinkedHashMap<>());
 	}
@@ -329,7 +329,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		return false;
 	}
 
-	private void parseProduces(MethodMetadata md, Method method, RequestMapping annotation) {
+	private void parseProduces(MethodMetadata md, RequestMapping annotation) {
 		String[] serverProduces = annotation.produces();
 		String clientAccepts = serverProduces.length == 0 ? null : emptyToNull(serverProduces[0]);
 		if (clientAccepts != null) {
@@ -337,7 +337,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		}
 	}
 
-	private void parseConsumes(MethodMetadata md, Method method, RequestMapping annotation) {
+	private void parseConsumes(MethodMetadata md, RequestMapping annotation) {
 		String[] serverConsumes = annotation.consumes();
 		String clientProduces = serverConsumes.length == 0 ? null : emptyToNull(serverConsumes[0]);
 		if (clientProduces != null) {
@@ -345,9 +345,9 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		}
 	}
 
-	private void parseHeaders(MethodMetadata md, Method method, RequestMapping annotation) {
+	private void parseHeaders(MethodMetadata md, RequestMapping annotation) {
 		// TODO: only supports one header value per key
-		if (annotation.headers() != null && annotation.headers().length > 0) {
+		if (annotation.headers() != null) {
 			for (String header : annotation.headers()) {
 				int index = header.indexOf('=');
 				if (!header.contains("!=") && index >= 0) {
@@ -358,9 +358,9 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		}
 	}
 
-	private void parseParams(MethodMetadata data, Method method, RequestMapping methodMapping) {
+	private void parseParams(MethodMetadata data, RequestMapping methodMapping) {
 		String[] params = methodMapping.params();
-		if (params == null || params.length == 0) {
+		if (params == null) {
 			return;
 		}
 		for (String param : params) {
@@ -438,13 +438,7 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		return false;
 	}
 
-	private static class ConvertingExpanderFactory {
-
-		private final ConversionService conversionService;
-
-		ConvertingExpanderFactory(ConversionService conversionService) {
-			this.conversionService = conversionService;
-		}
+	private record ConvertingExpanderFactory(ConversionService conversionService) {
 
 		Param.Expander getExpander(TypeDescriptor typeDescriptor) {
 			return value -> {
