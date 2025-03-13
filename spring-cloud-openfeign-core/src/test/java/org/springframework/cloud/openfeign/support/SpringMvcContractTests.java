@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2024 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static feign.CollectionFormat.CSV;
 import static feign.CollectionFormat.SSV;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -567,11 +568,11 @@ class SpringMvcContractTests {
 	}
 
 	@Test
-	void testProcessAnnotations_ParseParams_NotEqualParams() throws Exception {
-		assertThatIllegalArgumentException().isThrownBy(() -> {
-			Method method = TestTemplate_ParseParams.class.getDeclaredMethod("notEqualParams");
+	void testProcessAnnotations_ParseParams_NegatedParams() {
+		assertThatCode(() -> {
+			Method method = TestTemplate_ParseParams.class.getDeclaredMethod("negatedParams");
 			contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
-		});
+		}).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -895,7 +896,7 @@ class SpringMvcContractTests {
 		ResponseEntity<TestObject> mixParams();
 
 		@GetMapping(value = "test", params = { "p1!=1" })
-		ResponseEntity<TestObject> notEqualParams();
+		ResponseEntity<TestObject> negatedParams();
 
 		@GetMapping(value = "test", params = { "p1=1" })
 		ResponseEntity<TestObject> paramsAndRequestParam(@RequestParam("p2") String p2);
@@ -1066,13 +1067,7 @@ class SpringMvcContractTests {
 
 		@Override
 		public String toString() {
-			return new StringBuilder("TestObject{").append("something='")
-				.append(something)
-				.append("', ")
-				.append("number=")
-				.append(number)
-				.append("}")
-				.toString();
+			return "TestObject{" + "something='" + something + "', " + "number=" + number + "}";
 		}
 
 	}
