@@ -90,6 +90,18 @@ class FeignClientsRegistrarTests {
 	}
 
 	@Test
+	void goodUrl() {
+		String url = FeignClientsRegistrar.getUrl("https://good.url");
+		assertThat(url).as("url was wrong").isEqualTo("https://good.url");
+	}
+
+	@Test
+	void badUrl() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+			.isThrownBy(() -> FeignClientsRegistrar.getUrl("http://bad url"));
+	}
+
+	@Test
 	void testRemoveTrailingSlashFromUrl() {
 		String url = FeignClientsRegistrar.getUrl("http://localhost/");
 		assertThat(url).isEqualTo("http://localhost");
