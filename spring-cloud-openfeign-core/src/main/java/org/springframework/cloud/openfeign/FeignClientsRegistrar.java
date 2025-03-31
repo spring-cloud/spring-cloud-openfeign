@@ -16,10 +16,8 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -122,9 +120,9 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 				url = url.substring(0, url.length() - 1);
 			}
 			try {
-				new URL(url);
+				new URI(url);
 			}
-			catch (MalformedURLException e) {
+			catch (URISyntaxException e) {
 				throw new IllegalArgumentException(url + " is malformed", e);
 			}
 		}
