@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,31 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.http.MediaType;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * @author Wu Daifu
+ * @author Olga Maciaszek-Sharma
  */
-class AbstractFormWriterTests {
+class FormWriterTests {
 
 	@Test
 	void shouldCorrectlyResolveIfApplicableForCollection() {
 		MockFormWriter formWriter = new MockFormWriter();
 		Object object = new Object();
-		Assertions.assertFalse(formWriter.isApplicable(object));
+		assertThat(formWriter.isApplicable(object)).isFalse();
 		object = new Object[] { new Object(), new Object() };
-		Assertions.assertFalse(formWriter.isApplicable(object));
+		assertThat(formWriter.isApplicable(object)).isFalse();
 		object = new UserPojo();
-		Assertions.assertTrue(formWriter.isApplicable(object));
+		assertThat(formWriter.isApplicable(object)).isTrue();
 		object = new UserPojo[] { new UserPojo(), new UserPojo() };
-		Assertions.assertTrue(formWriter.isApplicable(object));
+		assertThat(formWriter.isApplicable(object)).isTrue();
 		object = new byte[] { '1', '2' };
-		Assertions.assertFalse(formWriter.isApplicable(object));
+		assertThat(formWriter.isApplicable(object)).isFalse();
 	}
 
 	static class MockFormWriter extends AbstractFormWriter {
