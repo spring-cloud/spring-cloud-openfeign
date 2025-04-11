@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import feign.Client;
 import feign.Feign;
 import feign.Logger;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -65,7 +64,7 @@ class FeignBuilderCustomizerTests {
 		FeignClientFactoryBean clientFactoryBean = context.getBean(FeignClientFactoryBean.class);
 		clientFactoryBean.getTarget();
 
-		Assertions.assertNotNull(feignBuilderCaptor.getValue());
+		assertThat(feignBuilderCaptor.getValue()).isNotNull();
 		Feign.Builder builder = feignBuilderCaptor.getValue();
 		assertFeignBuilderField(builder, "logLevel", Logger.Level.HEADERS);
 		assertFeignBuilderField(builder, "dismiss404", true);
@@ -92,7 +91,7 @@ class FeignBuilderCustomizerTests {
 		FeignClientFactoryBean clientFactoryBean = context.getBean(FeignClientFactoryBean.class);
 		clientFactoryBean.getTarget();
 
-		Assertions.assertNotNull(feignBuilderCaptor.getValue());
+		assertThat(feignBuilderCaptor.getValue()).isNotNull();
 		Feign.Builder builder = feignBuilderCaptor.getValue();
 		assertFeignBuilderField(builder, "logLevel", Logger.Level.FULL);
 		assertFeignBuilderField(builder, "dismiss404", true);
@@ -113,7 +112,7 @@ class FeignBuilderCustomizerTests {
 		clientFactoryBean.addCustomizer(Feign.Builder::doNotCloseAfterDecode);
 		clientFactoryBean.getTarget();
 
-		Assertions.assertNotNull(feignBuilderCaptor.getValue());
+		assertThat(feignBuilderCaptor.getValue()).isNotNull();
 		Feign.Builder builder = feignBuilderCaptor.getValue();
 		assertFeignBuilderField(builder, "logLevel", Logger.Level.BASIC);
 		assertFeignBuilderField(builder, "dismiss404", true);
@@ -134,7 +133,7 @@ class FeignBuilderCustomizerTests {
 		clientFactoryBean.addCustomizer(builder -> builder.client(customClientMock));
 		clientFactoryBean.getTarget();
 
-		Assertions.assertNotNull(feignBuilderCaptor.getValue());
+		assertThat(feignBuilderCaptor.getValue()).isNotNull();
 		Feign.Builder builder = feignBuilderCaptor.getValue();
 		assertFeignBuilderField(builder, "client", customClientMock);
 
