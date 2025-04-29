@@ -85,6 +85,19 @@ class PageJacksonModuleTests {
 			.isEqualTo(Sort.Direction.DESC);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = { "./src/test/resources/withPage.json" })
+	void deserializePageFromFileWithPage(String filePath) throws IOException {
+		File file = new File(filePath);
+
+		Page<?> result = objectMapper.readValue(file, Page.class);
+
+		assertThat(result.getTotalElements()).isEqualTo(11);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+		assertThat(result.getPageable().getSort()).isEqualTo(Sort.unsorted());
+	}
+
 	@Test
 	void serializeAndDeserializeEmpty() throws JsonProcessingException {
 		// Given
