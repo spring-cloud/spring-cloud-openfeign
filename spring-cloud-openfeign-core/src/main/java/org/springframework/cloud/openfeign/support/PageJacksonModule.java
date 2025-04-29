@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2024 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedModel;
 
 /**
  * This Jackson module provides support to deserialize Spring {@link Page} objects.
@@ -41,6 +42,7 @@ import org.springframework.data.domain.Sort;
  * @author Olga Maciaszek-Sharma
  * @author Pedro Mendes
  * @author Nikita Konev
+ * @author Bruce Stewart
  */
 public class PageJacksonModule extends Module {
 
@@ -88,6 +90,7 @@ public class PageJacksonModule extends Module {
 		private final Page<T> delegate;
 
 		SimplePageImpl(@JsonProperty("content") List<T> content, @JsonProperty("pageable") Pageable pageable,
+				@JsonProperty("page") PagedModel.PageMetadata pageMetadata,
 				@JsonProperty("number") @JsonAlias("pageNumber") int number,
 				@JsonProperty("size") @JsonAlias("pageSize") int size,
 				@JsonProperty("totalElements") @JsonAlias({ "total-elements", "total_elements", "totalelements",
@@ -99,6 +102,11 @@ public class PageJacksonModule extends Module {
 			}
 			else if (pageable != null && pageable.getPageSize() > 0) {
 				delegate = new PageImpl<>(content, pageable, totalElements);
+			}
+			else if (pageMetadata != null && pageMetadata.size() > 0) {
+				PageRequest pageRequest = buildPageRequest((int) pageMetadata.number(), (int) pageMetadata.size(),
+						null);
+				delegate = new PageImpl<>(content, pageRequest, pageMetadata.totalElements());
 			}
 			else {
 				delegate = new PageImpl<>(content);

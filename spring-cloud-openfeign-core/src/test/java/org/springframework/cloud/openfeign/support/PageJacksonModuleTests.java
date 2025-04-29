@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2024 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Olga Maciaszek-Sharma
  * @author Pedro Mendes
  * @author Nikita Konev
+ * @author Bruce Stewart
  */
 class PageJacksonModuleTests {
 
@@ -83,6 +84,19 @@ class PageJacksonModuleTests {
 		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
 		assertThat(result.getPageable().getSort().getOrderFor("lastName").getDirection())
 			.isEqualTo(Sort.Direction.DESC);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "./src/test/resources/withPage.json" })
+	void deserializePageFromFileWithPage(String filePath) throws IOException {
+		File file = new File(filePath);
+
+		Page<?> result = objectMapper.readValue(file, Page.class);
+
+		assertThat(result.getTotalElements()).isEqualTo(11);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+		assertThat(result.getPageable().getSort()).isEqualTo(Sort.unsorted());
 	}
 
 	@Test
