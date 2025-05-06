@@ -18,4 +18,8 @@
 	<suppress files="[\\/]src[\\/](test|testFixtures)[\\/](java|java21)[\\/]" checks="RegexpSinglelineJava" id="toUpperCaseWithoutLocale"/>
 	<!-- Important -->
 	<suppress files=".*HttpEncoding.*" checks="InterfaceIsTypeCheck" />
+<!--	Supporess all checks for protobuf-generated files-->
+	<suppress files="Request\.java" checks="[a-zA-Z0-9]*"/>
+	<suppress files="RequestOrBuilder\.java" checks="[a-zA-Z0-9]*"/>
+	<suppress files="ProtobufTest\.java" checks="[a-zA-Z0-9]*"/>
 </suppressions>
