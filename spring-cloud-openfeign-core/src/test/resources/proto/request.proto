@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package org.springframework.cloud.openfeign.encoding.proto;
+
+option java_package = "org.springframework.cloud.openfeign.encoding.proto";
+option java_outer_classname = "ProtobufTest";
+option java_multiple_files = true;
+
+message Request {
+	int32 id = 1;
+	string msg = 2;
+}
