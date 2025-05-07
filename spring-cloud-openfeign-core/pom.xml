@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java</artifactId>
-			<version>3.25.5</version>
+			<version>3.25.7</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -191,7 +191,7 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.18.0</version>
+			<version>2.19.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
