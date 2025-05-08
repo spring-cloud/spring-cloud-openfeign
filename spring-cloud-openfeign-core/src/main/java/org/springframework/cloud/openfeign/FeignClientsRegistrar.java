@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2024 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,6 +66,7 @@ import org.springframework.util.StringUtils;
  * @author Olga Maciaszek-Sharma
  * @author Jasbir Singh
  * @author Jinho Lee
+ * @author HyeongDo Myeong
  */
 class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
@@ -122,9 +121,9 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar, ResourceLo
 				url = url.substring(0, url.length() - 1);
 			}
 			try {
-				new URL(url);
+				new URI(url);
 			}
-			catch (MalformedURLException e) {
+			catch (URISyntaxException e) {
 				throw new IllegalArgumentException(url + " is malformed", e);
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2024 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
  * @author Michal Domagala
  * @author Szymon Linowski
  * @author Olga Maciaszek-Sharma
+ * @author HyeongDo Myeong
  */
 class FeignClientsRegistrarTests {
 
@@ -87,6 +88,18 @@ class FeignClientsRegistrarTests {
 		FeignClientsRegistrar registrar = new FeignClientsRegistrar();
 		registrar.setEnvironment(new MockEnvironment());
 		return registrar.getName(Collections.singletonMap("name", name));
+	}
+
+	@Test
+	void goodUrl() {
+		String url = FeignClientsRegistrar.getUrl("https://good.url");
+		assertThat(url).as("url was wrong").isEqualTo("https://good.url");
+	}
+
+	@Test
+	void badUrl() {
+		assertThatExceptionOfType(IllegalArgumentException.class)
+			.isThrownBy(() -> FeignClientsRegistrar.getUrl("http://bad url"));
 	}
 
 	@Test
