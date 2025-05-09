@@ -68,6 +68,8 @@ import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -89,6 +91,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Ram Anaswara
  * @author Sam Kruglov
  * @author Tang Xiong
+ * @author Juhyeong An
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
 
@@ -234,7 +237,38 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	@Override
 	public MethodMetadata parseAndValidateMetadata(Class<?> targetType, Method method) {
 		processedMethods.put(Feign.configKey(targetType, method), method);
-		return super.parseAndValidateMetadata(targetType, method);
+		MethodMetadata metadata = super.parseAndValidateMetadata(targetType, method);
+
+		if (isGetMethod(metadata) && method.getParameterCount() > 0 && !hasHttpAnnotations(method)) {
+			LOG.warn(String.format(
+				"[OpenFeign Warning] Feign method '%s' is declared as GET with parameters, but none of the parameters are annotated " +
+				"(e.g. @RequestParam, @RequestHeader, @PathVariable, etc). This may result in fallback to POST at runtime. " +
+				"Consider explicitly annotating parameters.",
+				method.toGenericString()
+			));
+		}
+
+		return metadata;
+	}
+
+	private boolean isGetMethod(MethodMetadata metadata) {
+		return "GET".equalsIgnoreCase(metadata.template().method());
+	}
+
+	private boolean hasHttpAnnotations(Method method) {
+		for (Parameter parameter : method.getParameters()) {
+			for (Annotation annotation : parameter.getAnnotations()) {
+				Class<? extends Annotation> annotationType = annotation.annotationType();
+				if (annotationType == RequestParam.class ||
+					annotationType == RequestHeader.class ||
+					annotationType == PathVariable.class ||
+					annotationType == SpringQueryMap.class ||
+					annotationType == QueryMap.class) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override
