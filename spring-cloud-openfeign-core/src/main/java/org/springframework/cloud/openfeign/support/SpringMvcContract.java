@@ -241,12 +241,10 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 
 		if (isGetMethod(metadata) && method.getParameterCount() > 0 && !hasHttpAnnotations(method)) {
 			if (LOG.isWarnEnabled()) {
-				LOG.warn(String.format(
-					"[OpenFeign Warning] Feign method '%s' is declared as GET with parameters, but none of the parameters are annotated " +
-					"(e.g. @RequestParam, @RequestHeader, @PathVariable, etc). This may result in fallback to POST at runtime. " +
-					"Consider explicitly annotating parameters.",
-					method.toGenericString()
-				));
+				LOG.warn(String
+					.format("[OpenFeign Warning] Feign method '%s' is declared as GET with parameters, but none of the parameters are annotated "
+							+ "(e.g. @RequestParam, @RequestHeader, @PathVariable, etc). This may result in fallback to POST at runtime. "
+							+ "Consider explicitly annotating parameters.", method.toGenericString()));
 			}
 		}
 
@@ -261,11 +259,9 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		for (Parameter parameter : method.getParameters()) {
 			for (Annotation annotation : parameter.getAnnotations()) {
 				Class<? extends Annotation> annotationType = annotation.annotationType();
-				if (annotationType == RequestParam.class ||
-					annotationType == RequestHeader.class ||
-					annotationType == PathVariable.class ||
-					annotationType == SpringQueryMap.class ||
-					annotationType == QueryMap.class) {
+				if (annotationType == RequestParam.class || annotationType == RequestHeader.class
+						|| annotationType == PathVariable.class || annotationType == SpringQueryMap.class
+						|| annotationType == QueryMap.class) {
 					return true;
 				}
 			}
