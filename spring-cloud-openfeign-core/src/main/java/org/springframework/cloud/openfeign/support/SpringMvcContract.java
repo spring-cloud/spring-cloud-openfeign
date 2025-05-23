@@ -240,12 +240,14 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		MethodMetadata metadata = super.parseAndValidateMetadata(targetType, method);
 
 		if (isGetMethod(metadata) && method.getParameterCount() > 0 && !hasHttpAnnotations(method)) {
-			LOG.warn(String.format(
-				"[OpenFeign Warning] Feign method '%s' is declared as GET with parameters, but none of the parameters are annotated " +
-				"(e.g. @RequestParam, @RequestHeader, @PathVariable, etc). This may result in fallback to POST at runtime. " +
-				"Consider explicitly annotating parameters.",
-				method.toGenericString()
-			));
+			if (LOG.isWarnEnabled()) {
+				LOG.warn(String.format(
+					"[OpenFeign Warning] Feign method '%s' is declared as GET with parameters, but none of the parameters are annotated " +
+					"(e.g. @RequestParam, @RequestHeader, @PathVariable, etc). This may result in fallback to POST at runtime. " +
+					"Consider explicitly annotating parameters.",
+					method.toGenericString()
+				));
+			}
 		}
 
 		return metadata;
