@@ -48,6 +48,8 @@ import org.springframework.http.converter.GenericHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
@@ -140,7 +142,13 @@ public class SpringEncoder implements Encoder {
 				request.headers(null);
 				// converters can modify headers, so update the request
 				// with the modified headers
-				request.headers(new LinkedHashMap<>(outputMessage.getHeaders()));
+
+				MultiValueMap<String, String> newHeaders = new LinkedMultiValueMap<>();
+				if (outputMessage.getHeaders() != null) {
+					outputMessage.getHeaders().forEach(newHeaders::put);
+				}
+
+				request.headers(new LinkedHashMap<>(newHeaders));
 
 				// do not use charset for binary data and protobuf
 				Charset charset;

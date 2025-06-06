@@ -19,12 +19,13 @@ package org.springframework.cloud.openfeign;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.lang.Nullable;
 
 /**
  * A factory that creates instances of feign classes. It creates a Spring
@@ -48,8 +49,7 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 				applicationContextInitializers);
 	}
 
-	@Nullable
-	public <T> T getInstanceWithoutAncestors(String name, Class<T> type) {
+	public <T> @Nullable T getInstanceWithoutAncestors(String name, Class<T> type) {
 		try {
 			return BeanFactoryUtils.beanOfType(getContext(name), type);
 		}
@@ -58,8 +58,7 @@ public class FeignClientFactory extends NamedContextFactory<FeignClientSpecifica
 		}
 	}
 
-	@Nullable
-	public <T> Map<String, T> getInstancesWithoutAncestors(String name, Class<T> type) {
+	@Nullable public <T> Map<String, T> getInstancesWithoutAncestors(String name, Class<T> type) {
 		return getContext(name).getBeansOfType(type);
 	}
 

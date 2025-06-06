@@ -22,4 +22,6 @@
 	<suppress files="Request\.java" checks="[a-zA-Z0-9]*"/>
 	<suppress files="RequestOrBuilder\.java" checks="[a-zA-Z0-9]*"/>
 	<suppress files="ProtobufTest\.java" checks="[a-zA-Z0-9]*"/>
+<!--	Portfolio convention for @Nullable is now to inline it-->
+	<suppress files=".*" checks="AnnotationLocation"/>
 </suppressions>

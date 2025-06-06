@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +38,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -129,7 +130,11 @@ class FeignClientFactoryBeanIntegrationTests {
 
 		@GetMapping(value = "/headers", produces = APPLICATION_JSON_VALUE)
 		public Map<String, List<String>> headers(@RequestHeader HttpHeaders headers) {
-			return new HashMap<>(headers);
+			MultiValueMap<String, String> newHeaders = new LinkedMultiValueMap<>();
+			if (headers != null) {
+				headers.forEach(newHeaders::put);
+			}
+			return newHeaders;
 		}
 
 		@GetMapping(value = "/params", produces = APPLICATION_JSON_VALUE)
