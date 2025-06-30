@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,10 +32,10 @@ import static org.mockito.Mockito.when;
 /**
  * @author Olga Maciaszek-Sharma
  */
-@SpringBootTest(classes = FeignClientMockBeanTests.Config.class)
-public class FeignClientMockBeanTests {
+@SpringBootTest(classes = FeignClientMockitoBeanTests.Config.class)
+public class FeignClientMockitoBeanTests {
 
-	@MockBean
+	@MockitoBean
 	private RandomClient randomClient;
 
 	@Autowired
@@ -74,7 +74,7 @@ public class FeignClientMockBeanTests {
 class TestService {
 
 	@Autowired
-	private FeignClientMockBeanTests.RandomClient randomClient;
+	private FeignClientMockitoBeanTests.RandomClient randomClient;
 
 	public String testMethod() {
 		return randomClient.getRandomString();

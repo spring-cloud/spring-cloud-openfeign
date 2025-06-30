@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2024 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.boot.data.autoconfigure.web.SpringDataWebProperties;
+import org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
@@ -61,6 +61,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
 
@@ -91,9 +92,6 @@ public class FeignClientsConfiguration {
 	private Logger logger;
 
 	@Autowired(required = false)
-	private SpringDataWebProperties springDataWebProperties;
-
-	@Autowired(required = false)
 	private FeignClientProperties feignClientProperties;
 
 	@Autowired(required = false)
@@ -110,36 +108,7 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public Encoder feignEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider,
 			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
-		return springEncoder(formWriterProvider, encoderProperties, customizers);
-	}
-
-	@Bean
-	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
-	@ConditionalOnMissingBean
-	public Encoder feignEncoderPageable(ObjectProvider<AbstractFormWriter> formWriterProvider,
-			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
-		PageableSpringEncoder encoder = new PageableSpringEncoder(
-				springEncoder(formWriterProvider, encoderProperties, customizers));
-
-		if (springDataWebProperties != null) {
-			encoder.setPageParameter(springDataWebProperties.getPageable().getPageParameter());
-			encoder.setSizeParameter(springDataWebProperties.getPageable().getSizeParameter());
-			encoder.setSortParameter(springDataWebProperties.getSort().getSortParameter());
-		}
-		return encoder;
-	}
-
-	@Bean
-	@ConditionalOnClass(name = "org.springframework.data.domain.Pageable")
-	@ConditionalOnMissingBean
-	public QueryMapEncoder feignQueryMapEncoderPageable() {
-		PageableSpringQueryMapEncoder queryMapEncoder = new PageableSpringQueryMapEncoder();
-		if (springDataWebProperties != null) {
-			queryMapEncoder.setPageParameter(springDataWebProperties.getPageable().getPageParameter());
-			queryMapEncoder.setSizeParameter(springDataWebProperties.getPageable().getSizeParameter());
-			queryMapEncoder.setSortParameter(springDataWebProperties.getSort().getSortParameter());
-		}
-		return queryMapEncoder;
+		return springEncoder(formWriterProvider, messageConverters, encoderProperties, customizers);
 	}
 
 	@Bean
@@ -176,8 +145,9 @@ public class FeignClientsConfiguration {
 		};
 	}
 
-	private Encoder springEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider,
-			FeignEncoderProperties encoderProperties, ObjectProvider<HttpMessageConverterCustomizer> customizers) {
+	private static Encoder springEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider,
+			ObjectFactory<HttpMessageConverters> messageConverters, FeignEncoderProperties encoderProperties,
+			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
 		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
 
 		if (formWriter != null) {
@@ -189,13 +159,54 @@ public class FeignClientsConfiguration {
 		}
 	}
 
-	private class SpringPojoFormEncoder extends SpringFormEncoder {
+	private static class SpringPojoFormEncoder extends SpringFormEncoder {
 
 		SpringPojoFormEncoder(AbstractFormWriter formWriter) {
 			super();
 
 			MultipartFormContentProcessor processor = (MultipartFormContentProcessor) getContentProcessor(MULTIPART);
 			processor.addFirstWriter(formWriter);
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass({ Pageable.class, SpringDataWebProperties.class })
+	static class SpringDataConfiguration {
+
+		private final SpringDataWebProperties springDataWebProperties;
+
+		SpringDataConfiguration(ObjectProvider<SpringDataWebProperties> springDataWebProperties) {
+			this.springDataWebProperties = springDataWebProperties.getIfAvailable();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public Encoder feignEncoderPageable(ObjectProvider<AbstractFormWriter> formWriterProvider,
+				ObjectFactory<HttpMessageConverters> messageConverters,
+				ObjectProvider<FeignEncoderProperties> encoderProperties,
+				ObjectProvider<HttpMessageConverterCustomizer> customizers) {
+			PageableSpringEncoder encoder = new PageableSpringEncoder(springEncoder(formWriterProvider,
+					messageConverters, encoderProperties.getIfAvailable(), customizers));
+
+			if (springDataWebProperties != null) {
+				encoder.setPageParameter(springDataWebProperties.getPageable().getPageParameter());
+				encoder.setSizeParameter(springDataWebProperties.getPageable().getSizeParameter());
+				encoder.setSortParameter(springDataWebProperties.getSort().getSortParameter());
+			}
+			return encoder;
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public QueryMapEncoder feignQueryMapEncoderPageable() {
+			PageableSpringQueryMapEncoder queryMapEncoder = new PageableSpringQueryMapEncoder();
+			if (springDataWebProperties != null) {
+				queryMapEncoder.setPageParameter(springDataWebProperties.getPageable().getPageParameter());
+				queryMapEncoder.setSizeParameter(springDataWebProperties.getPageable().getSizeParameter());
+				queryMapEncoder.setSortParameter(springDataWebProperties.getSort().getSortParameter());
+			}
+			return queryMapEncoder;
 		}
 
 	}

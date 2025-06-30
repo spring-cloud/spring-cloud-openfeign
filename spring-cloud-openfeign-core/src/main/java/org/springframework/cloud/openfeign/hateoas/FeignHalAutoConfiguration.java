@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 the original author or authors.
+ * Copyright 2016-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,9 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.cloud.openfeign.support.HttpMessageConverterCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.config.HateoasConfiguration;
 import org.springframework.hateoas.config.WebConverters;
 
 /**
@@ -36,8 +32,9 @@ import org.springframework.hateoas.config.WebConverters;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnWebApplication
 @ConditionalOnClass(WebConverters.class)
-@AutoConfigureAfter({ JacksonAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class,
-		RepositoryRestMvcAutoConfiguration.class, HateoasConfiguration.class })
+@AutoConfigureAfter(name = { "org.springframework.boot.data.rest.autoconfigure.RepositoryRestMvcAutoConfiguration",
+		"org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration",
+		"org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration" })
 public class FeignHalAutoConfiguration {
 
 	@Bean
