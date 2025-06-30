@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign.test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration(proxyBeanMethods = false)
@@ -26,7 +27,8 @@ public class NoSecurityConfiguration {
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.authorizeRequests().anyRequest().permitAll().and().csrf().disable();
+		http.authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().permitAll())
+			.csrf(AbstractHttpConfigurer::disable);
 		return http.build();
 	}
 
