@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2022 the original author or authors.
+ * Copyright 2022-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,14 +30,14 @@ import org.springframework.aot.AotDetector;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
 import org.springframework.boot.context.annotation.UserConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebApplicationContext;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.boot.tomcat.autoconfigure.servlet.TomcatServletWebServerAutoConfiguration;
+import org.springframework.boot.web.context.servlet.AnnotationConfigServletWebApplicationContext;
+import org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -78,7 +78,7 @@ public class FeignAotTests {
 		WebApplicationContextRunner contextRunner = new WebApplicationContextRunner(
 				AnnotationConfigServletWebApplicationContext::new)
 			.withConfiguration(
-					AutoConfigurations.of(ServletWebServerFactoryAutoConfiguration.class, FeignAutoConfiguration.class))
+					AutoConfigurations.of(TomcatServletWebServerAutoConfiguration.class, FeignAutoConfiguration.class))
 			.withConfiguration(UserConfigurations.of(TestFeignConfiguration.class))
 			.withPropertyValues("logging.level.org.springframework.cloud=DEBUG");
 		contextRunner.prepare(context -> {
