@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>4.2.2-SNAPSHOT</version>
+		<version>4.2.3-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 	<scm>
@@ -86,7 +86,7 @@
 	<properties>
 		<main.basedir>${basedir}</main.basedir>
 		<jackson.version>2.18.4</jackson.version>
-		<spring-cloud-commons.version>4.2.2-SNAPSHOT</spring-cloud-commons.version>
+		<spring-cloud-commons.version>4.2.3-SNAPSHOT</spring-cloud-commons.version>
 
 		<!-- Plugin versions -->
 		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
