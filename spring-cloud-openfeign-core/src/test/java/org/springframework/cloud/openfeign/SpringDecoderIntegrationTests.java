@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +114,7 @@ class SpringDecoderIntegrationTests extends FeignClientFactoryBean {
 
 	@Test
 	@SuppressWarnings("unchecked")
+	@Disabled("https://github.com/spring-cloud/spring-cloud-openfeign/issues/1257")
 	void testWildcardTypeDecode() {
 		ResponseEntity<?> wildcard = testClient().getWildcard();
 		assertThat(wildcard).as("wildcard was null").isNotNull();

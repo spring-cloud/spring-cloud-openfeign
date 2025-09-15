@@ -24,9 +24,9 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.core.Version;
+import tools.jackson.databind.JacksonModule;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -44,7 +44,7 @@ import org.springframework.data.web.PagedModel;
  * @author Nikita Konev
  * @author Bruce Stewart
  */
-public class PageJacksonModule extends Module {
+public class PageJacksonModule extends JacksonModule {
 
 	@Override
 	public String getModuleName() {
@@ -58,8 +58,8 @@ public class PageJacksonModule extends Module {
 
 	@Override
 	public void setupModule(SetupContext context) {
-		context.setMixInAnnotations(Page.class, PageMixIn.class);
-		context.setMixInAnnotations(Pageable.class, PageableMixIn.class);
+		context.setMixIn(Page.class, PageMixIn.class);
+		context.setMixIn(Pageable.class, PageableMixIn.class);
 	}
 
 	private static PageRequest buildPageRequest(int number, int size, Sort sort) {
@@ -91,17 +91,18 @@ public class PageJacksonModule extends Module {
 
 		SimplePageImpl(@JsonProperty("content") List<T> content, @JsonProperty("pageable") Pageable pageable,
 				@JsonProperty("page") PagedModel.PageMetadata pageMetadata,
-				@JsonProperty("number") @JsonAlias("pageNumber") int number,
-				@JsonProperty("size") @JsonAlias("pageSize") int size,
+				@JsonProperty("number") @JsonAlias("pageNumber") Integer number,
+				@JsonProperty("size") @JsonAlias("pageSize") Integer size,
 				@JsonProperty("totalElements") @JsonAlias({ "total-elements", "total_elements", "totalelements",
-						"TotalElements", "total" }) long totalElements,
+						"TotalElements", "total" }) Long totalElements,
 				@JsonProperty("sort") Sort sort) {
-			if (size > 0) {
-				PageRequest pageRequest = buildPageRequest(number, size, sort);
-				delegate = new PageImpl<>(content, pageRequest, totalElements);
+			if (size != null && size > 0) {
+				PageRequest pageRequest = buildPageRequest((number == null) ? 0 : number, (size == null) ? 0 : size,
+						sort);
+				delegate = new PageImpl<>(content, pageRequest, (totalElements == null) ? 0 : totalElements);
 			}
 			else if (pageable != null && pageable.getPageSize() > 0) {
-				delegate = new PageImpl<>(content, pageable, totalElements);
+				delegate = new PageImpl<>(content, pageable, (totalElements == null) ? 0 : totalElements);
 			}
 			else if (pageMetadata != null && pageMetadata.size() > 0) {
 				PageRequest pageRequest = buildPageRequest((int) pageMetadata.number(), (int) pageMetadata.size(),

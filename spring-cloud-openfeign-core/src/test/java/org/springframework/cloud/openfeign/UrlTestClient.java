@@ -21,13 +21,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.Client;
 import feign.Request;
 import feign.Response;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * @author Jasbir Singh
@@ -37,8 +35,7 @@ public class UrlTestClient implements Client {
 	protected static ObjectMapper mapper;
 
 	static {
-		mapper = new ObjectMapper();
-		mapper.registerModule(new JavaTimeModule()).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper = JsonMapper.builder().build();
 	}
 
 	@Override
@@ -58,14 +55,9 @@ public class UrlTestClient implements Client {
 	}
 
 	private byte[] prepareResponse(Request request) {
-		try {
-			UrlResponseForTests response = new UrlResponseForTests(request.url(),
-					request.requestTemplate().feignTarget().getClass());
-			return mapper.writeValueAsString(response).getBytes();
-		}
-		catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
+		UrlResponseForTests response = new UrlResponseForTests(request.url(),
+				request.requestTemplate().feignTarget().getClass());
+		return mapper.writeValueAsString(response).getBytes();
 	}
 
 	static class UrlResponseForTests {

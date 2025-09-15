@@ -20,12 +20,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -50,14 +50,15 @@ class PageJacksonModuleTests {
 
 	@BeforeAll
 	static void initialize() {
-		objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new PageJacksonModule());
-		objectMapper.registerModule(new SortJacksonModule());
+		objectMapper = JsonMapper.builder()
+			.addModule(new PageJacksonModule())
+			.addModule(new SortJacksonModule())
+			.build();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "totalElements", "total-elements", "total_elements", "totalelements", "TotalElements" })
-	void deserializePage(String totalElements) throws JsonProcessingException {
+	void deserializePage(String totalElements) {
 		// Given
 		String pageJson = "{\"content\":[\"A name\"], \"number\":1, \"size\":2, \"" + totalElements + "\": 3}";
 		// When
@@ -100,7 +101,7 @@ class PageJacksonModuleTests {
 	}
 
 	@Test
-	void serializeAndDeserializeEmpty() throws JsonProcessingException {
+	void serializeAndDeserializeEmpty() {
 		// Given
 		PageImpl<Object> objects = new PageImpl<>(new ArrayList<>(), Pageable.ofSize(1), 0);
 		String pageJson = objectMapper.writeValueAsString(objects);
@@ -113,7 +114,7 @@ class PageJacksonModuleTests {
 	}
 
 	@Test
-	void serializeAndDeserializeFilledMultiple() throws JsonProcessingException {
+	void serializeAndDeserializeFilledMultiple() {
 		// Given
 		ArrayList<Object> pageElements = new ArrayList<>();
 		pageElements.add("first element");
@@ -136,7 +137,7 @@ class PageJacksonModuleTests {
 	}
 
 	@Test
-	void serializeAndDeserializeEmptyCascade() throws JsonProcessingException {
+	void serializeAndDeserializeEmptyCascade() {
 		// Given
 		PageImpl<Object> objects = new PageImpl<>(new ArrayList<>(), Pageable.ofSize(1), 0);
 		String pageJson = objectMapper.writeValueAsString(objects);
@@ -155,7 +156,7 @@ class PageJacksonModuleTests {
 	}
 
 	@Test
-	void serializeAndDeserializeFilledMultipleCascade() throws JsonProcessingException {
+	void serializeAndDeserializeFilledMultipleCascade() {
 		// Given
 		ArrayList<Object> pageElements = new ArrayList<>();
 		pageElements.add("first element in cascaded serialization");

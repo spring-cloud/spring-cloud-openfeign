@@ -17,15 +17,18 @@
 package org.springframework.cloud.openfeign.support;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -49,12 +52,14 @@ class SortJacksonModuleTests {
 
 	@BeforeEach
 	public void setup() {
-		objectMapper.registerModules(new PageJacksonModule());
-		objectMapper.registerModule(new SortJacksonModule());
+		objectMapper = JsonMapper.builder()
+			.addModule(new PageJacksonModule())
+			.addModule(new SortJacksonModule())
+			.build();
 	}
 
 	@Test
-	public void testDeserializePage() throws JsonProcessingException {
+	public void testDeserializePage() {
 		// Given
 		String pageJson = "{\"content\":[\"A name\"],\"number\":1,\"size\":2,\"totalElements\":3,\"sort\":[{\"direction\":\"ASC\",\"property\":\"field\",\"ignoreCase\":false,\"nullHandling\":\"NATIVE\",\"descending\":false,\"ascending\":true}]}";
 		// When
@@ -79,7 +84,7 @@ class SortJacksonModuleTests {
 	}
 
 	@Test
-	public void testDeserializePageWithoutIgnoreCaseAndNullHandling() throws JsonProcessingException {
+	public void testDeserializePageWithoutIgnoreCaseAndNullHandling() {
 		// Given
 		String pageJson = "{\"content\":[\"A name\"],\"number\":1,\"size\":2,\"totalElements\":3,\"sort\":[{\"direction\":\"ASC\",\"property\":\"field\",\"descending\":false,\"ascending\":true}]}";
 		// When
@@ -102,7 +107,7 @@ class SortJacksonModuleTests {
 	}
 
 	@Test
-	public void testDeserializePageWithoutNullHandling() throws JsonProcessingException {
+	public void testDeserializePageWithoutNullHandling() {
 		// Given
 		String pageJson = "{\"content\":[\"A name\"],\"number\":1,\"size\":2,\"totalElements\":3,\"sort\":[{\"direction\":\"ASC\",\"property\":\"field\",\"ignoreCase\":true,\"descending\":false,\"ascending\":true}]}";
 		// When
@@ -126,7 +131,7 @@ class SortJacksonModuleTests {
 	}
 
 	@Test
-	public void testDeserializePageWithTrueMarkedIgnoreCaseAndNullHandling() throws JsonProcessingException {
+	public void testDeserializePageWithTrueMarkedIgnoreCaseAndNullHandling() {
 		// Given
 		String pageJson = "{\"content\":[\"A name\"],\"number\":1,\"size\":2,\"totalElements\":3,\"sort\":[{\"direction\":\"ASC\",\"property\":\"field\",\"ignoreCase\":true,\"nullHandling\":\"NATIVE\",\"descending\":false,\"ascending\":true}]}";
 		// When
@@ -162,15 +167,23 @@ class SortJacksonModuleTests {
 	}
 
 	@Test
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void testSerializePageWithGivenIgnoreCase() throws IOException {
 		// Given
 		Sort sort = Sort.by(Sort.Order.by("fieldName"), Sort.Order.by("fieldName2").ignoreCase());
 		// When
 		String result = objectMapper.writeValueAsString(sort);
+		Object o = objectMapper.readerForListOf(Map.class).readValue(result);
 		// Then
-		assertThat(result, containsString("\"direction\":\"ASC\""));
-		assertThat(result, containsString("\"property\":\"fieldName\""));
-		assertThat(result, containsString("\"property\":\"fieldName2\",\"ignoreCase\":true"));
+		Assertions.assertThat(o).isInstanceOf(List.class);
+		List<?> list = (List) o;
+		Assertions.assertThat(list.get(0)).isInstanceOf(Map.class);
+		Map<String, Object> map = (Map) list.get(0);
+		Assertions.assertThat(map).containsEntry("direction", "ASC").containsEntry("property", "fieldName");
+
+		Assertions.assertThat(list.get(1)).isInstanceOf(Map.class);
+		map = (Map) list.get(1);
+		Assertions.assertThat(map).containsEntry("ignoreCase", true).containsEntry("property", "fieldName2");
 	}
 
 }

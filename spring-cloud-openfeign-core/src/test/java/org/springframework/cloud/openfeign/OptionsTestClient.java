@@ -22,13 +22,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.Client;
 import feign.Request;
 import feign.Response;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * @author Jasbir Singh
@@ -39,7 +36,6 @@ public class OptionsTestClient implements Client {
 
 	static {
 		mapper = new ObjectMapper();
-		mapper.registerModule(new JavaTimeModule()).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 
 	@Override
@@ -59,15 +55,9 @@ public class OptionsTestClient implements Client {
 	}
 
 	private byte[] prepareResponse(Request.Options options) {
-		try {
-
-			OptionsResponseForTests response = new OptionsResponseForTests(options.connectTimeoutMillis(),
-					TimeUnit.MILLISECONDS, options.readTimeoutMillis(), TimeUnit.MILLISECONDS);
-			return mapper.writeValueAsString(response).getBytes();
-		}
-		catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
+		OptionsResponseForTests response = new OptionsResponseForTests(options.connectTimeoutMillis(),
+				TimeUnit.MILLISECONDS, options.readTimeoutMillis(), TimeUnit.MILLISECONDS);
+		return mapper.writeValueAsString(response).getBytes();
 	}
 
 	record OptionsResponseForTests(long connectTimeout, TimeUnit connectTimeoutUnit, long readTimeout,

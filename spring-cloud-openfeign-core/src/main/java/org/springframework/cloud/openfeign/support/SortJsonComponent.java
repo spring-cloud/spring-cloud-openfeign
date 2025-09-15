@@ -16,20 +16,18 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.TreeNode;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import feign.codec.EncodeException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.TreeNode;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.node.ArrayNode;
 
 import org.springframework.data.domain.Sort;
 
@@ -43,19 +41,12 @@ import org.springframework.data.domain.Sort;
  */
 public class SortJsonComponent {
 
-	public static class SortSerializer extends JsonSerializer<Sort> {
+	public static class SortSerializer extends ValueSerializer<Sort> {
 
 		@Override
-		public void serialize(Sort value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+		public void serialize(Sort value, JsonGenerator gen, SerializationContext serializers) {
 			gen.writeStartArray();
-			value.iterator().forEachRemaining(v -> {
-				try {
-					gen.writeObject(v);
-				}
-				catch (IOException e) {
-					throw new EncodeException("Couldn't serialize object " + v);
-				}
-			});
+			value.iterator().forEachRemaining(gen::writePOJO);
 			gen.writeEndArray();
 		}
 
@@ -66,12 +57,11 @@ public class SortJsonComponent {
 
 	}
 
-	public static class SortDeserializer extends JsonDeserializer<Sort> {
+	public static class SortDeserializer extends ValueDeserializer<Sort> {
 
 		@Override
-		public Sort deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-				throws IOException {
-			TreeNode treeNode = jsonParser.getCodec().readTree(jsonParser);
+		public Sort deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {
+			TreeNode treeNode = jsonParser.readValueAsTree();
 			if (treeNode.isArray()) {
 				ArrayNode arrayNode = (ArrayNode) treeNode;
 				return toSort(arrayNode);
@@ -94,19 +84,19 @@ public class SortJsonComponent {
 				Sort.Order order;
 				// there is no way to construct without null handling
 				if ((jsonNode.has("ignoreCase") && jsonNode.get("ignoreCase").isBoolean())
-						&& jsonNode.has("nullHandling") && jsonNode.get("nullHandling").isTextual()) {
+						&& jsonNode.has("nullHandling") && jsonNode.get("nullHandling").isString()) {
 
 					boolean ignoreCase = jsonNode.get("ignoreCase").asBoolean();
-					String nullHandlingValue = jsonNode.get("nullHandling").textValue();
+					String nullHandlingValue = jsonNode.get("nullHandling").asString();
 
-					order = new Sort.Order(Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
-							jsonNode.get("property").textValue(), ignoreCase,
+					order = new Sort.Order(Sort.Direction.valueOf(jsonNode.get("direction").asString()),
+							jsonNode.get("property").asString(), ignoreCase,
 							Sort.NullHandling.valueOf(nullHandlingValue));
 				}
 				else {
 					// backward compatibility
-					order = new Sort.Order(Sort.Direction.valueOf(jsonNode.get("direction").textValue()),
-							jsonNode.get("property").textValue());
+					order = new Sort.Order(Sort.Direction.valueOf(jsonNode.get("direction").asString()),
+							jsonNode.get("property").asString());
 				}
 				orders.add(order);
 			}

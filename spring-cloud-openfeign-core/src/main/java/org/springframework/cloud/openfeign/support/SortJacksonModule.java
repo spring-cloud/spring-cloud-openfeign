@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.module.SimpleDeserializers;
-import com.fasterxml.jackson.databind.module.SimpleSerializers;
+import tools.jackson.core.Version;
+import tools.jackson.databind.JacksonModule;
+import tools.jackson.databind.module.SimpleDeserializers;
+import tools.jackson.databind.module.SimpleSerializers;
 
 import org.springframework.data.domain.Sort;
 
@@ -29,7 +29,7 @@ import org.springframework.data.domain.Sort;
  *
  * @author Can Bezmen
  */
-public class SortJacksonModule extends Module {
+public class SortJacksonModule extends JacksonModule {
 
 	@Override
 	public String getModuleName() {

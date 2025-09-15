@@ -35,7 +35,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import com.fasterxml.jackson.databind.Module;
 import feign.Capability;
 import feign.Client;
 import feign.Feign;
@@ -426,7 +425,7 @@ class FeignHints implements RuntimeHintsRegistrar {
 					Set.of(TypeReference.of(FeignClientFactoryBean.class),
 							TypeReference.of(ResponseInterceptor.Chain.class), TypeReference.of(Capability.class)),
 					hint -> hint.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-							MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.DECLARED_FIELDS));
+							MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.ACCESS_DECLARED_FIELDS));
 	}
 
 }
