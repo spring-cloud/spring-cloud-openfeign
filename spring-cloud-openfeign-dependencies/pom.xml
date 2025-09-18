@@ -54,14 +54,6 @@
 					</releases>
 				</repository>
 				<repository>
-					<id>spring-milestones</id>
-					<name>Spring Milestones</name>
-					<url>https://repo.spring.io/milestone</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
-				<repository>
 					<id>spring-releases</id>
 					<name>Spring Releases</name>
 					<url>https://repo.spring.io/release</url>
@@ -81,14 +73,6 @@
 					<releases>
 						<enabled>false</enabled>
 					</releases>
-				</pluginRepository>
-				<pluginRepository>
-					<id>spring-milestones</id>
-					<name>Spring Milestones</name>
-					<url>https://repo.spring.io/milestone</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
 				</pluginRepository>
 			</pluginRepositories>
 		</profile>
