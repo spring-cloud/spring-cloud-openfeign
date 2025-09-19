@@ -26,7 +26,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -41,9 +40,6 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass(Feign.class)
 @ConditionalOnBean(Client.class)
 @ConditionalOnProperty("spring.cloud.openfeign.compression.response.enabled")
-// The OK HTTP client uses "transparent" compression.
-// If the accept-encoding header is present, it disables transparent compression.
-@Conditional(OkHttpFeignClientBeanMissingCondition.class)
 @AutoConfigureAfter(FeignAutoConfiguration.class)
 public class FeignAcceptGzipEncodingAutoConfiguration {
 

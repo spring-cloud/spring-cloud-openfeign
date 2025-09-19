@@ -18,22 +18,9 @@ package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Method;
 import java.net.http.HttpClient;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import feign.Capability;
 import feign.Client;
@@ -42,10 +29,6 @@ import feign.ResponseInterceptor;
 import feign.Target;
 import feign.hc5.ApacheHttp5Client;
 import feign.http2client.Http2Client;
-import feign.okhttp.OkHttpClient;
-import jakarta.annotation.PreDestroy;
-import okhttp3.ConnectionPool;
-import okhttp3.Protocol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -225,121 +208,6 @@ public class FeignAutoConfiguration {
 			@Override
 			public String resolveCircuitBreakerName(String feignClientName, Target<?> target, Method method) {
 				return super.resolveCircuitBreakerName(feignClientName, target, method).replaceAll("[^a-zA-Z0-9]", "");
-			}
-
-		}
-
-	}
-
-	// the following configuration is for alternate feign clients if
-	// SC loadbalancer is not on the class path.
-	// see corresponding configurations in FeignLoadBalancerAutoConfiguration
-	// for load-balanced clients.
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(OkHttpClient.class)
-	@ConditionalOnMissingBean(okhttp3.OkHttpClient.class)
-	@ConditionalOnProperty("spring.cloud.openfeign.okhttp.enabled")
-	protected static class OkHttpFeignConfiguration {
-
-		private okhttp3.OkHttpClient okHttpClient;
-
-		@Bean
-		@ConditionalOnMissingBean
-		public okhttp3.OkHttpClient.Builder okHttpClientBuilder() {
-			return new okhttp3.OkHttpClient.Builder();
-		}
-
-		@Bean
-		@ConditionalOnMissingBean(ConnectionPool.class)
-		public ConnectionPool httpClientConnectionPool(FeignHttpClientProperties httpClientProperties) {
-			int maxTotalConnections = httpClientProperties.getMaxConnections();
-			long timeToLive = httpClientProperties.getTimeToLive();
-			TimeUnit ttlUnit = httpClientProperties.getTimeToLiveUnit();
-			return new ConnectionPool(maxTotalConnections, timeToLive, ttlUnit);
-		}
-
-		@Bean
-		public okhttp3.OkHttpClient okHttpClient(okhttp3.OkHttpClient.Builder builder, ConnectionPool connectionPool,
-				FeignHttpClientProperties httpClientProperties) {
-			boolean followRedirects = httpClientProperties.isFollowRedirects();
-			int connectTimeout = httpClientProperties.getConnectionTimeout();
-			boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
-			Duration readTimeout = httpClientProperties.getOkHttp().getReadTimeout();
-			List<Protocol> protocols = httpClientProperties.getOkHttp()
-				.getProtocols()
-				.stream()
-				.map(Protocol::valueOf)
-				.collect(Collectors.toList());
-			if (disableSslValidation) {
-				disableSsl(builder);
-			}
-			this.okHttpClient = builder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-				.followRedirects(followRedirects)
-				.readTimeout(readTimeout)
-				.connectionPool(connectionPool)
-				.protocols(protocols)
-				.build();
-			return this.okHttpClient;
-		}
-
-		private void disableSsl(okhttp3.OkHttpClient.Builder builder) {
-			try {
-				X509TrustManager disabledTrustManager = new DisableValidationTrustManager();
-				TrustManager[] trustManagers = new TrustManager[1];
-				trustManagers[0] = disabledTrustManager;
-				SSLContext sslContext = SSLContext.getInstance("SSL");
-				sslContext.init(null, trustManagers, new java.security.SecureRandom());
-				SSLSocketFactory disabledSSLSocketFactory = sslContext.getSocketFactory();
-				builder.sslSocketFactory(disabledSSLSocketFactory, disabledTrustManager);
-				builder.hostnameVerifier(new TrustAllHostnames());
-			}
-			catch (NoSuchAlgorithmException | KeyManagementException e) {
-				LOG.warn("Error setting SSLSocketFactory in OKHttpClient", e);
-			}
-		}
-
-		@PreDestroy
-		public void destroy() {
-			if (this.okHttpClient != null) {
-				this.okHttpClient.dispatcher().executorService().shutdown();
-				this.okHttpClient.connectionPool().evictAll();
-			}
-		}
-
-		@Bean
-		@ConditionalOnMissingBean(Client.class)
-		public Client feignClient(okhttp3.OkHttpClient client) {
-			return new OkHttpClient(client);
-		}
-
-		/**
-		 * A {@link X509TrustManager} that does not validate SSL certificates.
-		 */
-		class DisableValidationTrustManager implements X509TrustManager {
-
-			@Override
-			public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
-			}
-
-			@Override
-			public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
-			}
-
-			@Override
-			public X509Certificate[] getAcceptedIssuers() {
-				return new X509Certificate[0];
-			}
-
-		}
-
-		/**
-		 * A {@link HostnameVerifier} that does not validate any hostnames.
-		 */
-		class TrustAllHostnames implements HostnameVerifier {
-
-			@Override
-			public boolean verify(String s, SSLSession sslSession) {
-				return true;
 			}
 
 		}
