@@ -17,13 +17,9 @@
 package org.springframework.cloud.openfeign.support;
 
 import java.net.http.HttpClient;
-import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import feign.http2client.Http2Client;
-import feign.okhttp.OkHttpClient;
-import okhttp3.Protocol;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -96,11 +92,6 @@ public class FeignHttpClientProperties {
 	 * Apache HttpClient5 additional properties.
 	 */
 	private Hc5Properties hc5 = new Hc5Properties();
-
-	/**
-	 * Additional {@link OkHttpClient}-specific properties.
-	 */
-	private OkHttp okHttp = new OkHttp();
 
 	/**
 	 * Additional {@link Http2Client}-specific properties.
@@ -177,14 +168,6 @@ public class FeignHttpClientProperties {
 
 	public void setHc5(Hc5Properties hc5) {
 		this.hc5 = hc5;
-	}
-
-	public OkHttp getOkHttp() {
-		return okHttp;
-	}
-
-	public void setOkHttp(OkHttp okHttp) {
-		this.okHttp = okHttp;
 	}
 
 	public Http2Properties getHttp2() {
@@ -339,40 +322,6 @@ public class FeignHttpClientProperties {
 			 */
 			FIFO
 
-		}
-
-	}
-
-	/**
-	 * {@link OkHttpClient}-specific properties.
-	 */
-	public static class OkHttp {
-
-		/**
-		 * {@link OkHttpClient} read timeout; defaults to 60 seconds.
-		 */
-		private Duration readTimeout = Duration.ofSeconds(60);
-
-		/**
-		 * Configure the protocols used by this client to communicate with remote servers.
-		 * Uses {@link String} values of {@link Protocol}.
-		 */
-		private List<String> protocols = List.of("HTTP_2", "HTTP_1_1");
-
-		public Duration getReadTimeout() {
-			return readTimeout;
-		}
-
-		public void setReadTimeout(Duration readTimeout) {
-			this.readTimeout = readTimeout;
-		}
-
-		public List<String> getProtocols() {
-			return protocols;
-		}
-
-		public void setProtocols(List<String> protocols) {
-			this.protocols = protocols;
 		}
 
 	}
