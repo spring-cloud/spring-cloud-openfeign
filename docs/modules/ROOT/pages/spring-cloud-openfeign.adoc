@@ -140,12 +140,10 @@ If none of them is on the classpath, the default Feign client is used.
 
 NOTE: `spring-cloud-starter-openfeign` supports `spring-cloud-starter-loadbalancer`. However, as is an optional dependency, you need to make sure it has been added to your project if you want to use it.
 
-To use OkHttpClient-backed Feign clients and Http2Client Feign clients, make sure that the client you want to use is on the classpath and set `spring.cloud.openfeign.okhttp.enabled` or `spring.cloud.openfeign.http2client.enabled` to `true` respectively.
-
 When it comes to the Apache HttpClient 5-backed Feign clients, it's enough to ensure HttpClient 5 is on the classpath, but you can still disable its use for Feign Clients by setting  `spring.cloud.openfeign.httpclient.hc5.enabled` to `false`.
 You can customize the HTTP client used by providing a bean of either `org.apache.hc.client5.http.impl.classic.CloseableHttpClient` when using Apache HC5.
 
-You can further customise http clients by setting values in the `spring.cloud.openfeign.httpclient.xxx` properties. The ones prefixed just with `httpclient` will work for all the clients, the ones prefixed with `httpclient.hc5` to Apache HttpClient 5, the ones prefixed with `httpclient.okhttp` to OkHttpClient and the ones prefixed with `httpclient.http2` to Http2Client. You can find a full list of properties you can customise in the appendix.
+You can further customise http clients by setting values in the `spring.cloud.openfeign.httpclient.xxx` properties. The ones prefixed just with `httpclient` will work for all the clients, the ones prefixed with `httpclient.hc5` to Apache HttpClient 5, and the ones prefixed with `httpclient.http2` to Http2Client. You can find a full list of properties you can customise in the appendix.
 If you can not configure Apache HttpClient 5 by using properties, there is an `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` interface for programmatic configuration.
 
 TIP: Apache HTTP Components `5.4` have changed defaults in the HttpClient relating to HTTP/1.1 TLS upgrades. Most proxy servers handle upgrades without issue, however, you may encounter issues with Envoy or Istio. If you need to restore previous behaviour, you can use `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` to do it, as shown in the example below.
@@ -612,8 +610,6 @@ These properties allow you to be selective about the compressed media types and 
 
 When the request matches the mime type set in `spring.cloud.openfeign.compression.request.mime-types` and the size set in `spring.cloud.openfeign.compression.request.min-request-size`, `spring.cloud.openfeign.compression.request.enabled=true` results in compression headers being added to the request.
 The functionality of the headers is to signal to the server that a compressed body is expected by the client. It is the responsibility of the server-side app to provide the compressed body based on the headers provided by the client.
-
-TIP: Since the OkHttpClient uses "transparent" compression, that is disabled if the `content-encoding` or `accept-encoding` header is present, we do not enable compression when `feign.okhttp.OkHttpClient` is present on the classpath and `spring.cloud.openfeign.okhttp.enabled` is set to `true`.
 
 [[feign-logging]]
 === Feign logging

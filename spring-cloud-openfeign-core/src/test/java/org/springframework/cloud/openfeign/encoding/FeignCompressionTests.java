@@ -19,15 +19,12 @@ package org.springframework.cloud.openfeign.encoding;
 import java.util.Map;
 
 import feign.RequestInterceptor;
-import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,8 +39,7 @@ class FeignCompressionTests {
 	void shouldAddCompressionInterceptors() {
 		new ApplicationContextRunner()
 			.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true",
-					"spring.cloud.openfeign.compression.request.enabled=true",
-					"spring.cloud.openfeign.okhttp.enabled=false")
+					"spring.cloud.openfeign.compression.request.enabled=true")
 			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
 					FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class))
 			.run(context -> {
@@ -56,32 +52,6 @@ class FeignCompressionTests {
 				assertThat(interceptors.get("feignContentGzipEncodingInterceptor"))
 					.isInstanceOf(FeignContentGzipEncodingInterceptor.class);
 			});
-	}
-
-	@Test
-	void shouldNotAddInterceptorsIfFeignOkHttpClientPresent() {
-		new ApplicationContextRunner()
-			.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true",
-					"spring.cloud.openfeign.compression.request.enabled=true",
-					"spring.cloud.openfeign.okhttp.enabled=true", "spring.cloud.openfeign.httpclient.hc5.enabled")
-			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
-					FeignContentGzipEncodingAutoConfiguration.class, FeignAcceptGzipEncodingAutoConfiguration.class))
-			.run(context -> {
-				FeignClientFactory feignClientFactory = context.getBean(FeignClientFactory.class);
-				Map<String, RequestInterceptor> interceptors = feignClientFactory.getInstances("foo",
-						RequestInterceptor.class);
-				assertThat(interceptors).isEmpty();
-			});
-	}
-
-	@Configuration
-	static class OkHttpClientConfiguration {
-
-		@Bean
-		OkHttpClient okHttpClient() {
-			return new OkHttpClient();
-		}
-
 	}
 
 }
