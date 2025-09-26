@@ -73,7 +73,7 @@ should also work without issue as long as they use Maven 3.3.3 or better.
 [[activate-the-spring-maven-profile]]
 === Activate the Spring Maven profile
 Spring Cloud projects require the 'spring' Maven profile to be activated to resolve
-the spring snapshot repository. Use your preferred IDE to set this
+the spring milestone and snapshot repositories. Use your preferred IDE to set this
 profile to be active, or you may experience build errors.
 
 [[importing-into-eclipse-with-m2eclipse]]

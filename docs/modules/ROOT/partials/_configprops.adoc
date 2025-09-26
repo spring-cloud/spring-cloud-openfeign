@@ -95,8 +95,7 @@
 |spring.cloud.openfeign.httpclient.http2.version | `+++HTTP_2+++` | Configure the protocols used by this client to communicate with remote servers. Uses {@link String} value of {@link HttpClient.Version}.
 |spring.cloud.openfeign.httpclient.max-connections | `+++200+++` | 
 |spring.cloud.openfeign.httpclient.max-connections-per-route | `+++50+++` | 
-|spring.cloud.openfeign.httpclient.ok-http.protocols |  | Configure the protocols used by this client to communicate with remote servers. Uses {@link String} values of {@link Protocol}.
-|spring.cloud.openfeign.httpclient.time-to-live | `+++900+++` |
+|spring.cloud.openfeign.httpclient.time-to-live | `+++900+++` | 
 |spring.cloud.openfeign.httpclient.time-to-live-unit | `+++seconds+++` | 
 |spring.cloud.openfeign.lazy-attributes-resolution | `+++false+++` | Switches @FeignClient attributes resolution mode to lazy.
 |spring.cloud.openfeign.micrometer.enabled | `+++true+++` | Enables Micrometer capabilities for Feign.
