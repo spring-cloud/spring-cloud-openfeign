@@ -156,7 +156,9 @@ class SpringMvcContractTests {
 
 	@Test
 	void testProcessAnnotationOnMethod_Simple_SlashEncoded() throws Exception {
-		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), false);
+		FeignClientProperties properties = new FeignClientProperties();
+		properties.setDecodeSlash(false);
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), properties);
 
 		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest", String.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
@@ -479,7 +481,9 @@ class SpringMvcContractTests {
 
 	@Test
 	void testProcessAnnotations_Advanced3_DecodeSlashFlagNotModified() throws Exception {
-		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), false);
+		FeignClientProperties properties = new FeignClientProperties();
+		properties.setDecodeSlash(false);
+		contract = new SpringMvcContract(Collections.emptyList(), getConversionService(), properties);
 
 		Method method = TestTemplate_Simple.class.getDeclaredMethod("getTest");
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);

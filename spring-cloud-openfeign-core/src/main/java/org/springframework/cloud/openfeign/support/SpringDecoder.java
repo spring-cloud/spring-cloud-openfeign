@@ -87,17 +87,6 @@ public class SpringDecoder implements Decoder {
 			return HttpStatusCode.valueOf(response.status());
 		}
 
-		/**
-		 * This method used to override a method from ClientHttpResponse interface but was
-		 * removed in Spring Framework 6.2, so we should remove it as well.
-		 * @deprecated in favour of
-		 * {@link SpringDecoder.FeignResponseAdapter#getStatusCode()}
-		 */
-		@Deprecated(forRemoval = true)
-		public int getRawStatusCode() {
-			return response.status();
-		}
-
 		@Override
 		public String getStatusText() {
 			return response.reason();

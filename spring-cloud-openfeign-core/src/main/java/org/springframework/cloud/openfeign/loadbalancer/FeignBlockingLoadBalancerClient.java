@@ -19,7 +19,6 @@ package org.springframework.cloud.openfeign.loadbalancer;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -66,32 +65,6 @@ public class FeignBlockingLoadBalancerClient implements Client {
 	private final LoadBalancerClientFactory loadBalancerClientFactory;
 
 	private final List<LoadBalancerFeignRequestTransformer> transformers;
-
-	/**
-	 * @deprecated in favour of
-	 * {@link FeignBlockingLoadBalancerClient#FeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancerClientFactory, List)}
-	 */
-	@Deprecated(forRemoval = true)
-	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
-			LoadBalancerProperties properties, LoadBalancerClientFactory loadBalancerClientFactory) {
-		this.delegate = delegate;
-		this.loadBalancerClient = loadBalancerClient;
-		this.loadBalancerClientFactory = loadBalancerClientFactory;
-		this.transformers = Collections.emptyList();
-	}
-
-	/**
-	 * @deprecated in favour of
-	 * {@link FeignBlockingLoadBalancerClient#FeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancerClientFactory, List)}
-	 */
-	@Deprecated(forRemoval = true)
-	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
-			LoadBalancerClientFactory loadBalancerClientFactory) {
-		this.delegate = delegate;
-		this.loadBalancerClient = loadBalancerClient;
-		this.loadBalancerClientFactory = loadBalancerClientFactory;
-		this.transformers = Collections.emptyList();
-	}
 
 	public FeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancerClientFactory loadBalancerClientFactory,
