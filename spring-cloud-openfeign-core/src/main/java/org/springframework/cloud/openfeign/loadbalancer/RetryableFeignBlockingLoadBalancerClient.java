@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,35 +84,6 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 	private final LoadBalancerClientFactory loadBalancerClientFactory;
 
 	private final List<LoadBalancerFeignRequestTransformer> transformers;
-
-	/**
-	 * @deprecated in favour of
-	 * {@link RetryableFeignBlockingLoadBalancerClient#RetryableFeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancedRetryFactory, LoadBalancerClientFactory, List)}
-	 */
-	@Deprecated(forRemoval = true)
-	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
-			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerProperties properties,
-			LoadBalancerClientFactory loadBalancerClientFactory) {
-		this.delegate = delegate;
-		this.loadBalancerClient = loadBalancerClient;
-		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
-		this.loadBalancerClientFactory = loadBalancerClientFactory;
-		this.transformers = Collections.emptyList();
-	}
-
-	/**
-	 * @deprecated in favour of
-	 * {@link RetryableFeignBlockingLoadBalancerClient#RetryableFeignBlockingLoadBalancerClient(Client, LoadBalancerClient, LoadBalancedRetryFactory, LoadBalancerClientFactory, List)}
-	 */
-	@Deprecated(forRemoval = true)
-	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
-			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory) {
-		this.delegate = delegate;
-		this.loadBalancerClient = loadBalancerClient;
-		this.loadBalancedRetryFactory = loadBalancedRetryFactory;
-		this.loadBalancerClientFactory = loadBalancerClientFactory;
-		this.transformers = Collections.emptyList();
-	}
 
 	public RetryableFeignBlockingLoadBalancerClient(Client delegate, LoadBalancerClient loadBalancerClient,
 			LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory,
