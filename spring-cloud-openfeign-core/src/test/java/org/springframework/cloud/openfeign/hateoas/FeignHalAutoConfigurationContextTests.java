@@ -20,7 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.data.rest.autoconfigure.RepositoryRestMvcAutoConfiguration;
+import org.springframework.boot.data.rest.autoconfigure.DataRestAutoConfiguration;
 import org.springframework.boot.hateoas.autoconfigure.HypermediaAutoConfiguration;
 import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
@@ -44,7 +44,7 @@ class FeignHalAutoConfigurationContextTests {
 		contextRunner = new WebApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(JacksonAutoConfiguration.class,
 					HttpMessageConvertersAutoConfiguration.class, HypermediaAutoConfiguration.class,
-					RepositoryRestMvcAutoConfiguration.class, FeignHalAutoConfiguration.class))
+					DataRestAutoConfiguration.class, FeignHalAutoConfiguration.class))
 			.withPropertyValues("debug=true");
 	}
 

@@ -16,16 +16,20 @@
 
 package org.springframework.cloud.openfeign.encoding.proto;
 
+import java.util.List;
+
 import feign.RequestTemplate;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.test.ClassPathExclusions;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 
 import static feign.Request.HttpMethod.POST;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Test {@link SpringEncoder} when protobuf is not in classpath
@@ -37,11 +41,12 @@ class ProtobufNotInClasspathTest {
 
 	@Test
 	void testEncodeWhenProtobufNotInClasspath() {
-		ObjectFactory<HttpMessageConverters> converters = () -> new HttpMessageConverters(
-				new StringHttpMessageConverter());
+		ObjectProvider<HttpMessageConverter<?>> factory = mock();
+		List<HttpMessageConverter<?>> protobufHttpMessageConverters = List.of(new StringHttpMessageConverter());
+		when(factory.orderedStream()).thenReturn(protobufHttpMessageConverters.stream());
 		RequestTemplate requestTemplate = new RequestTemplate();
 		requestTemplate.method(POST);
-		new SpringEncoder(converters).encode("a=b", String.class, requestTemplate);
+		new SpringEncoder(factory).encode("a=b", String.class, requestTemplate);
 	}
 
 }

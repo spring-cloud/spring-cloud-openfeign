@@ -17,7 +17,7 @@
 package org.springframework.cloud.openfeign.support;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.data.autoconfigure.web.SpringDataWebProperties;
+import org.springframework.boot.data.autoconfigure.web.DataWebProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -27,7 +27,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  *
  * @author Yanming Zhou
  */
-@EnableConfigurationProperties(SpringDataWebProperties.class)
+@EnableConfigurationProperties(DataWebProperties.class)
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=springencodertest", "spring.jmx.enabled=false",
 				"spring.data.web.pageable.pageParameter=pageNo", "spring.data.web.pageable.sizeParameter=pageSize",

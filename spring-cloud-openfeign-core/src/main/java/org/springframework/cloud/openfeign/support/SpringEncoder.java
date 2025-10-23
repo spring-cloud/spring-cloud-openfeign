@@ -36,9 +36,7 @@ import feign.form.spring.SpringFormEncoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters;
 import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
@@ -74,7 +72,7 @@ public class SpringEncoder implements Encoder {
 
 	private final SpringFormEncoder springFormEncoder;
 
-	private final ObjectFactory<HttpMessageConverters> messageConverters;
+	private final ObjectProvider<HttpMessageConverter<?>> messageConverters;
 
 	private final FeignEncoderProperties encoderProperties;
 
@@ -82,11 +80,11 @@ public class SpringEncoder implements Encoder {
 
 	private List<HttpMessageConverter<?>> converters;
 
-	public SpringEncoder(ObjectFactory<HttpMessageConverters> messageConverters) {
+	public SpringEncoder(ObjectProvider<HttpMessageConverter<?>> messageConverters) {
 		this(new SpringFormEncoder(), messageConverters, new FeignEncoderProperties(), new EmptyObjectProvider<>());
 	}
 
-	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectFactory<HttpMessageConverters> messageConverters,
+	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectProvider<HttpMessageConverter<?>> messageConverters,
 			FeignEncoderProperties encoderProperties, ObjectProvider<HttpMessageConverterCustomizer> customizers) {
 		this.springFormEncoder = springFormEncoder;
 		this.messageConverters = messageConverters;
@@ -180,7 +178,7 @@ public class SpringEncoder implements Encoder {
 
 	private void initConvertersIfRequired() {
 		if (converters == null) {
-			converters = messageConverters.getObject().getConverters();
+			converters = messageConverters.orderedStream().toList();
 			customizers.forEach(customizer -> customizer.accept(converters));
 		}
 	}

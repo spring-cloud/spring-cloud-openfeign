@@ -28,9 +28,7 @@ import feign.Response;
 import feign.codec.DecodeException;
 import feign.codec.Decoder;
 
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
@@ -46,15 +44,15 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
  */
 public class SpringDecoder implements Decoder {
 
-	private final ObjectFactory<HttpMessageConverters> messageConverters;
+	private final ObjectProvider<HttpMessageConverter<?>> messageConverters;
 
 	private final ObjectProvider<HttpMessageConverterCustomizer> customizers;
 
-	public SpringDecoder(ObjectFactory<HttpMessageConverters> messageConverters) {
+	public SpringDecoder(ObjectProvider<HttpMessageConverter<?>> messageConverters) {
 		this(messageConverters, new EmptyObjectProvider<>());
 	}
 
-	public SpringDecoder(ObjectFactory<HttpMessageConverters> messageConverters,
+	public SpringDecoder(ObjectProvider<HttpMessageConverter<?>> messageConverters,
 			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
 		this.messageConverters = messageConverters;
 		this.customizers = customizers;
@@ -63,7 +61,7 @@ public class SpringDecoder implements Decoder {
 	@Override
 	public Object decode(final Response response, Type type) throws IOException, FeignException {
 		if (type instanceof Class || type instanceof ParameterizedType || type instanceof WildcardType) {
-			List<HttpMessageConverter<?>> converters = messageConverters.getObject().getConverters();
+			List<HttpMessageConverter<?>> converters = messageConverters.orderedStream().toList();
 			customizers.forEach(customizer -> customizer.accept(converters));
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			HttpMessageConverterExtractor<?> extractor = new HttpMessageConverterExtractor(type, converters);

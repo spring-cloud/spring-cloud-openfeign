@@ -42,14 +42,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
 import static feign.Request.HttpMethod.POST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Test {@link SpringEncoder} with {@link ProtobufHttpMessageConverter}
@@ -109,9 +111,10 @@ class ProtobufSpringEncoderTests {
 	}
 
 	private SpringEncoder newEncoder() {
-		ObjectFactory<HttpMessageConverters> converters = () -> new HttpMessageConverters(
-				new ProtobufHttpMessageConverter());
-		return new SpringEncoder(converters);
+		ObjectProvider<HttpMessageConverter<?>> factory = mock();
+		List<HttpMessageConverter<?>> protobufHttpMessageConverters = List.of(new ProtobufHttpMessageConverter());
+		when(factory.orderedStream()).thenReturn(protobufHttpMessageConverters.stream());
+		return new SpringEncoder(factory);
 	}
 
 	private RequestTemplate newRequestTemplate() {

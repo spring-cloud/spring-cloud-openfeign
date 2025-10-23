@@ -34,7 +34,6 @@ import feign.optionals.OptionalDecoder;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
 
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -42,8 +41,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.data.autoconfigure.web.SpringDataWebProperties;
-import org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters;
+import org.springframework.boot.data.autoconfigure.web.DataWebProperties;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
@@ -64,6 +62,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
+import org.springframework.http.converter.HttpMessageConverter;
 
 import static feign.form.ContentType.MULTIPART;
 
@@ -80,7 +79,7 @@ import static feign.form.ContentType.MULTIPART;
 public class FeignClientsConfiguration {
 
 	@Autowired
-	private ObjectFactory<HttpMessageConverters> messageConverters;
+	private ObjectProvider<HttpMessageConverter<?>> messageConverters;
 
 	@Autowired(required = false)
 	private List<AnnotatedParameterProcessor> parameterProcessors = new ArrayList<>();
@@ -146,7 +145,7 @@ public class FeignClientsConfiguration {
 	}
 
 	private static Encoder springEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider,
-			ObjectFactory<HttpMessageConverters> messageConverters, FeignEncoderProperties encoderProperties,
+			ObjectProvider<HttpMessageConverter<?>> messageConverters, FeignEncoderProperties encoderProperties,
 			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
 		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
 
@@ -171,28 +170,28 @@ public class FeignClientsConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass({ Pageable.class, SpringDataWebProperties.class })
+	@ConditionalOnClass({ Pageable.class, DataWebProperties.class })
 	static class SpringDataConfiguration {
 
-		private final SpringDataWebProperties springDataWebProperties;
+		private final DataWebProperties dataWebProperties;
 
-		SpringDataConfiguration(ObjectProvider<SpringDataWebProperties> springDataWebProperties) {
-			this.springDataWebProperties = springDataWebProperties.getIfAvailable();
+		SpringDataConfiguration(ObjectProvider<DataWebProperties> dataWebProperties) {
+			this.dataWebProperties = dataWebProperties.getIfAvailable();
 		}
 
 		@Bean
 		@ConditionalOnMissingBean
 		public Encoder feignEncoderPageable(ObjectProvider<AbstractFormWriter> formWriterProvider,
-				ObjectFactory<HttpMessageConverters> messageConverters,
+				ObjectProvider<HttpMessageConverter<?>> messageConverters,
 				ObjectProvider<FeignEncoderProperties> encoderProperties,
 				ObjectProvider<HttpMessageConverterCustomizer> customizers) {
 			PageableSpringEncoder encoder = new PageableSpringEncoder(springEncoder(formWriterProvider,
 					messageConverters, encoderProperties.getIfAvailable(), customizers));
 
-			if (springDataWebProperties != null) {
-				encoder.setPageParameter(springDataWebProperties.getPageable().getPageParameter());
-				encoder.setSizeParameter(springDataWebProperties.getPageable().getSizeParameter());
-				encoder.setSortParameter(springDataWebProperties.getSort().getSortParameter());
+			if (dataWebProperties != null) {
+				encoder.setPageParameter(dataWebProperties.getPageable().getPageParameter());
+				encoder.setSizeParameter(dataWebProperties.getPageable().getSizeParameter());
+				encoder.setSortParameter(dataWebProperties.getSort().getSortParameter());
 			}
 			return encoder;
 		}
@@ -201,10 +200,10 @@ public class FeignClientsConfiguration {
 		@ConditionalOnMissingBean
 		public QueryMapEncoder feignQueryMapEncoderPageable() {
 			PageableSpringQueryMapEncoder queryMapEncoder = new PageableSpringQueryMapEncoder();
-			if (springDataWebProperties != null) {
-				queryMapEncoder.setPageParameter(springDataWebProperties.getPageable().getPageParameter());
-				queryMapEncoder.setSizeParameter(springDataWebProperties.getPageable().getSizeParameter());
-				queryMapEncoder.setSortParameter(springDataWebProperties.getSort().getSortParameter());
+			if (dataWebProperties != null) {
+				queryMapEncoder.setPageParameter(dataWebProperties.getPageable().getPageParameter());
+				queryMapEncoder.setSizeParameter(dataWebProperties.getPageable().getSizeParameter());
+				queryMapEncoder.setSortParameter(dataWebProperties.getSort().getSortParameter());
 			}
 			return queryMapEncoder;
 		}

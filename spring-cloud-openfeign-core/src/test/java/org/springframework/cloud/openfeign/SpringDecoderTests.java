@@ -21,9 +21,10 @@ import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
+import org.springframework.http.converter.HttpMessageConverter;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
@@ -40,8 +41,8 @@ class SpringDecoderTests {
 
 	@BeforeEach
 	void setUp() {
-		ObjectFactory<HttpMessageConverters> factory = mock();
-		when(factory.getObject()).thenReturn(new HttpMessageConverters());
+		ObjectProvider<HttpMessageConverter<?>> factory = mock();
+		when(factory.orderedStream()).thenReturn(new HttpMessageConverters().getConverters().stream());
 		decoder = new SpringDecoder(factory);
 	}
 

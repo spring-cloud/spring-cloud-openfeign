@@ -17,8 +17,8 @@
 package org.springframework.cloud.openfeign.hateoas.app;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.data.rest.autoconfigure.RepositoryRestMvcAutoConfiguration;
-import org.springframework.boot.web.server.test.LocalServerPort;
+import org.springframework.boot.data.rest.autoconfigure.DataRestAutoConfiguration;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Import;
  */
 @EnableFeignClients(clients = FeignHalClient.class)
 @SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.hateoas.app",
-		exclude = RepositoryRestMvcAutoConfiguration.class)
+		exclude = DataRestAutoConfiguration.class)
 @LoadBalancerClient(name = "local", configuration = LocalHalClientConfiguration.class)
 @Import(NoSecurityConfiguration.class)
 public class FeignHalApplication {

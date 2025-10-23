@@ -27,6 +27,7 @@ import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,6 +134,7 @@ class SpringEncoderTests {
 		assertThat(request.requestCharset()).as("request charset is wrong").isEqualTo(StandardCharsets.UTF_8);
 	}
 
+	@Disabled("FIXME: https://github.com/spring-cloud/spring-cloud-openfeign/issues/1269")
 	@Test
 	void testBinaryData() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);

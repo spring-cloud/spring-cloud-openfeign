@@ -23,9 +23,9 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.data.rest.autoconfigure.RepositoryRestMvcAutoConfiguration;
+import org.springframework.boot.data.rest.autoconfigure.DataRestAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.test.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
@@ -372,7 +372,7 @@ class FeignPageableEncodingTests {
 	@EnableFeignClients(clients = InvoiceClient.class)
 	@LoadBalancerClient(name = "local", configuration = LocalClientConfiguration.class)
 	@SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.encoding.app",
-			exclude = { RepositoryRestMvcAutoConfiguration.class })
+			exclude = { DataRestAutoConfiguration.class })
 	@EnableSpringDataWebSupport
 	@Import({ NoSecurityConfiguration.class })
 	public static class Application {
