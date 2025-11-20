@@ -47,6 +47,7 @@ import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.support.AbstractFormWriter;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
+import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
 import org.springframework.cloud.openfeign.support.HttpMessageConverterCustomizer;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.PageableSpringQueryMapEncoder;
@@ -98,16 +99,24 @@ public class FeignClientsConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Decoder feignDecoder(ObjectProvider<HttpMessageConverterCustomizer> customizers) {
-		return new OptionalDecoder(new ResponseEntityDecoder(new SpringDecoder(messageConverters, customizers)));
+	public FeignHttpMessageConverters feignHttpMessageConverters(
+			ObjectProvider<HttpMessageConverter<?>> messageConverters,
+			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
+		return new FeignHttpMessageConverters(messageConverters, customizers);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public Decoder feignDecoder(ObjectProvider<FeignHttpMessageConverters> messageConverters) {
+		return new OptionalDecoder(new ResponseEntityDecoder(new SpringDecoder(messageConverters)));
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public Encoder feignEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider,
-			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
-		return springEncoder(formWriterProvider, messageConverters, encoderProperties, customizers);
+			ObjectProvider<FeignHttpMessageConverters> feignHttpMessageConverters) {
+		return springEncoder(formWriterProvider, encoderProperties, feignHttpMessageConverters);
 	}
 
 	@Bean
@@ -145,16 +154,16 @@ public class FeignClientsConfiguration {
 	}
 
 	private static Encoder springEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider,
-			ObjectProvider<HttpMessageConverter<?>> messageConverters, FeignEncoderProperties encoderProperties,
-			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
+			FeignEncoderProperties encoderProperties,
+			ObjectProvider<FeignHttpMessageConverters> feignHttpMessageConverters) {
 		AbstractFormWriter formWriter = formWriterProvider.getIfAvailable();
 
 		if (formWriter != null) {
-			return new SpringEncoder(new SpringPojoFormEncoder(formWriter), messageConverters, encoderProperties,
-					customizers);
+			return new SpringEncoder(new SpringPojoFormEncoder(formWriter), encoderProperties,
+					feignHttpMessageConverters);
 		}
 		else {
-			return new SpringEncoder(new SpringFormEncoder(), messageConverters, encoderProperties, customizers);
+			return new SpringEncoder(new SpringFormEncoder(), encoderProperties, feignHttpMessageConverters);
 		}
 	}
 
@@ -182,11 +191,10 @@ public class FeignClientsConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public Encoder feignEncoderPageable(ObjectProvider<AbstractFormWriter> formWriterProvider,
-				ObjectProvider<HttpMessageConverter<?>> messageConverters,
 				ObjectProvider<FeignEncoderProperties> encoderProperties,
-				ObjectProvider<HttpMessageConverterCustomizer> customizers) {
-			PageableSpringEncoder encoder = new PageableSpringEncoder(springEncoder(formWriterProvider,
-					messageConverters, encoderProperties.getIfAvailable(), customizers));
+				ObjectProvider<FeignHttpMessageConverters> feignHttpMessageConverters) {
+			PageableSpringEncoder encoder = new PageableSpringEncoder(
+					springEncoder(formWriterProvider, encoderProperties.getIfAvailable(), feignHttpMessageConverters));
 
 			if (dataWebProperties != null) {
 				encoder.setPageParameter(dataWebProperties.getPageable().getPageParameter());

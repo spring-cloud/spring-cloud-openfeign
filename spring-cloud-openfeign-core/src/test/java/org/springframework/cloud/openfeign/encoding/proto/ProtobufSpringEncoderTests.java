@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import feign.RequestTemplate;
@@ -43,6 +44,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.cloud.loadbalancer.support.SimpleObjectProvider;
+import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
@@ -51,7 +54,6 @@ import static feign.Request.HttpMethod.POST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Test {@link SpringEncoder} with {@link ProtobufHttpMessageConverter}
@@ -111,10 +113,14 @@ class ProtobufSpringEncoderTests {
 	}
 
 	private SpringEncoder newEncoder() {
-		ObjectProvider<HttpMessageConverter<?>> factory = mock();
-		List<HttpMessageConverter<?>> protobufHttpMessageConverters = List.of(new ProtobufHttpMessageConverter());
-		when(factory.orderedStream()).thenReturn(protobufHttpMessageConverters.stream());
-		return new SpringEncoder(factory);
+		ObjectProvider<HttpMessageConverter<?>> factory = new SimpleObjectProvider<>(
+				new ProtobufHttpMessageConverter()) {
+			@Override
+			public Stream<HttpMessageConverter<?>> stream() {
+				return Stream.of(getObject());
+			}
+		};
+		return new SpringEncoder(new SimpleObjectProvider<>(new FeignHttpMessageConverters(factory, mock())));
 	}
 
 	private RequestTemplate newRequestTemplate() {

@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -72,29 +71,23 @@ public class SpringEncoder implements Encoder {
 
 	private final SpringFormEncoder springFormEncoder;
 
-	private final ObjectProvider<HttpMessageConverter<?>> messageConverters;
+	private final ObjectProvider<FeignHttpMessageConverters> converters;
 
 	private final FeignEncoderProperties encoderProperties;
 
-	private final ObjectProvider<HttpMessageConverterCustomizer> customizers;
-
-	private List<HttpMessageConverter<?>> converters;
-
-	public SpringEncoder(ObjectProvider<HttpMessageConverter<?>> messageConverters) {
-		this(new SpringFormEncoder(), messageConverters, new FeignEncoderProperties(), new EmptyObjectProvider<>());
+	public SpringEncoder(ObjectProvider<FeignHttpMessageConverters> converters) {
+		this(new SpringFormEncoder(), new FeignEncoderProperties(), converters);
 	}
 
-	public SpringEncoder(SpringFormEncoder springFormEncoder, ObjectProvider<HttpMessageConverter<?>> messageConverters,
-			FeignEncoderProperties encoderProperties, ObjectProvider<HttpMessageConverterCustomizer> customizers) {
+	public SpringEncoder(SpringFormEncoder springFormEncoder, FeignEncoderProperties encoderProperties,
+			ObjectProvider<FeignHttpMessageConverters> converters) {
 		this.springFormEncoder = springFormEncoder;
-		this.messageConverters = messageConverters;
 		this.encoderProperties = encoderProperties;
-		this.customizers = customizers;
+		this.converters = converters;
 	}
 
 	@Override
 	public void encode(Object requestBody, Type bodyType, RequestTemplate request) throws EncodeException {
-		// template.body(conversionService.convert(object, String.class));
 		if (requestBody != null) {
 			Collection<String> contentTypes = request.headers().get(HttpEncoding.CONTENT_TYPE);
 
@@ -120,8 +113,7 @@ public class SpringEncoder implements Encoder {
 
 	private void encodeWithMessageConverter(Object requestBody, Type bodyType, RequestTemplate request,
 			MediaType requestContentType) {
-		initConvertersIfRequired();
-		for (HttpMessageConverter messageConverter : converters) {
+		for (HttpMessageConverter messageConverter : converters.getObject().getConverters()) {
 			FeignOutputMessage outputMessage;
 			try {
 				if (messageConverter instanceof GenericHttpMessageConverter) {
@@ -174,13 +166,6 @@ public class SpringEncoder implements Encoder {
 			message += " and content type [" + requestContentType + "]";
 		}
 		throw new EncodeException(message);
-	}
-
-	private void initConvertersIfRequired() {
-		if (converters == null) {
-			converters = messageConverters.orderedStream().toList();
-			customizers.forEach(customizer -> customizer.accept(converters));
-		}
 	}
 
 	private boolean shouldHaveNullCharset(HttpMessageConverter messageConverter, FeignOutputMessage outputMessage) {

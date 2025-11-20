@@ -22,13 +22,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.http.converter.autoconfigure.HttpMessageConverters;
+import org.springframework.cloud.loadbalancer.support.SimpleObjectProvider;
+import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
-import org.springframework.http.converter.HttpMessageConverter;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link SpringDecoder}.
@@ -41,9 +40,9 @@ class SpringDecoderTests {
 
 	@BeforeEach
 	void setUp() {
-		ObjectProvider<HttpMessageConverter<?>> factory = mock();
-		when(factory.orderedStream()).thenReturn(new HttpMessageConverters().getConverters().stream());
-		decoder = new SpringDecoder(factory);
+		ObjectProvider<FeignHttpMessageConverters> converters = new SimpleObjectProvider<>(
+				new FeignHttpMessageConverters(mock(), mock()));
+		decoder = new SpringDecoder(converters);
 	}
 
 	// Issue: https://github.com/spring-cloud/spring-cloud-openfeign/issues/972
