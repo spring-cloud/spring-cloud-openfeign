@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
-import java.util.List;
 
 import feign.FeignException;
 import feign.Response;
@@ -32,7 +31,6 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.client.HttpMessageConverterExtractor;
 
 import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHeaders;
@@ -44,27 +42,18 @@ import static org.springframework.cloud.openfeign.support.FeignUtils.getHttpHead
  */
 public class SpringDecoder implements Decoder {
 
-	private final ObjectProvider<HttpMessageConverter<?>> messageConverters;
+	private final ObjectProvider<FeignHttpMessageConverters> converters;
 
-	private final ObjectProvider<HttpMessageConverterCustomizer> customizers;
-
-	public SpringDecoder(ObjectProvider<HttpMessageConverter<?>> messageConverters) {
-		this(messageConverters, new EmptyObjectProvider<>());
-	}
-
-	public SpringDecoder(ObjectProvider<HttpMessageConverter<?>> messageConverters,
-			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
-		this.messageConverters = messageConverters;
-		this.customizers = customizers;
+	public SpringDecoder(ObjectProvider<FeignHttpMessageConverters> converters) {
+		this.converters = converters;
 	}
 
 	@Override
 	public Object decode(final Response response, Type type) throws IOException, FeignException {
 		if (type instanceof Class || type instanceof ParameterizedType || type instanceof WildcardType) {
-			List<HttpMessageConverter<?>> converters = messageConverters.orderedStream().toList();
-			customizers.forEach(customizer -> customizer.accept(converters));
 			@SuppressWarnings({ "unchecked", "rawtypes" })
-			HttpMessageConverterExtractor<?> extractor = new HttpMessageConverterExtractor(type, converters);
+			HttpMessageConverterExtractor<?> extractor = new HttpMessageConverterExtractor(type,
+					converters.getObject().getConverters());
 
 			return extractor.extractData(new FeignResponseAdapter(response));
 		}

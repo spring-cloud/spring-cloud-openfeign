@@ -27,7 +27,6 @@ import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +39,7 @@ import org.springframework.cloud.openfeign.encoding.HttpEncoding;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpInputMessage;
@@ -100,14 +100,18 @@ class SpringEncoderTests {
 		encoder.encode("hi", MyType.class, request);
 
 		Collection<String> contentTypeHeader = request.headers().get("Content-Type");
-		assertThat(contentTypeHeader).as("missing content type header").isNotNull();
-		assertThat(contentTypeHeader.isEmpty()).as("missing content type header").isFalse();
+		assertThat(contentTypeHeader).as("missing content type header")
+			.isNotNull()
+			.as("missing content type header")
+			.isNotEmpty();
 
 		String header = contentTypeHeader.iterator().next();
 		assertThat(header).as("content type header is wrong").isEqualTo("application/mytype");
 
-		assertThat(request.requestCharset()).as("request charset is null").isNotNull();
-		assertThat(request.requestCharset()).as("request charset is wrong").isEqualTo(StandardCharsets.UTF_8);
+		assertThat(request.requestCharset()).as("request charset is null")
+			.isNotNull()
+			.as("request charset is wrong")
+			.isEqualTo(StandardCharsets.UTF_8);
 	}
 
 	// gh-225
@@ -124,17 +128,20 @@ class SpringEncoderTests {
 		encoder.encode(Collections.singletonList("hi"), stringListType.getType(), request);
 
 		Collection<String> contentTypeHeader = request.headers().get("Content-Type");
-		assertThat(contentTypeHeader).as("missing content type header").isNotNull();
-		assertThat(contentTypeHeader.isEmpty()).as("missing content type header").isFalse();
+		assertThat(contentTypeHeader).as("missing content type header")
+			.isNotNull()
+			.as("missing content type header")
+			.isNotEmpty();
 
 		String header = contentTypeHeader.iterator().next();
 		assertThat(header).as("content type header is wrong").isEqualTo("application/mygenerictype");
 
-		assertThat(request.requestCharset()).as("request charset is null").isNotNull();
-		assertThat(request.requestCharset()).as("request charset is wrong").isEqualTo(StandardCharsets.UTF_8);
+		assertThat(request.requestCharset()).as("request charset is null")
+			.isNotNull()
+			.as("request charset is wrong")
+			.isEqualTo(StandardCharsets.UTF_8);
 	}
 
-	@Disabled("FIXME: https://github.com/spring-cloud/spring-cloud-openfeign/issues/1269")
 	@Test
 	void testBinaryData() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
@@ -175,8 +182,8 @@ class SpringEncoderTests {
 		assertThat((String) ((List) request.headers().get(CONTENT_TYPE)).get(0))
 			.as("Request Content-Type is not multipart/form-data")
 			.contains("multipart/form-data; charset=UTF-8; boundary=");
-		assertThat(request.headers().get(CONTENT_TYPE).size()).as("There is more than one Content-Type request header")
-			.isEqualTo(1);
+		assertThat(request.headers().get(CONTENT_TYPE)).as("There is more than one Content-Type request header")
+			.hasSize(1);
 		assertThat(((List) request.headers().get(ACCEPT)).get(0)).as("Request Accept header is not multipart/form-data")
 			.isEqualTo(MULTIPART_FORM_DATA_VALUE);
 		assertThat(((List) request.headers().get(CONTENT_LENGTH)).get(0))
@@ -260,10 +267,16 @@ class SpringEncoderTests {
 			return new MyGenericHttpMessageConverter();
 		}
 
-		private static class MyHttpMessageConverter extends AbstractGenericHttpMessageConverter<Object> {
+		private static class MyHttpMessageConverter extends AbstractGenericHttpMessageConverter<Object>
+				implements Ordered {
 
 			MyHttpMessageConverter() {
 				super(new MediaType("application", "mytype"));
+			}
+
+			@Override
+			public int getOrder() {
+				return Ordered.HIGHEST_PRECEDENCE;
 			}
 
 			@Override

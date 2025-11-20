@@ -22,6 +22,8 @@ import feign.RequestTemplate;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.cloud.loadbalancer.support.SimpleObjectProvider;
+import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.test.ClassPathExclusions;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -46,7 +48,8 @@ class ProtobufNotInClasspathTest {
 		when(factory.orderedStream()).thenReturn(protobufHttpMessageConverters.stream());
 		RequestTemplate requestTemplate = new RequestTemplate();
 		requestTemplate.method(POST);
-		new SpringEncoder(factory).encode("a=b", String.class, requestTemplate);
+		new SpringEncoder(new SimpleObjectProvider<>(new FeignHttpMessageConverters(factory, mock()))).encode("a=b",
+				String.class, requestTemplate);
 	}
 
 }
