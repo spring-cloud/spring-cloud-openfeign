@@ -90,7 +90,7 @@ class FallbackSupportFactoryBeanTests {
 	@EnableFeignClients(clients = { FallbackSupportFactoryBeanTests.OriginalFeign.class,
 			FallbackSupportFactoryBeanTests.FactoryBeanFallbackFeign.class })
 	@EnableAutoConfiguration
-	private static class TestConfiguration {
+	private static final class TestConfiguration {
 
 	}
 
@@ -110,7 +110,7 @@ class FallbackSupportFactoryBeanTests {
 
 	}
 
-	private static class FactoryBeanFallbackFeignFallback implements FactoryBean<FactoryBeanFallbackFeign> {
+	private static final class FactoryBeanFallbackFeignFallback implements FactoryBean<FactoryBeanFallbackFeign> {
 
 		@Override
 		public FactoryBeanFallbackFeign getObject() {
@@ -124,7 +124,7 @@ class FallbackSupportFactoryBeanTests {
 
 	}
 
-	private static class OriginalFeignFallback implements OriginalFeign {
+	private static final class OriginalFeignFallback implements OriginalFeign {
 
 		@Override
 		public String get() {

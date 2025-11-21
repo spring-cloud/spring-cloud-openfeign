@@ -326,11 +326,11 @@ class FeignClientOverrideDefaultsTests {
 
 	}
 
-	private static class TestMicrometerCapability extends feign.micrometer.MicrometerCapability {
+	private static final class TestMicrometerCapability extends feign.micrometer.MicrometerCapability {
 
 	}
 
-	private static class NoOpCapability implements Capability {
+	private static final class NoOpCapability implements Capability {
 
 	}
 

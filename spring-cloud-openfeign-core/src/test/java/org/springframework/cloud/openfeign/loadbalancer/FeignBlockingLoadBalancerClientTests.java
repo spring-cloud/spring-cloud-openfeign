@@ -261,7 +261,7 @@ class FeignBlockingLoadBalancerClientTests {
 
 	}
 
-	private static class InstanceIdTransformer implements LoadBalancerFeignRequestTransformer {
+	private static final class InstanceIdTransformer implements LoadBalancerFeignRequestTransformer {
 
 		@Override
 		public Request transformRequest(Request request, ServiceInstance instance) {
@@ -273,7 +273,7 @@ class FeignBlockingLoadBalancerClientTests {
 
 	}
 
-	private static class ServiceIdTransformer implements LoadBalancerFeignRequestTransformer {
+	private static final class ServiceIdTransformer implements LoadBalancerFeignRequestTransformer {
 
 		@Override
 		public Request transformRequest(Request request, ServiceInstance instance) {

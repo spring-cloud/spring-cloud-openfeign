@@ -475,7 +475,7 @@ public class FeignClientUsingPropertiesTests {
 
 	}
 
-	public static class NoOpCapability implements Capability {
+	public static final class NoOpCapability implements Capability {
 
 	}
 

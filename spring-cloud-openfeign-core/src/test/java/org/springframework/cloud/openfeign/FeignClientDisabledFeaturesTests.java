@@ -112,7 +112,7 @@ class FeignClientDisabledFeaturesTests {
 
 	}
 
-	private static class NoOpCapability implements Capability {
+	private static final class NoOpCapability implements Capability {
 
 	}
 
