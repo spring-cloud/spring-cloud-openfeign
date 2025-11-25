@@ -46,6 +46,7 @@ import feign.http2client.Http2Client;
 import feign.okhttp.OkHttpClient;
 import jakarta.annotation.PreDestroy;
 import okhttp3.ConnectionPool;
+import okhttp3.Dispatcher;
 import okhttp3.Protocol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -266,6 +267,8 @@ public class FeignAutoConfiguration {
 			int connectTimeout = httpClientProperties.getConnectionTimeout();
 			boolean disableSslValidation = httpClientProperties.isDisableSslValidation();
 			Duration readTimeout = httpClientProperties.getOkHttp().getReadTimeout();
+			int maxConnections = httpClientProperties.getMaxConnections();
+			int maxConnectionsPerRoute = httpClientProperties.getMaxConnectionsPerRoute();
 			List<Protocol> protocols = httpClientProperties.getOkHttp()
 				.getProtocols()
 				.stream()
@@ -274,11 +277,15 @@ public class FeignAutoConfiguration {
 			if (disableSslValidation) {
 				disableSsl(builder);
 			}
+			Dispatcher dispatcher = new Dispatcher();
+			dispatcher.setMaxRequests(maxConnections);
+			dispatcher.setMaxRequestsPerHost(maxConnectionsPerRoute);
 			this.okHttpClient = builder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
 				.followRedirects(followRedirects)
 				.readTimeout(readTimeout)
 				.connectionPool(connectionPool)
 				.protocols(protocols)
+				.dispatcher(dispatcher)
 				.build();
 			return this.okHttpClient;
 		}
