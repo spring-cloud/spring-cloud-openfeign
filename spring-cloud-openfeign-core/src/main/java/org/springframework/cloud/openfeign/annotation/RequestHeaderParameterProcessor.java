@@ -24,6 +24,7 @@ import java.util.Map;
 import feign.MethodMetadata;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import static feign.Util.checkState;
@@ -51,7 +52,7 @@ public class RequestHeaderParameterProcessor implements AnnotatedParameterProces
 		Class<?> parameterType = method.getParameterTypes()[parameterIndex];
 		MethodMetadata data = context.getMethodMetadata();
 
-		if (Map.class.isAssignableFrom(parameterType)) {
+		if (Map.class.isAssignableFrom(parameterType) || HttpHeaders.class.isAssignableFrom(parameterType)) {
 			checkState(data.headerMapIndex() == null, "Header map can only be present once.");
 			data.headerMapIndex(parameterIndex);
 
