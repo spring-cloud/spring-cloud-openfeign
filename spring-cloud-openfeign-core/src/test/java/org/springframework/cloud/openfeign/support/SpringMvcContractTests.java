@@ -45,6 +45,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.format.number.NumberStyleFormatter;
 import org.springframework.format.support.FormattingConversionServiceFactoryBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -643,6 +644,17 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testProcessHttpHeaders() throws Exception {
+		Method method = TestTemplate_HeaderMap.class.getDeclaredMethod("httpHeaders", HttpHeaders.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/httpHeaders");
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.headerMapIndex()).isNotNull();
+		assertThat(data.headerMapIndex().intValue()).isEqualTo(0);
+	}
+
+	@Test
 	void testProcessHeaderMapMoreThanOnce() throws Exception {
 		Method method = TestTemplate_HeaderMap.class.getDeclaredMethod("headerMapMoreThanOnce", MultiValueMap.class,
 				MultiValueMap.class);
@@ -912,6 +924,9 @@ class SpringMvcContractTests {
 		@GetMapping("/headerMap")
 		String headerMap(@RequestHeader MultiValueMap<String, String> headerMap,
 				@RequestHeader(name = "aHeader") String aHeader);
+
+		@GetMapping("/httpHeaders")
+		String httpHeaders(@RequestHeader HttpHeaders headers);
 
 		@GetMapping("/headerMapMoreThanOnce")
 		String headerMapMoreThanOnce(@RequestHeader MultiValueMap<String, String> headerMap1,
