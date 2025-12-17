@@ -21,6 +21,7 @@ import feign.hc5.ApacheHttp5Client;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.HttpClientBuilderCustomizer;
+import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.HttpClientConnectionManagerBuilderCustomizer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -99,12 +101,33 @@ class FeignHttpClient5ConfigurationTests {
 		}
 	}
 
+	@Test
+	void shouldInstantiateHttpClientConnectionManager5ByUsingHttpClientConnectionManagerBuilderCustomizer() {
+		ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
+			.sources(FeignAutoConfiguration.class, Config.class)
+			.run();
+
+		HttpClientConnectionManager httpClientConnectionManager = context.getBean(HttpClientConnectionManager.class);
+		assertThat(httpClientConnectionManager).isNotNull();
+		HttpClientConnectionManagerBuilderCustomizer customizer = context.getBean(HttpClientConnectionManagerBuilderCustomizer.class);
+		verify(customizer).customize(any(PoolingHttpClientConnectionManagerBuilder.class));
+
+		if (context != null) {
+			context.close();
+		}
+	}
+
 	@Configuration
 	static class Config {
 
 		@Bean
-		HttpClientBuilderCustomizer customizer() {
+		HttpClientBuilderCustomizer httpClientCustomizer() {
 			return Mockito.mock(HttpClientBuilderCustomizer.class);
+		}
+
+		@Bean
+		HttpClientConnectionManagerBuilderCustomizer httpClientConnectionManagerCustomizer() {
+			return Mockito.mock(HttpClientConnectionManagerBuilderCustomizer.class);
 		}
 
 	}
