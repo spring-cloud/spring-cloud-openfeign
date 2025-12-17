@@ -71,8 +71,9 @@ public class HttpClient5FeignConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(HttpClientConnectionManager.class)
-	public HttpClientConnectionManager hc5ConnectionManager(FeignHttpClientProperties httpClientProperties) {
-		return PoolingHttpClientConnectionManagerBuilder.create()
+	public HttpClientConnectionManager hc5ConnectionManager(FeignHttpClientProperties httpClientProperties,
+			ObjectProvider<List<HttpClientConnectionManagerBuilderCustomizer>> customizerProvider) {
+		PoolingHttpClientConnectionManagerBuilder httpClientConnectionManager =  PoolingHttpClientConnectionManagerBuilder.create()
 			.setSSLSocketFactory(httpsSSLConnectionSocketFactory(httpClientProperties.isDisableSslValidation()))
 			.setMaxConnTotal(httpClientProperties.getMaxConnections())
 			.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
@@ -84,8 +85,11 @@ public class HttpClient5FeignConfiguration {
 			.setDefaultSocketConfig(SocketConfig.custom()
 				.setSoTimeout(Timeout.of(httpClientProperties.getHc5().getSocketTimeout(),
 						httpClientProperties.getHc5().getSocketTimeoutUnit()))
-				.build())
-			.build();
+				.build());
+
+		customizerProvider.getIfAvailable(List::of).forEach(c -> c.customize(httpClientConnectionManager));
+
+		return httpClientConnectionManager.build();
 	}
 
 	@Bean
@@ -171,6 +175,23 @@ public class HttpClient5FeignConfiguration {
 		 * @param builder the {@code HttpClientBuilder} to customize
 		 */
 		void customize(HttpClientBuilder builder);
+
+	}
+
+	/**
+	 * Callback interface that customize {@link HttpClientBuilder} objects before
+	 * HttpClientConnectionManager created.
+	 *
+	 * @author Severin Kistler
+	 * @since 5.1.0
+	 */
+	public interface HttpClientConnectionManagerBuilderCustomizer {
+
+		/**
+		 * Customize PoolingHttpClientConnectionManagerBuilder.
+		 * @param builder the {@code PoolingHttpClientConnectionManagerBuilder} to customize
+		 */
+		void customize(PoolingHttpClientConnectionManagerBuilder builder);
 
 	}
 
