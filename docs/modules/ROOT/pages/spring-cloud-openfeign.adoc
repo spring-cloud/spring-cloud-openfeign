@@ -174,8 +174,8 @@ public class HttpClientConnectionManagerConfiguration {
 		return (httpClientConnectionManagerBuilder) -> {
 			TlsConfig.Builder tlsConfigBuilder = TlsConfig.custom();
 			// 0 seconds timeout means infinite
-            tlsConfigBuilder.setHandshakeTimeout(Timeout.of(0, TimeUnit.SECONDS));
-            httpClientConnectionManagerBuilder.setDefaultTlsConfig(tlsConfigBuilder.build());
+			tlsConfigBuilder.setHandshakeTimeout(Timeout.of(0, TimeUnit.SECONDS));
+			httpClientConnectionManagerBuilder.setDefaultTlsConfig(tlsConfigBuilder.build());
 		};
 	}
 }
