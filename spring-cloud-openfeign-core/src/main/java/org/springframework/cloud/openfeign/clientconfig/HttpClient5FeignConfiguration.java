@@ -179,8 +179,8 @@ public class HttpClient5FeignConfiguration {
 	}
 
 	/**
-	 * Callback interface that customize {@link HttpClientBuilder} objects before
-	 * HttpClientConnectionManager created.
+	 * Callback interface that customizes {@link PoolingHttpClientConnectionManagerBuilder}
+	 * objects before HttpClientConnectionManager is created.
 	 *
 	 * @author Severin Kistler
 	 * @since 5.1.0
