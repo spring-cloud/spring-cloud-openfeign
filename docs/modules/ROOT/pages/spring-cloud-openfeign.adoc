@@ -144,14 +144,13 @@ When it comes to the Apache HttpClient 5-backed Feign clients, it's enough to en
 You can customize the HTTP client used by providing a bean of either `org.apache.hc.client5.http.impl.classic.CloseableHttpClient` when using Apache HC5.
 
 You can further customise http clients by setting values in the `spring.cloud.openfeign.httpclient.xxx` properties. The ones prefixed just with `httpclient` will work for all the clients, the ones prefixed with `httpclient.hc5` to Apache HttpClient 5, and the ones prefixed with `httpclient.http2` to Http2Client. You can find a full list of properties you can customise in the appendix.
-If you can not configure Apache HttpClient 5 by using properties, there is an `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` interface for programmatic configuration.
+If you can not configure Apache HttpClient 5 by using properties, there is an `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` interface for programmatic configuration. Similarly, to configure the `HttpClientConnectionManager`, you can use `HttpClient5FeignConfiguration.HttpClientConnectionManagerBuilderCustomizer`. Both usages are shown in the example below.
 
 TIP: Apache HTTP Components `5.4` have changed defaults in the HttpClient relating to HTTP/1.1 TLS upgrades. Most proxy servers handle upgrades without issue, however, you may encounter issues with Envoy or Istio. If you need to restore previous behaviour, you can use `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` to do it, as shown in the example below.
 
 [source,java,indent=0]
 ----
-@Configuration
-public class FooConfiguration {
+public class HttpClientConfiguration {
 
 	@Bean
 	public HttpClient5FeignConfiguration.HttpClientBuilderCustomizer httpClientBuilder() {
@@ -159,6 +158,24 @@ public class FooConfiguration {
 			RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
 			requestConfigBuilder.setProtocolUpgradeEnabled(false);
 			httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
+		};
+	}
+}
+----
+
+TIP: Apache HTTP Components `5.5.1` have changed defaults in the HttpClient relating to TLS handshake timeouts. An unset TLS handshake timeout is now implicitly bound by the `connectTimeout` while it was unbounded previously. To restore previous defaults, you can use `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` to do it, as shown in the example below.
+
+[source,java,indent=0]
+----
+public class HttpClientConnectionManagerConfiguration {
+
+	@Bean
+	public HttpClient5FeignConfiguration.HttpClientConnectionManagerBuilderCustomizer httpClientConnectionManagerBuilder() {
+		return (httpClientConnectionManagerBuilder) -> {
+			TlsConfig.Builder tlsConfigBuilder = TlsConfig.custom();
+			// 0 seconds timeout means infinite
+			tlsConfigBuilder.setHandshakeTimeout(Timeout.of(0, TimeUnit.SECONDS));
+			httpClientConnectionManagerBuilder.setDefaultTlsConfig(tlsConfigBuilder.build());
 		};
 	}
 }
