@@ -242,7 +242,9 @@ spring:
 						requestInterceptors:
 							- com.example.FooRequestInterceptor
 							- com.example.BarRequestInterceptor
-						responseInterceptor: com.example.BazResponseInterceptor
+						responseInterceptors:
+							- com.example.BazResponseInterceptor
+							- com.example.QuxResponseInterceptor
 						dismiss404: false
 						encoder: com.example.SimpleEncoder
 						decoder: com.example.SimpleDecoder
