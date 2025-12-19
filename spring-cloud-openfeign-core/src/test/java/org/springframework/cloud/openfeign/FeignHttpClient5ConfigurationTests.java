@@ -109,7 +109,8 @@ class FeignHttpClient5ConfigurationTests {
 
 		HttpClientConnectionManager httpClientConnectionManager = context.getBean(HttpClientConnectionManager.class);
 		assertThat(httpClientConnectionManager).isNotNull();
-		HttpClientConnectionManagerBuilderCustomizer customizer = context.getBean(HttpClientConnectionManagerBuilderCustomizer.class);
+		HttpClientConnectionManagerBuilderCustomizer customizer = context
+			.getBean(HttpClientConnectionManagerBuilderCustomizer.class);
 		verify(customizer).customize(any(PoolingHttpClientConnectionManagerBuilder.class));
 
 		if (context != null) {
