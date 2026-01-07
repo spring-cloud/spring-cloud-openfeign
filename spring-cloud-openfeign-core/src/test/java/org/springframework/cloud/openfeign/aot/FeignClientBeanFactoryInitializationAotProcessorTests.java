@@ -44,6 +44,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignClientFactory;
 import org.springframework.cloud.openfeign.FeignClientSpecification;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.TypeSpec;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -148,6 +149,11 @@ class FeignClientBeanFactoryInitializationAotProcessorTests {
 		@Override
 		public void addInitializer(MethodReference methodReference) {
 			new ArrayList<>();
+		}
+
+		@Override
+		public ClassName getClassName() {
+			return generatedClass.getName();
 		}
 
 	}

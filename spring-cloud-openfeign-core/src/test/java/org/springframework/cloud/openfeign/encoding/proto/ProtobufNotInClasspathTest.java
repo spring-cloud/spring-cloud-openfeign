@@ -16,17 +16,17 @@
 
 package org.springframework.cloud.openfeign.encoding.proto;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import feign.RequestTemplate;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer;
 import org.springframework.cloud.loadbalancer.support.SimpleObjectProvider;
 import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.cloud.test.ClassPathExclusions;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 
 import static feign.Request.HttpMethod.POST;
@@ -43,9 +43,9 @@ class ProtobufNotInClasspathTest {
 
 	@Test
 	void testEncodeWhenProtobufNotInClasspath() {
-		ObjectProvider<HttpMessageConverter<?>> factory = mock();
-		List<HttpMessageConverter<?>> protobufHttpMessageConverters = List.of(new StringHttpMessageConverter());
-		when(factory.orderedStream()).thenReturn(protobufHttpMessageConverters.stream());
+		ObjectProvider<ClientHttpMessageConvertersCustomizer> factory = mock();
+		when(factory.orderedStream())
+			.thenReturn(Stream.of(converters -> converters.withStringConverter(new StringHttpMessageConverter())));
 		RequestTemplate requestTemplate = new RequestTemplate();
 		requestTemplate.method(POST);
 		new SpringEncoder(new SimpleObjectProvider<>(new FeignHttpMessageConverters(factory, mock()))).encode("a=b",

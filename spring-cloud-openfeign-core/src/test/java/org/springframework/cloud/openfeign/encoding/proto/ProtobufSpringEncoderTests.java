@@ -44,10 +44,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer;
 import org.springframework.cloud.loadbalancer.support.SimpleObjectProvider;
 import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
 import static feign.Request.HttpMethod.POST;
@@ -113,10 +113,10 @@ class ProtobufSpringEncoderTests {
 	}
 
 	private SpringEncoder newEncoder() {
-		ObjectProvider<HttpMessageConverter<?>> factory = new SimpleObjectProvider<>(
-				new ProtobufHttpMessageConverter()) {
+		ObjectProvider<ClientHttpMessageConvertersCustomizer> factory = new SimpleObjectProvider<>(
+				converters -> converters.withStringConverter(new ProtobufHttpMessageConverter())) {
 			@Override
-			public Stream<HttpMessageConverter<?>> stream() {
+			public Stream<ClientHttpMessageConvertersCustomizer> stream() {
 				return Stream.of(getObject());
 			}
 		};

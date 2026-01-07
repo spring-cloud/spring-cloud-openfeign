@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverters;
-import org.springframework.http.converter.StringHttpMessageConverter;
 
 /**
  * Class that mimics {@link HttpMessageConverters} and the default implementation there.
@@ -32,16 +32,16 @@ import org.springframework.http.converter.StringHttpMessageConverter;
  */
 public class FeignHttpMessageConverters {
 
-	private final ObjectProvider<HttpMessageConverter<?>> messageConverters;
+	private final ObjectProvider<ClientHttpMessageConvertersCustomizer> customizers;
 
-	private final ObjectProvider<HttpMessageConverterCustomizer> customizers;
+	private final ObjectProvider<HttpMessageConverterCustomizer> cloudCustomizers;
 
 	private List<HttpMessageConverter<?>> converters;
 
-	public FeignHttpMessageConverters(ObjectProvider<HttpMessageConverter<?>> messageConverters,
-			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
-		this.messageConverters = messageConverters;
+	public FeignHttpMessageConverters(ObjectProvider<ClientHttpMessageConvertersCustomizer> customizers,
+			ObjectProvider<HttpMessageConverterCustomizer> cloudCustomizers) {
 		this.customizers = customizers;
+		this.cloudCustomizers = cloudCustomizers;
 	}
 
 	public List<HttpMessageConverter<?>> getConverters() {
@@ -56,28 +56,11 @@ public class FeignHttpMessageConverters {
 			// TODO: allow disabling of registerDefaults
 			builder.registerDefaults();
 			// TODO: check if already added? Howto order?
-			this.messageConverters.forEach((converter) -> {
-				if (converter instanceof StringHttpMessageConverter) {
-					builder.withStringConverter(converter);
-				}
-				/*
-				 * else if (converter instanceof
-				 * KotlinSerializationJsonHttpMessageConverter) {
-				 * builder.withKotlinSerializationJsonConverter(converter); }
-				 */
-				else if (supportsMediaType(converter, MediaType.APPLICATION_JSON)) {
-					builder.withJsonConverter(converter);
-				}
-				else if (supportsMediaType(converter, MediaType.APPLICATION_XML)) {
-					builder.withXmlConverter(converter);
-				}
-				else {
-					builder.addCustomConverter(converter);
-				}
-			});
+
+			this.customizers.orderedStream().forEach(customizer -> customizer.customize(builder));
 			HttpMessageConverters hmc = builder.build();
 			hmc.forEach(converter -> converters.add(converter));
-			customizers.forEach(customizer -> customizer.accept(this.converters));
+			cloudCustomizers.forEach(customizer -> customizer.accept(this.converters));
 		}
 	}
 

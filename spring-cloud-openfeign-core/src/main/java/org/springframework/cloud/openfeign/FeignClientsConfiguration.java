@@ -42,6 +42,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.data.autoconfigure.web.DataWebProperties;
+import org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
@@ -100,9 +101,9 @@ public class FeignClientsConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public FeignHttpMessageConverters feignHttpMessageConverters(
-			ObjectProvider<HttpMessageConverter<?>> messageConverters,
-			ObjectProvider<HttpMessageConverterCustomizer> customizers) {
-		return new FeignHttpMessageConverters(messageConverters, customizers);
+			ObjectProvider<ClientHttpMessageConvertersCustomizer> customizers,
+			ObjectProvider<HttpMessageConverterCustomizer> cloudCustomizers) {
+		return new FeignHttpMessageConverters(customizers, cloudCustomizers);
 	}
 
 	@Bean
