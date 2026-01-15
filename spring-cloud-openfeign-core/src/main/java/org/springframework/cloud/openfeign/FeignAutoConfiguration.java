@@ -100,11 +100,12 @@ import org.springframework.util.ClassUtils;
  * @author Wojciech Mąka
  * @author Dangzhicairang(小水牛)
  * @author changjin wei(魏昌进)
+ * @author jaehun lee
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
 @EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class,
-		FeignEncoderProperties.class })
+		FeignEncoderProperties.class, FeignOAuth2Properties.class })
 public class FeignAutoConfiguration {
 
 	private static final Log LOG = LogFactory.getLog(FeignAutoConfiguration.class);
@@ -392,10 +393,10 @@ public class FeignAutoConfiguration {
 
 		@Bean
 		@ConditionalOnBean(OAuth2AuthorizedClientManager.class)
-		public OAuth2AccessTokenInterceptor defaultOAuth2AccessTokenInterceptor(
-				@Value("${spring.cloud.openfeign.oauth2.clientRegistrationId:}") String clientRegistrationId,
+		public OAuth2AccessTokenInterceptor defaultOAuth2AccessTokenInterceptor(FeignOAuth2Properties oAuth2Properties,
 				OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
-			return new OAuth2AccessTokenInterceptor(clientRegistrationId, oAuth2AuthorizedClientManager);
+			return new OAuth2AccessTokenInterceptor(oAuth2Properties.getClientRegistrationId(),
+					oAuth2AuthorizedClientManager);
 		}
 
 	}
