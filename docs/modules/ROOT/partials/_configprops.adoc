@@ -101,6 +101,7 @@
 |spring.cloud.openfeign.httpclient.time-to-live-unit | `+++seconds+++` | 
 |spring.cloud.openfeign.lazy-attributes-resolution | `+++false+++` | Switches @FeignClient attributes resolution mode to lazy.
 |spring.cloud.openfeign.micrometer.enabled | `+++true+++` | Enables Micrometer capabilities for Feign.
+|spring.cloud.openfeign.oauth2.client-registration-id |  | Client registration id to be used to retrieve the OAuth2 access token. If not specified, the {@code serviceId} retrieved from the {@code url} host segment will be used. This is convenient for load-balanced Feign clients. For non-load-balanced clients, specifying the {@code clientRegistrationId} is recommended.
 |spring.cloud.openfeign.oauth2.clientRegistrationId |  | Provides a clientId to be used with OAuth2.
 |spring.cloud.openfeign.oauth2.enabled | `+++false+++` | Enables feign interceptor for managing oauth2 access token.
 |spring.cloud.openfeign.okhttp.enabled | `+++false+++` | Enables the use of the OK HTTP Client by Feign.
