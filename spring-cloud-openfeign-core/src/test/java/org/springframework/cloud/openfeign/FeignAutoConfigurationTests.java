@@ -42,6 +42,7 @@ import static org.mockito.Mockito.mock;
  * @author Kwangyong Kim
  * @author Wojciech Mąka
  * @author Dangzhicairang(小水牛)
+ * @author jaehun lee
  */
 class FeignAutoConfigurationTests {
 
@@ -95,6 +96,19 @@ class FeignAutoConfigurationTests {
 		runner
 			.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true",
 					"spring.cloud.openfeign.oauth2.clientRegistrationId=feign-client")
+			.withBean(OAuth2AuthorizedClientService.class, () -> mock(OAuth2AuthorizedClientService.class))
+			.withBean(ClientRegistrationRepository.class, () -> mock(ClientRegistrationRepository.class))
+			.run(ctx -> {
+				assertOauth2AccessTokenInterceptorExists(ctx);
+				assertThatOauth2AccessTokenInterceptorHasSpecifiedIdsPropertyWithValue(ctx, "feign-client");
+			});
+	}
+
+	@Test
+	void shouldInstantiateFeignOAuth2FeignRequestInterceptorWithDashCaseProperty() {
+		runner
+			.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true",
+					"spring.cloud.openfeign.oauth2.client-registration-id=feign-client")
 			.withBean(OAuth2AuthorizedClientService.class, () -> mock(OAuth2AuthorizedClientService.class))
 			.withBean(ClientRegistrationRepository.class, () -> mock(ClientRegistrationRepository.class))
 			.run(ctx -> {
