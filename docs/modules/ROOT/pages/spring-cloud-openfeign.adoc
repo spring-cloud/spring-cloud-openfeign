@@ -901,7 +901,7 @@ ObjectProvider<TestFeignClient> testFeignClient;
 [[spring-data-support]]
 === Spring Data Support
 
-If Jackson Databind and Spring Data Commons are on the classpath, converters for `org.springframework.data.domain.Page` and `org.springframework.data.domain.Sort` will be added automatically.
+If Jackson Databind and `spring-boot-data-commons` are on the classpath, converters for `org.springframework.data.domain.Page` and `org.springframework.data.domain.Sort` will be added automatically.
 
 To disable this behaviour set
 [source,java]
