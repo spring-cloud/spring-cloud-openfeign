@@ -188,4 +188,71 @@ class PageJacksonModuleTests {
 		assertThat(cascadedResult.getPageable().getPageNumber()).isEqualTo(6);
 	}
 
+	@Test
+	void deserializePageableWithHyphenatedAlias() {
+		// Given
+		File file = new File("./src/test/resources/withPageableAliasHyphen.json");
+		// When
+		Page<?> result = objectMapper.readValue(file, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(15);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable()).isNotNull();
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(2);
+		assertThat(result.getPageable().getPageSize()).isEqualTo(3);
+		assertThat(result.getPageable().getSort().getOrderFor("firstName").getDirection())
+			.isEqualTo(Sort.Direction.ASC);
+	}
+
+	@Test
+	void deserializePageableWithUnderscoreAlias() {
+		// Given
+		File file = new File("./src/test/resources/withPageableAliasUnderscore.json");
+		// When
+		Page<?> result = objectMapper.readValue(file, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(10);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable()).isNotNull();
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(1);
+		assertThat(result.getPageable().getPageSize()).isEqualTo(2);
+		assertThat(result.getPageable().getSort().getOrderFor("lastName").getDirection())
+			.isEqualTo(Sort.Direction.DESC);
+	}
+
+	@Test
+	void deserializePageableWithLowercaseAlias() {
+		// Given
+		File file = new File("./src/test/resources/withPageableAliasLowercase.json");
+		// When
+		Page<?> result = objectMapper.readValue(file, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(8);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable()).isNotNull();
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+		assertThat(result.getPageable().getPageSize()).isEqualTo(4);
+		assertThat(result.getPageable().getSort()).isEqualTo(Sort.unsorted());
+	}
+
+	@Test
+	void deserializePageableWithPascalCaseAlias() {
+		// Given
+		File file = new File("./src/test/resources/withPageableAliasPascalCase.json");
+		// When
+		Page<?> result = objectMapper.readValue(file, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(20);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable()).isNotNull();
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(3);
+		assertThat(result.getPageable().getPageSize()).isEqualTo(2);
+		assertThat(result.getPageable().getSort().getOrderFor("firstName").getDirection())
+			.isEqualTo(Sort.Direction.ASC);
+	}
+
 }
