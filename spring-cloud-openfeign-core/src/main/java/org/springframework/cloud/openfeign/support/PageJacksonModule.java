@@ -243,8 +243,10 @@ public class PageJacksonModule extends JacksonModule {
 
 		private final PageRequest delegate;
 
-		SimplePageable(@JsonProperty("pageNumber") int number, @JsonProperty("pageSize") int size,
-				@JsonProperty("sort") Sort sort) {
+		SimplePageable(
+			@JsonProperty("pageNumber") @JsonAlias({"page-number", "page_number", "pagenumber", "PageNumber"}) int number,
+			@JsonProperty("pageSize") @JsonAlias({"page-size", "page_size", "pagesize", "PageSize"}) int size,
+			@JsonProperty("sort") Sort sort) {
 			delegate = buildPageRequest(number, size, sort);
 		}
 
