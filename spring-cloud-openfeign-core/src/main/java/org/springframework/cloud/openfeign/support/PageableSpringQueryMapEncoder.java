@@ -17,11 +17,14 @@
 package org.springframework.cloud.openfeign.support;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import feign.QueryMapEncoder;
 import feign.querymap.BeanQueryMapEncoder;
+import feign.querymap.FieldQueryMapEncoder;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -36,6 +39,12 @@ import org.springframework.data.domain.Sort;
  * @since 2.2.8
  */
 public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
+
+	/**
+	 * QueryMapEncoder for Java Record types. Uses field-based reflection to encode Record
+	 * components as query parameters.
+	 */
+	private final QueryMapEncoder recordEncoder = new FieldQueryMapEncoder();
 
 	/**
 	 * Page index parameter name.
@@ -71,6 +80,13 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 
 	@Override
 	public Map<String, Object> encode(Object object) {
+		// Null safety: return empty map for null input
+		if (object == null) {
+			return Collections.emptyMap();
+		}
+
+		// Priority 1: Pageable handling (existing logic)
+		// Must be checked before Record to avoid serialVersionUID conflicts
 		if (supports(object)) {
 			Map<String, Object> queryMap = new HashMap<>();
 
@@ -90,9 +106,15 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 			}
 			return queryMap;
 		}
-		else {
-			return super.encode(object);
+
+		// Priority 2: Java Record handling (new logic)
+		// Records require field-based reflection instead of getter methods
+		if (object.getClass().isRecord()) {
+			return recordEncoder.encode(object);
 		}
+
+		// Priority 3: Bean/POJO handling (existing fallback)
+		return super.encode(object);
 	}
 
 	private void applySort(Map<String, Object> queryMap, Sort sort) {
