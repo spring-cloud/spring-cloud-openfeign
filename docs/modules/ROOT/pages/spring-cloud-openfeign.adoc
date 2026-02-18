@@ -1023,6 +1023,36 @@ TIP: If you want to run Spring Cloud OpenFeign clients in AOT or native image mo
 
 TIP:  However, if you set the `url` value via properties, it is possible to override the `@FeignClient` `url` value by running the image with `-Dspring.cloud.openfeign.client.config.[clientId].url=[url]` flag. In order to enable overriding, a `url` value also has to be set via properties and not `@FeignClient` attribute during buildtime.
 
+[[interface-annotations]]
+== Interface Annotations
+
+For those who are familiar with Spring Web annotations, the following table describes the main differences between the Spring annotations and their Feign counterparts:
+
+|===
+|HTTP Protocol |Spring Web |Feign
+
+|Request line
+|`@RequestMapping` ...
+|`@RequestLine`
+
+|Path
+|`@PathVariable`, `@MatrixVariable`
+|`@Param`
+
+|Query
+|`@SpringQueryMap`,`@RequestParam`
+|`@QueryMap`, `@Param`
+
+|Request Headers
+|`@RequestHeader`
+|`@Headers`, `@HeaderMap`
+
+|Request Body
+|`@RequestBody`
+|`@Body`
+
+|===
+
 [[configuration-properties]]
 == Configuration properties
 
