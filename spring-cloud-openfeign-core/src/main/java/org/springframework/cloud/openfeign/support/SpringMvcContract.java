@@ -20,6 +20,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -239,7 +240,8 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		processedMethods.put(Feign.configKey(targetType, method), method);
 		MethodMetadata metadata = super.parseAndValidateMetadata(targetType, method);
 
-		if (isGetMethod(metadata) && method.getParameterCount() > 0 && !hasHttpAnnotations(method)) {
+		if (isGetMethod(metadata) && method.getParameterCount() > 0
+				&& shouldWarnAboutUnannotatedGetParameters(method)) {
 			if (LOG.isWarnEnabled()) {
 				LOG.warn(String
 					.format("[OpenFeign Warning] Feign method '%s' is declared as GET with parameters, but none of the parameters are annotated "
@@ -255,8 +257,19 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		return "GET".equalsIgnoreCase(metadata.template().method());
 	}
 
-	private boolean hasHttpAnnotations(Method method) {
-		for (Parameter parameter : method.getParameters()) {
+	private boolean shouldWarnAboutUnannotatedGetParameters(Method method) {
+		Parameter[] params = method.getParameters();
+		if (params.length == 1 && params[0].getType() == URI.class) {
+			return false;
+		}
+		int fromIndex = (params.length > 0 && params[0].getType() == URI.class) ? 1 : 0;
+		return !hasHttpAnnotations(method, fromIndex);
+	}
+
+	private boolean hasHttpAnnotations(Method method, int fromIndex) {
+		Parameter[] parameters = method.getParameters();
+		for (int i = fromIndex; i < parameters.length; i++) {
+			Parameter parameter = parameters[i];
 			for (Annotation annotation : parameter.getAnnotations()) {
 				Class<? extends Annotation> annotationType = annotation.annotationType();
 				if (annotationType == RequestParam.class || annotationType == RequestHeader.class
