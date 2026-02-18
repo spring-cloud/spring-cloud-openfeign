@@ -19,6 +19,7 @@ package org.springframework.cloud.openfeign.support;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -34,7 +35,10 @@ import feign.MethodMetadata;
 import feign.Param;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.FeignClientProperties;
 import org.springframework.cloud.openfeign.SpringQueryMap;
@@ -87,6 +91,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Tang Xiong
  **/
 
+@ExtendWith(OutputCaptureExtension.class)
 class SpringMvcContractTests {
 
 	private static final Class<?> EXECUTABLE_TYPE;
@@ -214,6 +219,42 @@ class SpringMvcContractTests {
 		assertThat(data.template().method()).isEqualTo("GET");
 		assertThat(data.template().headers().get("Accept").iterator().next())
 			.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+	}
+
+	@Test
+	void getWithSingleUriParameterShouldNotWarn(CapturedOutput output) throws Exception {
+		Method method = GetWithUriParameter.class.getDeclaredMethod("getValue", URI.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(output).doesNotContain("OpenFeign Warning");
+	}
+
+	@Test
+	void getWithUnannotatedNonUriParameterShouldWarn(CapturedOutput output) throws Exception {
+		Method method = GetWithUnannotatedParam.class.getDeclaredMethod("getValue", String.class);
+		contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(output).contains("OpenFeign Warning",
+				"is declared as GET with parameters, but none of the parameters are annotated");
+	}
+
+	@Test
+	void getWithUriAndUnannotatedParameterShouldWarn(CapturedOutput output) throws Exception {
+		Method method = GetWithUriAndUnannotatedParam.class.getDeclaredMethod("getValue", URI.class, String.class);
+		contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(output).contains("OpenFeign Warning",
+				"is declared as GET with parameters, but none of the parameters are annotated");
+	}
+
+	@Test
+	void getWithUriAndAnnotatedParameterShouldNotWarn(CapturedOutput output) throws Exception {
+		Method method = GetWithUriAndAnnotatedParam.class.getDeclaredMethod("getValue", URI.class, String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(output).doesNotContain("OpenFeign Warning");
 	}
 
 	@Test
@@ -807,6 +848,34 @@ class SpringMvcContractTests {
 
 		@GetMapping(path = "test", produces = MediaType.APPLICATION_JSON_VALUE)
 		ResponseEntity<TestObject> getTestNoLeadingSlash(@RequestParam("name") String name);
+
+	}
+
+	interface GetWithUriParameter {
+
+		@GetMapping("/sample/receive")
+		String getValue(URI baseUri);
+
+	}
+
+	interface GetWithUnannotatedParam {
+
+		@GetMapping("/test")
+		String getValue(String id);
+
+	}
+
+	interface GetWithUriAndUnannotatedParam {
+
+		@GetMapping("/sample/receive")
+		String getValue(URI baseUri, String unannotated);
+
+	}
+
+	interface GetWithUriAndAnnotatedParam {
+
+		@GetMapping("/sample/receive")
+		String getValue(URI baseUri, @RequestParam("id") String id);
 
 	}
 
