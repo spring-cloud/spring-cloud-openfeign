@@ -61,7 +61,7 @@ class FeignClientConfigurationTests {
 		assertThat(config.getRetryer()).isNull();
 		assertThat(config.getErrorDecoder()).isNull();
 		assertThat(config.getRequestInterceptors()).isNull();
-		assertThat(config.getResponseInterceptor()).isNull();
+		assertThat(config.getResponseInterceptors()).isNull();
 		assertThat(config.getDefaultRequestHeaders()).isEmpty();
 		assertThat(config.getDefaultQueryParameters()).isEmpty();
 		assertThat(config.getDismiss404()).isNull();
@@ -84,8 +84,8 @@ class FeignClientConfigurationTests {
 		config.setErrorDecoder(ErrorDecoder.class);
 		List<Class<RequestInterceptor>> requestInterceptors = Lists.list(RequestInterceptor.class);
 		config.setRequestInterceptors(requestInterceptors);
-		Class<ResponseInterceptor> responseInterceptor = ResponseInterceptor.class;
-		config.setResponseInterceptor(responseInterceptor);
+		List<Class<ResponseInterceptor>> responseInterceptors = Lists.list(ResponseInterceptor.class);
+		config.setResponseInterceptors(responseInterceptors);
 		Map<String, Collection<String>> defaultRequestHeaders = Maps.newHashMap("default", Collections.emptyList());
 		config.setDefaultRequestHeaders(defaultRequestHeaders);
 		Map<String, Collection<String>> defaultQueryParameters = Maps.newHashMap("default", Collections.emptyList());
@@ -107,7 +107,7 @@ class FeignClientConfigurationTests {
 		assertThat(config.getRetryer()).isSameAs(Retryer.class);
 		assertThat(config.getErrorDecoder()).isSameAs(ErrorDecoder.class);
 		assertThat(config.getRequestInterceptors()).isSameAs(requestInterceptors);
-		assertThat(config.getResponseInterceptor()).isSameAs(responseInterceptor);
+		assertThat(config.getResponseInterceptors()).isSameAs(responseInterceptors);
 		assertThat(config.getDefaultRequestHeaders()).isSameAs(defaultRequestHeaders);
 		assertThat(config.getDefaultQueryParameters()).isSameAs(defaultQueryParameters);
 		assertThat(config.getDismiss404()).isTrue();
