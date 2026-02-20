@@ -192,11 +192,11 @@ class PageJacksonModuleTests {
 	@Test
 	void deserializePageableWithHyphenatedAlias() throws IOException {
 		// Given
-		ObjectMapper snakeCaseMapper = objectMapper.copy();
-		snakeCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+		ObjectMapper kebabOjectMapepr = objectMapper.copy();
+		kebabOjectMapepr.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		File file = new File("./src/test/resources/withPageableAliasHyphen.json");
 		// When
-		Page<?> result = objectMapper.readValue(file, Page.class);
+		Page<?> result = kebabOjectMapepr.readValue(file, Page.class);
 		// Then
 		assertThat(result).isNotNull();
 		assertThat(result.getTotalElements()).isEqualTo(15);
@@ -231,13 +231,13 @@ class PageJacksonModuleTests {
 	@Test
 	void deserializePageableWithLowercaseAlias() throws IOException {
 		// Given
-		ObjectMapper snakeCaseMapper = objectMapper.copy();
-		snakeCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CASE);
+		ObjectMapper lowerCaseMapper = objectMapper.copy();
+		lowerCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CASE);
 
 		File file = new File("./src/test/resources/withPageableAliasLowercase.json");
 
 		// When
-		Page<?> result = objectMapper.readValue(file, Page.class);
+		Page<?> result = lowerCaseMapper.readValue(file, Page.class);
 		// Then
 		assertThat(result).isNotNull();
 		assertThat(result.getTotalElements()).isEqualTo(8);
@@ -251,12 +251,12 @@ class PageJacksonModuleTests {
 	@Test
 	void deserializePageableWithPascalCaseAlias() throws IOException {
 		// Given
-		ObjectMapper snakeCaseMapper = objectMapper.copy();
-		snakeCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
+		ObjectMapper upperCamelCaseMapper = objectMapper.copy();
+		upperCamelCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
 		File file = new File("./src/test/resources/withPageableAliasPascalCase.json");
 
 		// When
-		Page<?> result = objectMapper.readValue(file, Page.class);
+		Page<?> result = upperCamelCaseMapper.readValue(file, Page.class);
 		// Then
 		assertThat(result).isNotNull();
 		assertThat(result.getTotalElements()).isEqualTo(20);
