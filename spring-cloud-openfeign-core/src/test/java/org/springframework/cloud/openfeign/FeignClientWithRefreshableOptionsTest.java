@@ -121,7 +121,7 @@ public class FeignClientWithRefreshableOptionsTest {
 	}
 
 	private void assertConnectionAndReadTimeout(OptionsTestClient.OptionsResponseForTests options,
-			int expectedConnectTimeoutInMillis, int expectedReadTimeoutInMillis) {
+												int expectedConnectTimeoutInMillis, int expectedReadTimeoutInMillis) {
 		assertThat(options.connectTimeout()).isEqualTo(expectedConnectTimeoutInMillis);
 		assertThat(options.readTimeout()).isEqualTo(expectedReadTimeoutInMillis);
 	}
@@ -129,8 +129,8 @@ public class FeignClientWithRefreshableOptionsTest {
 	@Configuration
 	@EnableAutoConfiguration
 	@EnableConfigurationProperties(FeignClientProperties.class)
-	@EnableFeignClients(clients = { Application.OverrideOptionsClient.class, Application.RefreshableClient.class,
-			Application.ReadTimeoutClient.class, Application.ConnectTimeoutClient.class })
+	@EnableFeignClients(clients = {Application.OverrideOptionsClient.class, Application.RefreshableClient.class,
+		Application.ReadTimeoutClient.class, Application.ConnectTimeoutClient.class})
 	protected static class Application {
 
 		@Bean
