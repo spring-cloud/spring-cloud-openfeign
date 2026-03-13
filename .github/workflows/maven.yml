@@ -5,7 +5,7 @@ name: Build
 
 on:
   pull_request:
-    branches: [ main, 4.3.x, 4.2.x ]
+    branches: [ main, 4.3.x ]
 
 jobs:
   build:
