@@ -23,7 +23,10 @@ import feign.Contract;
 import feign.Feign;
 import feign.Logger;
 import feign.QueryMapEncoder;
+import feign.Response;
+import feign.ResponseInterceptor;
 import feign.Retryer;
+import feign.Util;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.form.MultipartFormContentProcessor;
@@ -110,6 +113,21 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	public Decoder feignDecoder(ObjectProvider<FeignHttpMessageConverters> messageConverters) {
 		return new OptionalDecoder(new ResponseEntityDecoder(new SpringDecoder(messageConverters)));
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public ResponseInterceptor feignResponseInterceptor() {
+		return (invocationContext, chain) -> {
+			Response response = chain.next(invocationContext);
+			if (invocationContext.returnType() == Response.class && response.body() != null
+					&& response.body().length() == null) {
+				byte[] bodyData = Util.toByteArray(response.body().asInputStream());
+				response.close();
+				return response.toBuilder().body(bodyData).build();
+			}
+			return response;
+		};
 	}
 
 	@Bean
