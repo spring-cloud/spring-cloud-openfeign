@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import feign.Contract;
 import feign.Feign;
@@ -93,6 +94,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Sam Kruglov
  * @author Tang Xiong
  * @author Juhyeong An
+ * @author Olof Segergren
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
 
@@ -417,9 +419,11 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	}
 
 	private void parseProduces(MethodMetadata md, RequestMapping annotation) {
-		String[] serverProduces = annotation.produces();
-		String clientAccepts = serverProduces.length == 0 ? null : emptyToNull(serverProduces[0]);
-		if (clientAccepts != null) {
+		String clientAccepts = Arrays.stream(annotation.produces())
+			.map(s -> emptyToNull(s))
+			.filter(Objects::nonNull)
+			.collect(Collectors.joining(", "));
+		if (StringUtils.hasText(clientAccepts)) {
 			md.template().header(ACCEPT, clientAccepts);
 		}
 	}
