@@ -769,7 +769,7 @@ class SpringMvcContractTests {
 		Method method = TestTemplate_MultipleProduces.class.getDeclaredMethod("multipleProduces");
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().headers().get("Accept")).containsExactly("application/jose, application/json");
+		assertThat(data.template().headers().get("Accept")).containsExactly("application/jose", "application/json");
 	}
 
 	@Test
@@ -793,7 +793,7 @@ class SpringMvcContractTests {
 		Method method = TestTemplate_MultipleProduces.class.getDeclaredMethod("producesWithBlankEntry");
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.template().headers().get("Accept")).containsExactly("application/jose, application/json");
+		assertThat(data.template().headers().get("Accept")).containsExactly("application/jose", "application/json");
 	}
 
 	@Test

@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import feign.Contract;
 import feign.Feign;
@@ -419,11 +418,11 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	}
 
 	private void parseProduces(MethodMetadata md, RequestMapping annotation) {
-		String clientAccepts = Arrays.stream(annotation.produces())
+		String[] clientAccepts = Arrays.stream(annotation.produces())
 			.map(s -> emptyToNull(s))
 			.filter(Objects::nonNull)
-			.collect(Collectors.joining(", "));
-		if (StringUtils.hasText(clientAccepts)) {
+			.toArray(String[]::new);
+		if (clientAccepts.length > 0) {
 			md.template().header(ACCEPT, clientAccepts);
 		}
 	}
