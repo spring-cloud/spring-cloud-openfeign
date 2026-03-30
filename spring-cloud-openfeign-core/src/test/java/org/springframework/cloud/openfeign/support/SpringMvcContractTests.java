@@ -781,6 +781,38 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testMultipleProducesValues() throws NoSuchMethodException {
+		Method method = TestTemplate_MultipleProduces.class.getDeclaredMethod("multipleProduces");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().headers().get("Accept")).containsExactly("application/jose", "application/json");
+	}
+
+	@Test
+	void testSingleProducesValueUnchanged() throws NoSuchMethodException {
+		Method method = TestTemplate_MultipleProduces.class.getDeclaredMethod("singleProduces");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().headers().get("Accept")).containsExactly(MediaType.APPLICATION_JSON_VALUE);
+	}
+
+	@Test
+	void testEmptyProducesNoAcceptHeader() throws NoSuchMethodException {
+		Method method = TestTemplate_MultipleProduces.class.getDeclaredMethod("noProduces");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().headers().get("Accept")).isNull();
+	}
+
+	@Test
+	void testProducesWithBlankEntryIgnored() throws NoSuchMethodException {
+		Method method = TestTemplate_MultipleProduces.class.getDeclaredMethod("producesWithBlankEntry");
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().headers().get("Accept")).containsExactly("application/jose", "application/json");
+	}
+
+	@Test
 	void testMultipleRequestPartAnnotations() throws NoSuchMethodException {
 		Method method = TestTemplate_RequestPart.class.getDeclaredMethod("requestWithMultipleParts",
 				MultipartFile.class, String.class);
@@ -1157,6 +1189,22 @@ class SpringMvcContractTests {
 		public String toString() {
 			return "TestObject{" + "something='" + something + "', " + "number=" + number + "}";
 		}
+
+	}
+
+	public interface TestTemplate_MultipleProduces {
+
+		@GetMapping(value = "/test", produces = { "application/jose", "application/json" })
+		ResponseEntity<TestObject> multipleProduces();
+
+		@GetMapping(value = "/test", produces = MediaType.APPLICATION_JSON_VALUE)
+		ResponseEntity<TestObject> singleProduces();
+
+		@GetMapping("/test")
+		ResponseEntity<TestObject> noProduces();
+
+		@GetMapping(value = "/test", produces = { "application/jose", "", "application/json" })
+		ResponseEntity<TestObject> producesWithBlankEntry();
 
 	}
 
