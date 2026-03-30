@@ -93,6 +93,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Sam Kruglov
  * @author Tang Xiong
  * @author Juhyeong An
+ * @author Olof Segergren
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
 
@@ -417,9 +418,11 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	}
 
 	private void parseProduces(MethodMetadata md, RequestMapping annotation) {
-		String[] serverProduces = annotation.produces();
-		String clientAccepts = serverProduces.length == 0 ? null : emptyToNull(serverProduces[0]);
-		if (clientAccepts != null) {
+		String[] clientAccepts = Arrays.stream(annotation.produces())
+			.map(s -> emptyToNull(s))
+			.filter(Objects::nonNull)
+			.toArray(String[]::new);
+		if (clientAccepts.length > 0) {
 			md.template().header(ACCEPT, clientAccepts);
 		}
 	}
