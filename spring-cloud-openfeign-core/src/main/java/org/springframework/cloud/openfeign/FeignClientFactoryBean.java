@@ -483,6 +483,9 @@ public class FeignClientFactoryBean
 		if (StringUtils.hasText(url) && !url.startsWith("http://") && !url.startsWith("https://")) {
 			url = "http://" + url;
 		}
+		// NOTE: The Client bean should ideally be configured as a singleton.
+		// Repeated resolution of Client instances may lead to resource exhaustion
+		// (e.g., connection pools, threads) if not properly managed.
 		Client client = getOptional(feignClientFactory, Client.class);
 		if (client != null) {
 			if (client instanceof FeignBlockingLoadBalancerClient) {
