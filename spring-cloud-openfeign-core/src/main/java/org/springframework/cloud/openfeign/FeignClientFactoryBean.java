@@ -18,10 +18,13 @@ package org.springframework.cloud.openfeign;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import feign.Capability;
@@ -84,6 +87,8 @@ public class FeignClientFactoryBean
 	 ***********************************/
 
 	private static final Log LOG = LogFactory.getLog(FeignClientFactoryBean.class);
+
+	private static final Set<String> resolvedContextIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 	private Class<?> type;
 
@@ -488,6 +493,14 @@ public class FeignClientFactoryBean
 		// (e.g., connection pools, threads) if not properly managed.
 		Client client = getOptional(feignClientFactory, Client.class);
 		if (client != null) {
+			if (!resolvedContextIds.add(contextId)) {
+				if (LOG.isWarnEnabled()) {
+					LOG.warn("FeignClient with contextId '" + contextId
+						+ "' is being initialized more than once. "
+						+ "Ensure the Client bean is Singleton scoped "
+						+ "to avoid connection pool exhaustion.");
+				}
+			}
 			if (client instanceof FeignBlockingLoadBalancerClient) {
 				// not load balancing because we have a url,
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
