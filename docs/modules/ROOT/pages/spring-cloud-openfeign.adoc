@@ -885,6 +885,46 @@ protected interface DemoFeignClient {
 }
 ----
 
+
+=== FeignClientBuilder
+
+`FeignClientBuilder` allows programmatic creation of Feign clients without using the `@FeignClient` annotation.
+
+It builds clients in the same way as `@FeignClient`, but provides flexibility for dynamic use cases.
+
+Unlike `@FeignClient`, which defines clients statically, `FeignClientBuilder` allows creating clients dynamically at runtime.
+
+==== Basic Usage
+
+[source,java,indent=0]
+----
+@Autowired
+private ApplicationContext applicationContext;
+
+FeignClientBuilder builder = new FeignClientBuilder(applicationContext);
+
+MyClient client = builder
+    .forType(MyClient.class, "myClient")
+    .url("http://localhost:8080")
+    .build();
+----
+
+==== Configuration Options
+
+* `url(String url)` - Sets the target URL
+* `path(String path)` - Adds a base path
+* `contextId(String contextId)` - Unique identifier
+* `dismiss404(boolean)` - Ignore 404 errors
+* `inheritParentContext(boolean)` - Inherit parent config
+* `fallback(Class<? extends T>)` - Fallback class
+* `customize(FeignBuilderCustomizer)` - Customize Feign builder
+
+==== When to Use
+
+* Dynamic client creation
+* Runtime configuration
+* When `@FeignClient` is not sufficient
+
 [[reactive-support]]
 === Reactive Support
 As at the time of active development of Spring Cloud OpenFeign, the https://github.com/OpenFeign/feign[OpenFeign project] did not support reactive clients, such as https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html[Spring WebClient], such support could not be added to Spring Cloud OpenFeign either.
