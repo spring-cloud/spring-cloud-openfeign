@@ -495,10 +495,8 @@ public class FeignClientFactoryBean
 		if (client != null) {
 			if (!resolvedContextIds.add(contextId)) {
 				if (LOG.isWarnEnabled()) {
-					LOG.warn("FeignClient with contextId '" + contextId
-						+ "' is being initialized more than once. "
-						+ "Ensure the Client bean is Singleton scoped "
-						+ "to avoid connection pool exhaustion.");
+					LOG.warn("FeignClient with contextId '" + contextId + "' is being initialized more than once. "
+							+ "Ensure the Client bean is Singleton scoped " + "to avoid connection pool exhaustion.");
 				}
 			}
 			if (client instanceof FeignBlockingLoadBalancerClient) {
