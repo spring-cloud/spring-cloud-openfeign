@@ -74,6 +74,17 @@ class FeignCompressionTests {
 			});
 	}
 
+	@Test
+	void shouldAddResponseCompressionInterceptorWithoutClientBean() {
+		new ApplicationContextRunner()
+			.withPropertyValues("spring.cloud.openfeign.compression.response.enabled=true")
+			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class,
+					FeignAcceptGzipEncodingAutoConfiguration.class))
+			.run(context -> {
+				assertThat(context).hasSingleBean(FeignAcceptGzipEncodingInterceptor.class);
+			});
+	}
+
 	@Configuration
 	static class OkHttpClientConfiguration {
 
