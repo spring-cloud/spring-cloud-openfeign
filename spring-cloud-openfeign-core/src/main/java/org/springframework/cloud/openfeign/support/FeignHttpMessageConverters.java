@@ -38,6 +38,8 @@ public class FeignHttpMessageConverters {
 
 	private volatile List<HttpMessageConverter<?>> converters;
 
+	private final Object convertersLock = new Object();
+
 	public FeignHttpMessageConverters(ObjectProvider<ClientHttpMessageConvertersCustomizer> customizers,
 			ObjectProvider<HttpMessageConverterCustomizer> cloudCustomizers) {
 		this.customizers = customizers;
@@ -51,7 +53,7 @@ public class FeignHttpMessageConverters {
 
 	private void initConvertersIfRequired() {
 		if (this.converters == null) {
-			synchronized (this) {
+			synchronized (this.convertersLock) {
 				if (this.converters == null) {
 					List<HttpMessageConverter<?>> newConverters = new ArrayList<>();
 					HttpMessageConverters.ClientBuilder builder = HttpMessageConverters.forClient();
