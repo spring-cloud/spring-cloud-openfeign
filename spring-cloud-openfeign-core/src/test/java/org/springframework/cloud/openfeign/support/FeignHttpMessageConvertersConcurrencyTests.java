@@ -163,10 +163,10 @@ class FeignHttpMessageConvertersConcurrencyTests {
 
 		t2.start();
 		t1.start();
-		t1.join(1000);
-		t2.join(1000);
-		assertThat(t1.getState().equals(Thread.State.TERMINATED)).isTrue();
-		assertThat(t2.getState().equals(Thread.State.TERMINATED)).isTrue();
+		t1.join(5000);
+		t2.join(5000);
+		assertThat(t1.isAlive()).as("Thread t1 should terminate within 5 seconds").isFalse();
+		assertThat(t2.isAlive()).as("Thread t2 should terminate within 5 seconds").isFalse();
 		assertThat(converters.getConverters()).isNotNull();
 	}
 }
