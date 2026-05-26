@@ -94,6 +94,14 @@
 								<artifactId>micrometer-docs-generator</artifactId>
 								<version>${micrometer-docs-generator.version}</version>
 								<type>jar</type>
+								<!-- Eliminates java.lang.NoSuchMethodError: 'java.lang.ClassLoader ch.qos.logback.core.util.Loader.systemClassloaderIfNull(java.lang.ClassLoader)'
+								     When newer versions of logback are used -->
+								<exclusions>
+									<exclusion>
+										<groupId>ch.qos.logback</groupId>
+										<artifactId>logback-classic</artifactId>
+									</exclusion>
+								</exclusions>
 							</dependency>
 						</dependencies>
 					</plugin>
