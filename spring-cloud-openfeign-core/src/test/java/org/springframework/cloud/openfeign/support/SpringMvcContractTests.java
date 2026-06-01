@@ -316,8 +316,7 @@ class SpringMvcContractTests {
 
 		assertThat(data.template().url()).isEqualTo(extendedData.template().url());
 		assertThat(data.template().method()).isEqualTo(extendedData.template().method());
-		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo(data.indexToName().get(0).iterator().next());
-		assertThat(data.indexToName().get(0).iterator().next()).isEqualTo(data.indexToName().get(0).iterator().next());
+		assertThat(data.indexToName()).containsExactlyEntriesOf(extendedData.indexToName());
 		assertThat(data.template().decodeSlash()).isTrue();
 	}
 
