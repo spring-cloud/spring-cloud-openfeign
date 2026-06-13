@@ -751,6 +751,14 @@ public interface DemoClient {
 
 You can also disable the feature via property `spring.cloud.openfeign.cache.enabled=false`.
 
+==== Limitations
+
+Using `@Cacheable(sync = true)` with Feign clients may cause recursive cache invocation and result in an `IllegalStateException`.
+
+This happens due to the interaction between Feign proxies and Spring Cache synchronization.
+
+As a workaround, avoid using `sync = true` or disable Feign caching (`spring.cloud.openfeign.cache.enabled=false`).
+
 
 [[spring-requestmapping-support]]
 === Spring @RequestMapping Support
