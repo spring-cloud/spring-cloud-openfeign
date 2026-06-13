@@ -36,7 +36,9 @@ public class FeignHttpMessageConverters {
 
 	private final ObjectProvider<HttpMessageConverterCustomizer> cloudCustomizers;
 
-	private List<HttpMessageConverter<?>> converters;
+	private volatile List<HttpMessageConverter<?>> converters;
+
+	private final Object convertersLock = new Object();
 
 	public FeignHttpMessageConverters(ObjectProvider<ClientHttpMessageConvertersCustomizer> customizers,
 			ObjectProvider<HttpMessageConverterCustomizer> cloudCustomizers) {
@@ -51,16 +53,21 @@ public class FeignHttpMessageConverters {
 
 	private void initConvertersIfRequired() {
 		if (this.converters == null) {
-			this.converters = new ArrayList<>();
-			HttpMessageConverters.ClientBuilder builder = HttpMessageConverters.forClient();
-			// TODO: allow disabling of registerDefaults
-			builder.registerDefaults();
-			// TODO: check if already added? Howto order?
+			synchronized (this.convertersLock) {
+				if (this.converters == null) {
+					List<HttpMessageConverter<?>> newConverters = new ArrayList<>();
+					HttpMessageConverters.ClientBuilder builder = HttpMessageConverters.forClient();
+					// TODO: allow disabling of registerDefaults
+					builder.registerDefaults();
+					// TODO: check if already added? Howto order?
 
-			this.customizers.orderedStream().forEach(customizer -> customizer.customize(builder));
-			HttpMessageConverters hmc = builder.build();
-			hmc.forEach(converter -> converters.add(converter));
-			cloudCustomizers.forEach(customizer -> customizer.accept(this.converters));
+					this.customizers.orderedStream().forEach(customizer -> customizer.customize(builder));
+					HttpMessageConverters hmc = builder.build();
+					hmc.forEach(converter -> newConverters.add(converter));
+					cloudCustomizers.forEach(customizer -> customizer.accept(newConverters));
+					this.converters = newConverters;
+				}
+			}
 		}
 	}
 
