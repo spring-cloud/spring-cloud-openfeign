@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -186,6 +187,85 @@ class PageJacksonModuleTests {
 		assertThat(cascadedResult.getContent().get(1)).isEqualTo("second element in cascaded serialization");
 		assertThat(cascadedResult.getPageable().getPageSize()).isEqualTo(2);
 		assertThat(cascadedResult.getPageable().getPageNumber()).isEqualTo(6);
+	}
+
+	@Test
+	void deserializePageableWithHyphenatedAlias() throws IOException {
+		// Given
+		ObjectMapper kebabObjectMapepr = objectMapper.copy();
+		kebabObjectMapepr.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+		File file = new File("./src/test/resources/withPageableAliasHyphen.json");
+		// When
+		Page<?> result = kebabObjectMapepr.readValue(file, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(15);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable()).isNotNull();
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(2);
+		assertThat(result.getPageable().getPageSize()).isEqualTo(3);
+		assertThat(result.getPageable().getSort().getOrderFor("firstName").getDirection())
+			.isEqualTo(Sort.Direction.ASC);
+	}
+
+	@Test
+	void deserializePageableWithUnderscoreAlias() throws IOException {
+		// Given
+		ObjectMapper snakeCaseObjectMapper = objectMapper.copy();
+		snakeCaseObjectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+		File file = new File("./src/test/resources/withPageableAliasUnderscore.json");
+
+		// When
+		Page<?> result = snakeCaseObjectMapper.readValue(file, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(10);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable()).isNotNull();
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(1);
+		assertThat(result.getPageable().getPageSize()).isEqualTo(2);
+		assertThat(result.getPageable().getSort().getOrderFor("lastName").getDirection())
+			.isEqualTo(Sort.Direction.DESC);
+	}
+
+	@Test
+	void deserializePageableWithLowercaseAlias() throws IOException {
+		// Given
+		ObjectMapper lowerCaseObjectMapper = objectMapper.copy();
+		lowerCaseObjectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CASE);
+
+		File file = new File("./src/test/resources/withPageableAliasLowercase.json");
+
+		// When
+		Page<?> result = lowerCaseObjectMapper.readValue(file, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(8);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable()).isNotNull();
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(0);
+		assertThat(result.getPageable().getPageSize()).isEqualTo(4);
+		assertThat(result.getPageable().getSort()).isEqualTo(Sort.unsorted());
+	}
+
+	@Test
+	void deserializePageableWithPascalCaseAlias() throws IOException {
+		// Given
+		ObjectMapper upperCamelCaseObjectMapper = objectMapper.copy();
+		upperCamelCaseObjectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
+		File file = new File("./src/test/resources/withPageableAliasPascalCase.json");
+
+		// When
+		Page<?> result = upperCamelCaseObjectMapper.readValue(file, Page.class);
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(20);
+		assertThat(result.getContent()).hasSize(10);
+		assertThat(result.getPageable()).isNotNull();
+		assertThat(result.getPageable().getPageNumber()).isEqualTo(3);
+		assertThat(result.getPageable().getPageSize()).isEqualTo(2);
+		assertThat(result.getPageable().getSort().getOrderFor("firstName").getDirection())
+			.isEqualTo(Sort.Direction.ASC);
 	}
 
 }
