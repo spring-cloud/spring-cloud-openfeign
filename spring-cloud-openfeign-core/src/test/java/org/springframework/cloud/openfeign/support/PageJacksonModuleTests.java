@@ -190,13 +190,11 @@ class PageJacksonModuleTests {
 	}
 
 	@Test
-	void deserializePageableWithHyphenatedAlias() throws IOException {
+	void deserializePageableWithHyphenatedAlias() {
 		// Given
-		ObjectMapper kebabObjectMapepr = objectMapper.copy();
-		kebabObjectMapepr.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 		File file = new File("./src/test/resources/withPageableAliasHyphen.json");
 		// When
-		Page<?> result = kebabObjectMapepr.readValue(file, Page.class);
+		Page<?> result = objectMapper.readValue(file, Page.class);
 		// Then
 		assertThat(result).isNotNull();
 		assertThat(result.getTotalElements()).isEqualTo(15);
@@ -209,14 +207,11 @@ class PageJacksonModuleTests {
 	}
 
 	@Test
-	void deserializePageableWithUnderscoreAlias() throws IOException {
+	void deserializePageableWithUnderscoreAlias() {
 		// Given
-		ObjectMapper snakeCaseObjectMapper = objectMapper.copy();
-		snakeCaseObjectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 		File file = new File("./src/test/resources/withPageableAliasUnderscore.json");
-
 		// When
-		Page<?> result = snakeCaseObjectMapper.readValue(file, Page.class);
+		Page<?> result = objectMapper.readValue(file, Page.class);
 		// Then
 		assertThat(result).isNotNull();
 		assertThat(result.getTotalElements()).isEqualTo(10);
@@ -229,15 +224,11 @@ class PageJacksonModuleTests {
 	}
 
 	@Test
-	void deserializePageableWithLowercaseAlias() throws IOException {
+	void deserializePageableWithLowercaseAlias() {
 		// Given
-		ObjectMapper lowerCaseObjectMapper = objectMapper.copy();
-		lowerCaseObjectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CASE);
-
 		File file = new File("./src/test/resources/withPageableAliasLowercase.json");
-
 		// When
-		Page<?> result = lowerCaseObjectMapper.readValue(file, Page.class);
+		Page<?> result = objectMapper.readValue(file, Page.class);
 		// Then
 		assertThat(result).isNotNull();
 		assertThat(result.getTotalElements()).isEqualTo(8);
@@ -249,14 +240,11 @@ class PageJacksonModuleTests {
 	}
 
 	@Test
-	void deserializePageableWithPascalCaseAlias() throws IOException {
+	void deserializePageableWithPascalCaseAlias() {
 		// Given
-		ObjectMapper upperCamelCaseObjectMapper = objectMapper.copy();
-		upperCamelCaseObjectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
 		File file = new File("./src/test/resources/withPageableAliasPascalCase.json");
-
 		// When
-		Page<?> result = upperCamelCaseObjectMapper.readValue(file, Page.class);
+		Page<?> result = objectMapper.readValue(file, Page.class);
 		// Then
 		assertThat(result).isNotNull();
 		assertThat(result.getTotalElements()).isEqualTo(20);
