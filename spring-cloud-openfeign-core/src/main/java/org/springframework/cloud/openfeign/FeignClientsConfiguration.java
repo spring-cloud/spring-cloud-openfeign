@@ -36,6 +36,7 @@ import io.micrometer.observation.ObservationRegistry;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -248,8 +249,14 @@ public class FeignClientsConfiguration {
 		@Scope("prototype")
 		@ConditionalOnMissingBean
 		@ConditionalOnBean(CircuitBreakerFactory.class)
-		public Feign.Builder circuitBreakerFeignBuilder() {
-			return FeignCircuitBreaker.builder();
+		public Feign.Builder circuitBreakerFeignBuilder(CircuitBreakerFactory circuitBreakerFactory,
+				@Value("${spring.cloud.openfeign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled,
+				ObjectProvider<CircuitBreakerNameResolver> circuitBreakerNameResolver) {
+			return FeignCircuitBreaker.builder()
+				.circuitBreakerFactory(circuitBreakerFactory)
+				.circuitBreakerGroupEnabled(circuitBreakerGroupEnabled)
+				.circuitBreakerNameResolver(circuitBreakerNameResolver
+					.getIfAvailable(() -> (feignClientName, target, method) -> Feign.configKey(target.type(), method)));
 		}
 
 	}
