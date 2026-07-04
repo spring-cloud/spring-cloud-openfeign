@@ -46,6 +46,8 @@ import org.springframework.boot.data.autoconfigure.web.DataWebProperties;
 import org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.AlphanumericCircuitBreakerNameResolver;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.DefaultCircuitBreakerNameResolver;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.support.AbstractFormWriter;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
@@ -251,12 +253,20 @@ public class FeignClientsConfiguration {
 		@ConditionalOnBean(CircuitBreakerFactory.class)
 		public Feign.Builder circuitBreakerFeignBuilder(CircuitBreakerFactory circuitBreakerFactory,
 				@Value("${spring.cloud.openfeign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled,
+				@Value("${spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled:true}") boolean alphanumericIdsEnabled,
 				ObjectProvider<CircuitBreakerNameResolver> circuitBreakerNameResolver) {
 			return FeignCircuitBreaker.builder()
 				.circuitBreakerFactory(circuitBreakerFactory)
 				.circuitBreakerGroupEnabled(circuitBreakerGroupEnabled)
 				.circuitBreakerNameResolver(circuitBreakerNameResolver
-					.getIfAvailable(() -> (feignClientName, target, method) -> Feign.configKey(target.type(), method)));
+					.getIfAvailable(() -> defaultCircuitBreakerNameResolver(alphanumericIdsEnabled)));
+		}
+
+		private CircuitBreakerNameResolver defaultCircuitBreakerNameResolver(boolean alphanumericIdsEnabled) {
+			if (alphanumericIdsEnabled) {
+				return new AlphanumericCircuitBreakerNameResolver();
+			}
+			return new DefaultCircuitBreakerNameResolver();
 		}
 
 	}

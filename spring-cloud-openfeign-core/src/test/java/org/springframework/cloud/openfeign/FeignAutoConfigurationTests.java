@@ -32,10 +32,12 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.AlphanumericCircuitBreakerNameResolver;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.DefaultCircuitBreakerNameResolver;
 import org.springframework.cloud.openfeign.security.OAuth2AccessTokenInterceptor;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -120,7 +122,7 @@ class FeignAutoConfigurationTests {
 	}
 
 	@Test
-	void shouldConfigureCircuitBreakerFeignBuilderWithoutNameResolverBean() {
+	void shouldConfigureCircuitBreakerFeignBuilderWithoutNameResolverBean() throws NoSuchMethodException {
 		CircuitBreakerFactory<?, ?> circuitBreakerFactory = mock(CircuitBreakerFactory.class);
 		new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(FeignClientsConfiguration.class))
 			.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true",
@@ -128,10 +130,45 @@ class FeignAutoConfigurationTests {
 			.withBean(CircuitBreakerFactory.class, () -> circuitBreakerFactory)
 			.run(ctx -> {
 				Feign.Builder builder = ctx.getBean(Feign.Builder.class);
+				CircuitBreakerNameResolver circuitBreakerNameResolver = (CircuitBreakerNameResolver) ReflectionTestUtils
+					.getField(builder, "circuitBreakerNameResolver");
+				Method method = DirectCircuitBreakerClient.class.getMethod("get");
+				Target<DirectCircuitBreakerClient> target = new Target.HardCodedTarget<>(
+						DirectCircuitBreakerClient.class, "directClient", "http://localhost");
 
 				assertThat(builder).isInstanceOf(FeignCircuitBreaker.Builder.class)
 					.hasFieldOrPropertyWithValue("circuitBreakerFactory", circuitBreakerFactory)
-					.hasFieldOrProperty("circuitBreakerNameResolver");
+					.hasFieldOrPropertyWithValue("circuitBreakerNameResolver", circuitBreakerNameResolver);
+				assertThat(circuitBreakerNameResolver)
+					.isExactlyInstanceOf(AlphanumericCircuitBreakerNameResolver.class);
+				assertThat(circuitBreakerNameResolver.resolveCircuitBreakerName("directClient", target, method))
+					.isEqualTo(Feign.configKey(target.type(), method).replaceAll("[^a-zA-Z0-9]", ""));
+			});
+	}
+
+	@Test
+	void shouldConfigureDefaultCircuitBreakerFeignBuilderNameResolverWhenAlphanumericIdsDisabled()
+			throws NoSuchMethodException {
+		CircuitBreakerFactory<?, ?> circuitBreakerFactory = mock(CircuitBreakerFactory.class);
+		new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(FeignClientsConfiguration.class))
+			.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true",
+					"spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled=false",
+					"spring.cloud.openfeign.httpclient.hc5.enabled=false")
+			.withBean(CircuitBreakerFactory.class, () -> circuitBreakerFactory)
+			.run(ctx -> {
+				Feign.Builder builder = ctx.getBean(Feign.Builder.class);
+				CircuitBreakerNameResolver circuitBreakerNameResolver = (CircuitBreakerNameResolver) ReflectionTestUtils
+					.getField(builder, "circuitBreakerNameResolver");
+				Method method = DirectCircuitBreakerClient.class.getMethod("get");
+				Target<DirectCircuitBreakerClient> target = new Target.HardCodedTarget<>(
+						DirectCircuitBreakerClient.class, "directClient", "http://localhost");
+
+				assertThat(builder).isInstanceOf(FeignCircuitBreaker.Builder.class)
+					.hasFieldOrPropertyWithValue("circuitBreakerFactory", circuitBreakerFactory)
+					.hasFieldOrPropertyWithValue("circuitBreakerNameResolver", circuitBreakerNameResolver);
+				assertThat(circuitBreakerNameResolver).isExactlyInstanceOf(DefaultCircuitBreakerNameResolver.class);
+				assertThat(circuitBreakerNameResolver.resolveCircuitBreakerName("directClient", target, method))
+					.isEqualTo(Feign.configKey(target.type(), method));
 			});
 	}
 
