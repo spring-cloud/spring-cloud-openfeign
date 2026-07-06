@@ -240,6 +240,18 @@ public class FeignClientsConfiguration {
 	@ConditionalOnProperty("spring.cloud.openfeign.circuitbreaker.enabled")
 	protected static class CircuitBreakerPresentFeignBuilderConfiguration {
 
+		@Autowired
+		private CircuitBreakerFactory circuitBreakerFactory;
+
+		@Value("${spring.cloud.openfeign.circuitbreaker.group.enabled:false}")
+		private boolean circuitBreakerGroupEnabled;
+
+		@Value("${spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled:true}")
+		private boolean alphanumericIdsEnabled;
+
+		@Autowired
+		private ObjectProvider<CircuitBreakerNameResolver> circuitBreakerNameResolver;
+
 		@Bean
 		@Scope("prototype")
 		@ConditionalOnMissingBean({ Feign.Builder.class, CircuitBreakerFactory.class })
@@ -251,9 +263,13 @@ public class FeignClientsConfiguration {
 		@Scope("prototype")
 		@ConditionalOnMissingBean
 		@ConditionalOnBean(CircuitBreakerFactory.class)
+		public Feign.Builder circuitBreakerFeignBuilder() {
+			return circuitBreakerFeignBuilder(circuitBreakerFactory, circuitBreakerGroupEnabled, alphanumericIdsEnabled,
+					circuitBreakerNameResolver);
+		}
+
 		public Feign.Builder circuitBreakerFeignBuilder(CircuitBreakerFactory circuitBreakerFactory,
-				@Value("${spring.cloud.openfeign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled,
-				@Value("${spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled:true}") boolean alphanumericIdsEnabled,
+				boolean circuitBreakerGroupEnabled, boolean alphanumericIdsEnabled,
 				ObjectProvider<CircuitBreakerNameResolver> circuitBreakerNameResolver) {
 			return FeignCircuitBreaker.builder()
 				.circuitBreakerFactory(circuitBreakerFactory)
