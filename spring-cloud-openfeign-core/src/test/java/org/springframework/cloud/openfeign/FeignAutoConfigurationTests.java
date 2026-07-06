@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -99,6 +100,15 @@ class FeignAutoConfigurationTests {
 				assertThatFeignCircuitBreakerTargeterHasSameCircuitBreakerNameResolver(ctx,
 						CustomCircuitBreakerNameResolver.class);
 			});
+	}
+
+	@Test
+	void shouldKeepNoArgCircuitBreakerFeignBuilderSignature() throws NoSuchMethodException {
+		Method method = FeignClientsConfiguration.CircuitBreakerPresentFeignBuilderConfiguration.class
+			.getDeclaredMethod("circuitBreakerFeignBuilder");
+
+		assertThat(Modifier.isPublic(method.getModifiers())).isTrue();
+		assertThat(method.getReturnType()).isEqualTo(Feign.Builder.class);
 	}
 
 	@Test
