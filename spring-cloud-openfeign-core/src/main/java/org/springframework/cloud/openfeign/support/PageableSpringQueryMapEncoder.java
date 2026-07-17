@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import feign.querymap.BeanQueryMapEncoder;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -35,7 +33,7 @@ import org.springframework.data.domain.Sort;
  * @author Gokalp Kuscu
  * @since 2.2.8
  */
-public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
+public class PageableSpringQueryMapEncoder extends RecordQueryMapEncoder {
 
 	/**
 	 * Page index parameter name.
