@@ -95,9 +95,11 @@ class FeignCircuitBreakerInvocationHandler implements InvocationHandler {
 			return toString();
 		}
 
-		String circuitName = circuitBreakerNameResolver.resolveCircuitBreakerName(feignClientName, target, method);
-		CircuitBreaker circuitBreaker = circuitBreakerGroupEnabled ? factory.create(circuitName, feignClientName)
-				: factory.create(circuitName);
+		String resolvedFeignClientName = feignClientName != null ? feignClientName : target.name();
+		String circuitName = circuitBreakerNameResolver.resolveCircuitBreakerName(resolvedFeignClientName, target,
+				method);
+		CircuitBreaker circuitBreaker = circuitBreakerGroupEnabled
+				? factory.create(circuitName, resolvedFeignClientName) : factory.create(circuitName);
 		Supplier<Object> supplier = asSupplier(method, args);
 		if (this.nullableFallbackFactory != null) {
 			Function<Throwable, Object> fallbackFunction = throwable -> {
