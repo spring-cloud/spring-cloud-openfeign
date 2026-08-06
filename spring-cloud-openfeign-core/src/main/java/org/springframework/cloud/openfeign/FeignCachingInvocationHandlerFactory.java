@@ -39,6 +39,9 @@ public class FeignCachingInvocationHandlerFactory implements InvocationHandlerFa
 
 	private final CacheInterceptor cacheInterceptor;
 
+	// ADDED: ThreadLocal guard
+	private static final ThreadLocal<Boolean> CACHE_IN_PROGRESS = ThreadLocal.withInitial(() -> false);
+
 	public FeignCachingInvocationHandlerFactory(InvocationHandlerFactory delegateFactory,
 			CacheInterceptor cacheInterceptor) {
 		this.delegateFactory = delegateFactory;
@@ -50,32 +53,45 @@ public class FeignCachingInvocationHandlerFactory implements InvocationHandlerFa
 		final InvocationHandler delegateHandler = delegateFactory.create(target, dispatch);
 		return (proxy, method, argsNullable) -> {
 			Object[] args = Optional.ofNullable(argsNullable).orElseGet(() -> new Object[0]);
-			return cacheInterceptor.invoke(new MethodInvocation() {
-				@Override
-				public Method getMethod() {
-					return method;
-				}
 
-				@Override
-				public Object[] getArguments() {
-					return args;
-				}
+			// ✅ ADDED: Prevent nested cache invocation
+			if (CACHE_IN_PROGRESS.get()) {
+				return delegateHandler.invoke(proxy, method, args);
+			}
 
-				@Override
-				public Object proceed() throws Throwable {
-					return delegateHandler.invoke(proxy, method, args);
-				}
+			try {
+				CACHE_IN_PROGRESS.set(true);
 
-				@Override
-				public Object getThis() {
-					return target;
-				}
+				return cacheInterceptor.invoke(new MethodInvocation() {
+					@Override
+					public Method getMethod() {
+						return method;
+					}
 
-				@Override
-				public AccessibleObject getStaticPart() {
-					return method;
-				}
-			});
+					@Override
+					public Object[] getArguments() {
+						return args;
+					}
+
+					@Override
+					public Object proceed() throws Throwable {
+						return delegateHandler.invoke(proxy, method, args);
+					}
+
+					@Override
+					public Object getThis() {
+						return target;
+					}
+
+					@Override
+					public AccessibleObject getStaticPart() {
+						return method;
+					}
+				});
+			}
+			finally {
+				CACHE_IN_PROGRESS.remove();
+			}
 		};
 	}
 
