@@ -34,6 +34,7 @@ import feign.optionals.OptionalDecoder;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
 
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -102,8 +103,9 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	public FeignHttpMessageConverters feignHttpMessageConverters(
 			ObjectProvider<ClientHttpMessageConvertersCustomizer> customizers,
-			ObjectProvider<HttpMessageConverterCustomizer> cloudCustomizers) {
-		return new FeignHttpMessageConverters(customizers, cloudCustomizers);
+			ObjectProvider<HttpMessageConverterCustomizer> cloudCustomizers, BeanFactory beanFactory) {
+		return new FeignHttpMessageConverters(customizers, cloudCustomizers,
+				FeignHttpMessageConverters.jsonMapperProvider(beanFactory));
 	}
 
 	@Bean
