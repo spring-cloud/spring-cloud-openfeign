@@ -404,10 +404,10 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 		// TODO: only supports one header value per key
 		if (annotation.headers() != null) {
 			for (String header : annotation.headers()) {
+				header = resolve(header);
 				int index = header.indexOf('=');
 				if (!header.contains("!=") && index >= 0) {
-					md.template()
-						.header(resolve(header.substring(0, index)), resolve(header.substring(index + 1).trim()));
+					md.template().header(header.substring(0, index), header.substring(index + 1).trim());
 				}
 			}
 		}

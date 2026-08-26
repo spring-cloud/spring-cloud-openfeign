@@ -20,6 +20,7 @@ feignClient:
   localappName: localapp
   methodLevelRequestMappingPath: /hello2
   myPlaceholderHeader: myPlaceholderHeaderValue
+  placeholderHeader: myPlaceholderHeader=myPlaceholderHeaderValue
 management.endpoints.web.expose: '*'
 
 ---

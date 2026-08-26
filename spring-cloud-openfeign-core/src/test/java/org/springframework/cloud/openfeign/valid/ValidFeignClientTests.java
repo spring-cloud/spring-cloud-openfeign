@@ -186,6 +186,13 @@ class ValidFeignClientTests {
 	}
 
 	@Test
+	void testHeaderPlaceholderExpression() {
+		String header = testClient.getHelloHeadersPlaceholderExpression();
+		assertThat(header).as("header was null").isNotNull();
+		assertThat(header).as("header was wrong").isEqualTo("myPlaceholderHeaderValue");
+	}
+
+	@Test
 	void testFeignClientType() {
 		assertThat(feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
 		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) feignClient;
@@ -452,6 +459,9 @@ class ValidFeignClientTests {
 		@GetMapping(path = "/helloheadersplaceholders",
 				headers = "myPlaceholderHeader=${feignClient.myPlaceholderHeader}")
 		String getHelloHeadersPlaceholders();
+
+		@GetMapping(path = "/helloheadersplaceholders", headers = "${feignClient.placeholderHeader}")
+		String getHelloHeadersPlaceholderExpression();
 
 		@GetMapping("/helloparams")
 		List<String> getParams(@RequestParam("params") List<String> params);
