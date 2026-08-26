@@ -27,6 +27,7 @@ import feign.Target;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -36,6 +37,7 @@ import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreaker
 import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.DefaultCircuitBreakerNameResolver;
 import org.springframework.cloud.openfeign.security.OAuth2AccessTokenInterceptor;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -104,11 +106,15 @@ class FeignAutoConfigurationTests {
 
 	@Test
 	void shouldKeepNoArgCircuitBreakerFeignBuilderSignature() throws NoSuchMethodException {
-		Method method = FeignClientsConfiguration.CircuitBreakerPresentFeignBuilderConfiguration.class
+		Method noArgMethod = FeignClientsConfiguration.CircuitBreakerPresentFeignBuilderConfiguration.class
 			.getDeclaredMethod("circuitBreakerFeignBuilder");
+		Method beanMethod = FeignClientsConfiguration.CircuitBreakerPresentFeignBuilderConfiguration.class
+			.getDeclaredMethod("circuitBreakerFeignBuilder", CircuitBreakerFactory.class,
+					FeignCircuitBreakerProperties.class, ObjectProvider.class);
 
-		assertThat(Modifier.isPublic(method.getModifiers())).isTrue();
-		assertThat(method.getReturnType()).isEqualTo(Feign.Builder.class);
+		assertThat(Modifier.isPublic(noArgMethod.getModifiers())).isTrue();
+		assertThat(noArgMethod.getReturnType()).isEqualTo(Feign.Builder.class);
+		assertThat(beanMethod.isAnnotationPresent(Bean.class)).isTrue();
 	}
 
 	@Test
@@ -134,7 +140,8 @@ class FeignAutoConfigurationTests {
 	@Test
 	void shouldConfigureCircuitBreakerFeignBuilderWithoutNameResolverBean() throws NoSuchMethodException {
 		CircuitBreakerFactory<?, ?> circuitBreakerFactory = mock(CircuitBreakerFactory.class);
-		new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(FeignClientsConfiguration.class))
+		new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class, FeignClientsConfiguration.class))
 			.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true",
 					"spring.cloud.openfeign.httpclient.hc5.enabled=false")
 			.withBean(CircuitBreakerFactory.class, () -> circuitBreakerFactory)
@@ -160,7 +167,8 @@ class FeignAutoConfigurationTests {
 	void shouldConfigureDefaultCircuitBreakerFeignBuilderNameResolverWhenAlphanumericIdsDisabled()
 			throws NoSuchMethodException {
 		CircuitBreakerFactory<?, ?> circuitBreakerFactory = mock(CircuitBreakerFactory.class);
-		new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(FeignClientsConfiguration.class))
+		new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class, FeignClientsConfiguration.class))
 			.withPropertyValues("spring.cloud.openfeign.circuitbreaker.enabled=true",
 					"spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled=false",
 					"spring.cloud.openfeign.httpclient.hc5.enabled=false")

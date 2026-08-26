@@ -36,7 +36,6 @@ import io.micrometer.observation.ObservationRegistry;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -240,18 +239,6 @@ public class FeignClientsConfiguration {
 	@ConditionalOnProperty("spring.cloud.openfeign.circuitbreaker.enabled")
 	protected static class CircuitBreakerPresentFeignBuilderConfiguration {
 
-		@Autowired
-		private CircuitBreakerFactory circuitBreakerFactory;
-
-		@Value("${spring.cloud.openfeign.circuitbreaker.group.enabled:false}")
-		private boolean circuitBreakerGroupEnabled;
-
-		@Value("${spring.cloud.openfeign.circuitbreaker.alphanumeric-ids.enabled:true}")
-		private boolean alphanumericIdsEnabled;
-
-		@Autowired
-		private ObjectProvider<CircuitBreakerNameResolver> circuitBreakerNameResolver;
-
 		@Bean
 		@Scope("prototype")
 		@ConditionalOnMissingBean({ Feign.Builder.class, CircuitBreakerFactory.class })
@@ -259,27 +246,27 @@ public class FeignClientsConfiguration {
 			return Feign.builder().retryer(retryer);
 		}
 
+		public Feign.Builder circuitBreakerFeignBuilder() {
+			return FeignCircuitBreaker.builder();
+		}
+
 		@Bean
 		@Scope("prototype")
 		@ConditionalOnMissingBean
 		@ConditionalOnBean(CircuitBreakerFactory.class)
-		public Feign.Builder circuitBreakerFeignBuilder() {
-			return circuitBreakerFeignBuilder(circuitBreakerFactory, circuitBreakerGroupEnabled, alphanumericIdsEnabled,
-					circuitBreakerNameResolver);
-		}
-
 		public Feign.Builder circuitBreakerFeignBuilder(CircuitBreakerFactory circuitBreakerFactory,
-				boolean circuitBreakerGroupEnabled, boolean alphanumericIdsEnabled,
+				FeignCircuitBreakerProperties circuitBreakerProperties,
 				ObjectProvider<CircuitBreakerNameResolver> circuitBreakerNameResolver) {
 			return FeignCircuitBreaker.builder()
 				.circuitBreakerFactory(circuitBreakerFactory)
-				.circuitBreakerGroupEnabled(circuitBreakerGroupEnabled)
+				.circuitBreakerGroupEnabled(circuitBreakerProperties.getGroup().isEnabled())
 				.circuitBreakerNameResolver(circuitBreakerNameResolver
-					.getIfAvailable(() -> defaultCircuitBreakerNameResolver(alphanumericIdsEnabled)));
+					.getIfAvailable(() -> defaultCircuitBreakerNameResolver(circuitBreakerProperties)));
 		}
 
-		private CircuitBreakerNameResolver defaultCircuitBreakerNameResolver(boolean alphanumericIdsEnabled) {
-			if (alphanumericIdsEnabled) {
+		private CircuitBreakerNameResolver defaultCircuitBreakerNameResolver(
+				FeignCircuitBreakerProperties circuitBreakerProperties) {
+			if (circuitBreakerProperties.getAlphanumericIds().isEnabled()) {
 				return new AlphanumericCircuitBreakerNameResolver();
 			}
 			return new DefaultCircuitBreakerNameResolver();

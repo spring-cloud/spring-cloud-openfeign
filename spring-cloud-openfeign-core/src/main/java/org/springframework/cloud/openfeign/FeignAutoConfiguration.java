@@ -37,7 +37,6 @@ import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -86,7 +85,7 @@ import org.springframework.util.ClassUtils;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Feign.class)
 @EnableConfigurationProperties({ FeignClientProperties.class, FeignHttpClientProperties.class,
-		FeignEncoderProperties.class, FeignOAuth2Properties.class })
+		FeignEncoderProperties.class, FeignOAuth2Properties.class, FeignCircuitBreakerProperties.class })
 public class FeignAutoConfiguration {
 
 	private static final Log LOG = LogFactory.getLog(FeignAutoConfiguration.class);
@@ -189,10 +188,10 @@ public class FeignAutoConfiguration {
 		@ConditionalOnMissingBean
 		@ConditionalOnBean(CircuitBreakerFactory.class)
 		public Targeter circuitBreakerFeignTargeter(CircuitBreakerFactory circuitBreakerFactory,
-				@Value("${spring.cloud.openfeign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled,
+				FeignCircuitBreakerProperties circuitBreakerProperties,
 				CircuitBreakerNameResolver circuitBreakerNameResolver) {
-			return new FeignCircuitBreakerTargeter(circuitBreakerFactory, circuitBreakerGroupEnabled,
-					circuitBreakerNameResolver);
+			return new FeignCircuitBreakerTargeter(circuitBreakerFactory,
+					circuitBreakerProperties.getGroup().isEnabled(), circuitBreakerNameResolver);
 		}
 
 		static class DefaultCircuitBreakerNameResolver implements CircuitBreakerNameResolver {
