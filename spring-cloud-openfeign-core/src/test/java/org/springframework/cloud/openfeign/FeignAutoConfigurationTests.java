@@ -118,6 +118,21 @@ class FeignAutoConfigurationTests {
 	}
 
 	@Test
+	void shouldKeepCircuitBreakerFeignTargeterSignature() throws NoSuchMethodException {
+		Method existingMethod = FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.class
+			.getDeclaredMethod("circuitBreakerFeignTargeter", CircuitBreakerFactory.class, boolean.class,
+					CircuitBreakerNameResolver.class);
+		Method beanMethod = FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.class
+			.getDeclaredMethod("circuitBreakerFeignTargeter", CircuitBreakerFactory.class,
+					FeignCircuitBreakerProperties.class, CircuitBreakerNameResolver.class);
+
+		assertThat(Modifier.isPublic(existingMethod.getModifiers())).isTrue();
+		assertThat(existingMethod.getReturnType()).isEqualTo(Targeter.class);
+		assertThat(existingMethod.isAnnotationPresent(Bean.class)).isFalse();
+		assertThat(beanMethod.isAnnotationPresent(Bean.class)).isTrue();
+	}
+
+	@Test
 	void shouldConfigureCircuitBreakerFeignBuilderWhenUsedDirectly() {
 		CircuitBreakerFactory<?, ?> circuitBreakerFactory = mock(CircuitBreakerFactory.class);
 		new ApplicationContextRunner()
