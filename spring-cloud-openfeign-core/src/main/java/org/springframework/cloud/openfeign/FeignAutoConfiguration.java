@@ -184,6 +184,11 @@ public class FeignAutoConfiguration {
 			return new AlphanumericCircuitBreakerNameResolver();
 		}
 
+		/**
+		 * @deprecated in favor of
+		 * {@link #circuitBreakerFeignTargeter(CircuitBreakerFactory, FeignCircuitBreakerProperties, CircuitBreakerNameResolver)}.
+		 */
+		@Deprecated
 		@SuppressWarnings("rawtypes")
 		public Targeter circuitBreakerFeignTargeter(CircuitBreakerFactory circuitBreakerFactory,
 				@Value("${spring.cloud.openfeign.circuitbreaker.group.enabled:false}") boolean circuitBreakerGroupEnabled,

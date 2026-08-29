@@ -114,6 +114,7 @@ class FeignAutoConfigurationTests {
 
 		assertThat(Modifier.isPublic(noArgMethod.getModifiers())).isTrue();
 		assertThat(noArgMethod.getReturnType()).isEqualTo(Feign.Builder.class);
+		assertThat(noArgMethod.isAnnotationPresent(Deprecated.class)).isTrue();
 		assertThat(beanMethod.isAnnotationPresent(Bean.class)).isTrue();
 	}
 
@@ -128,6 +129,7 @@ class FeignAutoConfigurationTests {
 
 		assertThat(Modifier.isPublic(existingMethod.getModifiers())).isTrue();
 		assertThat(existingMethod.getReturnType()).isEqualTo(Targeter.class);
+		assertThat(existingMethod.isAnnotationPresent(Deprecated.class)).isTrue();
 		assertThat(existingMethod.isAnnotationPresent(Bean.class)).isFalse();
 		assertThat(beanMethod.isAnnotationPresent(Bean.class)).isTrue();
 	}

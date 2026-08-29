@@ -246,6 +246,11 @@ public class FeignClientsConfiguration {
 			return Feign.builder().retryer(retryer);
 		}
 
+		/**
+		 * @deprecated in favor of
+		 * {@link #circuitBreakerFeignBuilder(CircuitBreakerFactory, FeignCircuitBreakerProperties, ObjectProvider)}.
+		 */
+		@Deprecated
 		public Feign.Builder circuitBreakerFeignBuilder() {
 			return FeignCircuitBreaker.builder();
 		}
