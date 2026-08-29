@@ -45,6 +45,8 @@ import org.springframework.boot.data.autoconfigure.web.DataWebProperties;
 import org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.AlphanumericCircuitBreakerNameResolver;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration.CircuitBreakerPresentFeignTargeterConfiguration.DefaultCircuitBreakerNameResolver;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.support.AbstractFormWriter;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
@@ -244,12 +246,35 @@ public class FeignClientsConfiguration {
 			return Feign.builder().retryer(retryer);
 		}
 
+		/**
+		 * @deprecated in favor of
+		 * {@link #circuitBreakerFeignBuilder(CircuitBreakerFactory, FeignCircuitBreakerProperties, ObjectProvider)}.
+		 */
+		@Deprecated
+		public Feign.Builder circuitBreakerFeignBuilder() {
+			return FeignCircuitBreaker.builder();
+		}
+
 		@Bean
 		@Scope("prototype")
 		@ConditionalOnMissingBean
 		@ConditionalOnBean(CircuitBreakerFactory.class)
-		public Feign.Builder circuitBreakerFeignBuilder() {
-			return FeignCircuitBreaker.builder();
+		public Feign.Builder circuitBreakerFeignBuilder(CircuitBreakerFactory circuitBreakerFactory,
+				FeignCircuitBreakerProperties circuitBreakerProperties,
+				ObjectProvider<CircuitBreakerNameResolver> circuitBreakerNameResolver) {
+			return FeignCircuitBreaker.builder()
+				.circuitBreakerFactory(circuitBreakerFactory)
+				.circuitBreakerGroupEnabled(circuitBreakerProperties.getGroup().isEnabled())
+				.circuitBreakerNameResolver(circuitBreakerNameResolver
+					.getIfAvailable(() -> defaultCircuitBreakerNameResolver(circuitBreakerProperties)));
+		}
+
+		private CircuitBreakerNameResolver defaultCircuitBreakerNameResolver(
+				FeignCircuitBreakerProperties circuitBreakerProperties) {
+			if (circuitBreakerProperties.getAlphanumericIds().isEnabled()) {
+				return new AlphanumericCircuitBreakerNameResolver();
+			}
+			return new DefaultCircuitBreakerNameResolver();
 		}
 
 	}
