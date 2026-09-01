@@ -43,8 +43,7 @@ public class FeignAcceptGzipEncodingInterceptor extends BaseRequestInterceptor {
 	@Override
 	public void apply(RequestTemplate template) {
 
-		addHeader(template, HttpEncoding.ACCEPT_ENCODING_HEADER, HttpEncoding.GZIP_ENCODING,
-				HttpEncoding.DEFLATE_ENCODING);
+		addHeader(template, HttpEncoding.ACCEPT_ENCODING_HEADER, getProperties().getContentEncodingTypes());
 	}
 
 }
