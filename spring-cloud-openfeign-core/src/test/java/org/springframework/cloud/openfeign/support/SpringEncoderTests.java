@@ -187,8 +187,8 @@ class SpringEncoderTests {
 		assertThat(((List) request.headers().get(ACCEPT)).get(0)).as("Request Accept header is not multipart/form-data")
 			.isEqualTo(MULTIPART_FORM_DATA_VALUE);
 		assertThat(((List) request.headers().get(CONTENT_LENGTH)).get(0))
-			.as("Request Content-Length is not equal to 186")
-			.isEqualTo("186");
+			.as("Request Content-Length is not equal to request body length")
+			.isEqualTo(String.valueOf(request.body().length));
 		assertThat(new String(request.body())).as("Body content cannot be decoded").contains("hi");
 	}
 
