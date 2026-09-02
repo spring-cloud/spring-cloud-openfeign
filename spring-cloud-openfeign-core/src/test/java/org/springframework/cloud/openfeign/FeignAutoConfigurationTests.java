@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -62,6 +63,23 @@ class FeignAutoConfigurationTests {
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
 		.withConfiguration(AutoConfigurations.of(FeignAutoConfiguration.class))
 		.withPropertyValues("spring.cloud.openfeign.httpclient.hc5.enabled=false");
+
+	@Test
+	void shouldConfigureJacksonModules() {
+		runner.run(context -> assertThat(context).hasBean("pageJacksonModule").hasBean("sortModule"));
+	}
+
+	@Test
+	void shouldNotConfigureJacksonModulesWhenJacksonDatabindIsMissing() {
+		runner.withClassLoader(new FilteredClassLoader("tools.jackson.databind"))
+			.run(context -> assertThat(context).doesNotHaveBean("pageJacksonModule").doesNotHaveBean("sortModule"));
+	}
+
+	@Test
+	void shouldNotConfigureJacksonModulesWhenSpringDataIsMissing() {
+		runner.withClassLoader(new FilteredClassLoader("org.springframework.data"))
+			.run(context -> assertThat(context).doesNotHaveBean("pageJacksonModule").doesNotHaveBean("sortModule"));
+	}
 
 	@Test
 	void shouldInstantiateDefaultTargeterWhenFeignCircuitBreakerIsDisabled() {
