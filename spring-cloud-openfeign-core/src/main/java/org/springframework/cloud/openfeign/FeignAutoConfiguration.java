@@ -31,6 +31,7 @@ import feign.hc5.ApacheHttp5Client;
 import feign.http2client.Http2Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import tools.jackson.databind.JacksonModule;
 
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
@@ -126,7 +127,7 @@ public class FeignAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass({ Module.class, Page.class, Sort.class })
+	@ConditionalOnClass({ JacksonModule.class, Page.class, Sort.class })
 	@ConditionalOnProperty(value = "spring.cloud.openfeign.autoconfiguration.jackson.enabled", havingValue = "true",
 			matchIfMissing = true)
 	protected static class FeignJacksonConfiguration {
