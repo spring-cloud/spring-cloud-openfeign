@@ -16,6 +16,11 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -39,6 +44,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.FeignClientProperties;
 import org.springframework.cloud.openfeign.SpringQueryMap;
@@ -90,6 +96,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Sam Kruglov
  * @author Bhavya Agrawal
  * @author Tang Xiong
+ * @author Hyundoo Park
  **/
 
 @ExtendWith(OutputCaptureExtension.class)
@@ -254,6 +261,45 @@ class SpringMvcContractTests {
 	@Test
 	void getWithUriAndAnnotatedParameterShouldNotWarn(CapturedOutput output) throws Exception {
 		Method method = GetWithUriAndAnnotatedParam.class.getDeclaredMethod("getValue", URI.class, String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(output).doesNotContain("OpenFeign Warning");
+	}
+
+	@Test
+	void getWithPageableParameterShouldNotWarn(CapturedOutput output) throws Exception {
+		Method method = GetWithPageableParam.class.getDeclaredMethod("getStores", Pageable.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(data.queryMapIndex()).isZero();
+		assertThat(output).doesNotContain("OpenFeign Warning");
+	}
+
+	@Test
+	void getWithCookieValueParameterShouldNotWarn(CapturedOutput output) throws Exception {
+		Method method = GetWithCookieValueParam.class.getDeclaredMethod("getValue", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(output).doesNotContain("OpenFeign Warning");
+	}
+
+	@Test
+	void getWithMatrixVariableParameterShouldNotWarn(CapturedOutput output) throws Exception {
+		Method method = GetWithMatrixVariableParam.class.getDeclaredMethod("getValue", Map.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().method()).isEqualTo("GET");
+		assertThat(output).doesNotContain("OpenFeign Warning");
+	}
+
+	@Test
+	void getWithCustomProcessorParameterShouldNotWarn(CapturedOutput output) throws Exception {
+		contract = new SpringMvcContract(Collections.singletonList(new CustomAnnotationParameterProcessor()),
+				getConversionService());
+		Method method = GetWithCustomAnnotationParam.class.getDeclaredMethod("getValue", String.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().method()).isEqualTo("GET");
@@ -923,6 +969,59 @@ class SpringMvcContractTests {
 
 		@GetMapping("/sample/receive")
 		String getValue(URI baseUri, @RequestParam("id") String id);
+
+	}
+
+	interface GetWithPageableParam {
+
+		@GetMapping("/stores")
+		Page<String> getStores(Pageable pageable);
+
+	}
+
+	interface GetWithCookieValueParam {
+
+		@GetMapping("/test")
+		String getValue(@CookieValue("cookie1") String cookie1);
+
+	}
+
+	interface GetWithMatrixVariableParam {
+
+		@GetMapping("/matrixVariable/{params}")
+		String getValue(@MatrixVariable("params") Map<String, Object> params);
+
+	}
+
+	interface GetWithCustomAnnotationParam {
+
+		@GetMapping("/test")
+		String getValue(@CustomAnnotation("id") String id);
+
+	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.PARAMETER)
+	@interface CustomAnnotation {
+
+		String value();
+
+	}
+
+	static class CustomAnnotationParameterProcessor implements AnnotatedParameterProcessor {
+
+		@Override
+		public Class<? extends Annotation> getAnnotationType() {
+			return CustomAnnotation.class;
+		}
+
+		@Override
+		public boolean processArgument(AnnotatedParameterContext context, Annotation annotation, Method method) {
+			String name = ((CustomAnnotation) annotation).value();
+			context.setParameterName(name);
+			context.getMethodMetadata().template().query(name, "{" + name + "}");
+			return true;
+		}
 
 	}
 
