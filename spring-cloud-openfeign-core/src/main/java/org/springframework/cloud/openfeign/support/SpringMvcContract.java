@@ -69,8 +69,6 @@ import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -94,6 +92,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
  * @author Tang Xiong
  * @author Juhyeong An
  * @author Olof Segergren
+ * @author Hyundoo Park
  */
 public class SpringMvcContract extends Contract.BaseContract implements ResourceLoaderAware {
 
@@ -229,23 +228,34 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 			return false;
 		}
 		int fromIndex = (params.length > 0 && params[0].getType() == URI.class) ? 1 : 0;
-		return !hasHttpAnnotations(method, fromIndex);
+		return !hasBoundParameters(method, fromIndex);
 	}
 
-	private boolean hasHttpAnnotations(Method method, int fromIndex) {
+	private boolean hasBoundParameters(Method method, int fromIndex) {
 		Parameter[] parameters = method.getParameters();
 		for (int i = fromIndex; i < parameters.length; i++) {
 			Parameter parameter = parameters[i];
+			if (isPageable(parameter.getType())) {
+				return true;
+			}
 			for (Annotation annotation : parameter.getAnnotations()) {
 				Class<? extends Annotation> annotationType = annotation.annotationType();
-				if (annotationType == RequestParam.class || annotationType == RequestHeader.class
-						|| annotationType == PathVariable.class || annotationType == SpringQueryMap.class
-						|| annotationType == QueryMap.class) {
+				if (annotationType == QueryMap.class || annotatedArgumentProcessors.containsKey(annotationType)) {
 					return true;
 				}
 			}
 		}
 		return false;
+	}
+
+	private boolean isPageable(Class<?> parameterType) {
+		try {
+			return Pageable.class.isAssignableFrom(parameterType);
+		}
+		catch (NoClassDefFoundError ignored) {
+			// Do nothing; added to avoid exceptions if optional dependency not present
+			return false;
+		}
 	}
 
 	@Override
@@ -326,18 +336,13 @@ public class SpringMvcContract extends Contract.BaseContract implements Resource
 	protected boolean processAnnotationsOnParameter(MethodMetadata data, Annotation[] annotations, int paramIndex) {
 		boolean isHttpAnnotation = false;
 
-		try {
-			if (Pageable.class.isAssignableFrom(data.method().getParameterTypes()[paramIndex])) {
-				// do not set a Pageable as QueryMap if there's an actual QueryMap param
-				// present
-				if (!queryMapParamPresent(data)) {
-					data.queryMapIndex(paramIndex);
-					return false;
-				}
+		if (isPageable(data.method().getParameterTypes()[paramIndex])) {
+			// do not set a Pageable as QueryMap if there's an actual QueryMap param
+			// present
+			if (!queryMapParamPresent(data)) {
+				data.queryMapIndex(paramIndex);
+				return false;
 			}
-		}
-		catch (NoClassDefFoundError ignored) {
-			// Do nothing; added to avoid exceptions if optional dependency not present
 		}
 
 		AnnotatedParameterProcessor.AnnotatedParameterContext context = new SimpleAnnotatedParameterContext(data,
