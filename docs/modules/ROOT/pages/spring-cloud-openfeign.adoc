@@ -150,6 +150,31 @@ When it comes to the Apache HttpClient 5-backed Feign clients, it's enough to en
 You can customize the HTTP client used by providing a bean of either `org.apache.hc.client5.http.impl.classic.CloseableHttpClient` when using Apache HC5.
 
 You can further customise http clients by setting values in the `spring.cloud.openfeign.httpclient.xxx` properties. The ones prefixed just with `httpclient` will work for all the clients, the ones prefixed with `httpclient.hc5` to Apache HttpClient 5, and the ones prefixed with `httpclient.http2` to Http2Client. You can find a full list of properties you can customise in the appendix.
+To apply a Spring Boot SSL bundle to the auto-configured Apache HttpClient 5 connection manager, set `spring.cloud.openfeign.httpclient.hc5.ssl-bundle` to the bundle name:
+
+[source,yaml]
+----
+spring:
+  ssl:
+    bundle:
+      jks:
+        secure-service:
+          truststore:
+            location: classpath:truststore.p12
+            password: ${TRUSTSTORE_PASSWORD}
+  cloud:
+    openfeign:
+      httpclient:
+        hc5:
+          ssl-bundle: secure-service
+----
+
+The bundle supplies key and trust material, and any configured protocols and ciphers; hostname verification remains enabled.
+It cannot be combined with `spring.cloud.openfeign.httpclient.disable-ssl-validation=true`.
+This setting applies to the shared Apache HttpClient 5 connection manager, not to individual Feign clients or other transports.
+A custom `CloseableHttpClient` or `HttpClientConnectionManager` bean retains control of its own SSL configuration, and connection manager customizers are applied after the bundle settings.
+The bundle is applied when the connection manager is created; automatic reload of SSL bundles is not supported.
+
 If you can not configure Apache HttpClient 5 by using properties, there is an `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` interface for programmatic configuration. Similarly, to configure the `HttpClientConnectionManager`, you can use `HttpClient5FeignConfiguration.HttpClientConnectionManagerBuilderCustomizer`. Both usages are shown in the example below.
 
 TIP: Apache HTTP Components `5.4` have changed defaults in the HttpClient relating to HTTP/1.1 TLS upgrades. Most proxy servers handle upgrades without issue, however, you may encounter issues with Envoy or Istio. If you need to restore previous behaviour, you can use `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` to do it, as shown in the example below.
