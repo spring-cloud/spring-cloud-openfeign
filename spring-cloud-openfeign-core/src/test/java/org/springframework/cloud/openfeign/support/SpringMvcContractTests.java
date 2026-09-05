@@ -44,10 +44,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.FeignClientProperties;
 import org.springframework.cloud.openfeign.SpringQueryMap;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -97,6 +99,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Bhavya Agrawal
  * @author Tang Xiong
  * @author Hyundoo Park
+ * @author Rene Choi
  **/
 
 @ExtendWith(OutputCaptureExtension.class)
@@ -858,6 +861,21 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testProducesAndConsumesPlaceholders() throws NoSuchMethodException {
+		try (GenericApplicationContext applicationContext = new GenericApplicationContext()) {
+			TestPropertyValues.of("test.produces=application/json", "test.consumes=application/xml")
+				.applyTo(applicationContext);
+			contract.setResourceLoader(applicationContext);
+
+			Method method = TestTemplate_MediaTypePlaceholders.class.getDeclaredMethod("exchange");
+			MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+			assertThat(data.template().headers().get("Accept")).containsExactly("application/json");
+			assertThat(data.template().headers().get("Content-Type")).containsExactly("application/xml");
+		}
+	}
+
+	@Test
 	void testMultipleRequestPartAnnotations() throws NoSuchMethodException {
 		Method method = TestTemplate_RequestPart.class.getDeclaredMethod("requestWithMultipleParts",
 				MultipartFile.class, String.class);
@@ -1303,6 +1321,13 @@ class SpringMvcContractTests {
 
 		@GetMapping(value = "/test", produces = { "application/jose", "", "application/json" })
 		ResponseEntity<TestObject> producesWithBlankEntry();
+
+	}
+
+	public interface TestTemplate_MediaTypePlaceholders {
+
+		@PostMapping(value = "/test", produces = "${test.produces}", consumes = "${test.consumes}")
+		ResponseEntity<TestObject> exchange();
 
 	}
 
