@@ -29,6 +29,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
+import org.springframework.boot.ssl.SslStoreBundle;
 import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.HttpClientBuilderCustomizer;
 import org.springframework.cloud.openfeign.clientconfig.HttpClient5FeignConfiguration.HttpClientConnectionManagerBuilderCustomizer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -44,6 +47,7 @@ import static org.mockito.Mockito.verify;
  * @author Nguyen Ky Thanh
  * @author Olga Maciaszek-Sharma
  * @author Kwangyong Kim
+ * @author Goutam Adwant
  */
 class FeignHttpClient5ConfigurationTests {
 
@@ -54,6 +58,17 @@ class FeignHttpClient5ConfigurationTests {
 		assertThat(connectionManager).isInstanceOf(PoolingHttpClientConnectionManager.class);
 		Client client = context.getBean(Client.class);
 		assertThat(client).isInstanceOf(ApacheHttp5Client.class);
+	}
+
+	@Test
+	void shouldUseNamedSslBundle() {
+		try (ConfigurableApplicationContext context = new SpringApplicationBuilder().web(WebApplicationType.NONE)
+			.properties("spring.cloud.openfeign.httpclient.hc5.ssl-bundle=test")
+			.sources(FeignAutoConfiguration.class, SslConfig.class)
+			.run()) {
+			verifyHc5BeansAvailable(context);
+			verify(context.getBean(SslBundles.class)).getBundle("test");
+		}
 	}
 
 	@Test
@@ -116,6 +131,18 @@ class FeignHttpClient5ConfigurationTests {
 		if (context != null) {
 			context.close();
 		}
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	static class SslConfig {
+
+		@Bean
+		SslBundles sslBundles() {
+			SslBundles bundles = Mockito.mock(SslBundles.class);
+			Mockito.when(bundles.getBundle("test")).thenReturn(SslBundle.of(SslStoreBundle.of(null, null, null)));
+			return bundles;
+		}
+
 	}
 
 	@Configuration
