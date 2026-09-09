@@ -28,6 +28,7 @@ import org.springframework.cloud.openfeign.FeignClientFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.annotation.DirtiesContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -119,6 +120,24 @@ class PageableSpringQueryMapEncoderTests {
 
 		Map<String, Object> map = encoder.encode(Pageable.unpaged());
 		assertThat(map).isEmpty();
+	}
+
+	@Test
+	void testHttpHeadersRequest() {
+		QueryMapEncoder encoder = this.context.getInstance("foo", QueryMapEncoder.class);
+		assertThat(encoder).isNotNull();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("X-Custom-Header", "value1");
+		headers.add("X-Custom-Header", "value2");
+		headers.add(HttpHeaders.AUTHORIZATION, "Bearer token");
+
+		Map<String, Object> map = encoder.encode(headers);
+		assertThat(map).hasSize(2);
+		List<String> customHeaderValues = (List<String>) map.get("X-Custom-Header");
+		List<String> authorizationValues = (List<String>) map.get(HttpHeaders.AUTHORIZATION);
+		assertThat(customHeaderValues).containsExactly("value1", "value2");
+		assertThat(authorizationValues).containsExactly("Bearer token");
 	}
 
 }
