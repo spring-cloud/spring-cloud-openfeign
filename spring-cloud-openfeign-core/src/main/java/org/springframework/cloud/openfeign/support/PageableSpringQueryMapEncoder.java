@@ -25,10 +25,17 @@ import feign.querymap.BeanQueryMapEncoder;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 
 /**
  * Provides support for encoding Pageable annotated as
- * {@link org.springframework.cloud.openfeign.SpringQueryMap}.
+ * {@link org.springframework.cloud.openfeign.SpringQueryMap}, and also serves as the
+ * default {@code QueryMapEncoder} used to resolve {@code @RequestHeader HttpHeaders}
+ * header-map parameters (see {@code RequestHeaderParameterProcessor}). Since Spring
+ * Framework 7, {@link HttpHeaders} no longer implements {@code MultiValueMap}, so without
+ * this special case it falls through to the generic bean-property reflection in
+ * {@link BeanQueryMapEncoder}, which drops the real header values and injects unrelated
+ * getter-derived entries instead.
  *
  * @author Hyeonmin Park
  * @author Yanming Zhou
@@ -88,6 +95,9 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 			else if (object instanceof Sort sort) {
 				applySort(queryMap, sort);
 			}
+			else if (object instanceof HttpHeaders httpHeaders) {
+				httpHeaders.forEach(queryMap::put);
+			}
 			return queryMap;
 		}
 		else {
@@ -110,7 +120,7 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 	}
 
 	protected boolean supports(Object object) {
-		return object instanceof Pageable || object instanceof Sort;
+		return object instanceof Pageable || object instanceof Sort || object instanceof HttpHeaders;
 	}
 
 }
