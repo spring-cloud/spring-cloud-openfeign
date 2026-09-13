@@ -150,6 +150,33 @@ When it comes to the Apache HttpClient 5-backed Feign clients, it's enough to en
 You can customize the HTTP client used by providing a bean of either `org.apache.hc.client5.http.impl.classic.CloseableHttpClient` when using Apache HC5.
 
 You can further customise http clients by setting values in the `spring.cloud.openfeign.httpclient.xxx` properties. The ones prefixed just with `httpclient` will work for all the clients, the ones prefixed with `httpclient.hc5` to Apache HttpClient 5, and the ones prefixed with `httpclient.http2` to Http2Client. You can find a full list of properties you can customise in the appendix.
+Apache HttpClient 5 uses a connection pool to reuse persistent HTTP connections instead of creating a new connection for every request. The pool has a total connection limit and a per-route limit. A route identifies the request target and any proxy used to reach it. If no connection is available, a request waits for a connection to be released until the connection request timeout elapses. Connections whose time to live has expired are evicted from the pool.
+
+|===
+|Property |Default |Description
+
+|`spring.cloud.openfeign.httpclient.max-connections` |`200` |Maximum number of pooled connections.
+
+|`spring.cloud.openfeign.httpclient.max-connections-per-route` |`50` |Maximum number of pooled connections per route.
+
+|`spring.cloud.openfeign.httpclient.time-to-live` |`900` |Maximum lifetime of a pooled connection.
+
+|`spring.cloud.openfeign.httpclient.time-to-live-unit` |`seconds` |Time unit for the connection lifetime.
+
+|`spring.cloud.openfeign.httpclient.hc5.connection-request-timeout` |`3` |Maximum time a request waits for an available connection.
+
+|`spring.cloud.openfeign.httpclient.hc5.connection-request-timeout-unit` |`minutes` |Time unit for the connection request timeout.
+
+|`spring.cloud.openfeign.httpclient.hc5.socket-timeout` |`5` |Socket timeout for pooled connections.
+
+|`spring.cloud.openfeign.httpclient.hc5.socket-timeout-unit` |`seconds` |Time unit for the socket timeout.
+
+|`spring.cloud.openfeign.httpclient.hc5.pool-concurrency-policy` |`strict` |Concurrency policy used by the connection pool.
+
+|`spring.cloud.openfeign.httpclient.hc5.pool-reuse-policy` |`fifo` |Order in which pooled connections are reused.
+
+|===
+
 If you can not configure Apache HttpClient 5 by using properties, there is an `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` interface for programmatic configuration. Similarly, to configure the `HttpClientConnectionManager`, you can use `HttpClient5FeignConfiguration.HttpClientConnectionManagerBuilderCustomizer`. Both usages are shown in the example below.
 
 TIP: Apache HTTP Components `5.4` have changed defaults in the HttpClient relating to HTTP/1.1 TLS upgrades. Most proxy servers handle upgrades without issue, however, you may encounter issues with Envoy or Istio. If you need to restore previous behaviour, you can use `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` to do it, as shown in the example below.
