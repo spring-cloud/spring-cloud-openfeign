@@ -143,6 +143,19 @@ class SpringEncoderTests {
 	}
 
 	@Test
+	void testContentTypeTemplate() {
+		Encoder encoder = this.context.getInstance("foo", Encoder.class);
+		assertThat(encoder).isNotNull();
+
+		RequestTemplate request = new RequestTemplate();
+		request.header(CONTENT_TYPE, "{Content-Type}");
+
+		encoder.encode("hi", String.class, request);
+
+		assertThat(request.body()).isNotNull();
+	}
+
+	@Test
 	void testBinaryData() {
 		Encoder encoder = this.context.getInstance("foo", Encoder.class);
 		assertThat(encoder).isNotNull();
