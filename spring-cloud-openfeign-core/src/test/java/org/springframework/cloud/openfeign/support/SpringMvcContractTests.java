@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -820,6 +821,26 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testMatrixVariable_MapParamWithCollectionValues() throws Exception {
+		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariable", Map.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		Map<String, Object> testMap = new LinkedHashMap<>();
+		testMap.put("colours", List.of("red", "blue"));
+		testMap.put("size", "L");
+
+		assertThat(data.indexToExpander().get(0).expand(testMap)).isEqualTo(";colours=red,blue;size=L");
+	}
+
+	@Test
+	void testMatrixVariable_CollectionParam() throws Exception {
+		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariableCollection", List.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.indexToExpander().get(0).expand(List.of("red", "blue"))).isEqualTo(";colours=red,blue");
+	}
+
+	@Test
 	void testAddingTemplatedParameterWithTheSameKey() throws NoSuchMethodException {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod("testAddingTemplatedParamForExistingKey",
 				String.class);
@@ -1183,6 +1204,9 @@ class SpringMvcContractTests {
 
 		@GetMapping("/matrixVariable/{params}")
 		String matrixVariableNotNamed(@MatrixVariable Map<String, Object> params);
+
+		@GetMapping("/matrixVariable/{colours}")
+		String matrixVariableCollection(@MatrixVariable("colours") List<String> colours);
 
 	}
 

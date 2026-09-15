@@ -18,7 +18,9 @@ package org.springframework.cloud.openfeign.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import feign.MethodMetadata;
@@ -32,8 +34,9 @@ import static feign.Util.emptyToNull;
 /**
  * {@link MatrixVariable} annotation processor.
  *
- * Can expand maps or single objects. Values are assigned from the objects
- * {@code toString()} method.
+ * Can expand maps or single objects. A value that is a {@link Collection} is joined with
+ * {@code ,}, which is the separator a matrix variable uses for repeated values; any other
+ * value is assigned from its {@code toString()} method.
  *
  * @author Matt King
  * @see AnnotatedParameterProcessor
@@ -63,7 +66,7 @@ public class MatrixVariableParameterProcessor implements AnnotatedParameterProce
 			data.indexToExpander().put(parameterIndex, this::expandMap);
 		}
 		else {
-			data.indexToExpander().put(parameterIndex, object -> ";" + name + "=" + object.toString());
+			data.indexToExpander().put(parameterIndex, object -> ";" + name + "=" + expandValue(object));
 		}
 
 		return true;
@@ -73,11 +76,19 @@ public class MatrixVariableParameterProcessor implements AnnotatedParameterProce
 	private String expandMap(Object object) {
 		Map<String, Object> paramMap = (Map) object;
 
-		return paramMap.keySet()
+		return paramMap.entrySet()
 			.stream()
-			.filter(key -> paramMap.get(key) != null)
-			.map(key -> ";" + key + "=" + paramMap.get(key).toString())
+			.filter(entry -> entry.getValue() != null)
+			.map(entry -> ";" + entry.getKey() + "=" + expandValue(entry.getValue()))
 			.collect(Collectors.joining());
+	}
+
+	private String expandValue(Object value) {
+		if (value instanceof Collection<?> values) {
+			return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(","));
+		}
+
+		return value.toString();
 	}
 
 }
