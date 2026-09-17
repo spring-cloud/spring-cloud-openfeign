@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -88,7 +89,12 @@ public class FeignClientFactoryBean
 
 	private static final Log LOG = LogFactory.getLog(FeignClientFactoryBean.class);
 
-	private static final Set<String> resolvedContextIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
+	/**
+	 * Context ids whose {@link Client} bean has already been resolved, tracked per
+	 * application context so that a second application context in the same JVM does not
+	 * look like repeated initialisation.
+	 */
+	private static final Map<Object, Set<String>> resolvedContextIds = Collections.synchronizedMap(new WeakHashMap<>());
 
 	private Class<?> type;
 
@@ -493,12 +499,7 @@ public class FeignClientFactoryBean
 		// (e.g., connection pools, threads) if not properly managed.
 		Client client = getOptional(feignClientFactory, Client.class);
 		if (client != null) {
-			if (!resolvedContextIds.add(contextId)) {
-				if (LOG.isWarnEnabled()) {
-					LOG.warn("FeignClient with contextId '" + contextId + "' is being initialized more than once. "
-							+ "Ensure the Client bean is Singleton scoped " + "to avoid connection pool exhaustion.");
-				}
-			}
+			warnIfAlreadyResolved();
 			if (client instanceof FeignBlockingLoadBalancerClient) {
 				// not load balancing because we have a url,
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
@@ -516,6 +517,21 @@ public class FeignClientFactoryBean
 
 		Targeter targeter = get(feignClientFactory, Targeter.class);
 		return targeter.target(this, builder, feignClientFactory, resolveTarget(feignClientFactory, contextId, url));
+	}
+
+	private void warnIfAlreadyResolved() {
+		Object applicationKey = beanFactory != null ? beanFactory : applicationContext;
+		if (applicationKey == null) {
+			return;
+		}
+		Set<String> resolved = resolvedContextIds.computeIfAbsent(applicationKey,
+				key -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+		if (!resolved.add(contextId)) {
+			if (LOG.isWarnEnabled()) {
+				LOG.warn("FeignClient with contextId '" + contextId + "' is being initialized more than once. "
+						+ "Ensure the Client bean is Singleton scoped " + "to avoid connection pool exhaustion.");
+			}
+		}
 	}
 
 	private String cleanPath() {
