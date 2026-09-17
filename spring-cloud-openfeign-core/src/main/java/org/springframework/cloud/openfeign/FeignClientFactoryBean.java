@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -59,8 +60,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.util.Assert;
-import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
 import org.springframework.util.StringUtils;
 
 /**
@@ -95,8 +94,7 @@ public class FeignClientFactoryBean
 	 * application context so that a second application context in the same JVM does not
 	 * look like repeated initialisation.
 	 */
-	private static final Map<Object, Set<String>> resolvedContextIds = new ConcurrentReferenceHashMap<>(2,
-			ReferenceType.WEAK);
+	private static final Map<Object, Set<String>> resolvedContextIds = Collections.synchronizedMap(new WeakHashMap<>());
 
 	private Class<?> type;
 
