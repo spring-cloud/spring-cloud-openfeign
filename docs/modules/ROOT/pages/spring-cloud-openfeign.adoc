@@ -883,15 +883,6 @@ Map<String, List<String>> getObjects(@MatrixVariable Map<String, List<String>> m
 ----
 Note that both variable name and the path segment placeholder are called `matrixVars`.
 
-[source,java,indent=0]
-----
-@FeignClient("demo")
-public interface DemoTemplate {
-
-	@GetMapping(path = "/stores")
-	CollectionModel<Store> getStores();
-}
-----
 
 [[feign-collectionformat-support]]
 === Feign `CollectionFormat` support
