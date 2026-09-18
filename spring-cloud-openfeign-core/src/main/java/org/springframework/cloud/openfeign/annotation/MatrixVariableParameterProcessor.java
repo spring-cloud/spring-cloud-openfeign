@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 import feign.MethodMetadata;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.MatrixVariable;
 
 import static feign.Util.checkState;
@@ -34,9 +36,10 @@ import static feign.Util.emptyToNull;
 /**
  * {@link MatrixVariable} annotation processor.
  *
- * Can expand maps or single objects. A value that is a {@link Collection} is joined with
- * {@code ,}, which is the separator a matrix variable uses for repeated values; any other
- * value is assigned from its {@code toString()} method.
+ * Can expand maps or single objects. A value that is a {@link Collection} or an array is
+ * joined with {@code ,}, which is the separator a matrix variable uses for repeated
+ * values, and nested collections and arrays are flattened the same way; any other value
+ * is assigned from its {@code toString()} method.
  *
  * @author Matt King
  * @see AnnotatedParameterProcessor
@@ -84,8 +87,13 @@ public class MatrixVariableParameterProcessor implements AnnotatedParameterProce
 	}
 
 	private String expandValue(Object value) {
+		if (value.getClass().isArray()) {
+			return expandValue(CollectionUtils.arrayToList(value));
+		}
+
 		if (value instanceof Collection<?> values) {
-			return values.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(","));
+			return StringUtils.collectionToCommaDelimitedString(
+					values.stream().filter(Objects::nonNull).map(this::expandValue).toList());
 		}
 
 		return value.toString();

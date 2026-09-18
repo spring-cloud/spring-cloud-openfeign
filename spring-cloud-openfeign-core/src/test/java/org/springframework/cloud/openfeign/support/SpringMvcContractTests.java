@@ -841,6 +841,26 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testMatrixVariable_ArrayParam() throws Exception {
+		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariableArray", String[].class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.indexToExpander().get(0).expand(new String[] { "red", "blue" })).isEqualTo(";colours=red,blue");
+	}
+
+	@Test
+	void testMatrixVariable_MapParamWithNestedCollectionAndArrayValues() throws Exception {
+		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariable", Map.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		Map<String, Object> testMap = new LinkedHashMap<>();
+		testMap.put("colours", List.of(List.of("red", "blue"), new String[] { "green" }));
+		testMap.put("sizes", new int[] { 1, 2 });
+
+		assertThat(data.indexToExpander().get(0).expand(testMap)).isEqualTo(";colours=red,blue,green;sizes=1,2");
+	}
+
+	@Test
 	void testAddingTemplatedParameterWithTheSameKey() throws NoSuchMethodException {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod("testAddingTemplatedParamForExistingKey",
 				String.class);
@@ -1207,6 +1227,9 @@ class SpringMvcContractTests {
 
 		@GetMapping("/matrixVariable/{colours}")
 		String matrixVariableCollection(@MatrixVariable("colours") List<String> colours);
+
+		@GetMapping("/matrixVariable/{colours}")
+		String matrixVariableArray(@MatrixVariable("colours") String[] colours);
 
 	}
 
