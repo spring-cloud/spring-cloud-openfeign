@@ -35,10 +35,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import feign.Client;
+import feign.Feign;
 import feign.MethodMetadata;
 import feign.Param;
+import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -803,8 +808,8 @@ class SpringMvcContractTests {
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
 		assertThat(data.template().method()).isEqualTo("GET");
-		assertThat(data.template().url()).isEqualTo("/matrixVariableObject/{param}");
-		assertThat(";param=value").isEqualTo(data.indexToExpander().get(0).expand("value"));
+		assertThat(data.template().url()).isEqualTo("/matrixVariableObject/;param={param}");
+		assertThat("value").isEqualTo(data.indexToExpander().get(0).expand("value"));
 	}
 
 	@Test
@@ -837,7 +842,8 @@ class SpringMvcContractTests {
 		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariableCollection", List.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.indexToExpander().get(0).expand(List.of("red", "blue"))).isEqualTo(";colours=red,blue");
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/;colours={colours}");
+		assertThat(data.indexToExpander().get(0).expand(List.of("red", "blue"))).isEqualTo("red,blue");
 	}
 
 	@Test
@@ -845,7 +851,8 @@ class SpringMvcContractTests {
 		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariableArray", String[].class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		assertThat(data.indexToExpander().get(0).expand(new String[] { "red", "blue" })).isEqualTo(";colours=red,blue");
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/;colours={colours}");
+		assertThat(data.indexToExpander().get(0).expand(new String[] { "red", "blue" })).isEqualTo("red,blue");
 	}
 
 	@Test
@@ -858,6 +865,31 @@ class SpringMvcContractTests {
 		testMap.put("sizes", new int[] { 1, 2 });
 
 		assertThat(data.indexToExpander().get(0).expand(testMap)).isEqualTo(";colours=red,blue,green;sizes=1,2");
+	}
+
+	@Test
+	void testMatrixVariable_SingleParamKeepsSeparatorsInTheRequestUrl() {
+		assertThat(captureRequestUrl(api -> api.matrixVariableObject("value")))
+			.isEqualTo("http://localhost/matrixVariableObject/;param=value");
+	}
+
+	@Test
+	void testMatrixVariable_CollectionParamKeepsSeparatorsInTheRequestUrl() {
+		assertThat(captureRequestUrl(api -> api.matrixVariableCollection(List.of("red", "blue"))))
+			.isEqualTo("http://localhost/matrixVariable/;colours=red,blue");
+	}
+
+	private String captureRequestUrl(Consumer<TestTemplate_MatrixVariable> call) {
+		AtomicReference<String> url = new AtomicReference<>();
+		Client client = (request, options) -> {
+			url.set(request.url());
+			return Response.builder().status(200).request(request).body(new byte[0]).build();
+		};
+		call.accept(Feign.builder()
+			.contract(contract)
+			.client(client)
+			.target(TestTemplate_MatrixVariable.class, "http://localhost"));
+		return url.get();
 	}
 
 	@Test

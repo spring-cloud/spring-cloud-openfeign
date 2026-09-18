@@ -69,10 +69,27 @@ public class MatrixVariableParameterProcessor implements AnnotatedParameterProce
 			data.indexToExpander().put(parameterIndex, this::expandMap);
 		}
 		else {
-			data.indexToExpander().put(parameterIndex, object -> ";" + name + "=" + expandValue(object));
+			data.indexToExpander().put(parameterIndex, this::expandValue);
+			prefixTemplateVariable(data, name);
 		}
 
 		return true;
+	}
+
+	/**
+	 * Moves the {@code ;name=} prefix of the matrix variable out of the expanded value
+	 * and into the URI template, so that it stays a literal. Feign always pct-encodes the
+	 * values it substitutes into a URI template, which would turn the separators into
+	 * {@code %3B} and {@code %3D} and stop the server from reading the segment as matrix
+	 * variables.
+	 */
+	private void prefixTemplateVariable(MethodMetadata data, String name) {
+		String uri = data.template().url();
+		String variable = "{" + name + "}";
+
+		if (uri.contains(variable)) {
+			data.template().uri(uri.replace(variable, ";" + name + "=" + variable));
+		}
 	}
 
 	@SuppressWarnings("unchecked")
