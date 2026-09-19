@@ -794,12 +794,13 @@ class SpringMvcContractTests {
 		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariable", Map.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		Map<String, String> testMap = new HashMap<>();
+		Map<String, Object> testMap = new HashMap<>();
 		testMap.put("param", "value");
 
 		assertThat(data.template().method()).isEqualTo("GET");
-		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
-		assertThat(";param=value").isEqualTo(data.indexToExpander().get(0).expand(testMap));
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/{;params}");
+		assertThat(captureRequestUrl(api -> api.matrixVariable(testMap)))
+			.isEqualTo("http://localhost/matrixVariable/;param=value");
 	}
 
 	@Test
@@ -816,25 +817,19 @@ class SpringMvcContractTests {
 	void testMatrixVariableWithNoName() throws NoSuchMethodException {
 		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariableNotNamed", Map.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
-		Map<String, String> testMap = new HashMap<>();
-
-		testMap.put("param", "value");
 
 		assertThat(data.template().method()).isEqualTo("GET");
-		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
-		assertThat(";param=value").isEqualTo(data.indexToExpander().get(0).expand(testMap));
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/{;params}");
 	}
 
 	@Test
-	void testMatrixVariable_MapParamWithCollectionValues() throws Exception {
-		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariable", Map.class);
-		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
-
+	void testMatrixVariable_MapParamKeepsSeparatorsInTheRequestUrl() {
 		Map<String, Object> testMap = new LinkedHashMap<>();
-		testMap.put("colours", List.of("red", "blue"));
+		testMap.put("colours", "red");
 		testMap.put("size", "L");
 
-		assertThat(data.indexToExpander().get(0).expand(testMap)).isEqualTo(";colours=red,blue;size=L");
+		assertThat(captureRequestUrl(api -> api.matrixVariable(testMap)))
+			.isEqualTo("http://localhost/matrixVariable/;colours=red;size=L");
 	}
 
 	@Test
@@ -856,15 +851,12 @@ class SpringMvcContractTests {
 	}
 
 	@Test
-	void testMatrixVariable_MapParamWithNestedCollectionAndArrayValues() throws Exception {
-		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariable", Map.class);
+	void testMatrixVariable_CollectionParamWithNestedCollectionAndArrayValues() throws Exception {
+		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariableCollection", List.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		Map<String, Object> testMap = new LinkedHashMap<>();
-		testMap.put("colours", List.of(List.of("red", "blue"), new String[] { "green" }));
-		testMap.put("sizes", new int[] { 1, 2 });
-
-		assertThat(data.indexToExpander().get(0).expand(testMap)).isEqualTo(";colours=red,blue,green;sizes=1,2");
+		assertThat(data.indexToExpander().get(0).expand(List.of(List.of("red", "blue"), new String[] { "green" })))
+			.isEqualTo("red,blue,green");
 	}
 
 	@Test

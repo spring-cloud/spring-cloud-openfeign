@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import feign.MethodMetadata;
 
@@ -36,10 +35,11 @@ import static feign.Util.emptyToNull;
 /**
  * {@link MatrixVariable} annotation processor.
  *
- * Can expand maps or single objects. A value that is a {@link Collection} or an array is
- * joined with {@code ,}, which is the separator a matrix variable uses for repeated
- * values, and nested collections and arrays are flattened the same way; any other value
- * is assigned from its {@code toString()} method.
+ * Can expand maps or single objects. A {@link Map} typed variable is expanded by Feign
+ * itself through a path-style URI template expression. For any other type, a value that
+ * is a {@link Collection} or an array is joined with {@code ,}, which is the separator a
+ * matrix variable uses for repeated values, and nested collections and arrays are
+ * flattened the same way; any other value is assigned from its {@code toString()} method.
  *
  * @author Matt King
  * @see AnnotatedParameterProcessor
@@ -66,7 +66,7 @@ public class MatrixVariableParameterProcessor implements AnnotatedParameterProce
 		context.setParameterName(name);
 
 		if (Map.class.isAssignableFrom(parameterType)) {
-			data.indexToExpander().put(parameterIndex, this::expandMap);
+			pathStyleTemplateVariable(data, name);
 		}
 		else {
 			data.indexToExpander().put(parameterIndex, this::expandValue);
@@ -92,15 +92,19 @@ public class MatrixVariableParameterProcessor implements AnnotatedParameterProce
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private String expandMap(Object object) {
-		Map<String, Object> paramMap = (Map) object;
+	/**
+	 * Turns the URI template variable of a {@link Map} typed matrix variable into a
+	 * path-style expression, so that Feign expands the map into {@code ;key=value} pairs
+	 * itself and encodes only the keys and the values. Writing the pairs in an expander
+	 * instead would have Feign pct-encode the separators along with them.
+	 */
+	private void pathStyleTemplateVariable(MethodMetadata data, String name) {
+		String uri = data.template().url();
+		String variable = "{" + name + "}";
 
-		return paramMap.entrySet()
-			.stream()
-			.filter(entry -> entry.getValue() != null)
-			.map(entry -> ";" + entry.getKey() + "=" + expandValue(entry.getValue()))
-			.collect(Collectors.joining());
+		if (uri.contains(variable)) {
+			data.template().uri(uri.replace(variable, "{;" + name + "}"));
+		}
 	}
 
 	private String expandValue(Object value) {
