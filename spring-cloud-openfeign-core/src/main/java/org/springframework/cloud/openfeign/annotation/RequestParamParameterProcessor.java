@@ -20,10 +20,16 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import feign.MethodMetadata;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.cloud.openfeign.encoding.HttpEncoding;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import static feign.Util.checkState;
@@ -53,6 +59,12 @@ public class RequestParamParameterProcessor implements AnnotatedParameterProcess
 
 		if (Map.class.isAssignableFrom(parameterType)) {
 			checkState(data.queryMapIndex() == null, "Query map can only be present once.");
+			if (isPostOrPutForm(method)) {
+				data.bodyIndex(parameterIndex);
+				data.bodyType(parameterType);
+				data.template().header(HttpEncoding.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+				return true;
+			}
 			data.queryMapIndex(parameterIndex);
 
 			return true;
@@ -67,6 +79,27 @@ public class RequestParamParameterProcessor implements AnnotatedParameterProcess
 		Collection<String> query = context.setTemplateParameter(name, data.template().queries().get(name));
 		data.template().query(name, query);
 		return true;
+	}
+
+
+	private boolean isPostOrPutForm(Method method) {
+		Set<RequestMapping> requestMappings = AnnotatedElementUtils.findAllMergedAnnotations(method, RequestMapping.class);
+		for (RequestMapping requestMapping : requestMappings) {
+			if (isPostOrPutFormMapping(requestMapping)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// @RequestMapping + @RequestParam + Map, POST 或者 PUT 默认为FORM请求
+	private boolean isPostOrPutFormMapping(RequestMapping requestMapping) {
+		for (RequestMethod httpMethod : requestMapping.method()) {
+			if (httpMethod == RequestMethod.POST || httpMethod == RequestMethod.PUT) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
