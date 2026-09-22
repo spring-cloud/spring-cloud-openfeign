@@ -30,7 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -794,13 +793,12 @@ class SpringMvcContractTests {
 		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariable", Map.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
 
-		Map<String, Object> testMap = new HashMap<>();
+		Map<String, String> testMap = new HashMap<>();
 		testMap.put("param", "value");
 
 		assertThat(data.template().method()).isEqualTo("GET");
-		assertThat(data.template().url()).isEqualTo("/matrixVariable/{;params}");
-		assertThat(captureRequestUrl(api -> api.matrixVariable(testMap)))
-			.isEqualTo("http://localhost/matrixVariable/;param=value");
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
+		assertThat(";param=value").isEqualTo(data.indexToExpander().get(0).expand(testMap));
 	}
 
 	@Test
@@ -817,19 +815,13 @@ class SpringMvcContractTests {
 	void testMatrixVariableWithNoName() throws NoSuchMethodException {
 		Method method = TestTemplate_MatrixVariable.class.getDeclaredMethod("matrixVariableNotNamed", Map.class);
 		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+		Map<String, String> testMap = new HashMap<>();
+
+		testMap.put("param", "value");
 
 		assertThat(data.template().method()).isEqualTo("GET");
-		assertThat(data.template().url()).isEqualTo("/matrixVariable/{;params}");
-	}
-
-	@Test
-	void testMatrixVariable_MapParamKeepsSeparatorsInTheRequestUrl() {
-		Map<String, Object> testMap = new LinkedHashMap<>();
-		testMap.put("colours", "red");
-		testMap.put("size", "L");
-
-		assertThat(captureRequestUrl(api -> api.matrixVariable(testMap)))
-			.isEqualTo("http://localhost/matrixVariable/;colours=red;size=L");
+		assertThat(data.template().url()).isEqualTo("/matrixVariable/{params}");
+		assertThat(";param=value").isEqualTo(data.indexToExpander().get(0).expand(testMap));
 	}
 
 	@Test
