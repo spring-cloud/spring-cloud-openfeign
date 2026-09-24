@@ -18,12 +18,16 @@ package org.springframework.cloud.openfeign.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import feign.MethodMetadata;
 
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.MatrixVariable;
 
 import static feign.Util.checkState;
@@ -32,8 +36,11 @@ import static feign.Util.emptyToNull;
 /**
  * {@link MatrixVariable} annotation processor.
  *
- * Can expand maps or single objects. Values are assigned from the objects
- * {@code toString()} method.
+ * Can expand maps or single objects. For a {@link Map} typed variable, values are
+ * assigned from the objects {@code toString()} method. For any other type, a value that
+ * is a {@link Collection} or an array is joined with {@code ,}, which is the separator a
+ * matrix variable uses for repeated values, and nested collections and arrays are
+ * flattened the same way; any other value is assigned from its {@code toString()} method.
  *
  * @author Matt King
  * @see AnnotatedParameterProcessor
@@ -63,10 +70,40 @@ public class MatrixVariableParameterProcessor implements AnnotatedParameterProce
 			data.indexToExpander().put(parameterIndex, this::expandMap);
 		}
 		else {
-			data.indexToExpander().put(parameterIndex, object -> ";" + name + "=" + object.toString());
+			data.indexToExpander().put(parameterIndex, this::expandValue);
+			prefixTemplateVariable(data, name);
 		}
 
 		return true;
+	}
+
+	/**
+	 * Moves the {@code ;name=} prefix of the matrix variable out of the expanded value
+	 * and into the URI template, so that it stays a literal. Feign always pct-encodes the
+	 * values it substitutes into a URI template, which would turn the separators into
+	 * {@code %3B} and {@code %3D} and stop the server from reading the segment as matrix
+	 * variables.
+	 */
+	private void prefixTemplateVariable(MethodMetadata data, String name) {
+		String uri = data.template().url();
+		String variable = "{" + name + "}";
+
+		if (uri.contains(variable)) {
+			data.template().uri(uri.replace(variable, ";" + name + "=" + variable));
+		}
+	}
+
+	private String expandValue(Object value) {
+		if (value.getClass().isArray()) {
+			return expandValue(CollectionUtils.arrayToList(value));
+		}
+
+		if (value instanceof Collection<?> values) {
+			return StringUtils.collectionToCommaDelimitedString(
+					values.stream().filter(Objects::nonNull).map(this::expandValue).toList());
+		}
+
+		return value.toString();
 	}
 
 	@SuppressWarnings("unchecked")
