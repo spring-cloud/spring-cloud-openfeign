@@ -20,6 +20,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import feign.MethodMetadata;
 
@@ -54,23 +55,21 @@ public class PathVariableParameterProcessor implements AnnotatedParameterProcess
 		context.setParameterName(name);
 
 		MethodMetadata data = context.getMethodMetadata();
-		String varName = '{' + name + '}';
-		String varNameRegex = ".*\\{" + name + "(:[^}]+)?\\}.*";
-		if (!data.template().url().matches(varNameRegex) && !containsMapValues(data.template().queries(), varName)
-				&& !containsMapValues(data.template().headers(), varName)) {
+		Pattern varNamePattern = Pattern.compile("\\{" + Pattern.quote(name) + "(:[^}]+)?\\}");
+		if (!varNamePattern.matcher(data.template().url()).find()
+				&& !matchesMapValues(data.template().queries(), varNamePattern)
+				&& !matchesMapValues(data.template().headers(), varNamePattern)) {
 			data.formParams().add(name);
 		}
 		return true;
 	}
 
-	private <K, V> boolean containsMapValues(Map<K, Collection<V>> map, V search) {
-		Collection<Collection<V>> values = map.values();
-		if (values == null) {
-			return false;
-		}
-		for (Collection<V> entry : values) {
-			if (entry.contains(search)) {
-				return true;
+	private boolean matchesMapValues(Map<String, Collection<String>> map, Pattern pattern) {
+		for (Collection<String> entry : map.values()) {
+			for (String value : entry) {
+				if (pattern.matcher(value).find()) {
+					return true;
+				}
 			}
 		}
 		return false;
