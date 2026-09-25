@@ -34,10 +34,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import feign.Client;
+import feign.Feign;
 import feign.MethodMetadata;
 import feign.Param;
+import feign.Request;
+import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -699,6 +704,50 @@ class SpringMvcContractTests {
 	}
 
 	@Test
+	void testPathVariableInPartOfHeaderValue() throws Exception {
+		Method method = TestTemplate_PathVariableTemplates.class.getDeclaredMethod("headerValue", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().headers().get("Authorization")).containsExactly("Bearer {token}");
+		assertThat(data.formParams()).isEmpty();
+	}
+
+	@Test
+	void testPathVariableNotInTemplateIsFormParam() throws Exception {
+		Method method = TestTemplate_PathVariableTemplates.class.getDeclaredMethod("notInTemplate", String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.formParams()).containsExactly("id");
+	}
+
+	@Test
+	void testPathVariableNameWithRegexCharactersIsFormParam() throws Exception {
+		Method method = TestTemplate_PathVariableRegexCharacters.class.getDeclaredMethod("regexCharactersInName",
+				String.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.formParams()).containsExactly("id(");
+	}
+
+	@Test
+	void testPathVariableInPartOfHeaderValueIsSentAsHeader() {
+		AtomicReference<Request> request = new AtomicReference<>();
+		Client client = (req, options) -> {
+			request.set(req);
+			return Response.builder().status(200).request(req).body(new byte[0]).build();
+		};
+
+		Feign.builder()
+			.contract(contract)
+			.client(client)
+			.target(TestTemplate_PathVariableTemplates.class, "http://localhost")
+			.headerValue("abc");
+
+		assertThat(request.get().headers().get("Authorization")).containsExactly("Bearer abc");
+		assertThat(request.get().body()).isNull();
+	}
+
+	@Test
 	void testProcessAnnotations_Fallback() throws Exception {
 		Method method = TestTemplate_Advanced.class.getDeclaredMethod("getTestFallback", String.class, String.class,
 				Integer.class);
@@ -1080,6 +1129,23 @@ class SpringMvcContractTests {
 		@GetMapping("/test/{id}")
 		ResponseEntity<TestObject> multipleCookies(@PathVariable("id") String id,
 				@CookieValue("cookie1") String cookie1, @CookieValue("cookie2") String cookie2);
+
+	}
+
+	public interface TestTemplate_PathVariableRegexCharacters {
+
+		@PostMapping("/test")
+		String regexCharactersInName(@PathVariable("id(") String id);
+
+	}
+
+	public interface TestTemplate_PathVariableTemplates {
+
+		@GetMapping(value = "/test", headers = "Authorization=Bearer {token}")
+		String headerValue(@PathVariable("token") String token);
+
+		@PostMapping("/test")
+		String notInTemplate(@PathVariable("id") String id);
 
 	}
 
