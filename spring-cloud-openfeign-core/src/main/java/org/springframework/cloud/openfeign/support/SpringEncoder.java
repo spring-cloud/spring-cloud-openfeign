@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -94,7 +95,9 @@ public class SpringEncoder implements Encoder {
 			MediaType requestContentType = null;
 			if (contentTypes != null && !contentTypes.isEmpty()) {
 				String type = contentTypes.iterator().next();
-				requestContentType = MediaType.valueOf(type);
+				if (!type.startsWith("{") || !type.endsWith("}")) {
+					requestContentType = MediaType.valueOf(type);
+				}
 			}
 
 			if (isFormRelatedContentType(requestContentType)) {
@@ -242,7 +245,17 @@ public class SpringEncoder implements Encoder {
 		private final HttpHeaders httpHeaders;
 
 		private FeignOutputMessage(RequestTemplate request) {
-			httpHeaders = getHttpHeaders(request.headers());
+			Map<String, Collection<String>> headers = new LinkedHashMap<>(request.headers());
+			Collection<String> contentTypes = headers.get(HttpEncoding.CONTENT_TYPE);
+
+			if (contentTypes != null && !contentTypes.isEmpty()) {
+				String contentType = contentTypes.iterator().next();
+				if (contentType.startsWith("{") && contentType.endsWith("}")) {
+					headers.remove(HttpEncoding.CONTENT_TYPE);
+				}
+			}
+
+			httpHeaders = getHttpHeaders(headers);
 		}
 
 		@Override
