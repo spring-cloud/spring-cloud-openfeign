@@ -217,11 +217,29 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 		when(delegate.execute(any(), any())).thenThrow(new IOException());
 		when(retryFactory.createRetryPolicy(any(), eq(loadBalancerClient)))
 			.thenReturn(new BlockingLoadBalancedRetryPolicy(properties));
+		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
+			.thenReturn(URI.create("http://testhost:80/path"));
 
 		assertThatThrownBy(() -> feignBlockingLoadBalancerClient.execute(request, new Request.Options()))
 			.isInstanceOf(IOException.class);
 
 		verify(delegate, times(1)).execute(any(), any());
+	}
+
+	@Test
+	void shouldLoadBalanceRequestWhenRetryIsDisabled() throws IOException {
+		properties.getRetry().setEnabled(false);
+		Request request = testRequest();
+		when(delegate.execute(any(), any())).thenReturn(testResponse(200));
+		when(loadBalancerClient.reconstructURI(serviceInstance, URI.create("http://test/path")))
+			.thenReturn(URI.create("http://testhost:80/path"));
+
+		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
+
+		ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
+		verify(delegate).execute(captor.capture(), any());
+		assertThat(captor.getValue()).isNotNull();
+		assertThat(captor.getValue().url()).isEqualTo("http://testhost:80/path");
 	}
 
 	@Test

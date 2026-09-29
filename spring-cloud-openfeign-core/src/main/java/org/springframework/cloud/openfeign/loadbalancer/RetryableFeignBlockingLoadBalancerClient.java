@@ -115,43 +115,48 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 					new RetryableRequestContext(null, buildRequestData(request), hint));
 			// On retries the policy will choose the server and set it in the context
 			// and extract the server and update the request being made
-			if (context instanceof LoadBalancedRetryContext lbContext) {
+			LoadBalancedRetryContext lbContext = context instanceof LoadBalancedRetryContext loadBalancedRetryContext
+					? loadBalancedRetryContext : null;
+			if (lbContext != null) {
 				retrievedServiceInstance = lbContext.getServiceInstance();
-				if (retrievedServiceInstance == null) {
-					if (LOG.isDebugEnabled()) {
-						LOG.debug("Service instance retrieved from LoadBalancedRetryContext: was null. "
-								+ "Reattempting service instance selection");
-					}
-					ServiceInstance previousServiceInstance = lbContext.getPreviousServiceInstance();
-					lbRequest.getContext().setPreviousServiceInstance(previousServiceInstance);
-					supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
-					retrievedServiceInstance = loadBalancerClient.choose(serviceId, lbRequest);
-					if (LOG.isDebugEnabled()) {
-						LOG.debug(String.format("Selected service instance: %s", retrievedServiceInstance));
-					}
+			}
+			if (retrievedServiceInstance == null) {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Service instance retrieved from LoadBalancedRetryContext: was null. "
+							+ "Reattempting service instance selection");
+				}
+				if (lbContext != null) {
+					lbRequest.getContext().setPreviousServiceInstance(lbContext.getPreviousServiceInstance());
+				}
+				supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
+				retrievedServiceInstance = loadBalancerClient.choose(serviceId, lbRequest);
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(String.format("Selected service instance: %s", retrievedServiceInstance));
+				}
+				if (lbContext != null) {
 					lbContext.setServiceInstance(retrievedServiceInstance);
 				}
+			}
 
-				if (retrievedServiceInstance == null) {
-					if (LOG.isWarnEnabled()) {
-						LOG.warn("Service instance was not resolved, executing the original request");
-					}
-					org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
-							retrievedServiceInstance);
-					supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
-						.onComplete(new CompletionContext<ResponseData, ServiceInstance, RetryableRequestContext>(
-								CompletionContext.Status.DISCARD, lbRequest, lbResponse)));
-					feignRequest = request;
+			if (retrievedServiceInstance == null) {
+				if (LOG.isWarnEnabled()) {
+					LOG.warn("Service instance was not resolved, executing the original request");
 				}
-				else {
-					if (LOG.isDebugEnabled()) {
-						LOG.debug(String.format("Using service instance from LoadBalancedRetryContext: %s",
-								retrievedServiceInstance));
-					}
-					String reconstructedUrl = loadBalancerClient.reconstructURI(retrievedServiceInstance, originalUri)
-						.toString();
-					feignRequest = buildRequest(request, reconstructedUrl, retrievedServiceInstance);
+				org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
+						retrievedServiceInstance);
+				supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
+					.onComplete(new CompletionContext<ResponseData, ServiceInstance, RetryableRequestContext>(
+							CompletionContext.Status.DISCARD, lbRequest, lbResponse)));
+				feignRequest = request;
+			}
+			else {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(String.format("Using service instance from LoadBalancedRetryContext: %s",
+							retrievedServiceInstance));
 				}
+				String reconstructedUrl = loadBalancerClient.reconstructURI(retrievedServiceInstance, originalUri)
+					.toString();
+				feignRequest = buildRequest(request, reconstructedUrl, retrievedServiceInstance);
 			}
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
 					retrievedServiceInstance);
