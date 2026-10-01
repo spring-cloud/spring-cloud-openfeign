@@ -122,36 +122,34 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 						LOG.debug("Service instance retrieved from LoadBalancedRetryContext: was null. "
 								+ "Reattempting service instance selection");
 					}
-					ServiceInstance previousServiceInstance = lbContext.getPreviousServiceInstance();
-					lbRequest.getContext().setPreviousServiceInstance(previousServiceInstance);
-					supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
-					retrievedServiceInstance = loadBalancerClient.choose(serviceId, lbRequest);
-					if (LOG.isDebugEnabled()) {
-						LOG.debug(String.format("Selected service instance: %s", retrievedServiceInstance));
-					}
+					lbRequest.getContext().setPreviousServiceInstance(lbContext.getPreviousServiceInstance());
+					retrievedServiceInstance = chooseServiceInstance(serviceId, lbRequest,
+							supportedLifecycleProcessors);
 					lbContext.setServiceInstance(retrievedServiceInstance);
 				}
+			}
+			else {
+				retrievedServiceInstance = chooseServiceInstance(serviceId, lbRequest, supportedLifecycleProcessors);
+			}
 
-				if (retrievedServiceInstance == null) {
-					if (LOG.isWarnEnabled()) {
-						LOG.warn("Service instance was not resolved, executing the original request");
-					}
-					org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
-							retrievedServiceInstance);
-					supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
-						.onComplete(new CompletionContext<ResponseData, ServiceInstance, RetryableRequestContext>(
-								CompletionContext.Status.DISCARD, lbRequest, lbResponse)));
-					feignRequest = request;
+			if (retrievedServiceInstance == null) {
+				if (LOG.isWarnEnabled()) {
+					LOG.warn("Service instance was not resolved, executing the original request");
 				}
-				else {
-					if (LOG.isDebugEnabled()) {
-						LOG.debug(String.format("Using service instance from LoadBalancedRetryContext: %s",
-								retrievedServiceInstance));
-					}
-					String reconstructedUrl = loadBalancerClient.reconstructURI(retrievedServiceInstance, originalUri)
-						.toString();
-					feignRequest = buildRequest(request, reconstructedUrl, retrievedServiceInstance);
+				org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
+						retrievedServiceInstance);
+				supportedLifecycleProcessors.forEach(lifecycle -> lifecycle
+					.onComplete(new CompletionContext<ResponseData, ServiceInstance, RetryableRequestContext>(
+							CompletionContext.Status.DISCARD, lbRequest, lbResponse)));
+				feignRequest = request;
+			}
+			else {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(String.format("Using service instance: %s", retrievedServiceInstance));
 				}
+				String reconstructedUrl = loadBalancerClient.reconstructURI(retrievedServiceInstance, originalUri)
+					.toString();
+				feignRequest = buildRequest(request, reconstructedUrl, retrievedServiceInstance);
 			}
 			org.springframework.cloud.client.loadbalancer.Response<ServiceInstance> lbResponse = new DefaultResponse(
 					retrievedServiceInstance);
@@ -177,6 +175,16 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 				return response;
 			}
 		});
+	}
+
+	private ServiceInstance chooseServiceInstance(String serviceId, DefaultRequest<RetryableRequestContext> lbRequest,
+			Set<LoadBalancerLifecycle> supportedLifecycleProcessors) {
+		supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
+		ServiceInstance serviceInstance = loadBalancerClient.choose(serviceId, lbRequest);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(String.format("Selected service instance: %s", serviceInstance));
+		}
+		return serviceInstance;
 	}
 
 	protected Request buildRequest(Request request, String reconstructedUrl) {
