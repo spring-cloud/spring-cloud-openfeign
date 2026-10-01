@@ -115,27 +115,21 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 					new RetryableRequestContext(null, buildRequestData(request), hint));
 			// On retries the policy will choose the server and set it in the context
 			// and extract the server and update the request being made
-			LoadBalancedRetryContext lbContext = context instanceof LoadBalancedRetryContext loadBalancedRetryContext
-					? loadBalancedRetryContext : null;
-			if (lbContext != null) {
+			if (context instanceof LoadBalancedRetryContext lbContext) {
 				retrievedServiceInstance = lbContext.getServiceInstance();
-			}
-			if (retrievedServiceInstance == null) {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Service instance retrieved from LoadBalancedRetryContext: was null. "
-							+ "Reattempting service instance selection");
-				}
-				if (lbContext != null) {
+				if (retrievedServiceInstance == null) {
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("Service instance retrieved from LoadBalancedRetryContext: was null. "
+								+ "Reattempting service instance selection");
+					}
 					lbRequest.getContext().setPreviousServiceInstance(lbContext.getPreviousServiceInstance());
-				}
-				supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
-				retrievedServiceInstance = loadBalancerClient.choose(serviceId, lbRequest);
-				if (LOG.isDebugEnabled()) {
-					LOG.debug(String.format("Selected service instance: %s", retrievedServiceInstance));
-				}
-				if (lbContext != null) {
+					retrievedServiceInstance = chooseServiceInstance(serviceId, lbRequest,
+							supportedLifecycleProcessors);
 					lbContext.setServiceInstance(retrievedServiceInstance);
 				}
+			}
+			else {
+				retrievedServiceInstance = chooseServiceInstance(serviceId, lbRequest, supportedLifecycleProcessors);
 			}
 
 			if (retrievedServiceInstance == null) {
@@ -151,8 +145,7 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 			}
 			else {
 				if (LOG.isDebugEnabled()) {
-					LOG.debug(String.format("Using service instance from LoadBalancedRetryContext: %s",
-							retrievedServiceInstance));
+					LOG.debug(String.format("Using service instance: %s", retrievedServiceInstance));
 				}
 				String reconstructedUrl = loadBalancerClient.reconstructURI(retrievedServiceInstance, originalUri)
 					.toString();
@@ -182,6 +175,16 @@ public class RetryableFeignBlockingLoadBalancerClient implements Client {
 				return response;
 			}
 		});
+	}
+
+	private ServiceInstance chooseServiceInstance(String serviceId, DefaultRequest<RetryableRequestContext> lbRequest,
+			Set<LoadBalancerLifecycle> supportedLifecycleProcessors) {
+		supportedLifecycleProcessors.forEach(lifecycle -> lifecycle.onStart(lbRequest));
+		ServiceInstance serviceInstance = loadBalancerClient.choose(serviceId, lbRequest);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(String.format("Selected service instance: %s", serviceInstance));
+		}
+		return serviceInstance;
 	}
 
 	protected Request buildRequest(Request request, String reconstructedUrl) {
