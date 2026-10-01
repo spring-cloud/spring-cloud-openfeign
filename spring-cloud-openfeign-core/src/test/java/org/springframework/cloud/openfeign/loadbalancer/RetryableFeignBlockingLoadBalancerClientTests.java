@@ -243,6 +243,18 @@ class RetryableFeignBlockingLoadBalancerClientTests {
 	}
 
 	@Test
+	void shouldExecuteOriginalRequestIfInstanceNotFoundWhenRetryIsDisabled() throws IOException {
+		properties.getRetry().setEnabled(false);
+		Request request = testRequest();
+		when(loadBalancerClient.choose(eq("test"), any())).thenReturn(null);
+		when(delegate.execute(any(), any())).thenReturn(testResponse(200));
+
+		feignBlockingLoadBalancerClient.execute(request, new Request.Options());
+
+		verify(delegate).execute(eq(request), any());
+	}
+
+	@Test
 	void shouldExposeResponseBodyOnRetry() throws IOException {
 		properties.getRetry().getRetryableStatusCodes().add(503);
 		Request request = testRequest();
