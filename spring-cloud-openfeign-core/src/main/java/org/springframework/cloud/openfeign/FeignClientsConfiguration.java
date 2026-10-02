@@ -57,6 +57,7 @@ import org.springframework.cloud.openfeign.support.PageableSpringQueryMapEncoder
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
+import org.springframework.cloud.openfeign.support.SpringFieldQueryMapEncoder;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -120,6 +121,13 @@ public class FeignClientsConfiguration {
 	public Encoder feignEncoder(ObjectProvider<AbstractFormWriter> formWriterProvider,
 			ObjectProvider<FeignHttpMessageConverters> feignHttpMessageConverters) {
 		return springEncoder(formWriterProvider, encoderProperties, feignHttpMessageConverters);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
+	public QueryMapEncoder feignQueryMapEncoder() {
+		return new SpringFieldQueryMapEncoder();
 	}
 
 	@Bean
