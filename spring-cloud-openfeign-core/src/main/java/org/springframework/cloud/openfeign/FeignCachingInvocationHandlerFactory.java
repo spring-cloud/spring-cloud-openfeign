@@ -39,9 +39,6 @@ public class FeignCachingInvocationHandlerFactory implements InvocationHandlerFa
 
 	private final CacheInterceptor cacheInterceptor;
 
-	// ADDED: ThreadLocal guard
-	private static final ThreadLocal<Boolean> CACHE_IN_PROGRESS = ThreadLocal.withInitial(() -> false);
-
 	public FeignCachingInvocationHandlerFactory(InvocationHandlerFactory delegateFactory,
 			CacheInterceptor cacheInterceptor) {
 		this.delegateFactory = delegateFactory;
@@ -54,44 +51,36 @@ public class FeignCachingInvocationHandlerFactory implements InvocationHandlerFa
 		return (proxy, method, argsNullable) -> {
 			Object[] args = Optional.ofNullable(argsNullable).orElseGet(() -> new Object[0]);
 
-			// ✅ ADDED: Prevent nested cache invocation
-			if (CACHE_IN_PROGRESS.get()) {
+			if (cacheInterceptor.getCacheOperationSource().hasCacheOperations(method, target.type())) {
 				return delegateHandler.invoke(proxy, method, args);
 			}
 
-			try {
-				CACHE_IN_PROGRESS.set(true);
+			return cacheInterceptor.invoke(new MethodInvocation() {
+				@Override
+				public Method getMethod() {
+					return method;
+				}
 
-				return cacheInterceptor.invoke(new MethodInvocation() {
-					@Override
-					public Method getMethod() {
-						return method;
-					}
+				@Override
+				public Object[] getArguments() {
+					return args;
+				}
 
-					@Override
-					public Object[] getArguments() {
-						return args;
-					}
+				@Override
+				public Object proceed() throws Throwable {
+					return delegateHandler.invoke(proxy, method, args);
+				}
 
-					@Override
-					public Object proceed() throws Throwable {
-						return delegateHandler.invoke(proxy, method, args);
-					}
+				@Override
+				public Object getThis() {
+					return target;
+				}
 
-					@Override
-					public Object getThis() {
-						return target;
-					}
-
-					@Override
-					public AccessibleObject getStaticPart() {
-						return method;
-					}
-				});
-			}
-			finally {
-				CACHE_IN_PROGRESS.remove();
-			}
+				@Override
+				public AccessibleObject getStaticPart() {
+					return method;
+				}
+			});
 		};
 	}
 
