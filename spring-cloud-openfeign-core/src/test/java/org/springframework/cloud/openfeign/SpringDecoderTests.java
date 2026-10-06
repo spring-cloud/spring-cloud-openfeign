@@ -16,6 +16,12 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import feign.Request;
 import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +30,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cloud.loadbalancer.support.SimpleObjectProvider;
 import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
+import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
+import org.springframework.core.ResolvableType;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 
@@ -51,6 +63,39 @@ class SpringDecoderTests {
 		assertThatCode(
 				() -> decoder.decode(Response.builder().request(mock(Request.class)).status(200).build(), String.class))
 			.doesNotThrowAnyException();
+	}
+
+	@Test
+	void shouldNotReadBodyForResponseEntityOfVoid() throws Exception {
+		Type type = ResolvableType.forClassWithGenerics(ResponseEntity.class, Void.class).getType();
+
+		Object decoded = new ResponseEntityDecoder(decoder).decode(textResponse(), type);
+
+		assertThat(decoded).isInstanceOf(ResponseEntity.class);
+		ResponseEntity<?> entity = (ResponseEntity<?>) decoded;
+		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+		assertThat(entity.getHeaders().getFirst("Location")).isEqualTo("/jobs/1");
+		assertThat(entity.getBody()).isNull();
+	}
+
+	@Test
+	void shouldNotReadBodyForHttpEntityOfVoid() throws Exception {
+		Type type = ResolvableType.forClassWithGenerics(HttpEntity.class, Void.class).getType();
+
+		Object decoded = new ResponseEntityDecoder(decoder).decode(textResponse(), type);
+
+		assertThat(decoded).isInstanceOf(ResponseEntity.class);
+		assertThat(((HttpEntity<?>) decoded).getBody()).isNull();
+	}
+
+	private static Response textResponse() {
+		return Response.builder()
+			.request(mock(Request.class))
+			.status(202)
+			.headers(Map.<String, Collection<String>>of("Content-Type", List.of("text/plain"), "Location",
+					List.of("/jobs/1")))
+			.body("Accepted", StandardCharsets.UTF_8)
+			.build();
 	}
 
 }

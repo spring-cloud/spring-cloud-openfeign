@@ -51,6 +51,9 @@ public class ResponseEntityDecoder implements Decoder {
 
 		if (isParameterizeHttpEntity(type)) {
 			type = ((ParameterizedType) type).getActualTypeArguments()[0];
+			if (type == Void.class) {
+				return createResponse(null, response);
+			}
 			Object decodedObject = this.decoder.decode(response, type);
 
 			return createResponse(decodedObject, response);
