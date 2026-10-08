@@ -15,7 +15,7 @@
 	<name>spring-cloud-openfeign-dependencies</name>
 	<description>Spring Cloud OpenFeign Dependencies</description>
 	<properties>
-		<feign.version>13.15</feign.version>
+		<feign.version>13.16</feign.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
