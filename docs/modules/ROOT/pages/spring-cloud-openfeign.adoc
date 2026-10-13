@@ -841,6 +841,38 @@ public interface DemoTemplate {
 
 If you need more control over the generated query parameter map, you can implement a custom `QueryMapEncoder` bean.
 
+[[feign-querymap-nested-objects]]
+==== Nested objects
+
+By default, a nested object of a `@SpringQueryMap` parameter is sent as the `toString()` value of the object.
+You can set `spring.cloud.openfeign.client.nested-query-map-enabled` to `true` to send the fields of a nested object as nested query parameters instead, with the property path notation that Spring MVC binds: a nested object as `range.from=1&range.to=2`, the objects of a collection or an array as `filters[0].name=status`, and the entries of a `Map` as `attributes[color]=red`.
+A collection of simple values, such as strings or numbers, is still sent as repeated query parameters.
+
+For example, with the following classes:
+
+[source,java,indent=0]
+----
+public class Search {
+	private String query;
+	private Range price;
+	private List<Filter> filters;
+
+	// [Getters and setters omitted for brevity]
+}
+
+public class Range {
+	private Integer from;
+	private Integer to;
+
+	// [Getters and setters omitted for brevity]
+}
+----
+
+a call to `demoEndpoint(@SpringQueryMap Search search)` sends `query=shoes&price.from=10&price.to=20&filters[0].name=color&filters[0].value=red`, which a Spring MVC handler can bind with `@ModelAttribute Search search`.
+
+The option is disabled by default, to keep the behaviour of the existing applications.
+When it is enabled, the `QueryMapEncoder` that Spring Cloud OpenFeign auto-configures is decorated with the `NestedObjectQueryMapEncoder`, which you can also use to decorate a custom `QueryMapEncoder` bean.
+
 [[hateoas-support]]
 === HATEOAS support
 

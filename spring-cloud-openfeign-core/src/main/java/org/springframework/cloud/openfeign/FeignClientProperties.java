@@ -45,6 +45,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Hyeonmin Park
  * @author Jasbir Singh
  * @author Dominique Villard
+ * @author Sharang Gupta
  */
 @ConfigurationProperties("spring.cloud.openfeign.client")
 public class FeignClientProperties {
@@ -65,6 +66,14 @@ public class FeignClientProperties {
 	 * If {@code true}, trailing slashes at the end of request urls will be removed.
 	 */
 	private boolean removeTrailingSlash;
+
+	/**
+	 * If {@code true}, the nested objects of a {@code @SpringQueryMap} parameter are sent
+	 * as nested query parameters (for example, {@code range.from=1&range.to=2}) instead
+	 * of their {@code toString()} value, and the objects of a collection or an array as
+	 * indexed query parameters (for example, {@code filters[0].name=status}).
+	 */
+	private boolean nestedQueryMapEnabled;
 
 	public boolean isDefaultToProperties() {
 		return defaultToProperties;
@@ -106,6 +115,14 @@ public class FeignClientProperties {
 		this.removeTrailingSlash = removeTrailingSlash;
 	}
 
+	public boolean isNestedQueryMapEnabled() {
+		return nestedQueryMapEnabled;
+	}
+
+	public void setNestedQueryMapEnabled(boolean nestedQueryMapEnabled) {
+		this.nestedQueryMapEnabled = nestedQueryMapEnabled;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -117,12 +134,14 @@ public class FeignClientProperties {
 		FeignClientProperties that = (FeignClientProperties) o;
 		return defaultToProperties == that.defaultToProperties && Objects.equals(defaultConfig, that.defaultConfig)
 				&& Objects.equals(config, that.config) && Objects.equals(decodeSlash, that.decodeSlash)
-				&& Objects.equals(removeTrailingSlash, that.removeTrailingSlash);
+				&& Objects.equals(removeTrailingSlash, that.removeTrailingSlash)
+				&& nestedQueryMapEnabled == that.nestedQueryMapEnabled;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(defaultToProperties, defaultConfig, config, decodeSlash, removeTrailingSlash);
+		return Objects.hash(defaultToProperties, defaultConfig, config, decodeSlash, removeTrailingSlash,
+				nestedQueryMapEnabled);
 	}
 
 	/**

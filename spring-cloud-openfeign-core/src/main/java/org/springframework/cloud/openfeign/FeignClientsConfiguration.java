@@ -52,6 +52,7 @@ import org.springframework.cloud.openfeign.support.AbstractFormWriter;
 import org.springframework.cloud.openfeign.support.FeignEncoderProperties;
 import org.springframework.cloud.openfeign.support.FeignHttpMessageConverters;
 import org.springframework.cloud.openfeign.support.HttpMessageConverterCustomizer;
+import org.springframework.cloud.openfeign.support.NestedObjectQueryMapEncoder;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.PageableSpringQueryMapEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
@@ -79,6 +80,7 @@ import static feign.form.ContentType.MULTIPART;
  * @author Olga Maciaszek-Sharma
  * @author Hyeonmin Park
  * @author Yanming Zhou
+ * @author Sharang Gupta
  */
 @Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
@@ -127,7 +129,7 @@ public class FeignClientsConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnMissingClass("org.springframework.data.domain.Pageable")
 	public QueryMapEncoder feignQueryMapEncoder() {
-		return new SpringFieldQueryMapEncoder();
+		return withNestedObjectSupport(new SpringFieldQueryMapEncoder(), feignClientProperties);
 	}
 
 	@Bean
@@ -178,6 +180,20 @@ public class FeignClientsConfiguration {
 		}
 	}
 
+	/**
+	 * Decorate the query map encoder with the {@link NestedObjectQueryMapEncoder} when
+	 * the {@code spring.cloud.openfeign.client.nested-query-map-enabled} property is set.
+	 * @param queryMapEncoder the query map encoder of the auto-configuration.
+	 * @param properties the Feign client properties, if any.
+	 * @return the query map encoder to use.
+	 */
+	static QueryMapEncoder withNestedObjectSupport(QueryMapEncoder queryMapEncoder, FeignClientProperties properties) {
+		if (properties != null && properties.isNestedQueryMapEnabled()) {
+			return new NestedObjectQueryMapEncoder(queryMapEncoder);
+		}
+		return queryMapEncoder;
+	}
+
 	private static class SpringPojoFormEncoder extends SpringFormEncoder {
 
 		SpringPojoFormEncoder(AbstractFormWriter formWriter) {
@@ -192,6 +208,9 @@ public class FeignClientsConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass({ Pageable.class, DataWebProperties.class })
 	static class SpringDataConfiguration {
+
+		@Autowired(required = false)
+		private FeignClientProperties feignClientProperties;
 
 		private final DataWebProperties dataWebProperties;
 
@@ -224,7 +243,7 @@ public class FeignClientsConfiguration {
 				queryMapEncoder.setSizeParameter(dataWebProperties.getPageable().getSizeParameter());
 				queryMapEncoder.setSortParameter(dataWebProperties.getSort().getSortParameter());
 			}
-			return queryMapEncoder;
+			return withNestedObjectSupport(queryMapEncoder, feignClientProperties);
 		}
 
 	}
