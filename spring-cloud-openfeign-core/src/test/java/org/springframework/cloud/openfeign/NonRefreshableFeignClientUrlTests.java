@@ -87,12 +87,28 @@ class NonRefreshableFeignClientUrlTests {
 		assertThat(response.getTargetType()).isEqualTo(PropertyBasedTarget.class);
 	}
 
+	@Test
+	void shouldNormalizeUrlFromPropertiesWithTrailingSlashAndPathInTheFeignClientAnnotation(
+			@Autowired Application.WithPathAndTrailingSlashUrlFromConfigClient client) {
+		UrlTestClient.UrlResponseForTests response = client.test();
+		assertThat(response.getUrl()).isEqualTo("http://localhost:7777/common/test");
+		assertThat(response.getTargetType()).isEqualTo(PropertyBasedTarget.class);
+	}
+
+	@Test
+	void shouldNormalizeUrlFromPropertiesWithoutScheme(@Autowired Application.SchemelessUrlFromConfigClient client) {
+		UrlTestClient.UrlResponseForTests response = client.test();
+		assertThat(response.getUrl()).isEqualTo("http://localhost:7777/test");
+		assertThat(response.getTargetType()).isEqualTo(PropertyBasedTarget.class);
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	@EnableConfigurationProperties(FeignClientProperties.class)
 	@EnableFeignClients(clients = { Application.FeignClientWithFixUrl.class, Application.ConfigBasedClient.class,
 			Application.NameBasedUrlClient.class, Application.WithPathAndUrlFromConfigClient.class,
-			Application.WithPathAndFixedUrlClient.class })
+			Application.WithPathAndFixedUrlClient.class, Application.WithPathAndTrailingSlashUrlFromConfigClient.class,
+			Application.SchemelessUrlFromConfigClient.class })
 	protected static class Application {
 
 		@Bean
@@ -134,6 +150,22 @@ class NonRefreshableFeignClientUrlTests {
 
 		@FeignClient(name = "withPathAndUrlFromConfigClient", path = "/common")
 		protected interface WithPathAndUrlFromConfigClient {
+
+			@GetMapping("/test")
+			UrlTestClient.UrlResponseForTests test();
+
+		}
+
+		@FeignClient(name = "withPathAndTrailingSlashUrlFromConfigClient", path = "/common")
+		protected interface WithPathAndTrailingSlashUrlFromConfigClient {
+
+			@GetMapping("/test")
+			UrlTestClient.UrlResponseForTests test();
+
+		}
+
+		@FeignClient(name = "schemelessUrlFromConfigClient")
+		protected interface SchemelessUrlFromConfigClient {
 
 			@GetMapping("/test")
 			UrlTestClient.UrlResponseForTests test();
