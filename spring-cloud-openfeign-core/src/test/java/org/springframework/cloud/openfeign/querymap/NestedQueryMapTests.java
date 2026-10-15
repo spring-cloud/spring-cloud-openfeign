@@ -70,7 +70,8 @@ class NestedQueryMapTests {
 				Map.entry("price.from", List.of("10")), Map.entry("price.to", List.of("20")),
 				Map.entry("filters[0].name", List.of("color")), Map.entry("filters[0].value", List.of("red")),
 				Map.entry("filters[1].name", List.of("size")), Map.entry("filters[1].value", List.of("42")),
-				Map.entry("tags", List.of("sale", "new")));
+				Map.entry("tags", List.of("sale", "new")), Map.entry("groups[0]", List.of("s", "m")),
+				Map.entry("groups[1]", List.of("l")));
 	}
 
 	@Test
@@ -84,6 +85,7 @@ class NestedQueryMapTests {
 		assertThat(bound.getFilters().get(1).getName()).isEqualTo("size");
 		assertThat(bound.getFilters().get(1).getValue()).isEqualTo("42");
 		assertThat(bound.getTags()).containsExactly("sale", "new");
+		assertThat(bound.getGroups()).containsExactly(List.of("s", "m"), List.of("l"));
 	}
 
 	private static SearchRequest search() {
@@ -92,6 +94,7 @@ class NestedQueryMapTests {
 		request.setPrice(new Range(10, 20));
 		request.setFilters(List.of(new Filter("color", "red"), new Filter("size", "42")));
 		request.setTags(List.of("sale", "new"));
+		request.setGroups(List.of(List.of("s", "m"), List.of("l")));
 		return request;
 	}
 
@@ -155,6 +158,8 @@ class NestedQueryMapTests {
 
 		private List<String> tags = new ArrayList<>();
 
+		private List<List<String>> groups = new ArrayList<>();
+
 		public String getQuery() {
 			return query;
 		}
@@ -177,6 +182,14 @@ class NestedQueryMapTests {
 
 		public void setFilters(List<Filter> filters) {
 			this.filters = filters;
+		}
+
+		public List<List<String>> getGroups() {
+			return groups;
+		}
+
+		public void setGroups(List<List<String>> groups) {
+			this.groups = groups;
 		}
 
 		public List<String> getTags() {

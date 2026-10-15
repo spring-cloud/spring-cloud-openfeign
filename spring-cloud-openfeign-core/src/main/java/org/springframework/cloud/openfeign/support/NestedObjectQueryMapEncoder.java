@@ -23,6 +23,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import feign.QueryMapEncoder;
@@ -35,18 +36,21 @@ import org.springframework.util.Assert;
  * A {@link QueryMapEncoder} that sends the nested objects of a query map parameter as
  * nested query parameters, with the property path notation that Spring MVC binds.
  * <p>
- * The query map is produced by the delegate encoder. Then, each value that is not a
- * simple value (see {@link BeanUtils#isSimpleValueType(Class)}) is encoded with the
- * delegate too, and its entries are added with the name of the value as a prefix:
+ * The query map is produced by the delegate encoder. Then, each nested object, that is a
+ * value that is neither a simple value (see {@link BeanUtils#isSimpleValueType(Class)})
+ * nor of a {@code java.*} or {@code javax.*} type, is encoded with the delegate too, and
+ * its entries are added with the name of the value as a prefix:
  * <ul>
  * <li>a nested object: {@code range.from=1&range.to=2}</li>
  * <li>the objects of a collection or an array: {@code filters[0].name=status}</li>
  * <li>the entries of a map: {@code attributes[color]=red}</li>
  * </ul>
- * A collection of simple values is kept as is, so it is still sent as repeated query
- * parameters, and an array of simple values is sent the same way. A value that is nested
- * in itself, directly or through other values, is rejected with an
- * {@link EncodeException}.
+ * Simple values and the values of other JDK types, such as an {@code Optional} or a
+ * {@code Duration}, are kept as is. A collection or an array is encoded with the index of
+ * its elements only when none of them is such a value, so a collection that has some,
+ * such as a {@code List<String>}, is still sent as repeated query parameters. A map key
+ * with a square bracket, and a value that is nested in itself, directly or through other
+ * values, are rejected with an {@link EncodeException}.
  *
  * @author Sharang Gupta
  * @since 5.1.0
@@ -81,7 +85,7 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 		if (value == null) {
 			return;
 		}
-		if (isSimpleValue(value)) {
+		if (isPlainValue(value)) {
 			queryMap.put(name, value);
 			return;
 		}
@@ -97,7 +101,7 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 
 	private void addNested(Map<String, Object> queryMap, String name, Object value, Set<Object> path) {
 		if (value instanceof Map<?, ?> map) {
-			map.forEach((key, entryValue) -> add(queryMap, name + "[" + key + "]", entryValue, path));
+			map.forEach((key, entryValue) -> add(queryMap, name + "[" + mapKey(name, key) + "]", entryValue, path));
 		}
 		else if (value instanceof Iterable<?> || value.getClass().isArray()) {
 			addElements(queryMap, name, value, path);
@@ -109,8 +113,9 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 
 	private void addElements(Map<String, Object> queryMap, String name, Object value, Set<Object> path) {
 		List<Object> elements = toList(value);
-		if (elements.stream().allMatch(element -> element == null || isSimpleValue(element))) {
-			// Feign sends an Iterable as repeated query parameters
+		if (!areAllNested(elements)) {
+			// A plain value has no property path to index, so keep the elements as Feign
+			// sends them: an Iterable as repeated query parameters
 			queryMap.put(name, value instanceof Iterable<?> ? value : elements);
 			return;
 		}
@@ -119,8 +124,28 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 		}
 	}
 
-	private static boolean isSimpleValue(Object value) {
-		return BeanUtils.isSimpleValueType(value.getClass());
+	private static String mapKey(String name, Object key) {
+		String mapKey = String.valueOf(key);
+		if (mapKey.indexOf('[') >= 0 || mapKey.indexOf(']') >= 0) {
+			throw new EncodeException("Cannot encode the query map: the key '" + mapKey + "' of the map under '" + name
+					+ "' has a square bracket, which the property path of its entry cannot hold");
+		}
+		return mapKey;
+	}
+
+	private static boolean areAllNested(List<Object> elements) {
+		List<Object> presentElements = elements.stream().filter(Objects::nonNull).toList();
+		return !presentElements.isEmpty()
+				&& presentElements.stream().noneMatch(NestedObjectQueryMapEncoder::isPlainValue);
+	}
+
+	private static boolean isPlainValue(Object value) {
+		if (value instanceof Map<?, ?> || value instanceof Iterable<?> || value.getClass().isArray()) {
+			return false;
+		}
+		String typeName = value.getClass().getName();
+		return BeanUtils.isSimpleValueType(value.getClass()) || typeName.startsWith("java.")
+				|| typeName.startsWith("javax.");
 	}
 
 	private static List<Object> toList(Object value) {

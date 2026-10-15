@@ -17,11 +17,13 @@
 package org.springframework.cloud.openfeign.support;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import feign.Param;
@@ -125,6 +127,45 @@ class NestedObjectQueryMapEncoderTests {
 
 		assertThat(encoder.encode(search)).containsOnly(Map.entry("id", search.id), Map.entry("since", search.since),
 				Map.entry("amount", search.amount), Map.entry("status", Status.OPEN));
+	}
+
+	@Test
+	void jdkTypesThatAreNotSimpleValueTypesAreNotNested() {
+		Search search = new Search();
+		search.timeout = Duration.ofSeconds(5);
+		search.currency = java.util.Currency.getInstance("EUR");
+		search.nickname = Optional.of("shopper");
+
+		assertThat(encoder.encode(search)).containsOnly(Map.entry("timeout", search.timeout),
+				Map.entry("currency", search.currency), Map.entry("nickname", search.nickname));
+	}
+
+	@Test
+	void collectionThatMixesSimpleValuesAndObjectsIsKeptAsIs() {
+		Holder holder = new Holder();
+		holder.items = List.of("color", new Filter("size", "42"));
+
+		assertThat(encoder.encode(holder)).containsOnly(Map.entry("items", holder.items));
+	}
+
+	@Test
+	void collectionsOfACollectionAreEncodedWithTheirIndexAsRepeatedParameters() {
+		Holder holder = new Holder();
+		holder.items = List.of(List.of("s", "m"), List.of("l"));
+
+		assertThat(encoder.encode(holder)).containsOnly(Map.entry("items[0]", List.of("s", "m")),
+				Map.entry("items[1]", List.of("l")));
+	}
+
+	@Test
+	void mapKeyWithASquareBracketIsRejected() {
+		Search search = new Search();
+		search.attributes = new LinkedHashMap<>();
+		search.attributes.put("size]", "42");
+
+		assertThatExceptionOfType(EncodeException.class).isThrownBy(() -> encoder.encode(search))
+			.withMessageContaining("'size]'")
+			.withMessageContaining("attributes");
 	}
 
 	@Test
@@ -259,6 +300,12 @@ class NestedObjectQueryMapEncoderTests {
 		int[] ids;
 
 		Map<String, Object> attributes;
+
+		Duration timeout;
+
+		java.util.Currency currency;
+
+		Optional<String> nickname;
 
 	}
 
