@@ -18,6 +18,7 @@ package org.springframework.cloud.openfeign.support;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,6 +163,64 @@ class NestedObjectQueryMapEncoderTests {
 	}
 
 	@Test
+	void mapNestedInItselfIsRejected() {
+		Search search = new Search();
+		search.attributes = new LinkedHashMap<>();
+		search.attributes.put("self", search.attributes);
+
+		assertThatExceptionOfType(EncodeException.class).isThrownBy(() -> encoder.encode(search))
+			.withMessageContaining("nested in itself")
+			.withMessageContaining("attributes[self]");
+	}
+
+	@Test
+	void collectionNestedInItselfIsRejected() {
+		Holder holder = new Holder();
+		holder.items = new ArrayList<>();
+		holder.items.add(holder.items);
+
+		assertThatExceptionOfType(EncodeException.class).isThrownBy(() -> encoder.encode(holder))
+			.withMessageContaining("nested in itself")
+			.withMessageContaining("items[0]");
+	}
+
+	@Test
+	void arrayNestedInItselfIsRejected() {
+		Holder holder = new Holder();
+		holder.elements = new Object[1];
+		holder.elements[0] = holder.elements;
+
+		assertThatExceptionOfType(EncodeException.class).isThrownBy(() -> encoder.encode(holder))
+			.withMessageContaining("nested in itself")
+			.withMessageContaining("elements[0]");
+	}
+
+	@Test
+	void cycleBelowTheQueryMapObjectIsRejected() {
+		List<Object> items = new ArrayList<>();
+		Search search = new Search();
+		search.attributes = new LinkedHashMap<>();
+		search.attributes.put("items", items);
+		items.add(search.attributes);
+
+		assertThatExceptionOfType(EncodeException.class).isThrownBy(() -> encoder.encode(search))
+			.withMessageContaining("nested in itself")
+			.withMessageContaining("attributes[items][0]");
+	}
+
+	@Test
+	void mapReferencedTwiceIsEncodedTwice() {
+		Map<String, Object> shared = Map.of("color", "red");
+		Search search = new Search();
+		search.attributes = new LinkedHashMap<>();
+		search.attributes.put("front", shared);
+		search.attributes.put("back", shared);
+
+		assertThat(encoder.encode(search)).containsOnly(Map.entry("attributes[front][color]", "red"),
+				Map.entry("attributes[back][color]", "red"));
+	}
+
+	@Test
 	void worksWithThePageableQueryMapEncoder() {
 		QueryMapEncoder pageableEncoder = new NestedObjectQueryMapEncoder(new PageableSpringQueryMapEncoder());
 
@@ -241,6 +300,14 @@ class NestedObjectQueryMapEncoderTests {
 			this.name = name;
 			this.value = value;
 		}
+
+	}
+
+	static class Holder {
+
+		List<Object> items;
+
+		Object[] elements;
 
 	}
 

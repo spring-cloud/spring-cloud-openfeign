@@ -44,7 +44,9 @@ import org.springframework.util.Assert;
  * <li>the entries of a map: {@code attributes[color]=red}</li>
  * </ul>
  * A collection of simple values is kept as is, so it is still sent as repeated query
- * parameters, and an array of simple values is sent the same way.
+ * parameters, and an array of simple values is sent the same way. A value that is nested
+ * in itself, directly or through other values, is rejected with an
+ * {@link EncodeException}.
  *
  * @author Sharang Gupta
  * @since 5.1.0
@@ -81,15 +83,27 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 		}
 		if (isSimpleValue(value)) {
 			queryMap.put(name, value);
+			return;
 		}
-		else if (value instanceof Map<?, ?> map) {
+		// Track the maps, collections, arrays and objects on the current path, so that
+		// a value nested in itself is rejected instead of recursing forever
+		if (!path.add(value)) {
+			throw new EncodeException("Cannot encode the query map: an object of type " + value.getClass().getName()
+					+ " is nested in itself under '" + name + "'");
+		}
+		addNested(queryMap, name, value, path);
+		path.remove(value);
+	}
+
+	private void addNested(Map<String, Object> queryMap, String name, Object value, Set<Object> path) {
+		if (value instanceof Map<?, ?> map) {
 			map.forEach((key, entryValue) -> add(queryMap, name + "[" + key + "]", entryValue, path));
 		}
 		else if (value instanceof Iterable<?> || value.getClass().isArray()) {
 			addElements(queryMap, name, value, path);
 		}
 		else {
-			addNestedObject(queryMap, name, value, path);
+			addAll(queryMap, name + ".", delegate.encode(value), path);
 		}
 	}
 
@@ -103,15 +117,6 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 		for (int index = 0; index < elements.size(); index++) {
 			add(queryMap, name + "[" + index + "]", elements.get(index), path);
 		}
-	}
-
-	private void addNestedObject(Map<String, Object> queryMap, String name, Object value, Set<Object> path) {
-		if (!path.add(value)) {
-			throw new EncodeException("Cannot encode the query map: an object of type " + value.getClass().getName()
-					+ " is nested in itself under '" + name + "'");
-		}
-		addAll(queryMap, name + ".", delegate.encode(value), path);
-		path.remove(value);
 	}
 
 	private static boolean isSimpleValue(Object value) {
