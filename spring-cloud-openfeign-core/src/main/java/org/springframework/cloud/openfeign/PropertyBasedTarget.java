@@ -52,7 +52,7 @@ public class PropertyBasedTarget<T> extends Target.HardCodedTarget<T> {
 	@Override
 	public String url() {
 		if (url == null) {
-			url = config.getUrl() + path;
+			url = FeignClientsRegistrar.getUrl(config.getUrl()) + path;
 		}
 		return url;
 	}
