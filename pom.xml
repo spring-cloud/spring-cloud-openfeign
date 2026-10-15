@@ -186,6 +186,7 @@
 	<modules>
 		<module>spring-cloud-openfeign-dependencies</module>
 		<module>spring-cloud-openfeign-core</module>
+		<module>spring-cloud-openfeign-test</module>
 		<module>spring-cloud-starter-openfeign</module>
 		<module>docs</module>
 	</modules>

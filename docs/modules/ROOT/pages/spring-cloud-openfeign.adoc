@@ -1074,6 +1074,61 @@ The URL provided in the configuration properties remains unused.
 
 |===
 
+[[testing-feign-clients]]
+=== Testing Feign Clients
+
+The `spring-cloud-openfeign-test` module provides a `@FeignClientTest` annotation for tests that focus only on the Feign clients of an application, like the test slices of Spring Boot, such as `@RestClientTest`.
+To use it, add the module to the test dependencies of your project, next to `spring-cloud-starter-openfeign`:
+
+[source,xml,indent=0]
+----
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-openfeign-test</artifactId>
+	<scope>test</scope>
+</dependency>
+----
+
+A `@FeignClientTest` test only enables the Feign, HTTP message converter and JSON auto-configuration.
+Component scanning is limited to the configuration classes annotated with `@EnableFeignClients` and to the components that customize Feign clients, such as `RequestInterceptor`, `ErrorDecoder` or `FeignBuilderCustomizer` components.
+The `@Bean` methods of other configuration classes are not loaded, so import the beans that a test needs with `@Import`.
+The auto-configuration of circuit breakers, Micrometer and caching is not enabled either, so a fallback is not used unless the test enables it, for example with `@ImportAutoConfiguration`.
+The Feign clients are the ones that the `@EnableFeignClients` annotation of the application registers, and a client is only created when it is injected, so the clients that a test does not use need no configuration.
+
+A test points a client at a stub server, such as WireMock, with the `spring.cloud.openfeign.client.config.<name>.url` property, as in the following example.
+For a client with a `url` attribute, which takes precedence over that property, set the property that the attribute reads instead.
+
+[source,java,indent=0]
+----
+@FeignClientTest
+class GreetingClientTests {
+
+	@RegisterExtension
+	static WireMockExtension wireMock = WireMockExtension.newInstance()
+		.options(wireMockConfig().dynamicPort())
+		.build();
+
+	@DynamicPropertySource
+	static void greetingsUrl(DynamicPropertyRegistry registry) {
+		registry.add("spring.cloud.openfeign.client.config.greetings.url", wireMock::baseUrl);
+	}
+
+	@Autowired
+	private GreetingClient greetingClient;
+
+	@Test
+	void greet() {
+		wireMock.stubFor(get("/greetings/Ada").willReturn(okJson("{\"message\":\"Hello Ada\"}")));
+
+		assertThat(this.greetingClient.greet("Ada").message()).isEqualTo("Hello Ada");
+	}
+
+}
+----
+
+To use the Feign clients in another test slice, such as `@WebMvcTest`, add the `@AutoConfigureFeign` annotation to the test, which enables the same auto-configuration.
+It does not change the component scanning of that slice.
+
 [[aot-and-native-image-support]]
 === AOT and Native Image Support
 
