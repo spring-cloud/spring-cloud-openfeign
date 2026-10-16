@@ -262,6 +262,15 @@ class NestedObjectQueryMapEncoderTests {
 	}
 
 	@Test
+	void nestedObjectWithoutPropertiesForTheDelegateIsKeptAsIs() {
+		QueryMapEncoder beanEncoder = new NestedObjectQueryMapEncoder(new PageableSpringQueryMapEncoder());
+		PricedSearch search = new PricedSearch("shoes", new PriceRange(10, 20));
+
+		assertThat(beanEncoder.encode(search)).containsOnly(Map.entry("query", "shoes"),
+				Map.entry("price", search.getPrice()));
+	}
+
+	@Test
 	void worksWithThePageableQueryMapEncoder() {
 		QueryMapEncoder pageableEncoder = new NestedObjectQueryMapEncoder(new PageableSpringQueryMapEncoder());
 
@@ -355,6 +364,31 @@ class NestedObjectQueryMapEncoderTests {
 		List<Object> items;
 
 		Object[] elements;
+
+	}
+
+	public static class PricedSearch {
+
+		private final String query;
+
+		private final PriceRange price;
+
+		PricedSearch(String query, PriceRange price) {
+			this.query = query;
+			this.price = price;
+		}
+
+		public String getQuery() {
+			return this.query;
+		}
+
+		public PriceRange getPrice() {
+			return this.price;
+		}
+
+	}
+
+	record PriceRange(Integer from, Integer to) {
 
 	}
 

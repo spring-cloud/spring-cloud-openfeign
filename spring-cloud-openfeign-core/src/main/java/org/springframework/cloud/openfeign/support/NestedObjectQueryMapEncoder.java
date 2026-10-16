@@ -46,11 +46,13 @@ import org.springframework.util.Assert;
  * <li>the entries of a map: {@code attributes[color]=red}</li>
  * </ul>
  * Simple values and the values of other JDK types, such as an {@code Optional} or a
- * {@code Duration}, are kept as is. A collection or an array is encoded with the index of
- * its elements only when none of them is such a value, so a collection that has some,
- * such as a {@code List<String>}, is still sent as repeated query parameters. A map key
- * with a square bracket, and a value that is nested in itself, directly or through other
- * values, are rejected with an {@link EncodeException}.
+ * {@code Duration}, are kept as is, and so is a nested object for which the delegate
+ * finds no properties, such as a record for a {@code BeanQueryMapEncoder}. A collection
+ * or an array is encoded with the index of its elements only when none of them is such a
+ * value, so a collection that has some, such as a {@code List<String>}, is still sent as
+ * repeated query parameters. A map key with a square bracket, and a value that is nested
+ * in itself, directly or through other values, are rejected with an
+ * {@link EncodeException}.
  *
  * @author Sharang Gupta
  * @since 5.1.0
@@ -107,7 +109,14 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 			addElements(queryMap, name, value, path);
 		}
 		else {
-			addAll(queryMap, name + ".", delegate.encode(value), path);
+			Map<String, Object> properties = delegate.encode(value);
+			if (properties.isEmpty()) {
+				// The delegate found no properties, such as a BeanQueryMapEncoder for a
+				// record, so keep the value as it is sent without this encoder
+				queryMap.put(name, value);
+				return;
+			}
+			addAll(queryMap, name + ".", properties, path);
 		}
 	}
 
