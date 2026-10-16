@@ -49,10 +49,16 @@ import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
+import org.springframework.boot.ssl.SslOptions;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Default configuration for {@link CloseableHttpClient}.
@@ -60,6 +66,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Nguyen Ky Thanh
  * @author changjin wei(魏昌进)
  * @author Kwangyong Kim
+ * @author Goutam Adwant
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(CloseableHttpClient.class)
@@ -69,13 +76,16 @@ public class HttpClient5FeignConfiguration {
 
 	private CloseableHttpClient httpClient5;
 
+	@Autowired
+	private ObjectProvider<SslBundles> sslBundlesProvider;
+
 	@Bean
 	@ConditionalOnMissingBean(HttpClientConnectionManager.class)
 	public HttpClientConnectionManager hc5ConnectionManager(FeignHttpClientProperties httpClientProperties,
 			ObjectProvider<List<HttpClientConnectionManagerBuilderCustomizer>> customizerProvider) {
 		PoolingHttpClientConnectionManagerBuilder httpClientConnectionManager = PoolingHttpClientConnectionManagerBuilder
 			.create()
-			.setSSLSocketFactory(httpsSSLConnectionSocketFactory(httpClientProperties.isDisableSslValidation()))
+			.setSSLSocketFactory(httpsSSLConnectionSocketFactory(httpClientProperties))
 			.setMaxConnTotal(httpClientProperties.getMaxConnections())
 			.setMaxConnPerRoute(httpClientProperties.getMaxConnectionsPerRoute())
 			.setConnPoolPolicy(PoolReusePolicy.valueOf(httpClientProperties.getHc5().getPoolReusePolicy().name()))
@@ -122,12 +132,25 @@ public class HttpClient5FeignConfiguration {
 		}
 	}
 
-	private LayeredConnectionSocketFactory httpsSSLConnectionSocketFactory(boolean isDisableSslValidation) {
+	private LayeredConnectionSocketFactory httpsSSLConnectionSocketFactory(FeignHttpClientProperties properties) {
 		final SSLConnectionSocketFactoryBuilder sslConnectionSocketFactoryBuilder = SSLConnectionSocketFactoryBuilder
 			.create()
 			.setTlsVersions(TLS.V_1_3, TLS.V_1_2);
 
-		if (isDisableSslValidation) {
+		String bundleName = properties.getHc5().getSslBundle();
+		if (StringUtils.hasText(bundleName)) {
+			Assert.state(!properties.isDisableSslValidation(),
+					"An SSL bundle cannot be used with spring.cloud.openfeign.httpclient.disable-ssl-validation=true");
+			SslBundles sslBundles = sslBundlesProvider.getObject();
+			SslBundle sslBundle = sslBundles.getBundle(bundleName);
+			sslConnectionSocketFactoryBuilder.setSslContext(sslBundle.createSslContext());
+			SslOptions options = sslBundle.getOptions();
+			if (options.getEnabledProtocols() != null) {
+				sslConnectionSocketFactoryBuilder.setTlsVersions(options.getEnabledProtocols());
+			}
+			sslConnectionSocketFactoryBuilder.setCiphers(options.getCiphers());
+		}
+		else if (properties.isDisableSslValidation()) {
 			try {
 				final SSLContext sslContext = SSLContext.getInstance("SSL");
 				sslContext.init(null, new TrustManager[] { new DisabledValidationTrustManager() }, new SecureRandom());
