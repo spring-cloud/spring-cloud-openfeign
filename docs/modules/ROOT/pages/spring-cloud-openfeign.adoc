@@ -845,7 +845,13 @@ If you need more control over the generated query parameter map, you can impleme
 ==== Nested objects
 
 By default, a nested object of a `@SpringQueryMap` parameter is sent as the `toString()` value of the object.
-You can set `spring.cloud.openfeign.client.config.<name>.nested-query-map-enabled` to `true` to send the fields of a nested object as nested query parameters instead for a client, or `spring.cloud.openfeign.client.config.default.nested-query-map-enabled` for every client, with the property path notation that Spring MVC binds: a nested object as `range.from=1&range.to=2`, the objects of a collection or an array as `filters[0].name=status`, and the entries of a `Map` as `attributes[color]=red`.
+To send the fields of nested objects as nested query parameters instead, set `spring.cloud.openfeign.client.config.<name>.nested-query-map-enabled` to `true` for a client, or `spring.cloud.openfeign.client.config.default.nested-query-map-enabled` for every client.
+The query parameters then use the property path notation that Spring MVC binds:
+
+* a nested object is sent as `range.from=1&range.to=2`
+* the objects of a collection or an array are sent as `filters[0].name=status`
+* the entries of a `Map` are sent as `attributes[color]=red`
+
 Simple values, such as strings, numbers or dates, and the values of the other JDK types, such as an `Optional` or a `Duration`, are sent as before.
 A nested object whose properties are all `null` is skipped, like a `null` value.
 A collection or an array is indexed only when all its elements are nested objects, so a collection with simple values, such as a `List<String>`, is still sent as repeated query parameters.
@@ -875,6 +881,8 @@ a call to `demoEndpoint(@SpringQueryMap Search search)` sends `query=shoes&price
 
 The option is disabled by default, to keep the behaviour of the existing applications.
 When it is enabled for a client, the `QueryMapEncoder` of the client, whether it is the auto-configured one or a custom one, is decorated with the `NestedObjectQueryMapEncoder`.
+
+NOTE: Like the other `spring.cloud.openfeign.client.config.*` properties, `nested-query-map-enabled` has no effect on a client whose `FeignClientConfigurer` returns `false` from `inheritParentConfiguration()` (see <<spring-cloud-feign-overriding-defaults>>).
 
 [[hateoas-support]]
 === HATEOAS support

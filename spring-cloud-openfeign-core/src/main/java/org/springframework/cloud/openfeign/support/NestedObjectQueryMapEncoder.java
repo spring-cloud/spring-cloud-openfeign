@@ -16,23 +16,22 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import feign.QueryMapEncoder;
 import feign.codec.EncodeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -63,6 +62,8 @@ import org.springframework.util.ReflectionUtils;
  * @see org.springframework.cloud.openfeign.FeignClientProperties.FeignClientConfiguration#getNestedQueryMapEnabled()
  */
 public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
+
+	private static final Log LOG = LogFactory.getLog(NestedObjectQueryMapEncoder.class);
 
 	private final QueryMapEncoder delegate;
 
@@ -118,21 +119,29 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 				// A BeanQueryMapEncoder finds no properties in a record
 				properties = componentsOf(record);
 			}
-			// An object whose properties are all null adds nothing, like a null value
+			if (properties.isEmpty()) {
+				// An object whose properties are all null adds nothing, like a null value
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Skipping the nested object '" + name + "' of type " + value.getClass().getName()
+							+ " from the query map, as none of its properties has a value");
+				}
+				return;
+			}
 			addAll(queryMap, name + ".", properties, path);
 		}
 	}
 
 	private void addElements(Map<String, Object> queryMap, String name, Object value, Set<Object> path) {
-		List<Object> elements = toList(value);
+		Iterable<?> elements = (value instanceof Iterable<?> iterable) ? iterable : CollectionUtils.arrayToList(value);
 		if (!areAllNested(elements)) {
 			// A plain value has no property path to index, so keep the elements as Feign
 			// sends them: an Iterable as repeated query parameters
-			queryMap.put(name, value instanceof Iterable<?> ? value : elements);
+			queryMap.put(name, elements);
 			return;
 		}
-		for (int index = 0; index < elements.size(); index++) {
-			add(queryMap, name + "[" + index + "]", elements.get(index), path);
+		int index = 0;
+		for (Object element : elements) {
+			add(queryMap, name + "[" + index++ + "]", element, path);
 		}
 	}
 
@@ -145,9 +154,18 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 		return mapKey;
 	}
 
-	private static boolean areAllNested(List<Object> elements) {
-		return elements.stream().anyMatch(Objects::nonNull)
-				&& elements.stream().noneMatch(element -> element != null && isPlainValue(element));
+	private static boolean areAllNested(Iterable<?> elements) {
+		boolean anyPresent = false;
+		for (Object element : elements) {
+			if (element == null) {
+				continue;
+			}
+			if (isPlainValue(element)) {
+				return false;
+			}
+			anyPresent = true;
+		}
+		return anyPresent;
 	}
 
 	private static Map<String, Object> componentsOf(Record record) {
@@ -170,20 +188,6 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 		String typeName = value.getClass().getName();
 		return BeanUtils.isSimpleValueType(value.getClass()) || typeName.startsWith("java.")
 				|| typeName.startsWith("javax.");
-	}
-
-	private static List<Object> toList(Object value) {
-		List<Object> elements = new ArrayList<>();
-		if (value instanceof Iterable<?> iterable) {
-			iterable.forEach(elements::add);
-		}
-		else {
-			int length = Array.getLength(value);
-			for (int index = 0; index < length; index++) {
-				elements.add(Array.get(value, index));
-			}
-		}
-		return elements;
 	}
 
 }
