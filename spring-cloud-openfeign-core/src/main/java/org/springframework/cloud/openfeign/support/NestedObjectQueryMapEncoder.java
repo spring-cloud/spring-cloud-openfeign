@@ -17,6 +17,8 @@
 package org.springframework.cloud.openfeign.support;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -31,6 +33,7 @@ import feign.codec.EncodeException;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * A {@link QueryMapEncoder} that sends the nested objects of a query map parameter as
@@ -46,17 +49,18 @@ import org.springframework.util.Assert;
  * <li>the entries of a map: {@code attributes[color]=red}</li>
  * </ul>
  * Simple values and the values of other JDK types, such as an {@code Optional} or a
- * {@code Duration}, are kept as is, and so is a nested object for which the delegate
- * finds no properties, such as a record for a {@code BeanQueryMapEncoder}. A collection
- * or an array is encoded with the index of its elements only when none of them is such a
- * value, so a collection that has some, such as a {@code List<String>}, is still sent as
- * repeated query parameters. A map key with a square bracket, and a value that is nested
- * in itself, directly or through other values, are rejected with an
- * {@link EncodeException}.
+ * {@code Duration}, are kept as is. A nested object whose properties are all {@code null}
+ * is skipped, like a {@code null} value. The components of a record are used when the
+ * delegate finds no properties in it, as a {@code BeanQueryMapEncoder} does, such as the
+ * one for Spring Data. A collection or an array is encoded with the index of its elements
+ * only when none of them is such a value, so a collection that has some, such as a
+ * {@code List<String>}, is still sent as repeated query parameters. A map key with a
+ * square bracket, and a value that is nested in itself, directly or through other values,
+ * are rejected with an {@link EncodeException}.
  *
  * @author Sharang Gupta
  * @since 5.1.0
- * @see org.springframework.cloud.openfeign.FeignClientProperties#isNestedQueryMapEnabled()
+ * @see org.springframework.cloud.openfeign.FeignClientProperties.FeignClientConfiguration#getNestedQueryMapEnabled()
  */
 public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 
@@ -110,12 +114,11 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 		}
 		else {
 			Map<String, Object> properties = delegate.encode(value);
-			if (properties.isEmpty()) {
-				// The delegate found no properties, such as a BeanQueryMapEncoder for a
-				// record, so keep the value as it is sent without this encoder
-				queryMap.put(name, value);
-				return;
+			if (properties.isEmpty() && value instanceof Record record) {
+				// A BeanQueryMapEncoder finds no properties in a record
+				properties = componentsOf(record);
 			}
+			// An object whose properties are all null adds nothing, like a null value
 			addAll(queryMap, name + ".", properties, path);
 		}
 	}
@@ -143,9 +146,21 @@ public class NestedObjectQueryMapEncoder implements QueryMapEncoder {
 	}
 
 	private static boolean areAllNested(List<Object> elements) {
-		List<Object> presentElements = elements.stream().filter(Objects::nonNull).toList();
-		return !presentElements.isEmpty()
-				&& presentElements.stream().noneMatch(NestedObjectQueryMapEncoder::isPlainValue);
+		return elements.stream().anyMatch(Objects::nonNull)
+				&& elements.stream().noneMatch(element -> element != null && isPlainValue(element));
+	}
+
+	private static Map<String, Object> componentsOf(Record record) {
+		Map<String, Object> components = new LinkedHashMap<>();
+		for (RecordComponent component : record.getClass().getRecordComponents()) {
+			Method accessor = component.getAccessor();
+			ReflectionUtils.makeAccessible(accessor);
+			Object componentValue = ReflectionUtils.invokeMethod(accessor, record);
+			if (componentValue != null) {
+				components.put(component.getName(), componentValue);
+			}
+		}
+		return components;
 	}
 
 	private static boolean isPlainValue(Object value) {

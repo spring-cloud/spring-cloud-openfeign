@@ -845,8 +845,9 @@ If you need more control over the generated query parameter map, you can impleme
 ==== Nested objects
 
 By default, a nested object of a `@SpringQueryMap` parameter is sent as the `toString()` value of the object.
-You can set `spring.cloud.openfeign.client.nested-query-map-enabled` to `true` to send the fields of a nested object as nested query parameters instead, with the property path notation that Spring MVC binds: a nested object as `range.from=1&range.to=2`, the objects of a collection or an array as `filters[0].name=status`, and the entries of a `Map` as `attributes[color]=red`.
-Simple values, such as strings, numbers or dates, and the values of the other JDK types, such as an `Optional` or a `Duration`, are sent as before, and so is a nested object in which the delegate `QueryMapEncoder` finds no properties, such as a record for the `PageableSpringQueryMapEncoder`.
+You can set `spring.cloud.openfeign.client.config.<name>.nested-query-map-enabled` to `true` to send the fields of a nested object as nested query parameters instead for a client, or `spring.cloud.openfeign.client.config.default.nested-query-map-enabled` for every client, with the property path notation that Spring MVC binds: a nested object as `range.from=1&range.to=2`, the objects of a collection or an array as `filters[0].name=status`, and the entries of a `Map` as `attributes[color]=red`.
+Simple values, such as strings, numbers or dates, and the values of the other JDK types, such as an `Optional` or a `Duration`, are sent as before.
+A nested object whose properties are all `null` is skipped, like a `null` value.
 A collection or an array is indexed only when all its elements are nested objects, so a collection with simple values, such as a `List<String>`, is still sent as repeated query parameters.
 A `Map` key with a square bracket cannot be written in the property path of its entry, so it is rejected with an `EncodeException`.
 
@@ -873,7 +874,7 @@ public class Range {
 a call to `demoEndpoint(@SpringQueryMap Search search)` sends `query=shoes&price.from=10&price.to=20&filters[0].name=color&filters[0].value=red`, which a Spring MVC handler can bind with `@ModelAttribute Search search`.
 
 The option is disabled by default, to keep the behaviour of the existing applications.
-When it is enabled, the `QueryMapEncoder` that Spring Cloud OpenFeign auto-configures is decorated with the `NestedObjectQueryMapEncoder`, which you can also use to decorate a custom `QueryMapEncoder` bean.
+When it is enabled for a client, the `QueryMapEncoder` of the client, whether it is the auto-configured one or a custom one, is decorated with the `NestedObjectQueryMapEncoder`.
 
 [[hateoas-support]]
 === HATEOAS support

@@ -55,12 +55,15 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(classes = NestedQueryMapTests.Application.class, webEnvironment = RANDOM_PORT,
 		value = { "spring.application.name=nestedquerymaptest", "spring.jmx.enabled=false",
-				"spring.cloud.openfeign.client.nested-query-map-enabled=true" })
+				"spring.cloud.openfeign.client.config.local.nested-query-map-enabled=true" })
 @DirtiesContext
 class NestedQueryMapTests {
 
 	@Autowired
 	private SearchClient searchClient;
+
+	@Autowired
+	private PlainSearchClient plainSearchClient;
 
 	@Test
 	void nestedObjectsAreSentAsNestedQueryParameters() {
@@ -88,7 +91,14 @@ class NestedQueryMapTests {
 		assertThat(bound.getGroups()).containsExactly(List.of("s", "m"), List.of("l"));
 	}
 
-	private static SearchRequest search() {
+	@Test
+	void clientWithoutTheOptionSendsNestedObjectsAsBefore() {
+		Map<String, List<String>> parameters = this.plainSearchClient.parameters(search());
+
+		assertThat(parameters).containsKey("price").doesNotContainKey("price.from");
+	}
+
+	static SearchRequest search() {
 		SearchRequest request = new SearchRequest();
 		request.setQuery("shoes");
 		request.setPrice(new Range(10, 20));
@@ -126,7 +136,15 @@ class NestedQueryMapTests {
 
 	}
 
-	@EnableFeignClients(clients = SearchClient.class)
+	@FeignClient(name = "local", contextId = "plainSearch")
+	interface PlainSearchClient {
+
+		@GetMapping("/search/parameters")
+		Map<String, List<String>> parameters(@SpringQueryMap SearchRequest request);
+
+	}
+
+	@EnableFeignClients(clients = { SearchClient.class, PlainSearchClient.class })
 	@LoadBalancerClient(name = "local", configuration = LocalClientConfiguration.class)
 	@SpringBootApplication
 	@Import({ NoSecurityConfiguration.class, SearchController.class })

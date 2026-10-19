@@ -67,14 +67,6 @@ public class FeignClientProperties {
 	 */
 	private boolean removeTrailingSlash;
 
-	/**
-	 * If {@code true}, the nested objects of a {@code @SpringQueryMap} parameter are sent
-	 * as nested query parameters (for example, {@code range.from=1&range.to=2}) instead
-	 * of their {@code toString()} value, and the objects of a collection or an array as
-	 * indexed query parameters (for example, {@code filters[0].name=status}).
-	 */
-	private boolean nestedQueryMapEnabled;
-
 	public boolean isDefaultToProperties() {
 		return defaultToProperties;
 	}
@@ -115,14 +107,6 @@ public class FeignClientProperties {
 		this.removeTrailingSlash = removeTrailingSlash;
 	}
 
-	public boolean isNestedQueryMapEnabled() {
-		return nestedQueryMapEnabled;
-	}
-
-	public void setNestedQueryMapEnabled(boolean nestedQueryMapEnabled) {
-		this.nestedQueryMapEnabled = nestedQueryMapEnabled;
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -134,14 +118,12 @@ public class FeignClientProperties {
 		FeignClientProperties that = (FeignClientProperties) o;
 		return defaultToProperties == that.defaultToProperties && Objects.equals(defaultConfig, that.defaultConfig)
 				&& Objects.equals(config, that.config) && Objects.equals(decodeSlash, that.decodeSlash)
-				&& Objects.equals(removeTrailingSlash, that.removeTrailingSlash)
-				&& nestedQueryMapEnabled == that.nestedQueryMapEnabled;
+				&& Objects.equals(removeTrailingSlash, that.removeTrailingSlash);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(defaultToProperties, defaultConfig, config, decodeSlash, removeTrailingSlash,
-				nestedQueryMapEnabled);
+		return Objects.hash(defaultToProperties, defaultConfig, config, decodeSlash, removeTrailingSlash);
 	}
 
 	/**
@@ -180,6 +162,15 @@ public class FeignClientProperties {
 		private List<Class<Capability>> capabilities;
 
 		private Class<QueryMapEncoder> queryMapEncoder;
+
+		/**
+		 * If {@code true}, the nested objects of a {@code @SpringQueryMap} parameter are
+		 * sent as nested query parameters (for example, {@code range.from=1&range.to=2})
+		 * instead of their {@code toString()} value, and the objects of a collection or
+		 * an array as indexed query parameters (for example,
+		 * {@code filters[0].name=status}).
+		 */
+		private Boolean nestedQueryMapEnabled;
 
 		private MicrometerProperties micrometer;
 
@@ -319,6 +310,14 @@ public class FeignClientProperties {
 			this.queryMapEncoder = queryMapEncoder;
 		}
 
+		public Boolean getNestedQueryMapEnabled() {
+			return nestedQueryMapEnabled;
+		}
+
+		public void setNestedQueryMapEnabled(Boolean nestedQueryMapEnabled) {
+			this.nestedQueryMapEnabled = nestedQueryMapEnabled;
+		}
+
 		public MicrometerProperties getMicrometer() {
 			return micrometer;
 		}
@@ -364,6 +363,7 @@ public class FeignClientProperties {
 					&& Objects.equals(defaultQueryParameters, that.defaultQueryParameters)
 					&& Objects.equals(capabilities, that.capabilities)
 					&& Objects.equals(queryMapEncoder, that.queryMapEncoder)
+					&& Objects.equals(nestedQueryMapEnabled, that.nestedQueryMapEnabled)
 					&& Objects.equals(micrometer, that.micrometer)
 					&& Objects.equals(followRedirects, that.followRedirects) && Objects.equals(url, that.url);
 		}
@@ -372,8 +372,8 @@ public class FeignClientProperties {
 		public int hashCode() {
 			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
 					responseInterceptor, dismiss404, encoder, decoder, contract, exceptionPropagationPolicy,
-					defaultQueryParameters, defaultRequestHeaders, capabilities, queryMapEncoder, micrometer,
-					followRedirects, url);
+					defaultQueryParameters, defaultRequestHeaders, capabilities, queryMapEncoder, nestedQueryMapEnabled,
+					micrometer, followRedirects, url);
 		}
 
 	}

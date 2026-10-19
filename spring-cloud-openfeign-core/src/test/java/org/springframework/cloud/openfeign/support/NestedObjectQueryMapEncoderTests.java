@@ -262,12 +262,29 @@ class NestedObjectQueryMapEncoderTests {
 	}
 
 	@Test
-	void nestedObjectWithoutPropertiesForTheDelegateIsKeptAsIs() {
+	void nestedRecordIsEncodedWithItsComponentsWhenTheDelegateFindsNoProperties() {
 		QueryMapEncoder beanEncoder = new NestedObjectQueryMapEncoder(new PageableSpringQueryMapEncoder());
 		PricedSearch search = new PricedSearch("shoes", new PriceRange(10, 20));
 
-		assertThat(beanEncoder.encode(search)).containsOnly(Map.entry("query", "shoes"),
-				Map.entry("price", search.getPrice()));
+		assertThat(beanEncoder.encode(search)).containsOnly(Map.entry("query", "shoes"), Map.entry("price.from", 10),
+				Map.entry("price.to", 20));
+	}
+
+	@Test
+	void nestedRecordWithOnlyNullComponentsIsSkipped() {
+		QueryMapEncoder beanEncoder = new NestedObjectQueryMapEncoder(new PageableSpringQueryMapEncoder());
+
+		assertThat(beanEncoder.encode(new PricedSearch("shoes", new PriceRange(null, null))))
+			.containsOnly(Map.entry("query", "shoes"));
+	}
+
+	@Test
+	void nestedObjectWithOnlyNullPropertiesIsSkipped() {
+		Search search = new Search();
+		search.query = "shoes";
+		search.price = new Range(null, null);
+
+		assertThat(encoder.encode(search)).containsOnly(Map.entry("query", "shoes"));
 	}
 
 	@Test
