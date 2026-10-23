@@ -106,6 +106,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * @author Tang Xiong
  * @author Hyundoo Park
  * @author Rene Choi
+ * @author Kumar Prabhash Anand
  **/
 
 @ExtendWith(OutputCaptureExtension.class)
@@ -373,6 +374,17 @@ class SpringMvcContractTests {
 		assertThat(data.template().method()).isEqualTo(extendedData.template().method());
 		assertThat(data.indexToName()).containsExactlyEntriesOf(extendedData.indexToName());
 		assertThat(data.template().decodeSlash()).isTrue();
+	}
+
+	@Test
+	void testProcessAnnotations_QueryWithRequestBody() throws Exception {
+		Method method = TestTemplate_Simple.class.getDeclaredMethod("queryTest", TestObject.class);
+		MethodMetadata data = contract.parseAndValidateMetadata(method.getDeclaringClass(), method);
+
+		assertThat(data.template().url()).isEqualTo("/query");
+		assertThat(data.template().method()).isEqualTo("QUERY");
+		assertThat(data.bodyIndex()).isZero();
+		assertThat(data.bodyType()).isEqualTo(TestObject.class);
 	}
 
 	@Test
@@ -1046,6 +1058,9 @@ class SpringMvcContractTests {
 
 		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject postTest(@RequestBody TestObject object);
+
+		@RequestMapping(value = "/query", method = RequestMethod.QUERY)
+		TestObject queryTest(@RequestBody TestObject object);
 
 		@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 		TestObject postMappingTest(@RequestBody TestObject object);

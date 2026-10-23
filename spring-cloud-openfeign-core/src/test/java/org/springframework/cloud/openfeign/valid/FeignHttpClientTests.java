@@ -36,6 +36,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.test.NoSecurityConfiguration;
+import org.springframework.cloud.openfeign.test.QuerySecurityConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -47,6 +48,8 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,6 +57,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Spencer Gibb
  * @author Olga Maciaszek-Sharma
+ * @author Kumar Prabhash Anand
  */
 @SpringBootTest(classes = FeignHttpClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,
 		value = { "spring.application.name=feignclienttest", "spring.cloud.openfeign.circuitbreaker.enabled=false",
@@ -86,6 +90,12 @@ class FeignHttpClientTests {
 	}
 
 	@Test
+	void testQuery() {
+		Hello hello = testClient.queryHello(new Hello("foo"));
+		assertThat(hello).isEqualTo(new Hello("foo"));
+	}
+
+	@Test
 	void testFeignClientType() {
 		assertThat(feignClient).isInstanceOf(FeignBlockingLoadBalancerClient.class);
 		FeignBlockingLoadBalancerClient client = (FeignBlockingLoadBalancerClient) feignClient;
@@ -114,6 +124,9 @@ class FeignHttpClientTests {
 		@PatchMapping(value = "/hellop", consumes = "application/json")
 		ResponseEntity<Void> patchHello(Hello hello);
 
+		@RequestMapping(value = "/helloq", method = RequestMethod.QUERY)
+		Hello queryHello(@RequestBody Hello hello);
+
 	}
 
 	protected interface UserService {
@@ -134,7 +147,7 @@ class FeignHttpClientTests {
 	@EnableFeignClients(clients = { TestClient.class, UserClient.class })
 	@LoadBalancerClients({ @LoadBalancerClient(name = "localapp", configuration = LocalClientConfiguration.class),
 			@LoadBalancerClient(name = "localapp1", configuration = LocalClientConfiguration.class) })
-	@Import(NoSecurityConfiguration.class)
+	@Import({ NoSecurityConfiguration.class, QuerySecurityConfiguration.class })
 	protected static class Application implements UserService {
 
 		@GetMapping("/hello")
@@ -152,6 +165,11 @@ class FeignHttpClientTests {
 				throw new IllegalArgumentException("Invalid Hello: " + hello.getMessage());
 			}
 			return ResponseEntity.ok().header("X-Hello", "hello world patch").build();
+		}
+
+		@RequestMapping(value = "/helloq", method = RequestMethod.QUERY)
+		public Hello queryHello(@RequestBody Hello hello) {
+			return hello;
 		}
 
 		@Override
