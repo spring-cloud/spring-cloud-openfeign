@@ -808,6 +808,26 @@ The params attribute also supports the use of multiple `key=value` or only one `
 
 
 
+[[spring-query-method-support]]
+==== HTTP QUERY Support
+
+To send an HTTP `QUERY` request (https://www.rfc-editor.org/rfc/rfc10008.html[RFC 10008]), use `@RequestMapping(method = RequestMethod.QUERY)` and pass the query in the request body with `@RequestBody`:
+
+[source,java,indent=0]
+----
+@FeignClient("search")
+public interface SearchClient {
+
+	@RequestMapping(value = "/search", method = RequestMethod.QUERY)
+	String search(@RequestBody String criteria);
+}
+----
+
+The HTTP clients that support `QUERY` are Apache HttpClient 5 (`io.github.openfeign:feign-hc5`) and the Java HTTP client (`io.github.openfeign:feign-java11`).
+Apache HttpClient 5 is enabled by default when present on the classpath, unless `spring.cloud.openfeign.httpclient.hc5.enabled=false`.
+To use the Java HTTP client, set `spring.cloud.openfeign.http2client.enabled=true` and disable Apache HttpClient 5 if it is also present.
+The default `HttpURLConnection`-based Feign client cannot send `QUERY` requests.
+
 [[feign-querymap-support]]
 === Feign @QueryMap support
 
