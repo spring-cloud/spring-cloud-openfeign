@@ -56,6 +56,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.cloud.openfeign.clientconfig.FeignClientConfigurer;
 import org.springframework.cloud.openfeign.loadbalancer.FeignBlockingLoadBalancerClient;
 import org.springframework.cloud.openfeign.loadbalancer.RetryableFeignBlockingLoadBalancerClient;
+import org.springframework.cloud.openfeign.support.NestedQueryMapCapability;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
@@ -78,6 +79,7 @@ import org.springframework.util.StringUtils;
  * @author Felix Dittrich
  * @author Dominique Villard
  * @author Can Bezmen
+ * @author Sharang Gupta
  */
 public class FeignClientFactoryBean
 		implements FactoryBean<Object>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
@@ -274,6 +276,12 @@ public class FeignClientFactoryBean
 			if (dismiss404) {
 				builder.dismiss404();
 			}
+		}
+		Boolean nestedQueryMapEnabled = finalConfig != null && finalConfig.getNestedQueryMapEnabled() != null
+				? finalConfig.getNestedQueryMapEnabled()
+				: (baseConfig != null ? baseConfig.getNestedQueryMapEnabled() : null);
+		if (Boolean.TRUE.equals(nestedQueryMapEnabled)) {
+			builder.addCapability(new NestedQueryMapCapability());
 		}
 	}
 
