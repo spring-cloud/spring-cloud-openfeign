@@ -28,6 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Nguyen Ky Thanh
  * @author Olga Maciaszek-Sharma
  * @author changjin wei(魏昌进)
+ * @author Goutam Adwant
  */
 @ConfigurationProperties(prefix = "spring.cloud.openfeign.httpclient")
 public class FeignHttpClientProperties {
@@ -216,6 +217,12 @@ public class FeignHttpClientProperties {
 		private PoolConcurrencyPolicy poolConcurrencyPolicy = DEFAULT_POOL_CONCURRENCY_POLICY;
 
 		/**
+		 * Name of the SSL bundle to apply to the shared Apache HttpClient 5 connection
+		 * manager. Cannot be combined with disabling SSL validation.
+		 */
+		private String sslBundle;
+
+		/**
 		 * Pool connection re-use policies.
 		 */
 		private PoolReusePolicy poolReusePolicy = DEFAULT_POOL_REUSE_POLICY;
@@ -239,6 +246,14 @@ public class FeignHttpClientProperties {
 		 * Default value for connection request timeout unit.
 		 */
 		private TimeUnit connectionRequestTimeoutUnit = DEFAULT_CONNECTION_REQUEST_TIMEOUT_UNIT;
+
+		public String getSslBundle() {
+			return sslBundle;
+		}
+
+		public void setSslBundle(String sslBundle) {
+			this.sslBundle = sslBundle;
+		}
 
 		public PoolConcurrencyPolicy getPoolConcurrencyPolicy() {
 			return poolConcurrencyPolicy;
