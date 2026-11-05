@@ -52,7 +52,7 @@ import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
 import static feign.Request.HttpMethod.POST;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -102,14 +102,8 @@ class ProtobufSpringEncoderTests {
 
 		// http request-body is different with original protobuf body
 		assertThat(request.toByteArray().length).isNotEqualTo(bytes.length);
-		try {
-			org.springframework.cloud.openfeign.encoding.proto.Request copy = org.springframework.cloud.openfeign.encoding.proto.Request
-				.parseFrom(bytes);
-			fail("Expected an InvalidProtocolBufferException to be thrown");
-		}
-		catch (InvalidProtocolBufferException e) {
-			// success
-		}
+		assertThatThrownBy(() -> org.springframework.cloud.openfeign.encoding.proto.Request.parseFrom(bytes))
+			.isInstanceOf(InvalidProtocolBufferException.class);
 	}
 
 	private SpringEncoder newEncoder() {
