@@ -64,6 +64,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
@@ -153,8 +154,8 @@ public class FeignClientsConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(FeignLoggerFactory.class)
-	public FeignLoggerFactory feignLoggerFactory() {
-		return new DefaultFeignLoggerFactory(logger);
+	public FeignLoggerFactory feignLoggerFactory(Environment environment) {
+		return new DefaultFeignLoggerFactory(logger, environment, feignClientProperties);
 	}
 
 	@Bean

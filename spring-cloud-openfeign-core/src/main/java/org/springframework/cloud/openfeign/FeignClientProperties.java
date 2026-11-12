@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -133,6 +134,8 @@ public class FeignClientProperties {
 
 		private Logger.Level loggerLevel;
 
+		private LoggingProperties logging;
+
 		private Integer connectTimeout;
 
 		private Integer readTimeout;
@@ -188,6 +191,14 @@ public class FeignClientProperties {
 
 		public void setLoggerLevel(Logger.Level loggerLevel) {
 			this.loggerLevel = loggerLevel;
+		}
+
+		public LoggingProperties getLogging() {
+			return logging;
+		}
+
+		public void setLogging(LoggingProperties logging) {
+			this.logging = logging;
 		}
 
 		public Integer getConnectTimeout() {
@@ -351,7 +362,8 @@ public class FeignClientProperties {
 				return false;
 			}
 			FeignClientConfiguration that = (FeignClientConfiguration) o;
-			return loggerLevel == that.loggerLevel && Objects.equals(connectTimeout, that.connectTimeout)
+			return loggerLevel == that.loggerLevel && Objects.equals(logging, that.logging)
+					&& Objects.equals(connectTimeout, that.connectTimeout)
 					&& Objects.equals(readTimeout, that.readTimeout) && Objects.equals(retryer, that.retryer)
 					&& Objects.equals(errorDecoder, that.errorDecoder)
 					&& Objects.equals(requestInterceptors, that.requestInterceptors)
@@ -370,10 +382,45 @@ public class FeignClientProperties {
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(loggerLevel, connectTimeout, readTimeout, retryer, errorDecoder, requestInterceptors,
-					responseInterceptor, dismiss404, encoder, decoder, contract, exceptionPropagationPolicy,
-					defaultQueryParameters, defaultRequestHeaders, capabilities, queryMapEncoder, nestedQueryMapEnabled,
-					micrometer, followRedirects, url);
+			return Objects.hash(loggerLevel, logging, connectTimeout, readTimeout, retryer, errorDecoder,
+					requestInterceptors, responseInterceptor, dismiss404, encoder, decoder, contract,
+					exceptionPropagationPolicy, defaultQueryParameters, defaultRequestHeaders, capabilities,
+					queryMapEncoder, nestedQueryMapEnabled, micrometer, followRedirects, url);
+		}
+
+	}
+
+	/**
+	 * Logging configuration for Feign Client.
+	 */
+	public static class LoggingProperties {
+
+		private List<String> sensitiveHeaders = new ArrayList<>();
+
+		public List<String> getSensitiveHeaders() {
+			return sensitiveHeaders;
+		}
+
+		public void setSensitiveHeaders(List<String> sensitiveHeaders) {
+			this.sensitiveHeaders = sensitiveHeaders;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			LoggingProperties that = (LoggingProperties) o;
+			return Objects.equals(sensitiveHeaders, that.sensitiveHeaders);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(sensitiveHeaders);
 		}
 
 	}

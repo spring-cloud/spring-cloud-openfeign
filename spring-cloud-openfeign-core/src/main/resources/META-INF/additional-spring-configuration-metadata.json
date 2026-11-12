@@ -79,6 +79,11 @@
 			"type": "java.lang.Boolean",
 			"description": "Switches @FeignClient attributes resolution mode to lazy.",
 			"defaultValue": "false"
+		},
+		{
+			"name": "spring.cloud.openfeign.client.config.*.logging.sensitive-headers",
+			"type": "java.util.List<java.lang.String>",
+			"description": "Headers that should be excluded from Feign request and response logging."
 		}
 	]
 }

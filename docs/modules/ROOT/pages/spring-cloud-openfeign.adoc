@@ -693,6 +693,37 @@ public class FooConfiguration {
 }
 ----
 
+You can configure sensitive headers that should be excluded from request and response logging using the
+`spring.cloud.openfeign.client.config.<clientName>.logging.sensitive-headers` property.
+Header matching is case-insensitive. Sensitive headers configured under the default configuration are
+excluded for all clients, and client-specific sensitive headers are added to that list.
+
+For example:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            logging:
+              sensitive-headers:
+                - Authorization
+                - Cookie
+          inventoryClient:
+            logging:
+              sensitive-headers:
+                - X-API-Key
+----
+
+In this example, `Authorization` and `Cookie` are excluded for all clients, while `X-API-Key` is additionally
+excluded for the `inventoryClient` client.
+
+NOTE: This configuration excludes headers from Feign logging. It does not redact sensitive information
+that may appear in request or response bodies.
+
 [[feign-capability-support]]
 === Feign Capability support
 
