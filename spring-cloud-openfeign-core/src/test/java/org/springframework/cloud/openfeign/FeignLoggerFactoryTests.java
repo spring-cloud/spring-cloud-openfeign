@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.List;
+import java.util.Map;
+
 import feign.Logger;
 import feign.slf4j.Slf4jLogger;
 import org.junit.jupiter.api.Test;
@@ -24,6 +27,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.StandardEnvironment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -64,6 +69,98 @@ class FeignLoggerFactoryTests {
 		assertThat(logger).isNotNull();
 		assertThat(logger instanceof LoggerImpl2).isTrue();
 		context.close();
+	}
+
+	@Test
+	void shouldExcludeSensitiveHeadersCaseInsensitively() {
+		FeignClientProperties properties = new FeignClientProperties();
+		FeignClientProperties.FeignClientConfiguration clientConfiguration = new FeignClientProperties.FeignClientConfiguration();
+		FeignClientProperties.LoggingProperties logging = new FeignClientProperties.LoggingProperties();
+		logging.setSensitiveHeaders(List.of("Authorization", "X-API-Key"));
+		clientConfiguration.setLogging(logging);
+		properties.getConfig().put("inventoryClient", clientConfiguration);
+
+		StandardEnvironment environment = new StandardEnvironment();
+		environment.getPropertySources()
+			.addFirst(new MapPropertySource("test", Map.of("spring.cloud.openfeign.client.name", "inventoryClient")));
+
+		DefaultFeignLoggerFactory factory = new DefaultFeignLoggerFactory(null, environment, properties);
+		Logger logger = factory.create(Object.class);
+
+		assertThat(logger).isInstanceOf(DefaultFeignLoggerFactory.SensitiveHeadersSlf4jLogger.class);
+
+		TestSensitiveHeadersLogger sensitiveLogger = new TestSensitiveHeadersLogger(
+				(DefaultFeignLoggerFactory.SensitiveHeadersSlf4jLogger) logger);
+
+		assertThat(sensitiveLogger.shouldLogRequestHeader("Authorization")).isFalse();
+		assertThat(sensitiveLogger.shouldLogRequestHeader("authorization")).isFalse();
+		assertThat(sensitiveLogger.shouldLogResponseHeader("X-API-Key")).isFalse();
+		assertThat(sensitiveLogger.shouldLogResponseHeader("x-api-key")).isFalse();
+		assertThat(sensitiveLogger.shouldLogRequestHeader("Content-Type")).isTrue();
+	}
+
+	@Test
+	void shouldCombineDefaultAndClientSensitiveHeaders() {
+		FeignClientProperties properties = new FeignClientProperties();
+
+		FeignClientProperties.FeignClientConfiguration defaultConfiguration = new FeignClientProperties.FeignClientConfiguration();
+		FeignClientProperties.LoggingProperties defaultLogging = new FeignClientProperties.LoggingProperties();
+		defaultLogging.setSensitiveHeaders(List.of("Authorization"));
+		defaultConfiguration.setLogging(defaultLogging);
+		properties.getConfig().put("default", defaultConfiguration);
+
+		FeignClientProperties.FeignClientConfiguration clientConfiguration = new FeignClientProperties.FeignClientConfiguration();
+		FeignClientProperties.LoggingProperties clientLogging = new FeignClientProperties.LoggingProperties();
+		clientLogging.setSensitiveHeaders(List.of("X-API-Key"));
+		clientConfiguration.setLogging(clientLogging);
+		properties.getConfig().put("inventoryClient", clientConfiguration);
+
+		StandardEnvironment environment = new StandardEnvironment();
+		environment.getPropertySources()
+			.addFirst(new MapPropertySource("test", Map.of("spring.cloud.openfeign.client.name", "inventoryClient")));
+
+		DefaultFeignLoggerFactory factory = new DefaultFeignLoggerFactory(null, environment, properties);
+		Logger logger = factory.create(Object.class);
+
+		assertThat(logger).isInstanceOf(DefaultFeignLoggerFactory.SensitiveHeadersSlf4jLogger.class);
+
+		TestSensitiveHeadersLogger sensitiveLogger = new TestSensitiveHeadersLogger(
+				(DefaultFeignLoggerFactory.SensitiveHeadersSlf4jLogger) logger);
+
+		assertThat(sensitiveLogger.shouldLogRequestHeader("Authorization")).isFalse();
+		assertThat(sensitiveLogger.shouldLogRequestHeader("X-API-Key")).isFalse();
+		assertThat(sensitiveLogger.shouldLogRequestHeader("Content-Type")).isTrue();
+	}
+
+	@Test
+	void shouldApplyDefaultSensitiveHeadersToAllClients() {
+		FeignClientProperties properties = new FeignClientProperties();
+
+		FeignClientProperties.FeignClientConfiguration defaultConfiguration = new FeignClientProperties.FeignClientConfiguration();
+
+		FeignClientProperties.LoggingProperties defaultLogging = new FeignClientProperties.LoggingProperties();
+
+		defaultLogging.setSensitiveHeaders(List.of("Authorization", "Cookie"));
+		defaultConfiguration.setLogging(defaultLogging);
+
+		properties.getConfig().put("default", defaultConfiguration);
+
+		StandardEnvironment environment = new StandardEnvironment();
+		environment.getPropertySources()
+			.addFirst(new MapPropertySource("test", Map.of("spring.cloud.openfeign.client.name", "inventoryClient")));
+
+		DefaultFeignLoggerFactory factory = new DefaultFeignLoggerFactory(null, environment, properties);
+
+		Logger logger = factory.create(Object.class);
+
+		assertThat(logger).isInstanceOf(DefaultFeignLoggerFactory.SensitiveHeadersSlf4jLogger.class);
+
+		TestSensitiveHeadersLogger sensitiveLogger = new TestSensitiveHeadersLogger(
+				(DefaultFeignLoggerFactory.SensitiveHeadersSlf4jLogger) logger);
+
+		assertThat(sensitiveLogger.shouldLogRequestHeader("Authorization")).isFalse();
+		assertThat(sensitiveLogger.shouldLogResponseHeader("Cookie")).isFalse();
+		assertThat(sensitiveLogger.shouldLogRequestHeader("Content-Type")).isTrue();
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -117,6 +214,24 @@ class FeignLoggerFactoryTests {
 		@Override
 		protected void log(String arg0, String arg1, Object... arg2) {
 			// noop
+		}
+
+	}
+
+	static class TestSensitiveHeadersLogger {
+
+		private final DefaultFeignLoggerFactory.SensitiveHeadersSlf4jLogger logger;
+
+		TestSensitiveHeadersLogger(DefaultFeignLoggerFactory.SensitiveHeadersSlf4jLogger logger) {
+			this.logger = logger;
+		}
+
+		boolean shouldLogRequestHeader(String header) {
+			return logger.shouldLogRequestHeader(header);
+		}
+
+		boolean shouldLogResponseHeader(String header) {
+			return logger.shouldLogResponseHeader(header);
 		}
 
 	}
