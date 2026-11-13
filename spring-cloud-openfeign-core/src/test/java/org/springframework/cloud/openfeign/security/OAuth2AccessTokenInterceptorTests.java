@@ -17,6 +17,7 @@
 package org.springframework.cloud.openfeign.security;
 
 import java.time.Instant;
+import java.util.Map;
 
 import feign.Request.HttpMethod;
 import feign.RequestTemplate;
@@ -39,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -47,7 +49,6 @@ import static org.mockito.Mockito.when;
  * @author Dangzhicairang(小水牛)
  * @author Olga Maciaszek-Sharma
  * @author Philipp Meier
- *
  */
 class OAuth2AccessTokenInterceptorTests {
 
@@ -60,12 +61,16 @@ class OAuth2AccessTokenInterceptorTests {
 
 	private static final String DEFAULT_CLIENT_REGISTRATION_ID = "feign-client";
 
+	private static final String FEIGN_CLIENT_NAME = "testClient";
+
 	@BeforeEach
 	void setUp() {
 		requestTemplate = new RequestTemplate().method(HttpMethod.GET);
 		Target<?> feignTarget = mock(Target.class);
 		when(feignTarget.url()).thenReturn("http://test");
+		when(feignTarget.name()).thenReturn(FEIGN_CLIENT_NAME);
 		requestTemplate.feignTarget(feignTarget);
+		SecurityContextHolder.clearContext();
 	}
 
 	@Test
@@ -82,7 +87,7 @@ class OAuth2AccessTokenInterceptorTests {
 	void shouldAcquireValidToken() {
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientManager);
 		when(mockOAuth2AuthorizedClientManager.authorize(argThat(matchAuthorizeRequest("test"))))
-			.thenReturn(validTokenOAuth2AuthorizedClient());
+			.thenReturn(validTokenOAuth2AuthorizedClient("test"));
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
@@ -92,7 +97,7 @@ class OAuth2AccessTokenInterceptorTests {
 	@Test
 	void shouldAcquireValidTokenFromServiceId() {
 		when(mockOAuth2AuthorizedClientManager.authorize(argThat(matchAuthorizeRequest("test"))))
-			.thenReturn(validTokenOAuth2AuthorizedClient());
+			.thenReturn(validTokenOAuth2AuthorizedClient("test"));
 		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(mockOAuth2AuthorizedClientManager);
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
@@ -107,7 +112,7 @@ class OAuth2AccessTokenInterceptorTests {
 				mockOAuth2AuthorizedClientManager);
 		when(mockOAuth2AuthorizedClientManager
 			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID))))
-			.thenReturn(validTokenOAuth2AuthorizedClient());
+			.thenReturn(validTokenOAuth2AuthorizedClient(DEFAULT_CLIENT_REGISTRATION_ID));
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
@@ -121,7 +126,7 @@ class OAuth2AccessTokenInterceptorTests {
 				mockOAuth2AuthorizedClientManager);
 		when(mockOAuth2AuthorizedClientManager
 			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID))))
-			.thenReturn(validTokenOAuth2AuthorizedClient());
+			.thenReturn(validTokenOAuth2AuthorizedClient(DEFAULT_CLIENT_REGISTRATION_ID));
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
@@ -136,11 +141,94 @@ class OAuth2AccessTokenInterceptorTests {
 				mockOAuth2AuthorizedClientManager);
 		when(mockOAuth2AuthorizedClientManager
 			.authorize(argThat(matchAuthorizeRequestWithPrincipalName(DEFAULT_CLIENT_REGISTRATION_ID, principalName))))
-			.thenReturn(validTokenOAuth2AuthorizedClienWithPrincipalName(principalName));
+			.thenReturn(
+					validTokenOAuth2AuthorizedClientWithPrincipalName(DEFAULT_CLIENT_REGISTRATION_ID, principalName));
 
 		oAuth2AccessTokenInterceptor.apply(requestTemplate);
 
 		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+	}
+
+	@Test
+	void shouldAcquireTokenFromClientSpecificRegistrationId() {
+		String registrationId = "specific-client-registration";
+		Map<String, String> clientRegistrationIds = Map.of(FEIGN_CLIENT_NAME, registrationId);
+
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor("", clientRegistrationIds,
+				mockOAuth2AuthorizedClientManager);
+
+		when(mockOAuth2AuthorizedClientManager.authorize(argThat(matchAuthorizeRequest(registrationId))))
+			.thenReturn(validTokenOAuth2AuthorizedClient(registrationId));
+
+		oAuth2AccessTokenInterceptor.apply(requestTemplate);
+
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+		verify(mockOAuth2AuthorizedClientManager).authorize(argThat(matchAuthorizeRequest(registrationId)));
+	}
+
+	@Test
+	void shouldUseDifferentRegistrationIdsForDifferentFeignClients() {
+		String firstRegistrationId = "first-registration";
+		String secondRegistrationId = "second-registration";
+
+		Map<String, String> clientRegistrationIds = Map.of("testClient", firstRegistrationId, "secondClient",
+				secondRegistrationId);
+
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor("", clientRegistrationIds,
+				mockOAuth2AuthorizedClientManager);
+
+		when(mockOAuth2AuthorizedClientManager.authorize(argThat(matchAuthorizeRequest(firstRegistrationId))))
+			.thenReturn(validTokenOAuth2AuthorizedClient(firstRegistrationId));
+
+		oAuth2AccessTokenInterceptor.apply(requestTemplate);
+
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+
+		Target<?> secondFeignTarget = mock(Target.class);
+		when(secondFeignTarget.name()).thenReturn("secondClient");
+		when(secondFeignTarget.url()).thenReturn("http://test");
+
+		RequestTemplate secondRequestTemplate = new RequestTemplate().method(HttpMethod.GET);
+		secondRequestTemplate.feignTarget(secondFeignTarget);
+
+		when(mockOAuth2AuthorizedClientManager.authorize(argThat(matchAuthorizeRequest(secondRegistrationId))))
+			.thenReturn(validTokenOAuth2AuthorizedClient(secondRegistrationId));
+
+		oAuth2AccessTokenInterceptor.apply(secondRequestTemplate);
+
+		assertThat(secondRequestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+	}
+
+	@Test
+	void shouldUseDefaultRegistrationIdWhenClientSpecificRegistrationIdIsNotConfigured() {
+		Map<String, String> clientRegistrationIds = Map.of("anotherClient", "another-registration");
+
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(DEFAULT_CLIENT_REGISTRATION_ID,
+				clientRegistrationIds, mockOAuth2AuthorizedClientManager);
+
+		when(mockOAuth2AuthorizedClientManager
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID))))
+			.thenReturn(validTokenOAuth2AuthorizedClient(DEFAULT_CLIENT_REGISTRATION_ID));
+
+		oAuth2AccessTokenInterceptor.apply(requestTemplate);
+
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+		verify(mockOAuth2AuthorizedClientManager)
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID)));
+	}
+
+	@Test
+	void shouldFallbackToServiceIdWhenNoRegistrationIdIsConfigured() {
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor("", Map.of(),
+				mockOAuth2AuthorizedClientManager);
+
+		when(mockOAuth2AuthorizedClientManager.authorize(argThat(matchAuthorizeRequest("test"))))
+			.thenReturn(validTokenOAuth2AuthorizedClient("test"));
+
+		oAuth2AccessTokenInterceptor.apply(requestTemplate);
+
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+		verify(mockOAuth2AuthorizedClientManager).authorize(argThat(matchAuthorizeRequest("test")));
 	}
 
 	private ArgumentMatcher<OAuth2AuthorizeRequest> matchAuthorizeRequest(String clientRegistrationId) {
@@ -149,7 +237,7 @@ class OAuth2AccessTokenInterceptorTests {
 
 	private ArgumentMatcher<OAuth2AuthorizeRequest> matchAuthorizeRequestWithPrincipalName(String clientRegistrationId,
 			String principalName) {
-		return (OAuth2AuthorizeRequest request) -> clientRegistrationId.equals(request.getClientRegistrationId())
+		return request -> request != null && clientRegistrationId.equals(request.getClientRegistrationId())
 				&& principalName.equals(request.getPrincipal().getName());
 	}
 
@@ -158,16 +246,17 @@ class OAuth2AccessTokenInterceptorTests {
 				Instant.now().plusSeconds(60L));
 	}
 
-	private OAuth2AuthorizedClient validTokenOAuth2AuthorizedClient() {
-		return validTokenOAuth2AuthorizedClienWithPrincipalName("anonymousUser");
+	private OAuth2AuthorizedClient validTokenOAuth2AuthorizedClient(String registrationId) {
+		return validTokenOAuth2AuthorizedClientWithPrincipalName(registrationId, "anonymousUser");
 	}
 
-	private OAuth2AuthorizedClient validTokenOAuth2AuthorizedClienWithPrincipalName(String principalName) {
-		return new OAuth2AuthorizedClient(defaultClientRegistration(), principalName, validToken());
+	private OAuth2AuthorizedClient validTokenOAuth2AuthorizedClientWithPrincipalName(String registrationId,
+			String principalName) {
+		return new OAuth2AuthorizedClient(clientRegistration(registrationId), principalName, validToken());
 	}
 
-	private ClientRegistration defaultClientRegistration() {
-		return ClientRegistration.withRegistrationId(DEFAULT_CLIENT_REGISTRATION_ID)
+	private ClientRegistration clientRegistration(String registrationId) {
+		return ClientRegistration.withRegistrationId(registrationId)
 			.clientId("clientId")
 			.tokenUri("mock token uri")
 			.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)

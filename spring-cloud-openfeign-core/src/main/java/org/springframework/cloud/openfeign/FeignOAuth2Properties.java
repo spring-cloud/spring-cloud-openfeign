@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -32,12 +35,16 @@ public class FeignOAuth2Properties {
 	private boolean enabled = false;
 
 	/**
-	 * Client registration id to be used to retrieve the OAuth2 access token. If not
-	 * specified, the {@code serviceId} retrieved from the {@code url} host segment will
-	 * be used. This is convenient for load-balanced Feign clients. For non-load-balanced
-	 * clients, specifying the {@code clientRegistrationId} is recommended.
+	 * Client registration id to be used as the default when retrieving the OAuth2 access
+	 * token. If not specified, the {@code serviceId} retrieved from the {@code url} host
+	 * segment will be used.
 	 */
 	private String clientRegistrationId = "";
+
+	/**
+	 * Client registration ids mapped by Feign client name.
+	 */
+	private Map<String, String> clientRegistrationIds = new LinkedHashMap<>();
 
 	public boolean isEnabled() {
 		return enabled;
@@ -53,6 +60,14 @@ public class FeignOAuth2Properties {
 
 	public void setClientRegistrationId(String clientRegistrationId) {
 		this.clientRegistrationId = clientRegistrationId;
+	}
+
+	public Map<String, String> getClientRegistrationIds() {
+		return clientRegistrationIds;
+	}
+
+	public void setClientRegistrationIds(Map<String, String> clientRegistrationIds) {
+		this.clientRegistrationIds = clientRegistrationIds != null ? clientRegistrationIds : new LinkedHashMap<>();
 	}
 
 }

@@ -272,6 +272,23 @@ class FeignAutoConfigurationTests {
 			});
 	}
 
+	@Test
+	void shouldConfigureFeignOAuth2InterceptorWithClientRegistrationIds() {
+		runner
+			.withPropertyValues("spring.cloud.openfeign.oauth2.enabled=true",
+					"spring.cloud.openfeign.oauth2.client-registration-ids.inventoryClient=inventory",
+					"spring.cloud.openfeign.oauth2.client-registration-ids.paymentClient=payment")
+			.withBean(OAuth2AuthorizedClientService.class, () -> mock(OAuth2AuthorizedClientService.class))
+			.withBean(ClientRegistrationRepository.class, () -> mock(ClientRegistrationRepository.class))
+			.run(ctx -> {
+				assertOauth2AccessTokenInterceptorExists(ctx);
+				OAuth2AccessTokenInterceptor interceptor = ctx.getBean(OAuth2AccessTokenInterceptor.class);
+
+				assertThat(interceptor).hasFieldOrPropertyWithValue("clientRegistrationIds",
+						Map.of("inventoryClient", "inventory", "paymentClient", "payment"));
+			});
+	}
+
 	private void assertOauth2AccessTokenInterceptorExists(ConfigurableApplicationContext ctx) {
 		AssertableApplicationContext context = AssertableApplicationContext.get(() -> ctx);
 		assertThat(context).hasSingleBean(OAuth2AccessTokenInterceptor.class);

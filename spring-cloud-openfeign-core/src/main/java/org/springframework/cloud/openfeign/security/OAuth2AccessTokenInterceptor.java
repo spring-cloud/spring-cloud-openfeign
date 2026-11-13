@@ -17,6 +17,8 @@
 package org.springframework.cloud.openfeign.security;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 import feign.RequestInterceptor;
@@ -36,15 +38,8 @@ import org.springframework.util.StringUtils;
 
 /**
  * A {@link RequestInterceptor} for OAuth2 Feign Requests. By default, it uses the
- * {@link OAuth2AuthorizedClientManager } to get {@link OAuth2AuthorizedClient } that
- * holds an {@link OAuth2AccessToken }. If the user has specified an OAuth2
- * {@code clientRegistrationId} using the
- * {@code spring.cloud.openfeign.oauth2.clientRegistrationId} property, it will be used to
- * retrieve the token. If the token is not retrieved or the {@code clientRegistrationId}
- * has not been specified, the {@code serviceId} retrieved from the {@code url} host
- * segment will be used. This approach is convenient for load-balanced Feign clients. For
- * non-load-balanced ones, the property-based {@code clientRegistrationId} is a suitable
- * approach.
+ * {@link OAuth2AuthorizedClientManager} to get {@link OAuth2AuthorizedClient} that holds
+ * an {@link OAuth2AccessToken}.
  *
  * @author Dangzhicairang(小水牛)
  * @author Olga Maciaszek-Sharma
@@ -69,6 +64,8 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 
 	private final String clientRegistrationId;
 
+	private final Map<String, String> clientRegistrationIds;
+
 	private final OAuth2AuthorizedClientManager authorizedClientManager;
 
 	private static final Authentication ANONYMOUS_AUTHENTICATION = new AnonymousAuthenticationToken("anonymous",
@@ -80,14 +77,25 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 
 	public OAuth2AccessTokenInterceptor(String clientRegistrationId,
 			OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
-		this(BEARER, AUTHORIZATION, clientRegistrationId, oAuth2AuthorizedClientManager);
+		this(clientRegistrationId, Collections.emptyMap(), oAuth2AuthorizedClientManager);
+	}
+
+	public OAuth2AccessTokenInterceptor(String clientRegistrationId, Map<String, String> clientRegistrationIds,
+			OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+		this(BEARER, AUTHORIZATION, clientRegistrationId, clientRegistrationIds, oAuth2AuthorizedClientManager);
 	}
 
 	public OAuth2AccessTokenInterceptor(String tokenType, String header, String clientRegistrationId,
 			OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+		this(tokenType, header, clientRegistrationId, Collections.emptyMap(), oAuth2AuthorizedClientManager);
+	}
+
+	public OAuth2AccessTokenInterceptor(String tokenType, String header, String clientRegistrationId,
+			Map<String, String> clientRegistrationIds, OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 		this.tokenType = tokenType;
 		this.header = header;
 		this.clientRegistrationId = clientRegistrationId;
+		this.clientRegistrationIds = clientRegistrationIds != null ? clientRegistrationIds : Collections.emptyMap();
 		this.authorizedClientManager = oAuth2AuthorizedClientManager;
 	}
 
@@ -100,16 +108,25 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 	}
 
 	public OAuth2AccessToken getToken(RequestTemplate template) {
-		// If specified, try to use them to get token.
-		if (StringUtils.hasText(clientRegistrationId)) {
+		String registrationId = null;
+		if (!clientRegistrationIds.isEmpty() && template.feignTarget() != null) {
+			registrationId = clientRegistrationIds.get(template.feignTarget().name());
+		}
+
+		if (StringUtils.hasText(registrationId)) {
+			OAuth2AccessToken token = getToken(registrationId);
+			if (token != null) {
+				return token;
+			}
+		}
+
+		if (StringUtils.hasText(clientRegistrationId) && !clientRegistrationId.equals(registrationId)) {
 			OAuth2AccessToken token = getToken(clientRegistrationId);
 			if (token != null) {
 				return token;
 			}
 		}
 
-		// If not specified use host (synonymous with serviceId for load-balanced
-		// requests; non-load-balanced requests should use the method above).
 		OAuth2AccessToken token = getToken(getServiceId(template));
 		if (token != null) {
 			return token;
