@@ -270,7 +270,7 @@ public class FeignAutoConfiguration {
 		public OAuth2AccessTokenInterceptor defaultOAuth2AccessTokenInterceptor(FeignOAuth2Properties oAuth2Properties,
 				OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 			return new OAuth2AccessTokenInterceptor(oAuth2Properties.getClientRegistrationId(),
-					oAuth2AuthorizedClientManager);
+					oAuth2Properties.getClientRegistrationIds(), oAuth2AuthorizedClientManager);
 		}
 
 	}
