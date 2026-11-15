@@ -16,9 +16,22 @@
 
 package org.springframework.cloud.openfeign.clientconfig;
 
+import java.net.Socket;
 import java.net.http.HttpClient;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.List;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.openfeign.clientconfig.http2client.Http2ClientCustomizer;
@@ -31,25 +44,78 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author changjin wei(魏昌进)
  * @author Luis Duarte
+ * @author Rajesh Vasa
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(HttpClient.class)
 public class Http2ClientFeignConfiguration {
 
+	private static final Log LOG = LogFactory.getLog(Http2ClientFeignConfiguration.class);
+
 	@Bean
 	@ConditionalOnMissingBean
 	public HttpClient.Builder httpClientBuilder(FeignHttpClientProperties httpClientProperties) {
-		return HttpClient.newBuilder()
+		HttpClient.Builder builder = HttpClient.newBuilder()
 			.followRedirects(
 					httpClientProperties.isFollowRedirects() ? HttpClient.Redirect.ALWAYS : HttpClient.Redirect.NEVER)
 			.version(HttpClient.Version.valueOf(httpClientProperties.getHttp2().getVersion()))
 			.connectTimeout(Duration.ofMillis(httpClientProperties.getConnectionTimeout()));
+		if (httpClientProperties.isDisableSslValidation()) {
+			try {
+				SSLContext sslContext = SSLContext.getInstance("TLS");
+				sslContext.init(null, new TrustManager[] { new DisabledValidationTrustManager() }, new SecureRandom());
+				builder.sslContext(sslContext);
+			}
+			catch (NoSuchAlgorithmException | KeyManagementException e) {
+				LOG.warn("Error creating SSLContext", e);
+			}
+		}
+		return builder;
 	}
 
 	@Bean
 	public HttpClient httpClient(HttpClient.Builder httpClientBuilder, List<Http2ClientCustomizer> customizers) {
 		customizers.forEach(customizer -> customizer.customize(httpClientBuilder));
 		return httpClientBuilder.build();
+	}
+
+	/**
+	 * Trusts every certificate. It extends {@link X509ExtendedTrustManager} because the
+	 * JDK {@link HttpClient} delegates hostname verification to an extended trust
+	 * manager, so this also skips hostname verification, like the Apache HttpClient 5
+	 * configuration does with its no-op hostname verifier.
+	 */
+	static class DisabledValidationTrustManager extends X509ExtendedTrustManager {
+
+		@Override
+		public void checkClientTrusted(X509Certificate[] chain, String authType) {
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] chain, String authType) {
+		}
+
+		@Override
+		public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
+		}
+
+		@Override
+		public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+		}
+
+		@Override
+		public X509Certificate[] getAcceptedIssuers() {
+			return new X509Certificate[0];
+		}
+
 	}
 
 }
