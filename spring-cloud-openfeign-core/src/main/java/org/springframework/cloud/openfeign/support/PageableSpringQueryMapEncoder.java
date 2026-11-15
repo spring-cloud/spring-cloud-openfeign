@@ -16,16 +16,24 @@
 
 package org.springframework.cloud.openfeign.support;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import feign.Param;
+import feign.codec.EncodeException;
 import feign.querymap.BeanQueryMapEncoder;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Provides support for encoding Pageable annotated as
@@ -40,6 +48,7 @@ import org.springframework.http.HttpHeaders;
  * @author Hyeonmin Park
  * @author Yanming Zhou
  * @author Gokalp Kuscu
+ * @author Rajesh Vasa
  * @since 2.2.8
  */
 public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
@@ -101,7 +110,39 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 			return queryMap;
 		}
 		else {
-			return super.encode(object);
+			Map<String, Object> queryMap = super.encode(object);
+			if (object != null) {
+				applyFieldParamAliases(object.getClass(), queryMap);
+			}
+			return queryMap;
+		}
+	}
+
+	/**
+	 * {@link BeanQueryMapEncoder} only honors {@link Param} when it is declared on a
+	 * getter. Since {@link SpringFieldQueryMapEncoder}, the default when Spring Data is
+	 * not on the classpath, honors {@link Param} declared on a field, also honor it here
+	 * so that the query parameter names do not depend on whether Spring Data is present.
+	 * A {@link Param} declared on the getter takes precedence.
+	 */
+	private static void applyFieldParamAliases(Class<?> type, Map<String, Object> queryMap) {
+		try {
+			for (PropertyDescriptor descriptor : Introspector.getBeanInfo(type).getPropertyDescriptors()) {
+				Method readMethod = descriptor.getReadMethod();
+				String propertyName = descriptor.getName();
+				if (readMethod == null || readMethod.isAnnotationPresent(Param.class)
+						|| !queryMap.containsKey(propertyName)) {
+					continue;
+				}
+				Field field = ReflectionUtils.findField(type, propertyName);
+				Param alias = (field != null) ? field.getAnnotation(Param.class) : null;
+				if (alias != null && !alias.value().isEmpty() && !alias.value().equals(propertyName)) {
+					queryMap.put(alias.value(), queryMap.remove(propertyName));
+				}
+			}
+		}
+		catch (IntrospectionException ex) {
+			throw new EncodeException("Failure encoding object into query map", ex);
 		}
 	}
 
