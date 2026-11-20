@@ -111,10 +111,7 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 		}
 		else {
 			Map<String, Object> queryMap = super.encode(object);
-			if (object != null) {
-				applyFieldParamAliases(object.getClass(), queryMap);
-			}
-			return queryMap;
+			return (object != null) ? applyFieldParamAliases(object.getClass(), queryMap) : queryMap;
 		}
 	}
 
@@ -123,27 +120,52 @@ public class PageableSpringQueryMapEncoder extends BeanQueryMapEncoder {
 	 * getter. Since {@link SpringFieldQueryMapEncoder}, the default when Spring Data is
 	 * not on the classpath, honors {@link Param} declared on a field, also honor it here
 	 * so that the query parameter names do not depend on whether Spring Data is present.
-	 * A {@link Param} declared on the getter takes precedence.
+	 * A {@link Param} declared on the getter takes precedence, and a {@link Param} with
+	 * an empty value keeps the property name.
+	 * <p>
+	 * The result is built as a new map from the encoded entries, so it does not depend on
+	 * the property iteration order. If two entries end up with the same name, for example
+	 * an alias that is also the name of another property, an {@link EncodeException} is
+	 * thrown instead of one value silently replacing the other.
 	 */
-	private static void applyFieldParamAliases(Class<?> type, Map<String, Object> queryMap) {
+	private static Map<String, Object> applyFieldParamAliases(Class<?> type, Map<String, Object> encoded) {
+		Map<String, String> aliases = fieldParamAliases(type);
+		Map<String, Object> queryMap = new HashMap<>();
+		for (Map.Entry<String, Object> entry : encoded.entrySet()) {
+			String name = aliases.getOrDefault(entry.getKey(), entry.getKey());
+			if (queryMap.containsKey(name)) {
+				throw new EncodeException(
+						"Duplicate query parameter name '" + name + "' when encoding " + type.getName());
+			}
+			queryMap.put(name, entry.getValue());
+		}
+		return queryMap;
+	}
+
+	/**
+	 * Returns the {@link Param} names declared on the fields of the given type, keyed by
+	 * property name, for the properties whose getter has no {@link Param}.
+	 */
+	private static Map<String, String> fieldParamAliases(Class<?> type) {
+		Map<String, String> aliases = new HashMap<>();
 		try {
 			for (PropertyDescriptor descriptor : Introspector.getBeanInfo(type).getPropertyDescriptors()) {
 				Method readMethod = descriptor.getReadMethod();
-				String propertyName = descriptor.getName();
-				if (readMethod == null || readMethod.isAnnotationPresent(Param.class)
-						|| !queryMap.containsKey(propertyName)) {
+				if (readMethod == null || readMethod.isAnnotationPresent(Param.class)) {
 					continue;
 				}
+				String propertyName = descriptor.getName();
 				Field field = ReflectionUtils.findField(type, propertyName);
 				Param alias = (field != null) ? field.getAnnotation(Param.class) : null;
-				if (alias != null && !alias.value().isEmpty() && !alias.value().equals(propertyName)) {
-					queryMap.put(alias.value(), queryMap.remove(propertyName));
+				if (alias != null && !alias.value().isEmpty()) {
+					aliases.put(propertyName, alias.value());
 				}
 			}
 		}
 		catch (IntrospectionException ex) {
 			throw new EncodeException("Failure encoding object into query map", ex);
 		}
+		return aliases;
 	}
 
 	private void applySort(Map<String, Object> queryMap, Sort sort) {

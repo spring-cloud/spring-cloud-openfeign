@@ -19,9 +19,11 @@ package org.springframework.cloud.openfeign.support;
 import java.util.Map;
 
 import feign.Param;
+import feign.codec.EncodeException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * Tests that {@link PageableSpringQueryMapEncoder} honors {@link Param} on fields the
@@ -67,6 +69,27 @@ class PageableSpringQueryMapEncoderParamTests {
 		Map<String, Object> queryMap = encoder.encode(new FieldParamCriteria(null, "value2"));
 
 		assertThat(queryMap).containsOnly(Map.entry("plainParam", "value2"));
+	}
+
+	@Test
+	void failsWhenAliasCollidesWithAnotherPropertyName() {
+		assertThatExceptionOfType(EncodeException.class)
+			.isThrownBy(() -> encoder.encode(new CollidingAliasCriteria("valueA", "valueB")))
+			.withMessageContaining("'b'");
+	}
+
+	@Test
+	void keepsEachValueOnItsAliasWhenAliasesAreSwapped() {
+		Map<String, Object> queryMap = encoder.encode(new SwappedAliasCriteria("valueA", "valueB"));
+
+		assertThat(queryMap).containsOnly(Map.entry("b", "valueA"), Map.entry("a", "valueB"));
+	}
+
+	@Test
+	void bareParamOnFieldKeepsPropertyName() {
+		Map<String, Object> queryMap = encoder.encode(new BareParamCriteria("value1"));
+
+		assertThat(queryMap).containsOnly(Map.entry("value", "value1"));
 	}
 
 	// BeanQueryMapEncoder invokes getters reflectively without making them accessible,
@@ -119,6 +142,66 @@ class PageableSpringQueryMapEncoderParamTests {
 		}
 
 		@Param("getter-name")
+		public String getValue() {
+			return value;
+		}
+
+	}
+
+	public static class CollidingAliasCriteria {
+
+		@Param("b")
+		private String a;
+
+		private String b;
+
+		CollidingAliasCriteria(String a, String b) {
+			this.a = a;
+			this.b = b;
+		}
+
+		public String getA() {
+			return a;
+		}
+
+		public String getB() {
+			return b;
+		}
+
+	}
+
+	public static class SwappedAliasCriteria {
+
+		@Param("b")
+		private String a;
+
+		@Param("a")
+		private String b;
+
+		SwappedAliasCriteria(String a, String b) {
+			this.a = a;
+			this.b = b;
+		}
+
+		public String getA() {
+			return a;
+		}
+
+		public String getB() {
+			return b;
+		}
+
+	}
+
+	public static class BareParamCriteria {
+
+		@Param
+		private String value;
+
+		BareParamCriteria(String value) {
+			this.value = value;
+		}
+
 		public String getValue() {
 			return value;
 		}
