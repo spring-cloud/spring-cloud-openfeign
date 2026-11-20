@@ -92,7 +92,7 @@
 |spring.cloud.openfeign.http2client.enabled | `+++false+++` | Enables the use of the Java11 HTTP 2 Client by Feign.
 |spring.cloud.openfeign.httpclient.connection-timeout | `+++2000+++` | 
 |spring.cloud.openfeign.httpclient.connection-timer-repeat | `+++3000+++` | 
-|spring.cloud.openfeign.httpclient.disable-ssl-validation | `+++false+++` | 
+|spring.cloud.openfeign.httpclient.disable-ssl-validation | `+++false+++` | Whether to disable SSL validation: server certificates and host names are not verified. Applies to the Apache HttpClient 5 and the HTTP/2 (Java HttpClient) clients. Use only for testing.
 |spring.cloud.openfeign.httpclient.follow-redirects | `+++true+++` | 
 |spring.cloud.openfeign.httpclient.hc5.connection-request-timeout | `+++3+++` | Default value for connection request timeout.
 |spring.cloud.openfeign.httpclient.hc5.connection-request-timeout-unit | `+++minutes+++` | Default value for connection request timeout unit.

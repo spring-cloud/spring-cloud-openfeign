@@ -19,13 +19,11 @@ package org.springframework.cloud.openfeign.clientconfig;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import jakarta.annotation.PreDestroy;
 import org.apache.commons.logging.Log;
@@ -143,23 +141,6 @@ public class HttpClient5FeignConfiguration {
 		}
 
 		return sslConnectionSocketFactoryBuilder.build();
-	}
-
-	static class DisabledValidationTrustManager implements X509TrustManager {
-
-		DisabledValidationTrustManager() {
-		}
-
-		public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
-		}
-
-		public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
-		}
-
-		public X509Certificate[] getAcceptedIssuers() {
-			return null;
-		}
-
 	}
 
 	/**
