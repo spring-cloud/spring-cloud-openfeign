@@ -34,9 +34,12 @@ import com.sun.net.httpserver.HttpsServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,11 +49,14 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * Tests that {@code spring.cloud.openfeign.httpclient.disable-ssl-validation} applies to
  * the HTTP/2 client. The server uses a self-signed certificate issued for
  * {@code untrusted.invalid}, so both certificate validation and hostname verification
- * fail unless SSL validation is disabled.
+ * fail unless SSL validation is disabled, and a warning is logged when it is.
  *
  * @author Rajesh Vasa
  */
+@ExtendWith(OutputCaptureExtension.class)
 class FeignHttp2ClientDisableSslValidationTests {
+
+	private static final String WARNING = "SSL validation is disabled for the HTTP/2 client";
 
 	private static final char[] KEYSTORE_PASSWORD = "changeit".toCharArray();
 
@@ -87,21 +93,23 @@ class FeignHttp2ClientDisableSslValidationTests {
 	}
 
 	@Test
-	void connectsToSelfSignedServerWhenSslValidationIsDisabled() throws Exception {
+	void connectsToSelfSignedServerWhenSslValidationIsDisabled(CapturedOutput output) throws Exception {
 		try (ConfigurableApplicationContext context = createContext(true)) {
 			HttpResponse<String> response = send(context.getBean(HttpClient.class));
 
 			assertThat(response.statusCode()).isEqualTo(200);
 			assertThat(response.body()).isEqualTo("ok");
+			assertThat(output).containsOnlyOnce(WARNING);
 		}
 	}
 
 	@Test
-	void rejectsSelfSignedServerByDefault() {
+	void rejectsSelfSignedServerByDefault(CapturedOutput output) {
 		try (ConfigurableApplicationContext context = createContext(false)) {
 			HttpClient httpClient = context.getBean(HttpClient.class);
 
 			assertThatExceptionOfType(SSLHandshakeException.class).isThrownBy(() -> send(httpClient));
+			assertThat(output).doesNotContain(WARNING);
 		}
 	}
 

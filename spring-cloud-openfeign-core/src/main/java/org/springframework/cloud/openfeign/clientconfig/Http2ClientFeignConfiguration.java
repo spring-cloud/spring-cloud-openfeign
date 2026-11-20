@@ -16,19 +16,15 @@
 
 package org.springframework.cloud.openfeign.clientconfig;
 
-import java.net.Socket;
 import java.net.http.HttpClient;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509ExtendedTrustManager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,6 +57,9 @@ public class Http2ClientFeignConfiguration {
 			.version(HttpClient.Version.valueOf(httpClientProperties.getHttp2().getVersion()))
 			.connectTimeout(Duration.ofMillis(httpClientProperties.getConnectionTimeout()));
 		if (httpClientProperties.isDisableSslValidation()) {
+			LOG.warn("SSL validation is disabled for the HTTP/2 client "
+					+ "(spring.cloud.openfeign.httpclient.disable-ssl-validation=true): server certificates and "
+					+ "host names are not verified. Do not use this in production.");
 			try {
 				SSLContext sslContext = SSLContext.getInstance("TLS");
 				sslContext.init(null, new TrustManager[] { new DisabledValidationTrustManager() }, new SecureRandom());
@@ -77,45 +76,6 @@ public class Http2ClientFeignConfiguration {
 	public HttpClient httpClient(HttpClient.Builder httpClientBuilder, List<Http2ClientCustomizer> customizers) {
 		customizers.forEach(customizer -> customizer.customize(httpClientBuilder));
 		return httpClientBuilder.build();
-	}
-
-	/**
-	 * Trusts every certificate. It extends {@link X509ExtendedTrustManager} because the
-	 * JDK {@link HttpClient} delegates hostname verification to an extended trust
-	 * manager, so this also skips hostname verification, like the Apache HttpClient 5
-	 * configuration does with its no-op hostname verifier.
-	 */
-	static class DisabledValidationTrustManager extends X509ExtendedTrustManager {
-
-		@Override
-		public void checkClientTrusted(X509Certificate[] chain, String authType) {
-		}
-
-		@Override
-		public void checkServerTrusted(X509Certificate[] chain, String authType) {
-		}
-
-		@Override
-		public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {
-		}
-
-		@Override
-		public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
-		}
-
-		@Override
-		public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
-		}
-
-		@Override
-		public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
-		}
-
-		@Override
-		public X509Certificate[] getAcceptedIssuers() {
-			return new X509Certificate[0];
-		}
-
 	}
 
 }
