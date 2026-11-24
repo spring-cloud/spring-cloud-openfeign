@@ -101,6 +101,7 @@
 |spring.cloud.openfeign.httpclient.hc5.pool-reuse-policy | `+++fifo+++` | Pool connection re-use policies.
 |spring.cloud.openfeign.httpclient.hc5.socket-timeout | `+++5+++` | Default value for socket timeout.
 |spring.cloud.openfeign.httpclient.hc5.socket-timeout-unit | `+++seconds+++` | Default value for socket timeout unit.
+|spring.cloud.openfeign.httpclient.http2.disable-ssl-validation | `+++false+++` | Whether to disable SSL validation for the HTTP/2 client: server certificates and host names are not verified. Use only for testing.
 |spring.cloud.openfeign.httpclient.http2.version | `+++HTTP_2+++` | Configure the protocols used by this client to communicate with remote servers. Uses {@link String} value of {@link HttpClient.Version}.
 |spring.cloud.openfeign.httpclient.max-connections | `+++200+++` | 
 |spring.cloud.openfeign.httpclient.max-connections-per-route | `+++50+++` | 
