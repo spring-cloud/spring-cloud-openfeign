@@ -56,9 +56,9 @@ public class Http2ClientFeignConfiguration {
 					httpClientProperties.isFollowRedirects() ? HttpClient.Redirect.ALWAYS : HttpClient.Redirect.NEVER)
 			.version(HttpClient.Version.valueOf(httpClientProperties.getHttp2().getVersion()))
 			.connectTimeout(Duration.ofMillis(httpClientProperties.getConnectionTimeout()));
-		if (httpClientProperties.isDisableSslValidation()) {
+		if (httpClientProperties.getHttp2().isDisableSslValidation()) {
 			LOG.warn("SSL validation is disabled for the HTTP/2 client "
-					+ "(spring.cloud.openfeign.httpclient.disable-ssl-validation=true): server certificates and "
+					+ "(spring.cloud.openfeign.httpclient.http2.disable-ssl-validation=true): server certificates and "
 					+ "host names are not verified. Do not use this in production.");
 			try {
 				SSLContext sslContext = SSLContext.getInstance("TLS");

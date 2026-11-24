@@ -23,9 +23,10 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedTrustManager;
 
 /**
- * Trusts every certificate, for
- * {@code spring.cloud.openfeign.httpclient.disable-ssl-validation}. Shared by
- * {@link HttpClient5FeignConfiguration} and {@link Http2ClientFeignConfiguration}.
+ * Trusts every certificate. Used by {@link HttpClient5FeignConfiguration} for
+ * {@code spring.cloud.openfeign.httpclient.disable-ssl-validation} and by
+ * {@link Http2ClientFeignConfiguration} for
+ * {@code spring.cloud.openfeign.httpclient.http2.disable-ssl-validation}.
  * <p>
  * It extends {@link X509ExtendedTrustManager} because the JDK
  * {@link java.net.http.HttpClient} delegates hostname verification to an extended trust

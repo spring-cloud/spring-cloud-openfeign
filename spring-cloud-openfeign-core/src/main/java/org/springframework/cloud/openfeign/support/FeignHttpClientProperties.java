@@ -72,11 +72,6 @@ public class FeignHttpClientProperties {
 	 */
 	public static final int DEFAULT_CONNECTION_TIMER_REPEAT = 3000;
 
-	/**
-	 * Whether to disable SSL validation: server certificates and host names are not
-	 * verified. Applies to the Apache HttpClient 5 and the HTTP/2 (Java HttpClient)
-	 * clients. Use only for testing.
-	 */
 	private boolean disableSslValidation = DEFAULT_DISABLE_SSL_VALIDATION;
 
 	private int maxConnections = DEFAULT_MAX_CONNECTIONS;
@@ -342,12 +337,26 @@ public class FeignHttpClientProperties {
 		 */
 		private String version = "HTTP_2";
 
+		/**
+		 * Whether to disable SSL validation for the HTTP/2 client: server certificates
+		 * and host names are not verified. Use only for testing.
+		 */
+		private boolean disableSslValidation = DEFAULT_DISABLE_SSL_VALIDATION;
+
 		public String getVersion() {
 			return version;
 		}
 
 		public void setVersion(String version) {
 			this.version = version;
+		}
+
+		public boolean isDisableSslValidation() {
+			return disableSslValidation;
+		}
+
+		public void setDisableSslValidation(boolean disableSslValidation) {
+			this.disableSslValidation = disableSslValidation;
 		}
 
 	}

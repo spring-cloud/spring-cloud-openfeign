@@ -177,7 +177,7 @@ Apache HttpClient 5 uses a connection pool to reuse persistent HTTP connections 
 
 |===
 
-`spring.cloud.openfeign.httpclient.disable-ssl-validation` applies to both Apache HttpClient 5 and the HTTP/2 (Java `HttpClient`) client. When it is `true`, server certificates and host names are not verified, and the HTTP/2 client logs a warning when it is created. Use it only for testing, never in production.
+To disable SSL validation for the HTTP/2 (Java `HttpClient`) client, set `spring.cloud.openfeign.httpclient.http2.disable-ssl-validation` to `true`. Server certificates and host names are then not verified, and the client logs a warning when it is created. Use it only for testing, never in production. This property is separate from `spring.cloud.openfeign.httpclient.disable-ssl-validation`, which does not affect the HTTP/2 client.
 
 If you can not configure Apache HttpClient 5 by using properties, there is an `HttpClient5FeignConfiguration.HttpClientBuilderCustomizer` interface for programmatic configuration. Similarly, to configure the `HttpClientConnectionManager`, you can use `HttpClient5FeignConfiguration.HttpClientConnectionManagerBuilderCustomizer`. Both usages are shown in the example below.
 

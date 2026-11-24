@@ -46,10 +46,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
- * Tests that {@code spring.cloud.openfeign.httpclient.disable-ssl-validation} applies to
- * the HTTP/2 client. The server uses a self-signed certificate issued for
- * {@code untrusted.invalid}, so both certificate validation and hostname verification
- * fail unless SSL validation is disabled, and a warning is logged when it is.
+ * Tests for {@code spring.cloud.openfeign.httpclient.http2.disable-ssl-validation}. The
+ * server uses a self-signed certificate issued for {@code untrusted.invalid}, so both
+ * certificate validation and hostname verification fail unless SSL validation is
+ * disabled, and a warning is logged when it is. The top-level
+ * {@code spring.cloud.openfeign.httpclient.disable-ssl-validation} property does not
+ * affect the HTTP/2 client.
  *
  * @author Rajesh Vasa
  */
@@ -113,11 +115,24 @@ class FeignHttp2ClientDisableSslValidationTests {
 		}
 	}
 
-	private static ConfigurableApplicationContext createContext(boolean disableSslValidation) {
+	@Test
+	void ignoresTopLevelDisableSslValidationProperty(CapturedOutput output) {
+		try (ConfigurableApplicationContext context = createContext(false,
+				"spring.cloud.openfeign.httpclient.disable-ssl-validation=true")) {
+			HttpClient httpClient = context.getBean(HttpClient.class);
+
+			assertThatExceptionOfType(SSLHandshakeException.class).isThrownBy(() -> send(httpClient));
+			assertThat(output).doesNotContain(WARNING);
+		}
+	}
+
+	private static ConfigurableApplicationContext createContext(boolean disableSslValidation,
+			String... extraProperties) {
 		return new SpringApplicationBuilder()
 			.properties("spring.cloud.openfeign.http2client.enabled=true",
 					"spring.cloud.openfeign.httpclient.http2.version=HTTP_1_1",
-					"spring.cloud.openfeign.httpclient.disable-ssl-validation=" + disableSslValidation)
+					"spring.cloud.openfeign.httpclient.http2.disable-ssl-validation=" + disableSslValidation)
+			.properties(extraProperties)
 			.web(WebApplicationType.NONE)
 			.sources(FeignAutoConfiguration.class)
 			.run();
