@@ -247,7 +247,9 @@ class OAuth2AccessTokenInterceptorTests {
 
 		assertThatExceptionOfType(IllegalStateException.class)
 			.isThrownBy(() -> oAuth2AccessTokenInterceptor.apply(requestTemplate))
-			.withMessage("OAuth2 token has not been successfully acquired.");
+			.withMessage(String.format(
+					"OAuth2 token acquisition failed for Feign client '%s' using client registration '%s'.",
+					FEIGN_CLIENT_NAME, clientRegistrationId));
 
 		verify(mockOAuth2AuthorizedClientManager).authorize(argThat(matchAuthorizeRequest(clientRegistrationId)));
 		verify(mockOAuth2AuthorizedClientManager, never())
@@ -303,12 +305,13 @@ class OAuth2AccessTokenInterceptorTests {
 				clientRegistrationIds, mockOAuth2AuthorizedClientManager);
 
 		when(mockOAuth2AuthorizedClientManager
-			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID))))
-			.thenReturn(validTokenOAuth2AuthorizedClient(DEFAULT_CLIENT_REGISTRATION_ID));
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID)))).thenReturn(null);
 
-		oAuth2AccessTokenInterceptor.apply(requestTemplate);
-
-		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+		assertThatExceptionOfType(IllegalStateException.class)
+			.isThrownBy(() -> oAuth2AccessTokenInterceptor.apply(requestTemplate))
+			.withMessage(String.format(
+					"OAuth2 token acquisition failed for Feign client '%s' using client registration '%s'.",
+					FEIGN_CLIENT_NAME, DEFAULT_CLIENT_REGISTRATION_ID));
 
 		verify(mockOAuth2AuthorizedClientManager, times(1))
 			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID)));

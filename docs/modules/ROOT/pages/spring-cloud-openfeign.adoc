@@ -1099,7 +1099,9 @@ spring:
           "[inventory.example.com]": inventory
 ----
 
-When a request is made, the interceptor first attempts to retrieve a token using the registration ID configured for the corresponding Feign client. If no client-specific registration ID is configured, or a token cannot be retrieved using it, the interceptor falls back to the globally configured `clientRegistrationId`. If a token still cannot be retrieved, the `serviceId` retrieved from the URL host segment is used.
+When a request is made, the interceptor first checks whether a client-specific registration ID is configured for the corresponding Feign client. If configured, that registration ID is used to retrieve the OAuth2 access token. If the token cannot be retrieved using this registration ID, the interceptor throws an `IllegalStateException` and does not attempt any fallback.
+
+If no client-specific registration ID is configured, the interceptor attempts to retrieve a token using the globally configured `clientRegistrationId`. If no token can be retrieved using the global registration ID, the `serviceId` retrieved from the URL host segment is used as a fallback.
 
 TIP:: Using the `serviceId` as OAuth2 client registration ID is convenient for load-balanced Feign clients. For non-load-balanced ones, the property-based `clientRegistrationId` or client-specific `client-registration-ids` property is a suitable approach.
 

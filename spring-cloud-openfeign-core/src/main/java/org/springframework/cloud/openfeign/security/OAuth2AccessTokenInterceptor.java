@@ -42,10 +42,13 @@ import org.springframework.util.StringUtils;
  * holds an {@link OAuth2AccessToken}.
  *
  * If a client-specific OAuth2 client registration id is configured for the Feign client,
- * it is used first to retrieve the access token. If the token cannot be retrieved, the
- * globally configured client registration id is used as a fallback. If no token can be
- * retrieved using either registration id, the service ID retrieved from the URL host
- * segment is used.
+ * it is used to retrieve the access token. If the token cannot be retrieved, an
+ * {@link IllegalStateException} is thrown. No fallback is attempted for an explicitly
+ * configured client-specific registration id.
+ *
+ * If no client-specific registration id is configured, the globally configured client
+ * registration id is used as a fallback. If no token can be retrieved using the global
+ * registration id, the service ID retrieved from the URL host segment is used.
  *
  * This approach is convenient for load-balanced Feign clients. For non-load-balanced
  * clients, configuring a client registration id is recommended.
@@ -127,7 +130,9 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 			if (token != null) {
 				return token;
 			}
-			throw new IllegalStateException("OAuth2 token has not been successfully acquired.");
+			throw new IllegalStateException(String.format(
+					"OAuth2 token acquisition failed for Feign client '%s' using client registration '%s'.",
+					template.feignTarget().name(), registrationId));
 		}
 
 		if (StringUtils.hasText(clientRegistrationId)) {
