@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.openfeign;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -32,12 +35,26 @@ public class FeignOAuth2Properties {
 	private boolean enabled = false;
 
 	/**
-	 * Client registration id to be used to retrieve the OAuth2 access token. If not
-	 * specified, the {@code serviceId} retrieved from the {@code url} host segment will
-	 * be used. This is convenient for load-balanced Feign clients. For non-load-balanced
-	 * clients, specifying the {@code clientRegistrationId} is recommended.
+	 * Client registration id to be used as the default when retrieving the OAuth2 access
+	 * token. A client-specific registration id, when configured, takes precedence. If no
+	 * client-specific registration id is configured and the token cannot be retrieved
+	 * using this default registration id, the {@code serviceId} retrieved from the
+	 * {@code url} host segment will be used. This is convenient for load-balanced Feign
+	 * clients. For non-load-balanced clients, specifying the {@code clientRegistrationId}
+	 * is recommended.
 	 */
 	private String clientRegistrationId = "";
+
+	/**
+	 * Map of Feign client names to OAuth2 client registration ids. The registration id
+	 * associated with the Feign client name is used to retrieve the OAuth2 access token.
+	 * If the token cannot be retrieved using this registration id, no fallback is
+	 * attempted. If no client-specific registration id is configured, the default
+	 * {@code clientRegistrationId} is used. If no token can be retrieved using the
+	 * default registration id, the {@code serviceId} retrieved from the {@code url} host
+	 * segment is used as a fallback.
+	 */
+	private Map<String, String> clientRegistrationIds = new LinkedHashMap<>();
 
 	public boolean isEnabled() {
 		return enabled;
@@ -53,6 +70,14 @@ public class FeignOAuth2Properties {
 
 	public void setClientRegistrationId(String clientRegistrationId) {
 		this.clientRegistrationId = clientRegistrationId;
+	}
+
+	public Map<String, String> getClientRegistrationIds() {
+		return clientRegistrationIds;
+	}
+
+	public void setClientRegistrationIds(Map<String, String> clientRegistrationIds) {
+		this.clientRegistrationIds = clientRegistrationIds != null ? clientRegistrationIds : new LinkedHashMap<>();
 	}
 
 }

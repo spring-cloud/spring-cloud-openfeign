@@ -1065,9 +1065,47 @@ OAuth2 support can be enabled by adding the `spring-boot-starter-oauth2-client` 
 spring.cloud.openfeign.oauth2.enabled=true
 ----
 When the flag is set to true, and the oauth2 client context resource details are present, a bean of class `OAuth2AccessTokenInterceptor` is created. Before each request, the interceptor resolves the required access token and includes it as a header.
-`OAuth2AccessTokenInterceptor` uses the `OAuth2AuthorizedClientManager` to get `OAuth2AuthorizedClient` that holds an `OAuth2AccessToken`. If the user has specified an OAuth2 `clientRegistrationId` using the `spring.cloud.openfeign.oauth2.clientRegistrationId` property, it will be used to retrieve the token. If the token is not retrieved or the `clientRegistrationId` has not been specified, the `serviceId` retrieved from the `url` host segment will be used.
+`OAuth2AccessTokenInterceptor` uses the `OAuth2AuthorizedClientManager` to get an `OAuth2AuthorizedClient` that holds an `OAuth2AccessToken`.
 
-TIP:: Using the `serviceId` as OAuth2 client registrationId is convenient for load-balanced Feign clients. For non-load-balanced ones, the property-based `clientRegistrationId` is a suitable approach.
+You can configure a default OAuth2 client registration ID for all Feign clients using the `spring.cloud.openfeign.oauth2.clientRegistrationId` property. Alternatively, you can configure client-specific registration IDs using the `spring.cloud.openfeign.oauth2.client-registration-ids` property, which maps Feign client names to OAuth2 client registration IDs.
+
+For example:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    openfeign:
+      oauth2:
+        client-registration-ids:
+          inventoryClient: inventory
+          paymentClient: payment
+----
+
+The keys in `client-registration-ids` must match the `name` attribute of the
+corresponding `@FeignClient` annotation, not its `contextId` attribute.
+
+For example, given `@FeignClient(name = "inventoryClient", contextId = "inventory")`,
+the corresponding map key must be `inventoryClient`.
+
+For Feign client names containing dots, use bracket notation in YAML to preserve
+the complete name:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    openfeign:
+      oauth2:
+        client-registration-ids:
+          "[inventory.example.com]": inventory
+----
+
+When a request is made, the interceptor first checks whether a client-specific registration ID is configured for the corresponding Feign client. If configured, that registration ID is used to retrieve the OAuth2 access token. If the token cannot be retrieved using this registration ID, the interceptor throws an `IllegalStateException` and does not attempt any fallback.
+
+If no client-specific registration ID is configured, the interceptor attempts to retrieve a token using the globally configured `clientRegistrationId`. If no token can be retrieved using the global registration ID, the `serviceId` retrieved from the URL host segment is used as a fallback.
+
+TIP:: Using the `serviceId` as OAuth2 client registration ID is convenient for load-balanced Feign clients. For non-load-balanced ones, the property-based `clientRegistrationId` or client-specific `client-registration-ids` property is a suitable approach.
 
 TIP:: If you do not want to use the default setup for the `OAuth2AuthorizedClientManager`, you can just instantiate a bean of this type in your configuration.
 
