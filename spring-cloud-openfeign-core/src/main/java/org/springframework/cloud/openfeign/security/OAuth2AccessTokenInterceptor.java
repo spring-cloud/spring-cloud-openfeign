@@ -37,9 +37,18 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * A {@link RequestInterceptor} for OAuth2 Feign Requests. By default, it uses the
- * {@link OAuth2AuthorizedClientManager} to get {@link OAuth2AuthorizedClient} that holds
- * an {@link OAuth2AccessToken}.
+ * A {@link RequestInterceptor} for OAuth2 Feign Requests. It uses the
+ * {@link OAuth2AuthorizedClientManager} to obtain an {@link OAuth2AuthorizedClient} that
+ * holds an {@link OAuth2AccessToken}.
+ *
+ * If a client-specific OAuth2 client registration id is configured for the Feign client,
+ * it is used first to retrieve the access token. If the token cannot be retrieved, the
+ * globally configured client registration id is used as a fallback. If no token can be
+ * retrieved using either registration id, the service ID retrieved from the URL host
+ * segment is used.
+ *
+ * This approach is convenient for load-balanced Feign clients. For non-load-balanced
+ * clients, configuring a client registration id is recommended.
  *
  * @author Dangzhicairang(小水牛)
  * @author Olga Maciaszek-Sharma
@@ -118,9 +127,10 @@ public class OAuth2AccessTokenInterceptor implements RequestInterceptor {
 			if (token != null) {
 				return token;
 			}
+			throw new IllegalStateException("OAuth2 token has not been successfully acquired.");
 		}
 
-		if (StringUtils.hasText(clientRegistrationId) && !clientRegistrationId.equals(registrationId)) {
+		if (StringUtils.hasText(clientRegistrationId)) {
 			OAuth2AccessToken token = getToken(clientRegistrationId);
 			if (token != null) {
 				return token;

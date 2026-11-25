@@ -1080,6 +1080,25 @@ spring:
           paymentClient: payment
 ----
 
+The keys in `client-registration-ids` must match the `name` attribute of the
+corresponding `@FeignClient` annotation, not its `contextId` attribute.
+
+For example, given `@FeignClient(name = "inventoryClient", contextId = "inventory")`,
+the corresponding map key must be `inventoryClient`.
+
+For Feign client names containing dots, use bracket notation in YAML to preserve
+the complete name:
+
+[source,yaml]
+----
+spring:
+  cloud:
+    openfeign:
+      oauth2:
+        client-registration-ids:
+          "[inventory.example.com]": inventory
+----
+
 When a request is made, the interceptor first attempts to retrieve a token using the registration ID configured for the corresponding Feign client. If no client-specific registration ID is configured, or a token cannot be retrieved using it, the interceptor falls back to the globally configured `clientRegistrationId`. If a token still cannot be retrieved, the `serviceId` retrieved from the URL host segment is used.
 
 TIP:: Using the `serviceId` as OAuth2 client registration ID is convenient for load-balanced Feign clients. For non-load-balanced ones, the property-based `clientRegistrationId` or client-specific `client-registration-ids` property is a suitable approach.

@@ -36,13 +36,20 @@ public class FeignOAuth2Properties {
 
 	/**
 	 * Client registration id to be used as the default when retrieving the OAuth2 access
-	 * token. If not specified, the {@code serviceId} retrieved from the {@code url} host
-	 * segment will be used.
+	 * token. A client-specific registration id, when configured, takes precedence. If the
+	 * token cannot be retrieved using the configured registration id, the
+	 * {@code serviceId} retrieved from the {@code url} host segment will be used. This is
+	 * convenient for load-balanced Feign clients. For non-load-balanced clients,
+	 * specifying the {@code clientRegistrationId} is recommended.
 	 */
 	private String clientRegistrationId = "";
 
 	/**
-	 * Client registration ids mapped by Feign client name.
+	 * Map of Feign client names to OAuth2 client registration ids. The registration id
+	 * associated with the Feign client name is used first to retrieve the OAuth2 access
+	 * token. If the token cannot be retrieved, the default {@code clientRegistrationId}
+	 * is used as a fallback. If no token can be retrieved using either registration id,
+	 * the {@code serviceId} retrieved from the {@code url} host segment is used.
 	 */
 	private Map<String, String> clientRegistrationIds = new LinkedHashMap<>();
 

@@ -40,6 +40,8 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -229,6 +231,87 @@ class OAuth2AccessTokenInterceptorTests {
 
 		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
 		verify(mockOAuth2AuthorizedClientManager).authorize(argThat(matchAuthorizeRequest("test")));
+	}
+
+	@Test
+	void shouldThrowExceptionWhenClientSpecificRegistrationIdReturnsNull() {
+		String clientRegistrationId = "client-specific-registration";
+
+		Map<String, String> clientRegistrationIds = Map.of(FEIGN_CLIENT_NAME, clientRegistrationId);
+
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(DEFAULT_CLIENT_REGISTRATION_ID,
+				clientRegistrationIds, mockOAuth2AuthorizedClientManager);
+
+		when(mockOAuth2AuthorizedClientManager.authorize(argThat(matchAuthorizeRequest(clientRegistrationId))))
+			.thenReturn(null);
+
+		assertThatExceptionOfType(IllegalStateException.class)
+			.isThrownBy(() -> oAuth2AccessTokenInterceptor.apply(requestTemplate))
+			.withMessage("OAuth2 token has not been successfully acquired.");
+
+		verify(mockOAuth2AuthorizedClientManager).authorize(argThat(matchAuthorizeRequest(clientRegistrationId)));
+		verify(mockOAuth2AuthorizedClientManager, never())
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID)));
+		verify(mockOAuth2AuthorizedClientManager, never()).authorize(argThat(matchAuthorizeRequest("test")));
+	}
+
+	@Test
+	void shouldUseDefaultRegistrationIdWhenFeignTargetIsNullAndNoClientSpecificMappingExists() {
+		requestTemplate.feignTarget(null);
+
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(DEFAULT_CLIENT_REGISTRATION_ID, Map.of(),
+				mockOAuth2AuthorizedClientManager);
+
+		when(mockOAuth2AuthorizedClientManager
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID))))
+			.thenReturn(validTokenOAuth2AuthorizedClient(DEFAULT_CLIENT_REGISTRATION_ID));
+
+		oAuth2AccessTokenInterceptor.apply(requestTemplate);
+
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+
+		verify(mockOAuth2AuthorizedClientManager)
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID)));
+	}
+
+	@Test
+	void shouldUseDefaultRegistrationIdWhenFeignTargetIsNullAndClientSpecificMappingExists() {
+		requestTemplate.feignTarget(null);
+
+		Map<String, String> clientRegistrationIds = Map.of(FEIGN_CLIENT_NAME, "client-specific-registration");
+
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(DEFAULT_CLIENT_REGISTRATION_ID,
+				clientRegistrationIds, mockOAuth2AuthorizedClientManager);
+
+		when(mockOAuth2AuthorizedClientManager
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID))))
+			.thenReturn(validTokenOAuth2AuthorizedClient(DEFAULT_CLIENT_REGISTRATION_ID));
+
+		oAuth2AccessTokenInterceptor.apply(requestTemplate);
+
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+
+		verify(mockOAuth2AuthorizedClientManager)
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID)));
+	}
+
+	@Test
+	void shouldNotAttemptSameRegistrationIdTwiceWhenClientSpecificAndDefaultIdsAreEqual() {
+		Map<String, String> clientRegistrationIds = Map.of(FEIGN_CLIENT_NAME, DEFAULT_CLIENT_REGISTRATION_ID);
+
+		oAuth2AccessTokenInterceptor = new OAuth2AccessTokenInterceptor(DEFAULT_CLIENT_REGISTRATION_ID,
+				clientRegistrationIds, mockOAuth2AuthorizedClientManager);
+
+		when(mockOAuth2AuthorizedClientManager
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID))))
+			.thenReturn(validTokenOAuth2AuthorizedClient(DEFAULT_CLIENT_REGISTRATION_ID));
+
+		oAuth2AccessTokenInterceptor.apply(requestTemplate);
+
+		assertThat(requestTemplate.headers().get("Authorization")).contains("Bearer Valid Token");
+
+		verify(mockOAuth2AuthorizedClientManager, times(1))
+			.authorize(argThat(matchAuthorizeRequest(DEFAULT_CLIENT_REGISTRATION_ID)));
 	}
 
 	private ArgumentMatcher<OAuth2AuthorizeRequest> matchAuthorizeRequest(String clientRegistrationId) {
