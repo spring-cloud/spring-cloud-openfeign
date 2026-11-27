@@ -50,6 +50,11 @@ public class FeignCachingInvocationHandlerFactory implements InvocationHandlerFa
 		final InvocationHandler delegateHandler = delegateFactory.create(target, dispatch);
 		return (proxy, method, argsNullable) -> {
 			Object[] args = Optional.ofNullable(argsNullable).orElseGet(() -> new Object[0]);
+
+			if (cacheInterceptor.getCacheOperationSource().hasCacheOperations(method, target.type())) {
+				return delegateHandler.invoke(proxy, method, args);
+			}
+
 			return cacheInterceptor.invoke(new MethodInvocation() {
 				@Override
 				public Method getMethod() {
